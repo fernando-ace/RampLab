@@ -29,6 +29,7 @@ struct CoordinateTransform {
 
 struct JourneySample {
     Point2 position_m;
+    Point2 direction;
     std::size_t segment_index{0};
     double segment_progress{0.0};
 };

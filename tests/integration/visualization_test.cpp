@@ -39,6 +39,8 @@ TEST(VisualizationTest, InterpolatesAcrossCompleteMultiSegmentJourney) {
     EXPECT_DOUBLE_EQ(first->segment_progress, 0.5);
     EXPECT_DOUBLE_EQ(first->position_m.x, 5.0);
     EXPECT_DOUBLE_EQ(first->position_m.y, 0.0);
+    EXPECT_DOUBLE_EQ(first->direction.x, 1.0);
+    EXPECT_DOUBLE_EQ(first->direction.y, 0.0);
 
     const auto second = sample_journey(journey, nodes, 30s);
     ASSERT_TRUE(second);
@@ -46,6 +48,8 @@ TEST(VisualizationTest, InterpolatesAcrossCompleteMultiSegmentJourney) {
     EXPECT_DOUBLE_EQ(second->segment_progress, 0.5);
     EXPECT_DOUBLE_EQ(second->position_m.x, 10.0);
     EXPECT_DOUBLE_EQ(second->position_m.y, 10.0);
+    EXPECT_DOUBLE_EQ(second->direction.x, 0.0);
+    EXPECT_DOUBLE_EQ(second->direction.y, 1.0);
 }
 
 TEST(VisualizationTest, ClampsBeforeDepartureAndAtExactDestination) {

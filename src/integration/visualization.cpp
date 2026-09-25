@@ -1,6 +1,7 @@
 #include "airside/integration/visualization.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 namespace airside::visualization {
 namespace {
@@ -46,11 +47,18 @@ std::optional<JourneySample> sample_journey(
               0.0,
               1.0);
 
+    const double delta_x = to->position_m.x_m - from->position_m.x_m;
+    const double delta_y = to->position_m.y_m - from->position_m.y_m;
+    const double length = std::hypot(delta_x, delta_y);
+
     return JourneySample{
         .position_m = {
             std::lerp(from->position_m.x_m, to->position_m.x_m, progress),
             std::lerp(from->position_m.y_m, to->position_m.y_m, progress),
         },
+        .direction = length > 0.0
+            ? Point2{delta_x / length, delta_y / length}
+            : Point2{1.0, 0.0},
         .segment_index = index,
         .segment_progress = progress,
     };
