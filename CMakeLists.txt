@@ -33,6 +33,7 @@ FetchContent_MakeAvailable(yaml-cpp)
 add_library(airside_sim STATIC
     src/core/event_queue.cpp
     src/core/event_stream.cpp
+    src/integration/visualization.cpp
     src/world/airport_graph.cpp
     src/routing/astar.cpp
     src/agents/aircraft.cpp
@@ -78,6 +79,7 @@ if(BUILD_TESTING)
         tests/core/event_queue_test.cpp
         tests/core/event_stream_test.cpp
         tests/integration/snapshot_test.cpp
+        tests/integration/visualization_test.cpp
         tests/scenario/scenario_loader_test.cpp
         tests/routing/astar_test.cpp
         tests/agents/state_machine_test.cpp
