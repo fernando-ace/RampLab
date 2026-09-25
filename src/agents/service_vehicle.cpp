@@ -9,14 +9,16 @@ ServiceVehicle::ServiceVehicle(
     VehicleId id,
     std::string name,
     ServiceType capability,
-    NodeId depot_node)
+    NodeId depot_node,
+    double speed_mps)
     : id_(id),
       name_(std::move(name)),
       capability_(capability),
       depot_node_(depot_node),
-      current_node_(depot_node) {
-    if (name_.empty()) {
-        throw std::invalid_argument("vehicle name cannot be empty");
+      current_node_(depot_node),
+      speed_mps_(speed_mps) {
+    if (name_.empty() || speed_mps_ <= 0.0) {
+        throw std::invalid_argument("vehicle name and speed must be valid");
     }
 }
 
@@ -26,6 +28,7 @@ ServiceType ServiceVehicle::capability() const noexcept { return capability_; }
 VehicleState ServiceVehicle::state() const noexcept { return state_; }
 NodeId ServiceVehicle::current_node() const noexcept { return current_node_; }
 NodeId ServiceVehicle::depot_node() const noexcept { return depot_node_; }
+double ServiceVehicle::speed_mps() const noexcept { return speed_mps_; }
 std::optional<AircraftId> ServiceVehicle::assigned_aircraft() const noexcept { return assigned_aircraft_; }
 const std::optional<Route>& ServiceVehicle::active_route() const noexcept { return active_route_; }
 const std::optional<Route>& ServiceVehicle::last_route() const noexcept { return last_route_; }

@@ -1,4 +1,4 @@
-#include "airside/world/baseline_scenario.hpp"
+#include "support/scenarios.hpp"
 
 #include <gtest/gtest.h>
 
@@ -11,7 +11,7 @@ namespace {
 using namespace std::chrono_literals;
 
 TEST(SnapshotTest, CapturesActiveAircraftGateAndTimedMultiSegmentRoutes) {
-    Simulation simulation{make_baseline_scenario(), 42};
+    Simulation simulation{test::baseline_scenario(), 42};
     ASSERT_TRUE(simulation.advance());
     const auto snapshot = simulation.snapshot();
 
@@ -43,7 +43,7 @@ TEST(SnapshotTest, CapturesActiveAircraftGateAndTimedMultiSegmentRoutes) {
 }
 
 TEST(SnapshotTest, IsIndependentOfLaterSimulationMutationAndReflectsRoadClosure) {
-    Simulation simulation{make_baseline_scenario(), 42};
+    Simulation simulation{test::baseline_scenario(), 42};
     ASSERT_TRUE(simulation.advance());
     const auto retained = simulation.snapshot();
     while (!simulation.finished() && simulation.current_time() < 5min) {
@@ -61,7 +61,7 @@ TEST(SnapshotTest, IsIndependentOfLaterSimulationMutationAndReflectsRoadClosure)
 }
 
 TEST(SnapshotTest, FinalSnapshotContainsDepartedAircraftIdleVehiclesAndAvailableGates) {
-    Simulation simulation{make_baseline_scenario(), 42};
+    Simulation simulation{test::baseline_scenario(), 42};
     const auto result = simulation.run();
     const auto snapshot = simulation.snapshot();
     EXPECT_EQ(snapshot.simulation_time, result.simulated_duration);
@@ -74,7 +74,7 @@ TEST(SnapshotTest, FinalSnapshotContainsDepartedAircraftIdleVehiclesAndAvailable
 }
 
 TEST(SnapshotTest, RepeatedSnapshotGenerationDoesNotMutateSimulation) {
-    Simulation simulation{make_baseline_scenario(), 42};
+    Simulation simulation{test::baseline_scenario(), 42};
     ASSERT_TRUE(simulation.advance());
     const auto first = simulation.snapshot();
     const auto second = simulation.snapshot();

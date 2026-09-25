@@ -1,4 +1,4 @@
-#include "airside/world/baseline_scenario.hpp"
+#include "support/scenarios.hpp"
 
 #include <gtest/gtest.h>
 
@@ -17,7 +17,7 @@ public:
 };
 
 TEST(EventStreamTest, EmitsOrderedTypedLifecycleRecordsWithEntityIds) {
-    Simulation simulation{make_baseline_scenario(), 42};
+    Simulation simulation{test::baseline_scenario(), 42};
     CapturingSink sink;
     simulation.add_event_sink(sink);
     const auto result = simulation.run();
@@ -54,8 +54,8 @@ TEST(EventStreamTest, EmitsOrderedTypedLifecycleRecordsWithEntityIds) {
 }
 
 TEST(EventStreamTest, RegisteringMultipleSinksDoesNotChangeDomainResult) {
-    const auto without_sink = Simulation{make_baseline_scenario(), 42}.run();
-    Simulation observed{make_baseline_scenario(), 42};
+    const auto without_sink = Simulation{test::baseline_scenario(), 42}.run();
+    Simulation observed{test::baseline_scenario(), 42};
     CapturingSink first;
     CapturingSink second;
     observed.add_event_sink(first);

@@ -1,0 +1,57 @@
+name: high_capacity
+default_seed: 42
+
+airport:
+  nodes:
+    - { id: depot, name: Service Depot, x_m: 0.0, y_m: 0.0 }
+    - { id: north, name: North Junction, x_m: 100.0, y_m: 100.0 }
+    - { id: south, name: South Junction, x_m: 100.0, y_m: -100.0 }
+    - { id: gate_a1, name: Gate A1, x_m: 220.0, y_m: 80.0 }
+    - { id: gate_a2, name: Gate A2, x_m: 240.0, y_m: 0.0 }
+    - { id: gate_a3, name: Gate A3, x_m: 220.0, y_m: -80.0 }
+  edges:
+    - { id: depot_north, from: depot, to: north, distance_m: 141.4, traversal_time_seconds: 120 }
+    - { id: depot_south, from: depot, to: south, distance_m: 141.4, traversal_time_seconds: 120 }
+    - { id: north_a1, from: north, to: gate_a1, distance_m: 121.7, traversal_time_seconds: 60 }
+    - { id: north_a2, from: north, to: gate_a2, distance_m: 172.0, traversal_time_seconds: 120 }
+    - { id: south_a2, from: south, to: gate_a2, distance_m: 172.0, traversal_time_seconds: 120 }
+    - { id: south_a3, from: south, to: gate_a3, distance_m: 121.7, traversal_time_seconds: 60 }
+    - { id: north_south, from: north, to: south, distance_m: 200.0, traversal_time_seconds: 180 }
+    - { id: a1_a2, from: gate_a1, to: gate_a2, distance_m: 101.9, traversal_time_seconds: 60 }
+    - { id: a2_a3, from: gate_a2, to: gate_a3, distance_m: 101.9, traversal_time_seconds: 60 }
+
+gates:
+  - { id: A1, node: gate_a1 }
+  - { id: A2, node: gate_a2 }
+  - { id: A3, node: gate_a3 }
+
+fleet:
+  vehicles:
+    - { id: fuel_1, name: FuelTruck-1, type: fueling, depot_node: depot, speed_mps: 10.0 }
+    - { id: fuel_2, name: FuelTruck-2, type: fueling, depot_node: depot, speed_mps: 10.0 }
+    - { id: baggage_1, name: BaggageCart-1, type: baggage, depot_node: depot, speed_mps: 8.0 }
+    - { id: baggage_2, name: BaggageCart-2, type: baggage, depot_node: depot, speed_mps: 8.0 }
+
+aircraft:
+  - id: AX101
+    gate: A1
+    scheduled_arrival_seconds: 0
+    scheduled_departure_seconds: 1500
+    required_services: [fueling, baggage]
+  - id: AX202
+    gate: A2
+    scheduled_arrival_seconds: 240
+    scheduled_departure_seconds: 1800
+    required_services: [fueling, baggage]
+  - id: AX303
+    gate: A3
+    scheduled_arrival_seconds: 480
+    scheduled_departure_seconds: 2100
+    required_services: [fueling, baggage]
+
+service_durations_seconds:
+  fueling: 480
+  baggage: 600
+
+road_events:
+  - { time_seconds: 300, edge: north_a2, enabled: false }

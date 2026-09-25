@@ -242,7 +242,8 @@ void Simulation::handle_service_completed(VehicleId id) {
             {EntityKind::Aircraft, aircraft_id.value()});
     }
 
-    auto return_route = find_route(scenario_.graph, flight.gate_node(), NodeId{1});
+    auto return_route = find_route(
+        scenario_.graph, flight.gate_node(), service_vehicle.depot_node());
     if (!return_route) throw std::runtime_error("no available route back to vehicle depot");
     const auto route = *return_route;
     const auto previous_vehicle = service_vehicle.state();

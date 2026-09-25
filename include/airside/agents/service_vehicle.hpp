@@ -12,7 +12,12 @@ enum class VehicleState { Idle, Assigned, TravelingToAircraft, Servicing, Return
 
 class ServiceVehicle {
 public:
-    ServiceVehicle(VehicleId id, std::string name, ServiceType capability, NodeId depot_node);
+    ServiceVehicle(
+        VehicleId id,
+        std::string name,
+        ServiceType capability,
+        NodeId depot_node,
+        double speed_mps = 10.0);
 
     [[nodiscard]] VehicleId id() const noexcept;
     [[nodiscard]] const std::string& name() const noexcept;
@@ -20,6 +25,7 @@ public:
     [[nodiscard]] VehicleState state() const noexcept;
     [[nodiscard]] NodeId current_node() const noexcept;
     [[nodiscard]] NodeId depot_node() const noexcept;
+    [[nodiscard]] double speed_mps() const noexcept;
     [[nodiscard]] std::optional<AircraftId> assigned_aircraft() const noexcept;
     [[nodiscard]] const std::optional<Route>& active_route() const noexcept;
     [[nodiscard]] const std::optional<Route>& last_route() const noexcept;
@@ -43,6 +49,7 @@ private:
     VehicleState state_{VehicleState::Idle};
     NodeId depot_node_;
     NodeId current_node_;
+    double speed_mps_;
     std::optional<AircraftId> assigned_aircraft_;
     std::optional<Route> active_route_;
     std::optional<Route> last_route_;
