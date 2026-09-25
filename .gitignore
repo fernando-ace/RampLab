@@ -1,0 +1,29 @@
+# CMake build trees and generated files
+/build/
+/build-*/
+/out/
+CMakeUserPresets.json
+
+# Visual Studio and IDE state
+.vs/
+.vscode/
+*.sln
+*.vcxproj*
+*.user
+
+# Compiled artifacts
+*.obj
+*.o
+*.exe
+*.dll
+*.lib
+*.a
+*.pdb
+
+# Test and coverage output
+Testing/
+coverage/
+
+# OS metadata
+.DS_Store
+Thumbs.db
