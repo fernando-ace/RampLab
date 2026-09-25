@@ -8,6 +8,7 @@
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "HAL/PlatformProcess.h"
+#include "HAL/PlatformMisc.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
@@ -17,18 +18,64 @@
 #include <algorithm>
 #include <filesystem>
 
+namespace {
+
+FString AircraftStateText(airside::AircraftState State)
+{
+    switch (State) {
+    case airside::AircraftState::Scheduled: return TEXT("Scheduled / not arrived");
+    case airside::AircraftState::Arriving: return TEXT("Arriving");
+    case airside::AircraftState::AtGate: return TEXT("At gate");
+    case airside::AircraftState::WaitingForServices: return TEXT("Waiting for services");
+    case airside::AircraftState::ReadyForPushback: return TEXT("Ready");
+    case airside::AircraftState::Departed: return TEXT("Departed");
+    }
+    return TEXT("Unknown");
+}
+
+FString VehicleStateText(airside::VehicleState State)
+{
+    switch (State) {
+    case airside::VehicleState::Idle: return TEXT("Idle at depot");
+    case airside::VehicleState::Assigned: return TEXT("Assigned");
+    case airside::VehicleState::TravelingToAircraft: return TEXT("Traveling to aircraft");
+    case airside::VehicleState::Servicing: return TEXT("Servicing aircraft");
+    case airside::VehicleState::ReturningToDepot: return TEXT("Returning to depot");
+    }
+    return TEXT("Unknown");
+}
+
+FString FormatResult(const FString& Label, const airside::SimulationResult& Result)
+{
+    return FString::Printf(
+        TEXT("%s\nAvg turnaround  %.1f min\nDelayed  %llu / %llu\nFuel utilization  %.1f%%\nBaggage utilization  %.1f%%"),
+        *Label,
+        Result.metrics.average_turnaround_seconds / 60.0,
+        static_cast<unsigned long long>(Result.metrics.delayed_aircraft),
+        static_cast<unsigned long long>(Result.metrics.aircraft.size()),
+        Result.metrics.fuel_utilization * 100.0,
+        Result.metrics.baggage_utilization * 100.0);
+}
+
+} // namespace
+
 void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
     double RequestedCaptureMultiplier = CaptureMultiplier;
-    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"))
-        && FParse::Value(FCommandLine::Get(), TEXT("RampLabCaptureMultiplier="), RequestedCaptureMultiplier)) {
-        CaptureMultiplier = FMath::Clamp(RequestedCaptureMultiplier, 1.0, 20.0);
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"))) {
+        CaptureWarmupRemaining = 15.0;
+        if (FParse::Value(FCommandLine::Get(), TEXT("RampLabCaptureMultiplier="), RequestedCaptureMultiplier)) {
+            CaptureMultiplier = FMath::Clamp(RequestedCaptureMultiplier, 1.0, 20.0);
+        }
         UE_LOG(LogRampLab, Display, TEXT("Capture QA acceleration enabled: %.0fx operator playback x %.0fx multiplier"),
             PlaybackSpeed, CaptureMultiplier);
     }
     bControlCheck = FParse::Param(FCommandLine::Get(), TEXT("RampLabControlCheck"));
-    LoadBaseline();
+    bDemoMode = FParse::Param(FCommandLine::Get(), TEXT("RampLabDemo"))
+        || FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
+    BuildScenarioComparison();
+    LoadSelectedScenario();
 }
 
 void URampLabSimulationSubsystem::Deinitialize()
@@ -45,7 +92,21 @@ void URampLabSimulationSubsystem::Deinitialize()
 void URampLabSimulationSubsystem::Tick(float DeltaTime)
 {
     if (bControlCheck) RunControlCheck(DeltaTime);
-    if (!bPlaying || Simulation == nullptr || Simulation->finished()) return;
+    if (CaptureWarmupRemaining > 0.0 && bViewerReady) {
+        CaptureWarmupRemaining = FMath::Max(0.0, CaptureWarmupRemaining - DeltaTime);
+        return;
+    }
+    if (Simulation != nullptr && Simulation->finished()) {
+        if (bDemoMode && !bDemoAdvancedToHighCapacity && SelectedScenarioKey == TEXT("baseline")) {
+            DemoTransitionWallSeconds += DeltaTime;
+            if (DemoTransitionWallSeconds >= 2.0) {
+                bDemoAdvancedToHighCapacity = true;
+                SelectScenario(TEXT("high_capacity"));
+            }
+        }
+        return;
+    }
+    if (!bPlaying || Simulation == nullptr) return;
 
     PlaybackSeconds += static_cast<double>(DeltaTime) * PlaybackSpeed * CaptureMultiplier;
     const auto Target = airside::SimTime{static_cast<airside::SimTime::rep>(PlaybackSeconds)};
@@ -80,6 +141,7 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
                     Aircraft.service_waiting.count() / 60.0);
             }
             bCompletionReported = true;
+            FinalResultText = FormatResult(ScenarioName.ToUpper(), Result);
         }
     }
 }
@@ -114,7 +176,34 @@ void URampLabSimulationSubsystem::TogglePlaying()
 
 void URampLabSimulationSubsystem::ResetSimulation()
 {
-    LoadBaseline();
+    LoadSelectedScenario();
+}
+
+void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
+{
+    if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity")) return;
+    SelectedScenarioKey = ScenarioKey;
+    LoadSelectedScenario();
+}
+
+void URampLabSimulationSubsystem::SelectEntityKind(const FString& Kind)
+{
+    if (!Snapshot.IsSet()) return;
+    if (Kind != SelectedEntityKind) SelectedEntityId = 0;
+    const auto& Value = Snapshot.GetValue();
+    if (Kind == TEXT("aircraft") && !Value.aircraft.empty()) {
+        SelectedEntityKind = Kind;
+        const auto Match = std::ranges::find_if(Value.aircraft, [this](const auto& Item) { return Item.id.value() > SelectedEntityId; });
+        SelectedEntityId = (Match == Value.aircraft.end() ? Value.aircraft.front() : *Match).id.value();
+    } else if (Kind == TEXT("vehicle") && !Value.vehicles.empty()) {
+        SelectedEntityKind = Kind;
+        const auto Match = std::ranges::find_if(Value.vehicles, [this](const auto& Item) { return Item.id.value() > SelectedEntityId; });
+        SelectedEntityId = (Match == Value.vehicles.end() ? Value.vehicles.front() : *Match).id.value();
+    } else if (Kind == TEXT("gate") && !Value.gates.empty()) {
+        SelectedEntityKind = Kind;
+        const auto Match = std::ranges::find_if(Value.gates, [this](const auto& Item) { return Item.id.value() > SelectedEntityId; });
+        SelectedEntityId = (Match == Value.gates.end() ? Value.gates.front() : *Match).id.value();
+    }
 }
 
 void URampLabSimulationSubsystem::SetPlaybackSpeed(double NewSpeed)
@@ -135,8 +224,8 @@ void URampLabSimulationSubsystem::AttachControlPanel()
         .Padding(12.0f)
         [
             SNew(SBox)
-            .WidthOverride(410.0f)
-            .HeightOverride(340.0f)
+            .WidthOverride(455.0f)
+            .HeightOverride(850.0f)
             [
                 SNew(SRampLabControlPanel).Subsystem(this)
             ]
@@ -161,12 +250,12 @@ const airside::SimulationSnapshot* URampLabSimulationSubsystem::GetSnapshot() co
     return Snapshot.IsSet() ? &Snapshot.GetValue() : nullptr;
 }
 
-bool URampLabSimulationSubsystem::LoadBaseline()
+bool URampLabSimulationSubsystem::LoadSelectedScenario()
 {
     try {
-        const FString Path = FindScenarioPath();
+        const FString Path = FindScenarioPath(SelectedScenarioKey + TEXT(".yaml"));
         if (Path.IsEmpty()) {
-            StatusText = TEXT("baseline.yaml was not found");
+            StatusText = SelectedScenarioKey + TEXT(".yaml was not found");
             UE_LOG(LogRampLab, Error, TEXT("%s"), *StatusText);
             return false;
         }
@@ -178,6 +267,8 @@ bool URampLabSimulationSubsystem::LoadBaseline()
         PlaybackSeconds = 0.0;
         bPlaying = true;
         bCompletionReported = false;
+        DemoTransitionWallSeconds = 0.0;
+        FinalResultText.Reset();
         Simulation = MakeUnique<airside::Simulation>(std::move(Scenario), Seed);
         Simulation->add_event_sink(*this);
 
@@ -185,6 +276,10 @@ bool URampLabSimulationSubsystem::LoadBaseline()
             if (!Simulation->advance()) break;
         }
         ReconcileSnapshot();
+        if (!Snapshot->vehicles.empty()) {
+            SelectedEntityKind = TEXT("vehicle");
+            SelectedEntityId = Snapshot->vehicles.front().id.value();
+        }
         StatusText = FString::Printf(TEXT("Loaded %s with seed %llu"), *ScenarioName, Seed);
         UE_LOG(LogRampLab, Display, TEXT("%s from %s"), *StatusText, *Path);
         return true;
@@ -197,16 +292,105 @@ bool URampLabSimulationSubsystem::LoadBaseline()
     }
 }
 
-FString URampLabSimulationSubsystem::FindScenarioPath() const
+FString URampLabSimulationSubsystem::FindScenarioPath(const FString& Filename) const
 {
     const TArray<FString> Candidates{
-        FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectDir(), TEXT(".."), TEXT(".."), TEXT("scenarios"), TEXT("baseline.yaml"))),
-        FPaths::ConvertRelativePathToFull(FPaths::Combine(FPlatformProcess::BaseDir(), TEXT("Scenarios"), TEXT("baseline.yaml"))),
+        FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectDir(), TEXT(".."), TEXT(".."), TEXT("scenarios"), Filename)),
+        FPaths::ConvertRelativePathToFull(FPaths::Combine(FPlatformProcess::BaseDir(), TEXT("Scenarios"), Filename)),
     };
     for (const auto& Candidate : Candidates) {
         if (FPaths::FileExists(Candidate)) return Candidate;
     }
     return {};
+}
+
+void URampLabSimulationSubsystem::BuildScenarioComparison()
+{
+    try {
+        const FString BaselinePath = FindScenarioPath(TEXT("baseline.yaml"));
+        const FString CapacityPath = FindScenarioPath(TEXT("high_capacity.yaml"));
+        if (BaselinePath.IsEmpty() || CapacityPath.IsEmpty()) return;
+        auto BaselineScenario = airside::load_scenario(std::filesystem::path{*BaselinePath});
+        auto CapacityScenario = airside::load_scenario(std::filesystem::path{*CapacityPath});
+        const uint64 BaselineSeed = airside::resolve_seed(BaselineScenario, std::nullopt);
+        const uint64 CapacitySeed = airside::resolve_seed(CapacityScenario, std::nullopt);
+        airside::Simulation Baseline(std::move(BaselineScenario), BaselineSeed);
+        airside::Simulation Capacity(std::move(CapacityScenario), CapacitySeed);
+        const auto BaselineResult = Baseline.run();
+        const auto CapacityResult = Capacity.run();
+        ComparisonText = FormatResult(TEXT("BASELINE"), BaselineResult)
+            + TEXT("\n\n") + FormatResult(TEXT("HIGH CAPACITY"), CapacityResult);
+        UE_LOG(LogRampLab, Display, TEXT("Scenario comparison generated from YAML engine runs:\n%s"), *ComparisonText);
+    } catch (const std::exception& Error) {
+        UE_LOG(LogRampLab, Error, TEXT("Scenario comparison failed: %s"), UTF8_TO_TCHAR(Error.what()));
+    }
+}
+
+FString URampLabSimulationSubsystem::GetSelectedEntityText() const
+{
+    if (!Snapshot.IsSet()) return TEXT("No entity selected");
+    const auto& Value = Snapshot.GetValue();
+    if (SelectedEntityKind == TEXT("aircraft")) {
+        const auto Match = std::ranges::find(Value.aircraft, SelectedEntityId, [](const auto& Item) { return Item.id.value(); });
+        if (Match != Value.aircraft.end()) {
+            int32 Completed = 0;
+            for (const auto& Service : Match->services) if (Service.status == airside::TaskStatus::Completed) ++Completed;
+            const int64 Delay = Match->actual_departure
+                ? FMath::Max<int64>(0, (*Match->actual_departure - Match->scheduled_departure).count())
+                : FMath::Max<int64>(0, (GetPlaybackTime() - Match->scheduled_departure).count());
+            FString GateName(TEXT("Unknown gate"));
+            const auto Gate = std::ranges::find(Value.gates, Match->assigned_gate, &airside::GateSnapshot::id);
+            if (Gate != Value.gates.end()) GateName = UTF8_TO_TCHAR(Gate->name.c_str());
+            return FString::Printf(TEXT("%s\nGate %s  /  %s\nScheduled departure %02lld:%02lld\nCurrent delay %.1f min\nServices %d / %d complete"),
+                UTF8_TO_TCHAR(Match->flight_number.c_str()), *GateName, *AircraftStateText(Match->state),
+                Match->scheduled_departure.count() / 3600, (Match->scheduled_departure.count() / 60) % 60,
+                Delay / 60.0, Completed, static_cast<int32>(Match->services.size()));
+        }
+    } else if (SelectedEntityKind == TEXT("vehicle")) {
+        const auto Match = std::ranges::find(Value.vehicles, SelectedEntityId, [](const auto& Item) { return Item.id.value(); });
+        if (Match != Value.vehicles.end()) {
+            FString Route(TEXT("Route: "));
+            if (Match->journey && !Match->journey->route_nodes.empty()) {
+                for (size_t Index = 0; Index < Match->journey->route_nodes.size(); ++Index) {
+                    const auto Node = std::ranges::find(Value.road_nodes, Match->journey->route_nodes[Index], &airside::RoadNodeSnapshot::id);
+                    if (Index > 0) Route += TEXT(" -> ");
+                    Route += Node == Value.road_nodes.end() ? TEXT("?") : UTF8_TO_TCHAR(Node->name.c_str());
+                }
+            } else {
+                Route += TEXT("At depot");
+            }
+            FString Assignment(TEXT("Unassigned"));
+            if (Match->assigned_aircraft) {
+                const auto Aircraft = std::ranges::find(Value.aircraft, *Match->assigned_aircraft, &airside::AircraftSnapshot::id);
+                if (Aircraft != Value.aircraft.end()) Assignment = UTF8_TO_TCHAR(Aircraft->flight_number.c_str());
+            }
+            return FString::Printf(TEXT("%s\n%s vehicle\n%s\nAssigned: %s\n%s"),
+                UTF8_TO_TCHAR(Match->name.c_str()),
+                Match->type == airside::ServiceType::Fueling ? TEXT("Fuel") : TEXT("Baggage"),
+                *VehicleStateText(Match->state), *Assignment, *Route);
+        }
+    } else if (SelectedEntityKind == TEXT("gate")) {
+        const auto Match = std::ranges::find(Value.gates, SelectedEntityId, [](const auto& Item) { return Item.id.value(); });
+        if (Match != Value.gates.end()) {
+            FString Occupant(TEXT("None"));
+            if (Match->occupying_aircraft) {
+                const auto Aircraft = std::ranges::find(Value.aircraft, *Match->occupying_aircraft, &airside::AircraftSnapshot::id);
+                if (Aircraft != Value.aircraft.end()) Occupant = UTF8_TO_TCHAR(Aircraft->flight_number.c_str());
+            }
+            return FString::Printf(TEXT("Gate %s\n%s\nAircraft: %s"), UTF8_TO_TCHAR(Match->name.c_str()),
+                Match->available ? TEXT("Available") : TEXT("Occupied"), *Occupant);
+        }
+    }
+    return TEXT("Selection unavailable");
+}
+
+bool URampLabSimulationSubsystem::IsRoadOnSelectedRoute(uint32 RoadId) const
+{
+    if (!Snapshot.IsSet() || SelectedEntityKind != TEXT("vehicle")) return false;
+    const auto& Vehicles = Snapshot->vehicles;
+    const auto Match = std::ranges::find(Vehicles, SelectedEntityId, [](const auto& Item) { return Item.id.value(); });
+    if (Match == Vehicles.end() || !Match->journey) return false;
+    return std::ranges::any_of(Match->journey->route_edges, [RoadId](const auto Id) { return Id.value() == RoadId; });
 }
 
 void URampLabSimulationSubsystem::ReconcileSnapshot()
@@ -224,6 +408,23 @@ void URampLabSimulationSubsystem::RunControlCheck(float DeltaTime)
             SetPlaybackSpeed(Speed);
             bControlCheckPassed = bControlCheckPassed && PlaybackSpeed == Speed;
         }
+        SelectScenario(TEXT("high_capacity"));
+        bControlCheckPassed = bControlCheckPassed
+            && ScenarioName == TEXT("high_capacity")
+            && Snapshot.IsSet()
+            && Snapshot->vehicles.size() == 4
+            && ComparisonText.Contains(TEXT("BASELINE"))
+            && ComparisonText.Contains(TEXT("HIGH CAPACITY"));
+        SelectEntityKind(TEXT("aircraft"));
+        bControlCheckPassed = bControlCheckPassed && !GetSelectedEntityText().Contains(TEXT("unavailable"), ESearchCase::IgnoreCase);
+        SelectEntityKind(TEXT("gate"));
+        bControlCheckPassed = bControlCheckPassed && !GetSelectedEntityText().Contains(TEXT("unavailable"), ESearchCase::IgnoreCase);
+        SelectEntityKind(TEXT("vehicle"));
+        bControlCheckPassed = bControlCheckPassed && !GetSelectedEntityText().Contains(TEXT("unavailable"), ESearchCase::IgnoreCase);
+        SetCameraPreset(TEXT("Gate A2"));
+        bControlCheckPassed = bControlCheckPassed && CameraPreset == TEXT("Gate A2") && !GeospatialStatus.IsEmpty();
+        SelectScenario(TEXT("baseline"));
+        bControlCheckPassed = bControlCheckPassed && ScenarioName == TEXT("baseline");
         ControlCheckPausedTime = PlaybackSeconds;
         TogglePlaying();
         bControlCheckPassed = bControlCheckPassed && !bPlaying;
@@ -241,14 +442,16 @@ void URampLabSimulationSubsystem::RunControlCheck(float DeltaTime)
     }
 
     if (ControlCheckStage == 2 && PlaybackSeconds > ControlCheckPausedTime) {
+        SelectedScenarioKey = TEXT("baseline");
         ResetSimulation();
         bControlCheckPassed = bControlCheckPassed
             && PlaybackSeconds == 0.0
             && Seed == 42
             && bPlaying
             && (PlaybackSpeed == 1.0 || PlaybackSpeed == 5.0 || PlaybackSpeed == 10.0 || PlaybackSpeed == 20.0);
-        UE_LOG(LogRampLab, Display, TEXT("RampLab control check: %s (Play/Pause, Reset, operator speeds 1x, 5x, 10x, 20x only)"),
+        UE_LOG(LogRampLab, Display, TEXT("RampLab control check: %s (Play/Pause, Reset, scenario selection, entity inspection, camera preset, comparison, operator speeds 1x/5x/10x/20x only)"),
             bControlCheckPassed ? TEXT("PASSED") : TEXT("FAILED"));
         bControlCheck = false;
+        FPlatformMisc::RequestExit(false);
     }
 }

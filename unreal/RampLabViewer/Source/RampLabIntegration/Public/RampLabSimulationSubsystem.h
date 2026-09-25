@@ -28,6 +28,10 @@ public:
 
     void TogglePlaying();
     void ResetSimulation();
+    void SelectScenario(const FString& ScenarioKey);
+    void SelectEntityKind(const FString& Kind);
+    void SetCameraPreset(const FString& Preset) { CameraPreset = Preset; }
+    void SetGeospatialStatus(const FString& Status) { GeospatialStatus = Status; }
     void SetPlaybackSpeed(double NewSpeed);
     void AttachControlPanel();
 
@@ -42,10 +46,18 @@ public:
     [[nodiscard]] uint64 GetSeed() const noexcept { return Seed; }
     [[nodiscard]] FString GetScenarioName() const { return ScenarioName; }
     [[nodiscard]] FString GetStatusText() const { return StatusText; }
+    [[nodiscard]] FString GetSelectedEntityText() const;
+    [[nodiscard]] FString GetComparisonText() const { return ComparisonText; }
+    [[nodiscard]] FString GetFinalResultText() const { return FinalResultText; }
+    [[nodiscard]] bool IsRoadOnSelectedRoute(uint32 RoadId) const;
+    [[nodiscard]] bool IsDemoMode() const noexcept { return bDemoMode; }
+    [[nodiscard]] FString GetCameraPreset() const { return CameraPreset; }
+    [[nodiscard]] FString GetGeospatialStatus() const { return GeospatialStatus; }
 
 private:
-    bool LoadBaseline();
-    FString FindScenarioPath() const;
+    bool LoadSelectedScenario();
+    FString FindScenarioPath(const FString& Filename) const;
+    void BuildScenarioComparison();
     void ReconcileSnapshot();
     void RunControlCheck(float DeltaTime);
 
@@ -54,17 +66,28 @@ private:
     TArray<FString> RecentEvents;
     TSharedPtr<SWidget> ControlPanel;
     FString ScenarioName;
+    FString SelectedScenarioKey{TEXT("baseline")};
     FString StatusText;
+    FString ComparisonText;
+    FString FinalResultText;
+    FString SelectedEntityKind{TEXT("vehicle")};
+    FString CameraPreset{TEXT("Overview")};
+    FString GeospatialStatus{TEXT("Initializing Cesium georeference")};
+    uint32 SelectedEntityId{0};
     double PlaybackSeconds{0.0};
     double PlaybackSpeed{10.0};
     double CaptureMultiplier{1.0};
+    double CaptureWarmupRemaining{0.0};
     uint64 Seed{42};
     bool bPlaying{true};
     bool bViewerReady{false};
     bool bCompletionReported{false};
     bool bControlCheck{false};
+    bool bDemoMode{false};
+    bool bDemoAdvancedToHighCapacity{false};
     bool bControlCheckPassed{true};
     int32 ControlCheckStage{0};
     double ControlCheckWallSeconds{0.0};
     double ControlCheckPausedTime{0.0};
+    double DemoTransitionWallSeconds{0.0};
 };

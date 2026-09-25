@@ -8,8 +8,11 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SSeparator.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Text/STextBlock.h"
+
+#include <algorithm>
 
 void SRampLabControlPanel::Construct(const FArguments& Arguments)
 {
@@ -18,25 +21,31 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
     ChildSlot
     [
         SNew(SBox)
-        .WidthOverride(390.0f)
-        .Padding(18.0f)
+        .WidthOverride(430.0f)
+        .Padding(14.0f)
         [
             SNew(SBorder)
             .BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
-            .Padding(14.0f)
+            .Padding(18.0f)
             [
                 SNew(SVerticalBox)
-                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                + SVerticalBox::Slot().AutoHeight()
                 [
                     SNew(STextBlock)
                     .Text(FText::FromString(TEXT("RampLab")))
                     .Font(FAppStyle::GetFontStyle("HeadingExtraSmall"))
                 ]
-                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 2, 0, 12)
+                [
+                    SNew(STextBlock)
+                    .Text(FText::FromString(TEXT("AUBURN UNIVERSITY REGIONAL AIRPORT  /  KAUO")))
+                    .ColorAndOpacity(FLinearColor(0.45f, 0.72f, 0.88f))
+                ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)
                 [
                     SNew(STextBlock).Text(this, &SRampLabControlPanel::SummaryText)
                 ]
-                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 6)
                 [
                     SNew(SHorizontalBox)
                     + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 6, 0)
@@ -52,6 +61,52 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                     + SHorizontalBox::Slot().AutoWidth()
                     [ SNew(SButton).Text(FText::FromString(TEXT("20x"))).OnClicked(this, &SRampLabControlPanel::SetSpeed, 20.0) ]
                 ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+                [
+                    SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 6, 0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Baseline"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("baseline"))) ]
+                    + SHorizontalBox::Slot().AutoWidth()
+                    [ SNew(SButton).Text(FText::FromString(TEXT("High Capacity"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("high_capacity"))) ]
+                ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [ SNew(SSeparator) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 5)
+                [ SNew(STextBlock).Text(FText::FromString(TEXT("SELECTED ENTITY"))).ColorAndOpacity(FLinearColor(0.75f, 0.78f, 0.80f)) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 5)
+                [
+                    SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 6, 0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Next Aircraft"))).OnClicked(this, &SRampLabControlPanel::SelectEntity, FString(TEXT("aircraft"))) ]
+                    + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 6, 0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Next Vehicle"))).OnClicked(this, &SRampLabControlPanel::SelectEntity, FString(TEXT("vehicle"))) ]
+                    + SHorizontalBox::Slot().AutoWidth()
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Next Gate"))).OnClicked(this, &SRampLabControlPanel::SelectEntity, FString(TEXT("gate"))) ]
+                ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 9)
+                [ SNew(STextBlock).Text(this, &SRampLabControlPanel::SelectedEntityText).AutoWrapText(true) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 5)
+                [ SNew(STextBlock).Text(FText::FromString(TEXT("CAMERA"))).ColorAndOpacity(FLinearColor(0.75f, 0.78f, 0.80f)) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+                [
+                    SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 5, 0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Overview"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Overview"))) ]
+                    + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 5, 0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Ramp"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Ramp"))) ]
+                    + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 5, 0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Gate A2"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Gate A2"))) ]
+                    + SHorizontalBox::Slot().AutoWidth()
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Roads"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Service Roads"))) ]
+                ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [ SNew(SSeparator) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 4)
+                [ SNew(STextBlock).Text(FText::FromString(TEXT("SCENARIO RESULTS  /  AUTHORITATIVE ENGINE RUNS"))).ColorAndOpacity(FLinearColor(0.75f, 0.78f, 0.80f)) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [ SNew(STextBlock).Text(this, &SRampLabControlPanel::ResultsText) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 4)
+                [ SNew(STextBlock).Text(FText::FromString(TEXT("RECENT EVENTS"))).ColorAndOpacity(FLinearColor(0.75f, 0.78f, 0.80f)) ]
                 + SVerticalBox::Slot().AutoHeight()
                 [
                     SNew(STextBlock)
@@ -73,33 +128,55 @@ FText SRampLabControlPanel::SummaryText() const
     const auto Time = Subsystem->GetPlaybackTime().count();
     const auto* Snapshot = Subsystem->GetSnapshot();
     int32 ActiveAircraft = 0;
+    int32 DelayedAircraft = 0;
     int32 FuelTrucks = 0;
     int32 BaggageCarts = 0;
+    bool bRoadClosure = false;
     if (Snapshot != nullptr) {
         for (const auto& Aircraft : Snapshot->aircraft) {
-            if (Aircraft.state != airside::AircraftState::Departed) ++ActiveAircraft;
+            if (Aircraft.state != airside::AircraftState::Scheduled && Aircraft.state != airside::AircraftState::Departed) ++ActiveAircraft;
+            if (Aircraft.state != airside::AircraftState::Departed && Time > Aircraft.scheduled_departure.count()) ++DelayedAircraft;
         }
         for (const auto& Vehicle : Snapshot->vehicles) {
             Vehicle.type == airside::ServiceType::Fueling ? ++FuelTrucks : ++BaggageCarts;
         }
+        bRoadClosure = std::ranges::any_of(Snapshot->roads, [](const auto& Road) { return !Road.enabled; });
     }
 
     return FText::FromString(FString::Printf(
-        TEXT("Simulation Time: %02lld:%02lld:%02lld\nPlayback: %.0fx   State: %s%s\nAircraft: %d active\nFuel Trucks: %d   Baggage Carts: %d"),
+        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Delayed  %d\nFuel Trucks  %d    Baggage Carts  %d"),
+        *Subsystem->GetScenarioName(),
         Time / 3600, (Time / 60) % 60, Time % 60,
         Subsystem->GetPlaybackSpeed(),
         Subsystem->IsFinished() ? TEXT("Finished") : (Subsystem->IsPlaying() ? TEXT("Playing") : TEXT("Paused")),
         Subsystem->IsCaptureAccelerationActive() ? TEXT("   [QA capture acceleration]") : TEXT(""),
-        ActiveAircraft, FuelTrucks, BaggageCarts));
+        *Subsystem->GetGeospatialStatus(),
+        bRoadClosure ? TEXT("\nROAD CLOSURE  /  North to Gate A2 unavailable") : TEXT(""),
+        ActiveAircraft, DelayedAircraft, FuelTrucks, BaggageCarts));
 }
 
 FText SRampLabControlPanel::EventsText() const
 {
     const auto* Subsystem = SimulationSubsystem.Get();
     if (Subsystem == nullptr) return FText::GetEmpty();
-    FString Result(TEXT("\nRecent events\n"));
-    for (const auto& Event : Subsystem->GetRecentEvents()) Result += Event + TEXT("\n");
+    FString Result;
+    const int32 Start = FMath::Max(0, Subsystem->GetRecentEvents().Num() - 4);
+    for (int32 Index = Start; Index < Subsystem->GetRecentEvents().Num(); ++Index) {
+        Result += Subsystem->GetRecentEvents()[Index] + TEXT("\n");
+    }
     return FText::FromString(Result);
+}
+
+FText SRampLabControlPanel::SelectedEntityText() const
+{
+    const auto* Subsystem = SimulationSubsystem.Get();
+    return FText::FromString(Subsystem == nullptr ? TEXT("Unavailable") : Subsystem->GetSelectedEntityText());
+}
+
+FText SRampLabControlPanel::ResultsText() const
+{
+    const auto* Subsystem = SimulationSubsystem.Get();
+    return FText::FromString(Subsystem == nullptr ? TEXT("Unavailable") : Subsystem->GetComparisonText());
 }
 
 FReply SRampLabControlPanel::TogglePlay()
@@ -117,5 +194,23 @@ FReply SRampLabControlPanel::Reset()
 FReply SRampLabControlPanel::SetSpeed(double Speed)
 {
     if (auto* Subsystem = SimulationSubsystem.Get()) Subsystem->SetPlaybackSpeed(Speed);
+    return FReply::Handled();
+}
+
+FReply SRampLabControlPanel::SelectScenario(FString Scenario)
+{
+    if (auto* Subsystem = SimulationSubsystem.Get()) Subsystem->SelectScenario(Scenario);
+    return FReply::Handled();
+}
+
+FReply SRampLabControlPanel::SelectEntity(FString Kind)
+{
+    if (auto* Subsystem = SimulationSubsystem.Get()) Subsystem->SelectEntityKind(Kind);
+    return FReply::Handled();
+}
+
+FReply SRampLabControlPanel::SetCamera(FString Preset)
+{
+    if (auto* Subsystem = SimulationSubsystem.Get()) Subsystem->SetCameraPreset(Preset);
     return FReply::Handled();
 }
