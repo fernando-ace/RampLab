@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 
 project(
     airside_sim
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "Deterministic airport airside discrete-event simulation engine"
     LANGUAGES CXX
 )
@@ -44,30 +44,26 @@ add_library(airside_sim STATIC
 add_library(airside::sim ALIAS airside_sim)
 target_include_directories(airside_sim PUBLIC include)
 
-if(MSVC)
-    target_compile_options(airside_sim PRIVATE /W4 /permissive- /EHsc)
-else()
-    target_compile_options(airside_sim PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
-endif()
+function(airside_enable_warnings target)
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /W4 /permissive- /EHsc /Zc:__cplusplus)
+    else()
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
+    endif()
+endfunction()
+
+airside_enable_warnings(airside_sim)
 
 add_library(airside_scenario STATIC src/scenario/scenario_loader.cpp)
 add_library(airside::scenario ALIAS airside_scenario)
 target_include_directories(airside_scenario PUBLIC include)
 target_link_libraries(airside_scenario PUBLIC airside::sim PRIVATE yaml-cpp::yaml-cpp)
-if(MSVC)
-    target_compile_options(airside_scenario PRIVATE /W4 /permissive- /EHsc)
-else()
-    target_compile_options(airside_scenario PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
-endif()
+airside_enable_warnings(airside_scenario)
 
 add_executable(airside_cli apps/airside_cli/main.cpp)
 target_link_libraries(airside_cli PRIVATE airside::sim airside::scenario)
 
-if(MSVC)
-    target_compile_options(airside_cli PRIVATE /W4 /permissive- /EHsc)
-else()
-    target_compile_options(airside_cli PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
-endif()
+airside_enable_warnings(airside_cli)
 
 if(BUILD_TESTING)
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
@@ -92,6 +88,7 @@ if(BUILD_TESTING)
     target_include_directories(airside_tests PRIVATE tests)
     target_compile_definitions(airside_tests PRIVATE AIRSIDE_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     target_link_libraries(airside_tests PRIVATE airside::sim airside::scenario GTest::gtest_main)
+    airside_enable_warnings(airside_tests)
     include(GoogleTest)
     gtest_discover_tests(airside_tests)
 endif()

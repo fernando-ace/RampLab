@@ -26,7 +26,9 @@ TEST(EventStreamTest, EmitsOrderedTypedLifecycleRecordsWithEntityIds) {
     ASSERT_FALSE(result.events.empty());
     for (std::size_t index = 0; index < result.events.size(); ++index) {
         EXPECT_EQ(result.events[index].sequence, index);
-        if (index > 0) EXPECT_LE(result.events[index - 1].timestamp, result.events[index].timestamp);
+        if (index > 0) {
+            EXPECT_LE(result.events[index - 1].timestamp, result.events[index].timestamp);
+        }
     }
 
     const auto wait = std::ranges::find_if(result.events, [](const auto& event) {
