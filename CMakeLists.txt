@@ -13,12 +13,32 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CTest)
 
-add_library(airside_sim INTERFACE)
+add_library(airside_sim STATIC
+    src/core/event_queue.cpp
+)
 add_library(airside::sim ALIAS airside_sim)
-target_include_directories(airside_sim INTERFACE include)
+target_include_directories(airside_sim PUBLIC include)
 
 if(MSVC)
-    target_compile_options(airside_sim INTERFACE /W4 /permissive- /EHsc)
+    target_compile_options(airside_sim PRIVATE /W4 /permissive- /EHsc)
 else()
-    target_compile_options(airside_sim INTERFACE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
+    target_compile_options(airside_sim PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
+endif()
+
+if(BUILD_TESTING)
+    include(FetchContent)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    FetchContent_MakeAvailable(googletest)
+
+    add_executable(airside_tests
+        tests/core/event_queue_test.cpp
+    )
+    target_link_libraries(airside_tests PRIVATE airside::sim GTest::gtest_main)
+    include(GoogleTest)
+    gtest_discover_tests(airside_tests)
 endif()
