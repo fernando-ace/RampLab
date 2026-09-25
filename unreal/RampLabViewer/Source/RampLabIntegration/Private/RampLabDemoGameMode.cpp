@@ -1,15 +1,18 @@
 #include "RampLabDemoGameMode.h"
 
 #include "RampLabSimulationSubsystem.h"
+#include "RampLabAirportEnvironment.h"
 #include "RampLabWorldActor.h"
 
 #include "Components/DirectionalLightComponent.h"
+#include "Components/SkyAtmosphereComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/WorldSettings.h"
 
 ARampLabDemoGameMode::ARampLabDemoGameMode()
 {
@@ -20,12 +23,22 @@ void ARampLabDemoGameMode::BeginPlay()
 {
     Super::BeginPlay();
 
+    // A Cesium globe routinely exceeds Unreal's conventional world bounds.
+    GetWorld()->GetWorldSettings()->bEnableWorldBoundsChecks = false;
+
     auto* Viewer = GetWorld()->SpawnActor<ARampLabWorldActor>();
+    GetWorld()->SpawnActor<ARampLabAirportEnvironment>();
+    GetWorld()->SpawnActor<ASkyAtmosphere>();
     if (auto* Sun = GetWorld()->SpawnActor<ADirectionalLight>(FVector::ZeroVector, FRotator(-55.0f, -35.0f, 0.0f))) {
-        Sun->GetLightComponent()->SetIntensity(8.0f);
+        auto* SunComponent = CastChecked<UDirectionalLightComponent>(Sun->GetLightComponent());
+        SunComponent->SetMobility(EComponentMobility::Movable);
+        SunComponent->SetIntensity(3.0f);
+        SunComponent->SetAtmosphereSunLight(true);
     }
     if (auto* Sky = GetWorld()->SpawnActor<ASkyLight>()) {
-        Sky->GetLightComponent()->SetIntensity(1.5f);
+        Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);
+        Sky->GetLightComponent()->SetIntensity(0.75f);
+        Sky->GetLightComponent()->SetRealTimeCapture(true);
     }
     if (auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>()) {
         Subsystem->AttachControlPanel();

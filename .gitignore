@@ -31,6 +31,7 @@ unreal/**/*.sln
 unreal/RampLabViewer/Plugins/CesiumForUnreal/
 unreal/RampLabViewer/Config/CesiumIon.local.ini
 unreal/RampLabViewer/.env.local
+unreal/RampLabViewer/cesium-request-cache.sqlite*
 
 # Test and coverage output
 Testing/
