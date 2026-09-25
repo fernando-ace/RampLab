@@ -24,6 +24,7 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     if (FParse::Value(FCommandLine::Get(), TEXT("RampLabPlaybackSpeed="), RequestedSpeed)) {
         PlaybackSpeed = FMath::Clamp(RequestedSpeed, 1.0, 100.0);
     }
+    bControlCheck = FParse::Param(FCommandLine::Get(), TEXT("RampLabControlCheck"));
     LoadBaseline();
 }
 
@@ -40,6 +41,7 @@ void URampLabSimulationSubsystem::Deinitialize()
 
 void URampLabSimulationSubsystem::Tick(float DeltaTime)
 {
+    if (bControlCheck) RunControlCheck(DeltaTime);
     if (!bPlaying || Simulation == nullptr || Simulation->finished()) return;
 
     PlaybackSeconds += static_cast<double>(DeltaTime) * PlaybackSpeed;
@@ -207,4 +209,42 @@ FString URampLabSimulationSubsystem::FindScenarioPath() const
 void URampLabSimulationSubsystem::ReconcileSnapshot()
 {
     if (Simulation != nullptr) Snapshot = Simulation->snapshot();
+}
+
+void URampLabSimulationSubsystem::RunControlCheck(float DeltaTime)
+{
+    if (!bViewerReady || Simulation == nullptr) return;
+    ControlCheckWallSeconds += DeltaTime;
+
+    if (ControlCheckStage == 0) {
+        for (const double Speed : {1.0, 5.0, 10.0, 20.0}) {
+            SetPlaybackSpeed(Speed);
+            bControlCheckPassed = bControlCheckPassed && PlaybackSpeed == Speed;
+        }
+        ControlCheckPausedTime = PlaybackSeconds;
+        TogglePlaying();
+        bControlCheckPassed = bControlCheckPassed && !bPlaying;
+        ControlCheckWallSeconds = 0.0;
+        ControlCheckStage = 1;
+        return;
+    }
+
+    if (ControlCheckStage == 1 && ControlCheckWallSeconds >= 0.5) {
+        bControlCheckPassed = bControlCheckPassed && PlaybackSeconds == ControlCheckPausedTime;
+        TogglePlaying();
+        bControlCheckPassed = bControlCheckPassed && bPlaying;
+        ControlCheckStage = 2;
+        return;
+    }
+
+    if (ControlCheckStage == 2 && PlaybackSeconds > ControlCheckPausedTime) {
+        ResetSimulation();
+        bControlCheckPassed = bControlCheckPassed
+            && PlaybackSeconds == 0.0
+            && Seed == 42
+            && bPlaying;
+        UE_LOG(LogRampLab, Display, TEXT("RampLab control check: %s (Play/Pause, Reset, 1x, 5x, 10x, 20x)"),
+            bControlCheckPassed ? TEXT("PASSED") : TEXT("FAILED"));
+        bControlCheck = false;
+    }
 }

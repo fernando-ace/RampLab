@@ -46,6 +46,7 @@ private:
     bool LoadBaseline();
     FString FindScenarioPath() const;
     void ReconcileSnapshot();
+    void RunControlCheck(float DeltaTime);
 
     TUniquePtr<airside::Simulation> Simulation;
     TOptional<airside::SimulationSnapshot> Snapshot;
@@ -59,4 +60,9 @@ private:
     bool bPlaying{true};
     bool bViewerReady{false};
     bool bCompletionReported{false};
+    bool bControlCheck{false};
+    bool bControlCheckPassed{true};
+    int32 ControlCheckStage{0};
+    double ControlCheckWallSeconds{0.0};
+    double ControlCheckPausedTime{0.0};
 };
