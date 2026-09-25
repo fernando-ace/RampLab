@@ -1,0 +1,141 @@
+#include "airside/agents/aircraft.hpp"
+
+#include <algorithm>
+#include <stdexcept>
+#include <utility>
+
+namespace airside {
+
+Aircraft::Aircraft(
+    AircraftId id,
+    std::string flight_number,
+    SimTime scheduled_arrival,
+    SimTime scheduled_departure,
+    GateId gate,
+    NodeId gate_node,
+    std::vector<ServiceTask> tasks)
+    : id_(id),
+      flight_number_(std::move(flight_number)),
+      scheduled_arrival_(scheduled_arrival),
+      scheduled_departure_(scheduled_departure),
+      gate_(gate),
+      gate_node_(gate_node),
+      tasks_(std::move(tasks)) {
+    if (flight_number_.empty() || scheduled_departure_ < scheduled_arrival_ || tasks_.empty()) {
+        throw std::invalid_argument("invalid aircraft schedule or required tasks");
+    }
+}
+
+AircraftId Aircraft::id() const noexcept { return id_; }
+const std::string& Aircraft::flight_number() const noexcept { return flight_number_; }
+SimTime Aircraft::scheduled_arrival() const noexcept { return scheduled_arrival_; }
+SimTime Aircraft::scheduled_departure() const noexcept { return scheduled_departure_; }
+GateId Aircraft::gate() const noexcept { return gate_; }
+NodeId Aircraft::gate_node() const noexcept { return gate_node_; }
+AircraftState Aircraft::state() const noexcept { return state_; }
+std::optional<SimTime> Aircraft::actual_arrival() const noexcept { return actual_arrival_; }
+std::optional<SimTime> Aircraft::ready_at() const noexcept { return ready_at_; }
+std::optional<SimTime> Aircraft::actual_departure() const noexcept { return actual_departure_; }
+const std::vector<ServiceTask>& Aircraft::tasks() const noexcept { return tasks_; }
+
+bool Aircraft::can_transition(AircraftState from, AircraftState to) noexcept {
+    switch (from) {
+    case AircraftState::Scheduled: return to == AircraftState::Arriving;
+    case AircraftState::Arriving: return to == AircraftState::AtGate;
+    case AircraftState::AtGate: return to == AircraftState::WaitingForServices;
+    case AircraftState::WaitingForServices: return to == AircraftState::ReadyForPushback;
+    case AircraftState::ReadyForPushback: return to == AircraftState::Departed;
+    case AircraftState::Departed: return false;
+    }
+    return false;
+}
+
+void Aircraft::transition_to(AircraftState next) {
+    if (!can_transition(state_, next)) {
+        throw std::logic_error("invalid aircraft state transition");
+    }
+    state_ = next;
+}
+
+void Aircraft::arrive(SimTime now) {
+    if (now < scheduled_arrival_) {
+        throw std::logic_error("aircraft cannot arrive before its scheduled event");
+    }
+    transition_to(AircraftState::Arriving);
+    transition_to(AircraftState::AtGate);
+    actual_arrival_ = now;
+    transition_to(AircraftState::WaitingForServices);
+}
+
+void Aircraft::mark_task_waiting(ServiceType type, SimTime now) {
+    auto& value = mutable_task(type);
+    if (value.status != TaskStatus::Pending) {
+        throw std::logic_error("only a pending service task may wait");
+    }
+    value.status = TaskStatus::Waiting;
+    value.requested_at = now;
+}
+
+void Aircraft::assign_task(ServiceType type) {
+    auto& value = mutable_task(type);
+    if (value.status != TaskStatus::Pending && value.status != TaskStatus::Waiting) {
+        throw std::logic_error("service task cannot be assigned in its current state");
+    }
+    value.status = TaskStatus::Assigned;
+}
+
+void Aircraft::start_task(ServiceType type, SimTime now) {
+    auto& value = mutable_task(type);
+    if (value.status != TaskStatus::Assigned) {
+        throw std::logic_error("service task must be assigned before it starts");
+    }
+    value.status = TaskStatus::InProgress;
+    value.started_at = now;
+    if (!value.requested_at.has_value()) {
+        value.requested_at = actual_arrival_.value_or(now);
+    }
+}
+
+void Aircraft::complete_task(ServiceType type, SimTime now) {
+    auto& value = mutable_task(type);
+    if (value.status != TaskStatus::InProgress || !value.started_at || now < *value.started_at) {
+        throw std::logic_error("service task cannot complete before it starts");
+    }
+    value.status = TaskStatus::Completed;
+    value.completed_at = now;
+    if (services_complete()) {
+        transition_to(AircraftState::ReadyForPushback);
+        ready_at_ = now;
+    }
+}
+
+void Aircraft::depart(SimTime now) {
+    if (!services_complete() || state_ != AircraftState::ReadyForPushback) {
+        throw std::logic_error("aircraft cannot depart before all required services finish");
+    }
+    if (ready_at_ && now < *ready_at_) {
+        throw std::logic_error("aircraft departure precedes readiness");
+    }
+    transition_to(AircraftState::Departed);
+    actual_departure_ = now;
+}
+
+bool Aircraft::services_complete() const noexcept {
+    return std::ranges::all_of(tasks_, [](const auto& value) {
+        return value.status == TaskStatus::Completed;
+    });
+}
+
+const ServiceTask& Aircraft::task(ServiceType type) const {
+    return const_cast<Aircraft*>(this)->mutable_task(type);
+}
+
+ServiceTask& Aircraft::mutable_task(ServiceType type) {
+    const auto found = std::ranges::find_if(tasks_, [&](const auto& value) { return value.type == type; });
+    if (found == tasks_.end()) {
+        throw std::out_of_range("aircraft does not require this service type");
+    }
+    return *found;
+}
+
+}  // namespace airside
