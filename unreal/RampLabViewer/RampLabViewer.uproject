@@ -1,0 +1,19 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.8",
+  "Category": "Simulation",
+  "Description": "Read-only Unreal visualization of the authoritative RampLab simulation.",
+  "Modules": [
+    {
+      "Name": "RampLabIntegration",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "RampLabViewer",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": ["RampLabIntegration"]
+    }
+  ]
+}

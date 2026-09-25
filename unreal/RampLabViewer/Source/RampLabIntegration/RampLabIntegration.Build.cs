@@ -1,0 +1,28 @@
+using System.IO;
+using UnrealBuildTool;
+
+public class RampLabIntegration : ModuleRules
+{
+    public RampLabIntegration(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        CppStandard = CppStandardVersion.Cpp23;
+        bEnableExceptions = true;
+
+        PublicDependencyModuleNames.AddRange(new[] {
+            "Core", "CoreUObject", "Engine", "InputCore", "Slate", "SlateCore"
+        });
+
+        string RepositoryRoot = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", ".."));
+        string CoreBuild = Path.Combine(RepositoryRoot, "build-unreal-core");
+        PublicIncludePaths.Add(Path.Combine(RepositoryRoot, "include"));
+
+        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_sim.lib"));
+        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_scenario.lib"));
+        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "_deps", "yaml-cpp-build", "Release", "yaml-cpp.lib"));
+
+        RuntimeDependencies.Add(
+            "$(TargetOutputDir)/Scenarios/baseline.yaml",
+            Path.Combine(RepositoryRoot, "scenarios", "baseline.yaml"));
+    }
+}

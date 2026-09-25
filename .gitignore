@@ -20,6 +20,13 @@ CMakeUserPresets.json
 *.a
 *.pdb
 
+# Unreal generated state and build output
+unreal/**/Binaries/
+unreal/**/DerivedDataCache/
+unreal/**/Intermediate/
+unreal/**/Saved/
+unreal/**/*.sln
+
 # Test and coverage output
 Testing/
 coverage/
