@@ -15,6 +15,7 @@ enum class EventType {
     ServiceCompleted,
     VehicleArrivalAtDepot,
     EdgeAvailabilityChanged,
+    AircraftDeparture,
 };
 
 enum class EntityKind { None, Aircraft, Vehicle, Edge };

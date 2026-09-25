@@ -27,6 +27,9 @@ struct ServiceTask {
     std::optional<SimTime> requested_at;
     std::optional<SimTime> started_at;
     std::optional<SimTime> completed_at;
+
+    constexpr ServiceTask(TaskId task_id, ServiceType service_type) noexcept
+        : id(task_id), type(service_type) {}
 };
 
 class Aircraft {
