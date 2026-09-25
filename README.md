@@ -14,6 +14,7 @@ RampLab is a portable C++23 discrete-event simulation engine for airport ramp op
 - Validated YAML scenarios through an isolated loader library.
 - Human-readable snapshot diagnostics and optional JSON Lines event recording.
 - Turnaround, delay, waiting-time, and fleet-utilization metrics.
+- Optional Unreal 5.8/Cesium digital twin anchored at Auburn University Regional Airport, with entity inspection and actual scenario comparison.
 
 ## Architecture
 
@@ -100,11 +101,14 @@ The optional viewer requires Unreal Engine 5.8 and a compatible Windows MSVC too
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\unreal\RampLabViewer\Scripts\BuildRampLabCore.ps1
+powershell -ExecutionPolicy Bypass -File .\unreal\RampLabViewer\Scripts\InstallCesium.ps1
 & 'C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat' RampLabViewerEditor Win64 Development "-Project=$PWD\unreal\RampLabViewer\RampLabViewer.uproject" -WaitMutex -NoHotReload
 & 'C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe' "$PWD\unreal\RampLabViewer\RampLabViewer.uproject"
 ```
 
-The demo auto-loads `scenarios/baseline.yaml` with seed 42 and starts at 10x. Its Slate panel provides Play/Pause, Reset, 1x, 5x, 10x, and 20x controls plus current counts and the latest structured events. See [Unreal development](docs/unreal-development.md) for the exact validated workflow and diagnostic launch flags.
+For streamed Auburn geographic context, copy `unreal/RampLabViewer/.env.example` to the ignored `.env.local` and add an ion token authorized for terrain asset 1 and imagery asset 2. The viewer is anchored to KAUO on a Cesium WGS84 globe while the authoritative simulation remains in local meters. See [Unreal integration](docs/unreal-integration.md), [Unreal development](docs/unreal-development.md), and [visual assets/data sources](docs/assets.md).
+
+The viewer starts with `scenarios/baseline.yaml` and its configured seed. Its compact Slate operator panel provides Play/Pause, Reset, 1x/5x/10x/20x playback, baseline/high-capacity selection, entity inspection, four camera presets, engine-derived comparison metrics, and structured events. See [Unreal development](docs/unreal-development.md) for the exact validated workflow, camera controls, demo mode, and diagnostic launch flags.
 
 ## Snapshot API
 
@@ -193,10 +197,11 @@ For a fixed validated scenario and seed, event history, final snapshot, and metr
 - Edge traversal time is authoritative; vehicle speed is validated metadata for future movement models.
 - There is no scenario schema migration system or binary ABI guarantee yet.
 - Event JSONL is a CLI diagnostic format, not a core serialization contract or replay engine.
-- The viewer uses deliberately simple engine meshes and an orthographic overview, not production airport assets or terrain.
-- Development scenario lookup expects the viewer to remain at `unreal/RampLabViewer`; packaged scenario staging is not implemented yet.
+- The viewer uses lightweight procedural aircraft/vehicle forms and a focused synthetic operational layer rather than production airport assets or surveyed stand geometry.
+- Cesium terrain and aerial imagery require network access and an authorized local ion token; the ignored cache is runtime-only.
+- The flat operational overlay is visually tuned to the KAUO demo area but does not conform each mesh vertex to terrain elevation.
 - Playback and mirroring run on the game thread; a copied-snapshot worker handoff is a later scaling concern.
 
 ## Next milestone
 
-Keep the proven engine/viewer boundary and improve presentation with Auburn University Regional Airport geospatial context, better airport geometry and placeholder assets, clearer state visualization, and a polished demo camera. Cesium should be evaluated in that milestone rather than added to the simulation core.
+Add a scalable experiment runner around the preserved headless engine: parallel deterministic scenario batches, structured run manifests, aggregate comparison output, and profiling for larger fleets. Keep ROS2/sensor and vehicle-dynamics work behind that repeatable experiment foundation, and keep Cesium confined to visualization.

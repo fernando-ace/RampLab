@@ -52,6 +52,9 @@ airside_cli
 
 RampLabViewer (optional Unreal project)
   RampLabIntegration   owns Simulation and read-only mirror synchronization
+    AirportPlacement   config-driven local-meter to airport east/north transform
+    AirportEnvironment Cesium WGS84 context plus synthetic operational layer
+    WorldActor         stable visual mirrors, heading interpolation, cameras
   RampLabViewer        Unreal application target only
 ```
 
@@ -83,7 +86,7 @@ The snapshot copies only integration-facing values. For the current airport size
 
 `Vec2` is airport-local and measured in meters. `+x` is east and `+y` is north. It is a right-handed 2D ground-plane convention. Graph nodes and gates use these coordinates; road distances are meters.
 
-An adapter owns the world transform. For Unreal, it will normally scale meters to centimeters, choose which Unreal horizontal axes correspond to east/north, and supply elevation separately. No Unreal coordinate or math type enters the core.
+An adapter owns the world transform. The Unreal adapter scales meters to centimeters, rotates local `+x` to a configured true bearing, applies an airport-local east/north offset, and supplies elevation separately. Cesium then places that local Unreal frame at a WGS84 origin. No Unreal or Cesium coordinate/math type enters the core.
 
 ## Vehicle interpolation
 
