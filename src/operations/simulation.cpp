@@ -68,6 +68,11 @@ void Simulation::add_event_sink(ISimulationEventSink& sink) {
 
 bool Simulation::finished() const noexcept { return events_.empty(); }
 
+std::optional<SimTime> Simulation::next_event_time() const noexcept {
+    const auto* event = events_.peek();
+    return event == nullptr ? std::nullopt : std::optional<SimTime>{event->timestamp};
+}
+
 bool Simulation::advance() {
     const auto event = events_.pop();
     if (!event) return false;

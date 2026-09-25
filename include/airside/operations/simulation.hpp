@@ -11,6 +11,7 @@
 #include "airside/world/gate.hpp"
 
 #include <cstdint>
+#include <optional>
 #include <random>
 #include <string>
 #include <unordered_map>
@@ -51,6 +52,7 @@ public:
     Simulation(Scenario scenario, std::uint64_t seed);
     void add_event_sink(ISimulationEventSink& sink);
     [[nodiscard]] bool finished() const noexcept;
+    [[nodiscard]] std::optional<SimTime> next_event_time() const noexcept;
     [[nodiscard]] bool advance();
     [[nodiscard]] SimulationResult run();
     [[nodiscard]] SimulationResult result() const;

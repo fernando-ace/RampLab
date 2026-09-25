@@ -10,6 +10,20 @@ namespace {
 
 using namespace std::chrono_literals;
 
+TEST(SimulationTest, ExposesNextEventTimeWithoutAdvancing) {
+    Simulation simulation{test::baseline_scenario(), 42};
+    EXPECT_EQ(simulation.current_time(), 0s);
+    EXPECT_EQ(simulation.next_event_time(), 0s);
+
+    ASSERT_TRUE(simulation.advance());
+    EXPECT_EQ(simulation.current_time(), 0s);
+    ASSERT_TRUE(simulation.next_event_time());
+    EXPECT_GT(*simulation.next_event_time(), simulation.current_time());
+
+    (void)simulation.run();
+    EXPECT_FALSE(simulation.next_event_time());
+}
+
 TEST(SimulationTest, ResourceContentionCreatesWaitingAndDepartureDelay) {
     const auto result = Simulation{test::baseline_scenario(), 42}.run();
     EXPECT_TRUE(std::ranges::any_of(result.event_log, [](const auto& entry) {
