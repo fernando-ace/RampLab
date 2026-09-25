@@ -50,7 +50,7 @@ Road availability changes its segment material. Aircraft are hidden while schedu
 
 The default is auto-play at 10x. The Slate panel calls subsystem methods for Play/Pause, Reset, and 1x/5x/10x/20x. Each render frame adds `DeltaTime * speed` to a visual clock, then processes all scheduled events whose timestamps do not exceed that target. Journey interpolation samples the same clock. Rendering cadence therefore changes visual sampling frequency, not simulation ordering or results.
 
-For runtime verification, `-RampLabControlCheck` exercises the exact methods bound to the controls, verifies pause freezes the clock, resume advances it, reset returns to time zero/seed 42, and logs PASS/FAIL. `-RampLabCapture -RampLabPlaybackSpeed=100` produces four diagnostic screenshots under `Saved/Screenshots/RampLab` and logs the completed metrics.
+For runtime verification, `-RampLabControlCheck` exercises the exact methods bound to the controls, verifies pause freezes the clock, resume advances it, reset returns to time zero/seed 42, and logs PASS/FAIL. `-RampLabCapture -RampLabCaptureMultiplier=10` applies an explicitly labeled debug-only acceleration on top of the visible operator speed, produces four diagnostic screenshots under `Saved/Screenshots/RampLab`, and logs the completed metrics. The normal viewer accepts and displays only 1x, 5x, 10x, or 20x.
 
 ## Known limitations
 

@@ -56,7 +56,9 @@ Capture the deterministic visual milestones at accelerated developer speed:
 & 'C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe' `
   "$PWD\unreal\RampLabViewer\RampLabViewer.uproject" `
   -game -windowed -ResX=1280 -ResY=720 -NoSplash `
-  -RampLabCapture -RampLabPlaybackSpeed=100
+  -RampLabCapture -RampLabCaptureMultiplier=10
 ```
+
+The capture multiplier is a debug-only wall-clock accelerator applied on top of the visible operator playback setting. It is accepted only with `-RampLabCapture`; the UI continues to show one of the supported operator speeds and labels the QA acceleration explicitly.
 
 The captures are written to `unreal/RampLabViewer/Saved/Screenshots/RampLab`: start, road closed, reroute/service activity, and near-complete run. `Saved`, `Intermediate`, `Binaries`, `DerivedDataCache`, solution files, and all CMake build trees remain ignored by Git.

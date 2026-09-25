@@ -85,10 +85,11 @@ FText SRampLabControlPanel::SummaryText() const
     }
 
     return FText::FromString(FString::Printf(
-        TEXT("Simulation Time: %02lld:%02lld:%02lld\nSpeed: %.0fx   State: %s\nAircraft: %d active\nFuel Trucks: %d   Baggage Carts: %d"),
+        TEXT("Simulation Time: %02lld:%02lld:%02lld\nPlayback: %.0fx   State: %s%s\nAircraft: %d active\nFuel Trucks: %d   Baggage Carts: %d"),
         Time / 3600, (Time / 60) % 60, Time % 60,
         Subsystem->GetPlaybackSpeed(),
         Subsystem->IsFinished() ? TEXT("Finished") : (Subsystem->IsPlaying() ? TEXT("Playing") : TEXT("Paused")),
+        Subsystem->IsCaptureAccelerationActive() ? TEXT("   [QA capture acceleration]") : TEXT(""),
         ActiveAircraft, FuelTrucks, BaggageCarts));
 }
 

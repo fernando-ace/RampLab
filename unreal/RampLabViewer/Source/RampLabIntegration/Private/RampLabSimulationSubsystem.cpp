@@ -20,9 +20,12 @@
 void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    double RequestedSpeed = PlaybackSpeed;
-    if (FParse::Value(FCommandLine::Get(), TEXT("RampLabPlaybackSpeed="), RequestedSpeed)) {
-        PlaybackSpeed = FMath::Clamp(RequestedSpeed, 1.0, 100.0);
+    double RequestedCaptureMultiplier = CaptureMultiplier;
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"))
+        && FParse::Value(FCommandLine::Get(), TEXT("RampLabCaptureMultiplier="), RequestedCaptureMultiplier)) {
+        CaptureMultiplier = FMath::Clamp(RequestedCaptureMultiplier, 1.0, 20.0);
+        UE_LOG(LogRampLab, Display, TEXT("Capture QA acceleration enabled: %.0fx operator playback x %.0fx multiplier"),
+            PlaybackSpeed, CaptureMultiplier);
     }
     bControlCheck = FParse::Param(FCommandLine::Get(), TEXT("RampLabControlCheck"));
     LoadBaseline();
@@ -44,7 +47,7 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
     if (bControlCheck) RunControlCheck(DeltaTime);
     if (!bPlaying || Simulation == nullptr || Simulation->finished()) return;
 
-    PlaybackSeconds += static_cast<double>(DeltaTime) * PlaybackSpeed;
+    PlaybackSeconds += static_cast<double>(DeltaTime) * PlaybackSpeed * CaptureMultiplier;
     const auto Target = airside::SimTime{static_cast<airside::SimTime::rep>(PlaybackSeconds)};
     bool bAdvanced = false;
     while (const auto Next = Simulation->next_event_time()) {
@@ -242,8 +245,9 @@ void URampLabSimulationSubsystem::RunControlCheck(float DeltaTime)
         bControlCheckPassed = bControlCheckPassed
             && PlaybackSeconds == 0.0
             && Seed == 42
-            && bPlaying;
-        UE_LOG(LogRampLab, Display, TEXT("RampLab control check: %s (Play/Pause, Reset, 1x, 5x, 10x, 20x)"),
+            && bPlaying
+            && (PlaybackSpeed == 1.0 || PlaybackSpeed == 5.0 || PlaybackSpeed == 10.0 || PlaybackSpeed == 20.0);
+        UE_LOG(LogRampLab, Display, TEXT("RampLab control check: %s (Play/Pause, Reset, operator speeds 1x, 5x, 10x, 20x only)"),
             bControlCheckPassed ? TEXT("PASSED") : TEXT("FAILED"));
         bControlCheck = false;
     }

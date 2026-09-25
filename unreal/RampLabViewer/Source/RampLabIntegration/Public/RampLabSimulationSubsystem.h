@@ -35,6 +35,7 @@ public:
     [[nodiscard]] bool IsPlaying() const noexcept { return bPlaying; }
     [[nodiscard]] bool IsFinished() const noexcept;
     [[nodiscard]] double GetPlaybackSpeed() const noexcept { return PlaybackSpeed; }
+    [[nodiscard]] bool IsCaptureAccelerationActive() const noexcept { return CaptureMultiplier > 1.0; }
     [[nodiscard]] airside::SimTime GetPlaybackTime() const noexcept;
     [[nodiscard]] const airside::SimulationSnapshot* GetSnapshot() const noexcept;
     [[nodiscard]] const TArray<FString>& GetRecentEvents() const noexcept { return RecentEvents; }
@@ -56,6 +57,7 @@ private:
     FString StatusText;
     double PlaybackSeconds{0.0};
     double PlaybackSpeed{10.0};
+    double CaptureMultiplier{1.0};
     uint64 Seed{42};
     bool bPlaying{true};
     bool bViewerReady{false};
