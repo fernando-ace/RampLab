@@ -3,6 +3,7 @@
 #include "airside/agents/aircraft.hpp"
 #include "airside/agents/service_vehicle.hpp"
 #include "airside/core/event_queue.hpp"
+#include "airside/core/event_stream.hpp"
 #include "airside/metrics/metrics.hpp"
 #include "airside/operations/resource_pool.hpp"
 #include "airside/world/airport_graph.hpp"
@@ -35,14 +36,21 @@ struct SimulationResult {
     std::vector<Aircraft> aircraft;
     std::vector<ServiceVehicle> vehicles;
     std::vector<std::string> event_log;
+    std::vector<SimulationEventRecord> events;
     SimulationMetrics metrics;
 
 };
 
 class Simulation {
 public:
-    Simulation(Scenario scenario, std::uint64_t seed, bool verbose);
+    Simulation(Scenario scenario, std::uint64_t seed);
+    void add_event_sink(ISimulationEventSink& sink);
+    [[nodiscard]] bool finished() const noexcept;
+    [[nodiscard]] bool advance();
     [[nodiscard]] SimulationResult run();
+    [[nodiscard]] SimulationResult result() const;
+    [[nodiscard]] SimTime current_time() const noexcept;
+    [[nodiscard]] const std::vector<SimulationEventRecord>& event_history() const noexcept;
 
 private:
     void process(const Event& event);
@@ -54,7 +62,9 @@ private:
     void handle_departure(AircraftId id);
     void request_service(Aircraft& aircraft, ServiceType type);
     void dispatch(VehicleId vehicle_id, AircraftId aircraft_id);
-    void record(std::string message);
+    void emit(SimulationEventRecord event);
+    void emit_aircraft_state(Aircraft& aircraft, AircraftState previous);
+    void emit_vehicle_state(ServiceVehicle& vehicle, VehicleState previous);
 
     [[nodiscard]] Aircraft& aircraft(AircraftId id);
     [[nodiscard]] ServiceVehicle& vehicle(VehicleId id);
@@ -63,13 +73,15 @@ private:
 
     Scenario scenario_;
     std::uint64_t seed_;
-    bool verbose_;
     std::mt19937_64 random_;
     EventQueue events_;
     SimTime now_{};
     ResourcePool fuel_pool_;
     ResourcePool baggage_pool_;
     std::vector<std::string> log_;
+    std::vector<SimulationEventRecord> event_history_;
+    std::vector<ISimulationEventSink*> event_sinks_;
+    std::uint64_t next_event_record_sequence_{0};
 };
 
 [[nodiscard]] std::string format_sim_time(SimTime time);

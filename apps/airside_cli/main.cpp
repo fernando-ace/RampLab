@@ -18,6 +18,17 @@ struct Options {
     bool verbose{true};
 };
 
+class ConsoleEventSink final : public airside::ISimulationEventSink {
+public:
+    void on_event(const airside::SimulationEventRecord& event) noexcept override {
+        try {
+            std::cout << airside::format_sim_time(event.timestamp) << "  "
+                      << airside::format_event(event) << '\n';
+        } catch (...) {
+        }
+    }
+};
+
 void print_usage() {
     std::cout << "Usage: airside_cli [--scenario baseline] [--seed NUMBER] [--quiet] [--help]\n";
 }
@@ -101,8 +112,12 @@ int main(int argc, char* argv[]) {
     try {
         const auto options = parse_options(argc, argv);
         const auto started = std::chrono::steady_clock::now();
-        const auto result = airside::Simulation{
-            airside::make_baseline_scenario(), options.seed, options.verbose}.run();
+        airside::Simulation simulation{airside::make_baseline_scenario(), options.seed};
+        ConsoleEventSink console_sink;
+        if (options.verbose) {
+            simulation.add_event_sink(console_sink);
+        }
+        const auto result = simulation.run();
         const auto finished = std::chrono::steady_clock::now();
         const auto elapsed = std::chrono::duration<double>(finished - started).count();
         print_report(result, elapsed);

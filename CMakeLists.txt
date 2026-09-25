@@ -15,6 +15,7 @@ include(CTest)
 
 add_library(airside_sim STATIC
     src/core/event_queue.cpp
+    src/core/event_stream.cpp
     src/world/airport_graph.cpp
     src/routing/astar.cpp
     src/agents/aircraft.cpp
@@ -54,6 +55,7 @@ if(BUILD_TESTING)
 
     add_executable(airside_tests
         tests/core/event_queue_test.cpp
+        tests/core/event_stream_test.cpp
         tests/routing/astar_test.cpp
         tests/agents/state_machine_test.cpp
         tests/operations/resource_pool_test.cpp
