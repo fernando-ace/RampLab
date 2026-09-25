@@ -19,6 +19,7 @@ add_library(airside_sim STATIC
     src/routing/astar.cpp
     src/agents/aircraft.cpp
     src/agents/service_vehicle.cpp
+    src/operations/resource_pool.cpp
 )
 add_library(airside::sim ALIAS airside_sim)
 target_include_directories(airside_sim PUBLIC include)
@@ -43,6 +44,7 @@ if(BUILD_TESTING)
         tests/core/event_queue_test.cpp
         tests/routing/astar_test.cpp
         tests/agents/state_machine_test.cpp
+        tests/operations/resource_pool_test.cpp
     )
     target_link_libraries(airside_tests PRIVATE airside::sim GTest::gtest_main)
     include(GoogleTest)
