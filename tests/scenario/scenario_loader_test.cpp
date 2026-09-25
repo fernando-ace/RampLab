@@ -109,6 +109,15 @@ TEST(ScenarioLoaderTest, RejectsInvalidVehicleSpeedAndRoadEvent) {
     EXPECT_THROW(load_and_discard(event_file.path()), ScenarioLoadError);
 }
 
+TEST(ScenarioLoaderTest, RejectsUnreachableRoutesAndInvalidTimestamps) {
+    const TemporaryScenario route_file{replaced(std::string{kValidScenario},
+        "traversal_time_seconds: 10 }", "traversal_time_seconds: 10, enabled: false }")};
+    EXPECT_THROW(load_and_discard(route_file.path()), ScenarioLoadError);
+    const TemporaryScenario timestamp_file{replaced(std::string{kValidScenario},
+        "scheduled_arrival_seconds: 0", "scheduled_arrival_seconds: -1")};
+    EXPECT_THROW(load_and_discard(timestamp_file.path()), ScenarioLoadError);
+}
+
 TEST(ScenarioLoaderTest, RejectsMalformedYaml) {
     const TemporaryScenario file{"name: broken\nairport: [unterminated"};
     EXPECT_THROW(load_and_discard(file.path()), ScenarioLoadError);
