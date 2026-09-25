@@ -25,10 +25,10 @@ TEST(MetricsTest, CalculatesTurnaroundDelayWaitingAndUtilization) {
     ServiceVehicle fuel{VehicleId{1}, "FuelTruck-1", ServiceType::Fueling, NodeId{1}};
     const Route outbound{{NodeId{1}, NodeId{4}}, {EdgeId{1}}, 100.0, 1min};
     const Route inbound{{NodeId{4}, NodeId{1}}, {EdgeId{1}}, 100.0, 1min};
-    fuel.assign(AircraftId{1}, outbound);
+    fuel.assign(AircraftId{1}, outbound, 0min);
     fuel.arrive_at_aircraft(NodeId{4});
     fuel.start_service();
-    fuel.finish_service(inbound, 8min);
+    fuel.finish_service(inbound, 8min, 9min);
     fuel.arrive_at_depot();
 
     const auto result = calculate_metrics({flight}, {fuel}, 30min);

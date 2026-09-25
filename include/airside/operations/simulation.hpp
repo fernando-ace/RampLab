@@ -5,8 +5,10 @@
 #include "airside/core/event_queue.hpp"
 #include "airside/core/event_stream.hpp"
 #include "airside/metrics/metrics.hpp"
+#include "airside/integration/snapshot.hpp"
 #include "airside/operations/resource_pool.hpp"
 #include "airside/world/airport_graph.hpp"
+#include "airside/world/gate.hpp"
 
 #include <cstdint>
 #include <random>
@@ -23,7 +25,10 @@ struct RoadAvailabilityEvent {
 };
 
 struct Scenario {
+    std::string name{"unnamed"};
+    std::uint64_t default_seed{42};
     AirportGraph graph;
+    std::vector<Gate> gates;
     std::vector<Aircraft> aircraft;
     std::vector<ServiceVehicle> vehicles;
     std::unordered_map<ServiceType, SimTime> service_durations;
@@ -51,6 +56,7 @@ public:
     [[nodiscard]] SimulationResult result() const;
     [[nodiscard]] SimTime current_time() const noexcept;
     [[nodiscard]] const std::vector<SimulationEventRecord>& event_history() const noexcept;
+    [[nodiscard]] SimulationSnapshot snapshot() const;
 
 private:
     void process(const Event& event);
@@ -70,6 +76,8 @@ private:
     [[nodiscard]] ServiceVehicle& vehicle(VehicleId id);
     [[nodiscard]] ResourcePool& pool(ServiceType type);
     [[nodiscard]] SimTime duration(ServiceType type) const;
+    [[nodiscard]] Gate& gate(GateId id);
+    [[nodiscard]] const Gate& gate(GateId id) const;
 
     Scenario scenario_;
     std::uint64_t seed_;

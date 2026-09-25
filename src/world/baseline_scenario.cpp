@@ -8,6 +8,8 @@ Scenario make_baseline_scenario(bool include_road_disruption) {
     using namespace std::chrono_literals;
 
     Scenario scenario;
+    scenario.name = "baseline";
+    scenario.default_seed = 42;
     scenario.graph.add_node({NodeId{1}, "Service Depot", {0.0, 0.0}});
     scenario.graph.add_node({NodeId{2}, "North Junction", {100.0, 100.0}});
     scenario.graph.add_node({NodeId{3}, "South Junction", {100.0, -100.0}});
@@ -24,6 +26,10 @@ Scenario make_baseline_scenario(bool include_road_disruption) {
     scenario.graph.add_edge({EdgeId{7}, NodeId{2}, NodeId{3}, 200.0, 3min, true});
     scenario.graph.add_edge({EdgeId{8}, NodeId{4}, NodeId{5}, 101.9, 1min, true});
     scenario.graph.add_edge({EdgeId{9}, NodeId{5}, NodeId{6}, 101.9, 1min, true});
+
+    scenario.gates.push_back({GateId{1}, "A1", NodeId{4}});
+    scenario.gates.push_back({GateId{2}, "A2", NodeId{5}});
+    scenario.gates.push_back({GateId{3}, "A3", NodeId{6}});
 
     scenario.aircraft.emplace_back(
         AircraftId{1}, "AX101", 0min, 25min, GateId{1}, NodeId{4},

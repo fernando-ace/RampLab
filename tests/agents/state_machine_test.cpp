@@ -57,11 +57,11 @@ TEST(VehicleStateTest, ExecutesAssignmentServiceAndReturnLifecycle) {
     ServiceVehicle vehicle{VehicleId{1}, "FuelTruck-1", ServiceType::Fueling, NodeId{1}};
     const Route outbound{{NodeId{1}, NodeId{4}}, {EdgeId{1}}, 100.0, 1min};
     const Route inbound{{NodeId{4}, NodeId{1}}, {EdgeId{1}}, 100.0, 1min};
-    vehicle.assign(AircraftId{1}, outbound);
+    vehicle.assign(AircraftId{1}, outbound, 5min);
     EXPECT_EQ(vehicle.state(), VehicleState::TravelingToAircraft);
     vehicle.arrive_at_aircraft(NodeId{4});
     vehicle.start_service();
-    vehicle.finish_service(inbound, 8min);
+    vehicle.finish_service(inbound, 8min, 14min);
     vehicle.arrive_at_depot();
     EXPECT_EQ(vehicle.state(), VehicleState::Idle);
     EXPECT_EQ(vehicle.busy_time(), 10min);

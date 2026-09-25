@@ -8,10 +8,15 @@
 
 namespace airside {
 
-struct Point2d {
+// Right-handed 2D airport-local coordinates measured in meters: +x east, +y north.
+struct Vec2 {
     double x_m{0.0};
     double y_m{0.0};
+
+    constexpr auto operator<=>(const Vec2&) const = default;
 };
+
+using Point2d = Vec2;
 
 struct AirportNode {
     NodeId id;

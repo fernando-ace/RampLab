@@ -56,6 +56,7 @@ if(BUILD_TESTING)
     add_executable(airside_tests
         tests/core/event_queue_test.cpp
         tests/core/event_stream_test.cpp
+        tests/integration/snapshot_test.cpp
         tests/routing/astar_test.cpp
         tests/agents/state_machine_test.cpp
         tests/operations/resource_pool_test.cpp

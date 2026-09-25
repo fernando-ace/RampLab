@@ -77,6 +77,65 @@ bool Simulation::advance() {
     return true;
 }
 
+SimulationSnapshot Simulation::snapshot() const {
+    SimulationSnapshot result;
+    result.simulation_time = now_;
+    result.aircraft.reserve(scenario_.aircraft.size());
+    for (const auto& flight : scenario_.aircraft) {
+        AircraftSnapshot item{flight.id(), flight.flight_number(), flight.state(), flight.gate(),
+            std::nullopt, flight.scheduled_arrival(), flight.actual_arrival(),
+            flight.scheduled_departure(), flight.actual_departure(), {}};
+        if (flight.state() != AircraftState::Scheduled && flight.state() != AircraftState::Departed) {
+            item.logical_node = flight.gate_node();
+        }
+        item.services.reserve(flight.tasks().size());
+        for (const auto& task : flight.tasks()) {
+            item.services.push_back({task.id, task.type, task.status, task.requested_at,
+                task.started_at, task.completed_at});
+        }
+        result.aircraft.push_back(std::move(item));
+    }
+
+    result.vehicles.reserve(scenario_.vehicles.size());
+    for (const auto& service_vehicle : scenario_.vehicles) {
+        ServiceVehicleSnapshot item{service_vehicle.id(), service_vehicle.name(),
+            service_vehicle.capability(), service_vehicle.state(), service_vehicle.current_node(),
+            service_vehicle.current_node(), service_vehicle.assigned_aircraft(), std::nullopt};
+        if (service_vehicle.active_route()) {
+            const auto& route = *service_vehicle.active_route();
+            const auto departure = *service_vehicle.journey_departure_time();
+            item.destination_node = route.nodes.back();
+            VehicleJourneySnapshot journey{route.nodes.front(), route.nodes.back(), departure,
+                *service_vehicle.journey_arrival_time(), route.nodes, route.edges, {}};
+            auto segment_departure = departure;
+            for (std::size_t index = 0; index < route.edges.size(); ++index) {
+                const auto& edge = scenario_.graph.edge(route.edges[index]);
+                const auto arrival = segment_departure + edge.traversal_cost;
+                journey.segments.push_back({edge.id, route.nodes[index], route.nodes[index + 1],
+                    segment_departure, arrival, edge.distance_m});
+                segment_departure = arrival;
+            }
+            item.journey = std::move(journey);
+        }
+        result.vehicles.push_back(std::move(item));
+    }
+
+    result.gates.reserve(scenario_.gates.size());
+    for (const auto& gate_value : scenario_.gates) {
+        result.gates.push_back({gate_value.id, gate_value.name, gate_value.node,
+            scenario_.graph.node(gate_value.node).position, gate_value.occupying_aircraft,
+            gate_value.enabled && !gate_value.occupying_aircraft.has_value()});
+    }
+    for (const auto& node : scenario_.graph.nodes()) {
+        result.road_nodes.push_back({node.id, node.name, node.position});
+    }
+    for (const auto& edge : scenario_.graph.edges()) {
+        result.roads.push_back({edge.id, edge.from, edge.to, edge.distance_m,
+            edge.traversal_cost, edge.available});
+    }
+    return result;
+}
+
 SimulationResult Simulation::run() {
     while (advance()) {}
     return result();
@@ -105,6 +164,11 @@ void Simulation::process(const Event& event) {
 
 void Simulation::handle_aircraft_arrival(AircraftId id) {
     auto& flight = aircraft(id);
+    auto& assigned_gate = gate(flight.gate());
+    if (!assigned_gate.enabled || assigned_gate.occupying_aircraft) {
+        throw std::logic_error("aircraft arrived at an unavailable gate");
+    }
+    assigned_gate.occupying_aircraft = id;
     const auto previous = flight.state();
     flight.arrive(now_);
     emit(aircraft_event(SimulationEventType::AircraftArrived, flight));
@@ -133,7 +197,7 @@ void Simulation::dispatch(VehicleId vehicle_id, AircraftId aircraft_id) {
     flight.assign_task(service_vehicle.capability());
     const auto assigned_route = *route;
     const auto previous = service_vehicle.state();
-    service_vehicle.assign(aircraft_id, std::move(*route));
+    service_vehicle.assign(aircraft_id, std::move(*route), now_);
     [[maybe_unused]] const auto sequence = events_.schedule(
         now_ + assigned_route.travel_time, EventType::VehicleArrivalAtAircraft,
         {EntityKind::Vehicle, vehicle_id.value()});
@@ -182,7 +246,7 @@ void Simulation::handle_service_completed(VehicleId id) {
     if (!return_route) throw std::runtime_error("no available route back to vehicle depot");
     const auto route = *return_route;
     const auto previous_vehicle = service_vehicle.state();
-    service_vehicle.finish_service(std::move(*return_route), duration(type));
+    service_vehicle.finish_service(std::move(*return_route), duration(type), now_);
     emit_vehicle_state(service_vehicle, previous_vehicle);
     [[maybe_unused]] const auto sequence = events_.schedule(
         now_ + route.travel_time, EventType::VehicleArrivalAtDepot,
@@ -213,6 +277,11 @@ void Simulation::handle_departure(AircraftId id) {
     auto& flight = aircraft(id);
     const auto previous = flight.state();
     flight.depart(now_);
+    auto& assigned_gate = gate(flight.gate());
+    if (assigned_gate.occupying_aircraft != id) {
+        throw std::logic_error("departing aircraft does not occupy its assigned gate");
+    }
+    assigned_gate.occupying_aircraft.reset();
     emit_aircraft_state(flight, previous);
     emit(aircraft_event(SimulationEventType::AircraftDeparted, flight));
 }
@@ -259,6 +328,17 @@ ResourcePool& Simulation::pool(ServiceType type) {
 }
 
 SimTime Simulation::duration(ServiceType type) const { return scenario_.service_durations.at(type); }
+
+Gate& Simulation::gate(GateId id) {
+    return const_cast<Gate&>(std::as_const(*this).gate(id));
+}
+
+const Gate& Simulation::gate(GateId id) const {
+    const auto found = std::ranges::find_if(scenario_.gates,
+        [&](const auto& value) { return value.id == id; });
+    if (found == scenario_.gates.end()) throw std::out_of_range("unknown gate ID");
+    return *found;
+}
 
 std::string format_sim_time(SimTime time) {
     const auto total = time.count();
