@@ -1,74 +1,61 @@
-# Airside Sim
+# RampLab Airside Sim
 
-Airside Sim is a portable C++23 discrete-event simulation foundation for airport ramp operations. It is the first milestone toward a digital-twin platform with individual agents, scenario experiments, external visualization, robotics integration, and simulated sensors. This milestone deliberately remains headless: the engine has no presentation, wall-clock, Unreal Engine, ROS2, database, or cloud dependency.
+RampLab is a portable C++23 discrete-event simulation engine for airport ramp operations. The engine is authoritative, deterministic, headless, and presentation-independent. Milestone 2 adds stable integration boundaries for a future Unreal Engine adapter without adding Unreal or any rendering dependency.
 
-## Milestone 1
+## Capabilities
 
-The included baseline scenario models three aircraft at three gates, one fuel truck, and one baggage cart. Each aircraft must complete fueling and baggage service before departure. A road network with alternate paths drives vehicle travel time; FIFO fleet allocation creates resource contention; and a scheduled road closure forces later vehicles to reroute.
-
-The implementation includes:
-
-- an explicit simulation clock independent of wall-clock time;
-- a chronological event queue with stable insertion-order tie breaking;
-- strongly typed aircraft, vehicle, gate, node, edge, and task IDs;
-- a mutable airport road graph with coordinates and edge availability;
-- deterministic A* routing using an admissible Euclidean heuristic;
-- explicit aircraft, service-task, and service-vehicle state machines;
-- FIFO fuel and baggage resource pools;
-- configurable service durations and generic road-availability events;
-- per-aircraft turnaround, delay, and service-waiting metrics;
-- per-fleet utilization and aggregate turnaround metrics;
-- a seeded CLI with event logging and faster-than-real-time measurement;
-- GoogleTest coverage for scheduler, routing, state, allocation, workflow, disruption, metrics, and determinism.
+- Explicit simulation time and stable discrete-event ordering.
+- Strongly typed entity IDs and guarded aircraft/vehicle state machines.
+- Airport graph, deterministic A* routing, closures, and rerouting.
+- Concurrent service workflows with FIFO resource contention.
+- Versioned, retained-by-value simulation snapshots.
+- Structured event records delivered to zero or more read-only sinks.
+- Stepwise `finished()` / `advance()` execution for external consumers.
+- Validated YAML scenarios through an isolated loader library.
+- Human-readable snapshot diagnostics and optional JSON Lines event recording.
+- Turnaround, delay, waiting-time, and fleet-utilization metrics.
 
 ## Architecture
 
-`airside_sim` is a static library. The `airside_cli` executable is a thin presentation layer that constructs a scenario, runs the engine, and formats its immutable result. Simulation components exchange strong IDs and events; they do not hold presentation objects or uncontrolled global state.
+The core `airside_sim` library contains no YAML, UI, network, Unreal, ROS2, or platform rendering code. `airside_scenario` is the only target that knows about yaml-cpp. Both the CLI and future adapters consume ordinary C++ domain values.
 
 ```text
-Scenario
-   |
-   v
-Simulation Engine --> Event Scheduler
-   |                    |
-   +--> Agents          +--> deterministic timestamp/sequence order
-   +--> Resources
-   +--> Routing
-   |
-   v
-Metrics / Result --> CLI (or a future adapter)
+YAML Scenario -> airside_scenario -> Scenario -> airside_sim
+                                             /              \
+                                    Event Stream          Snapshot API
+                                             \              /
+                                              External consumers
 ```
 
-See [docs/architecture.md](docs/architecture.md) for component responsibilities and future integration boundaries.
+See [architecture.md](docs/architecture.md) and [unreal-integration.md](docs/unreal-integration.md).
 
 ## Repository layout
 
 ```text
-airside-sim/
-|-- CMakeLists.txt
-|-- apps/airside_cli/       # Console adapter and report formatting
-|-- include/airside/
-|   |-- core/               # Time, IDs, events, scheduler
-|   |-- world/              # Airport graph and baseline scenario
-|   |-- routing/            # A* and route value type
-|   |-- agents/             # Aircraft and vehicle state models
-|   |-- operations/         # Resource pools and event-driven workflow
-|   `-- metrics/            # Independently testable calculations
-|-- src/                    # Simulation-library implementation
-|-- tests/                  # GoogleTest suites by subsystem
-`-- docs/architecture.md
+apps/airside_cli/          CLI adapter and diagnostic serializers
+include/airside/
+  agents/                 Aircraft and service vehicles
+  core/                   Time, IDs, event queue, structured events
+  integration/            Snapshot schema
+  metrics/                Independently testable metrics
+  operations/             Resource pools and simulation coordinator
+  routing/                Deterministic A*
+  scenario/               Format boundary for external scenarios
+  world/                  Graph, coordinates, and gates
+scenarios/                Human-authored YAML scenarios
+src/                      Library implementations
+tests/                    GoogleTest suites
+docs/                     Architecture and integration contracts
 ```
 
 ## Windows prerequisites
 
 - Windows 11
-- Visual Studio 2022 with **Desktop development with C++** and a current MSVC toolset
+- Visual Studio 2022 with **Desktop development with C++**
 - CMake 3.24 or newer
-- Git (CMake fetches GoogleTest v1.17.0 during test configuration)
+- Git and network access for the first dependency configuration
 
-Open **Developer PowerShell for VS 2022** at the repository root.
-
-## Build and test
+CMake reproducibly fetches yaml-cpp 0.8.0 and GoogleTest 1.17.0. Open **Developer PowerShell for VS 2022** in the repository root:
 
 ```powershell
 cmake -S . -B build
@@ -76,67 +63,119 @@ cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-The project also builds with a standards-conforming GCC/Clang toolchain. For a single-configuration generator, omit `-C Release` when running CTest.
+Warnings are enabled with `/W4 /permissive- /Zc:__cplusplus` on MSVC and `-Wall -Wextra -Wpedantic -Wconversion -Wshadow` on GCC/Clang.
 
-## Run the CLI
-
-From a Visual Studio multi-configuration build:
+## Run scenarios
 
 ```powershell
-.\build\Release\airside_cli.exe --scenario baseline --seed 42
+.\build\Release\airside_cli.exe --scenario scenarios\baseline.yaml --seed 42
+.\build\Release\airside_cli.exe --scenario scenarios\high_capacity.yaml --seed 42
 ```
 
-Use `--quiet` to suppress the event trace while retaining the final report. `--help` lists the supported arguments. No delay or sleep is added in verbose mode; the log is emitted as events are processed.
+If `--seed` is omitted, the file's `default_seed` is used. A CLI seed always takes precedence. The default scenario path is `scenarios/baseline.yaml` relative to the current directory.
 
-Representative deterministic domain results for seed 42 are:
+Other options:
+
+```powershell
+# Final report without the event trace
+.\build\Release\airside_cli.exe --scenario scenarios\baseline.yaml --quiet
+
+# Inspect a concise snapshot after every processed scheduled event
+.\build\Release\airside_cli.exe --scenario scenarios\baseline.yaml --quiet --dump-snapshots
+
+# Record structured events outside the simulation core
+.\build\Release\airside_cli.exe --scenario scenarios\baseline.yaml --quiet --record-events events.jsonl
+```
+
+## Snapshot API
+
+`Simulation::snapshot()` returns a self-contained `SimulationSnapshot`; no mutable engine references escape. Schema version 1 includes:
+
+- simulation time;
+- aircraft identity, state, gate, logical node, schedule, actual times, and service-task status;
+- vehicle identity, state, current/destination nodes, assignment, and active journey;
+- each active journey's route and timed segments for multi-edge interpolation;
+- gate positions, occupancy, and availability;
+- road-node positions and road-edge availability.
+
+```cpp
+Simulation simulation{scenario, seed};
+while (!simulation.finished()) {
+    simulation.advance();
+    SimulationSnapshot retained_copy = simulation.snapshot();
+    renderer.consume(retained_copy);
+}
+```
+
+`kSnapshotSchemaVersion` changes only when the public snapshot shape or interpretation becomes incompatible. Additive fields should be documented; breaking consumers requires a version increment.
+
+## Spatial convention
+
+`Vec2` uses airport-local meters. `x_m` increases east and `y_m` increases north, forming a right-handed 2D ground plane. Adapters choose their own origin, scale, handedness, and vertical axis. An Unreal adapter will normally convert meters to centimeters and map the 2D axes without exposing Unreal types to the engine.
+
+## Structured events
+
+`ISimulationEventSink::on_event(const SimulationEventRecord&)` receives immutable facts in deterministic sequence order. Records contain typed aircraft, vehicle, gate, edge, service, state-transition, and route fields as applicable. Registering no sink is normal; multiple sinks are supported. CLI text and JSONL are adapter formatting, not engine behavior.
+
+## Scenario format
+
+Only the loader layer depends on YAML. A concise excerpt:
+
+```yaml
+name: baseline
+default_seed: 42
+airport:
+  nodes:
+    - { id: depot, x_m: 0, y_m: 0 }
+    - { id: gate_a1, x_m: 220, y_m: 80 }
+  edges:
+    - id: depot_gate
+      from: depot
+      to: gate_a1
+      distance_m: 262
+      traversal_time_seconds: 180
+gates:
+  - { id: A1, node: gate_a1 }
+fleet:
+  vehicles:
+    - { id: fuel_1, name: FuelTruck-1, type: fueling, depot_node: depot, speed_mps: 10 }
+aircraft:
+  - id: AX101
+    gate: A1
+    scheduled_arrival_seconds: 0
+    scheduled_departure_seconds: 1500
+    required_services: [fueling, baggage]
+```
+
+Validation rejects missing or duplicate IDs, broken node/gate/edge references, invalid or unreachable routes, nonpositive distances/durations/speeds, invalid timestamps, unknown services, empty required collections, and malformed YAML with contextual errors.
+
+## Baseline and comparison scenario
+
+The external baseline preserves Milestone 1 behavior:
 
 ```text
-00:04:00  AX202 waiting for fuel resource
-00:05:00  road edge 4 closed
-00:14:00  FuelTruck-1 assigned to AX202 (route 1->3->5, 240 sec)
-...
-AX101  turnaround 25.0 min, departure delay 0.0 min
-AX202  turnaround 26.0 min, departure delay 0.0 min
-AX303  turnaround 39.0 min, departure delay 12.0 min
 Average turnaround: 30.0 min
 Delayed aircraft: 1 / 3
+Fuel utilization: 88.0%
+Baggage utilization: 100.0%
 ```
 
-Execution time and the resulting real-time multiplier vary by machine and build configuration.
+`high_capacity.yaml` uses two vehicles per fleet. With seed 42 it produces a 26.0-minute average turnaround and no delayed aircraft, demonstrating that files—not filenames or compiled branches—drive behavior.
 
 ## Determinism
 
-Events sharing a timestamp execute in the order they were scheduled. Resource queues are FIFO, available vehicle IDs and graph adjacency are ordered, and A* has explicit deterministic tie breaking. A `std::mt19937_64` is initialized from `--seed` and reserved for future stochastic inputs; this milestone's baseline has no random distributions. The same scenario and seed therefore produce identical events and metrics.
-
-## Metric definitions
-
-- **Turnaround:** actual departure minus actual arrival.
-- **Departure delay:** maximum of zero and actual departure minus scheduled departure.
-- **Service waiting:** for each required task, service start minus request time, summed per aircraft. This includes queueing and dispatched vehicle travel.
-- **Fleet utilization:** total travel plus active service time for vehicles of a fleet, divided by simulated duration times fleet size.
-- **Average turnaround:** arithmetic mean of completed aircraft turnaround times.
-- **Delayed aircraft:** count with positive departure delay.
-
-The simulated duration ends after the final queued event, including the last service vehicle's return to depot.
-
-## Key design decisions
-
-- The engine owns simulation time and never reads wall-clock time; the CLI alone measures execution duration.
-- Scenarios are data values containing graph, agents, durations, and disruptions.
-- Routes retain ordered node and edge IDs for a future renderer to interpolate.
-- Resource allocation is separate from vehicle motion and lifecycle state.
-- The engine returns domain state, event history, and metrics without depending on a UI API.
-- There is no singleton or shared ownership; the simulation owns its scenario state by value.
+For a fixed validated scenario and seed, event history, final snapshot, and metrics are identical. Snapshot calls are const and do not advance the engine. Event sinks receive const records and do not participate in scheduling. Tiny-scenario execution-time multipliers printed by the CLI are illustrative only and are not formal benchmarks.
 
 ## Current limitations
 
-- Gate occupancy, pushback tractors, runway/taxiway traffic, collision avoidance, and vehicle congestion are not modeled.
-- Vehicle movement is event-to-event rather than continuously integrated.
-- A route is fixed for a trip once dispatched; a closure affects newly calculated routes, not a vehicle already in transit.
-- Service durations are deterministic and each fleet contains one baseline vehicle.
-- The scenario is compiled C++ data; there is no external scenario file format yet.
-- The performance number is an illustrative single-run wall-clock measurement, not a benchmark suite.
+- Vehicle motion remains event-to-event; snapshots provide interpolation timing rather than continuous dynamics.
+- A road closure affects routes calculated after the closure, not vehicles already in transit.
+- Gate occupancy is tracked, but gate allocation is fixed by the scenario.
+- Edge traversal time is authoritative; vehicle speed is validated metadata for future movement models.
+- There is no scenario schema migration system or binary ABI guarantee yet.
+- Event JSONL is a CLI diagnostic format, not a core serialization contract or replay engine.
+- MSVC should be validated on a machine with Visual Studio 2022 before embedding into Unreal.
 
-## Recommended next milestone
+## Next milestone
 
-Add a versioned, read-only simulation-state snapshot and event-stream adapter suitable for Unreal Engine visualization. Keep Unreal code in a separate adapter target, preserve headless execution, and make the engine the sole authority for simulation time and state. ROS2, experiment runners, sensors, and parallel execution should remain later milestones.
+Build the smallest Unreal plugin adapter that statically links or compiles the RampLab core, creates mirror Actors from an initial snapshot, advances the engine independently of frame rate, interpolates active vehicle journeys, and reacts to structured events. Do not move simulation authority into Unreal Actors.
