@@ -1,6 +1,6 @@
 # RampLab Airside Sim
 
-RampLab is a portable C++23 discrete-event simulation engine for airport ramp operations. The engine is authoritative, deterministic, headless, and presentation-independent. Milestone 2 adds stable integration boundaries for a future Unreal Engine adapter without adding Unreal or any rendering dependency.
+RampLab is a portable C++23 discrete-event simulation engine for airport ramp operations. The engine is authoritative, deterministic, headless, and presentation-independent. The optional Unreal Engine viewer consumes the same snapshots and events to visualize the simulation without moving domain decisions into Actors.
 
 ## Capabilities
 
@@ -25,6 +25,8 @@ YAML Scenario -> airside_scenario -> Scenario -> airside_sim
                                     Event Stream          Snapshot API
                                              \              /
                                               External consumers
+                                                       |
+                                             Unreal mirror Actors
 ```
 
 See [architecture.md](docs/architecture.md) and [unreal-integration.md](docs/unreal-integration.md).
@@ -46,16 +48,17 @@ scenarios/                Human-authored YAML scenarios
 src/                      Library implementations
 tests/                    GoogleTest suites
 docs/                     Architecture and integration contracts
+unreal/RampLabViewer/     Optional Unreal Engine 5.8 visualization
 ```
 
 ## Windows prerequisites
 
 - Windows 11
-- Visual Studio 2022 with **Desktop development with C++**
+- Visual Studio with **Desktop development with C++** and an MSVC toolset
 - CMake 3.24 or newer
 - Git and network access for the first dependency configuration
 
-CMake reproducibly fetches yaml-cpp 0.8.0 and GoogleTest 1.17.0. Open **Developer PowerShell for VS 2022** in the repository root:
+CMake reproducibly fetches yaml-cpp 0.8.0 and GoogleTest 1.17.0. Open a **Developer PowerShell for Visual Studio** in the repository root:
 
 ```powershell
 cmake -S . -B build
@@ -64,6 +67,10 @@ ctest --test-dir build -C Release --output-on-failure
 ```
 
 Warnings are enabled with `/W4 /permissive- /Zc:__cplusplus` on MSVC and `-Wall -Wextra -Wpedantic -Wconversion -Wshadow` on GCC/Clang.
+
+## Headless mode
+
+The CMake build, CLI, and tests remain independent of Unreal Engine. This is the primary simulation and experiment workflow.
 
 ## Run scenarios
 
@@ -86,6 +93,18 @@ Other options:
 # Record structured events outside the simulation core
 .\build\Release\airside_cli.exe --scenario scenarios\baseline.yaml --quiet --record-events events.jsonl
 ```
+
+## Visualization mode
+
+The optional viewer requires Unreal Engine 5.8 and a compatible Windows MSVC toolchain. Build the core library used by Unreal, build the editor target, then launch the project:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\unreal\RampLabViewer\Scripts\BuildRampLabCore.ps1
+& 'C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat' RampLabViewerEditor Win64 Development "-Project=$PWD\unreal\RampLabViewer\RampLabViewer.uproject" -WaitMutex -NoHotReload
+& 'C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe' "$PWD\unreal\RampLabViewer\RampLabViewer.uproject"
+```
+
+The demo auto-loads `scenarios/baseline.yaml` with seed 42 and starts at 10x. Its Slate panel provides Play/Pause, Reset, 1x, 5x, 10x, and 20x controls plus current counts and the latest structured events. See [Unreal development](docs/unreal-development.md) for the exact validated workflow and diagnostic launch flags.
 
 ## Snapshot API
 
@@ -174,8 +193,10 @@ For a fixed validated scenario and seed, event history, final snapshot, and metr
 - Edge traversal time is authoritative; vehicle speed is validated metadata for future movement models.
 - There is no scenario schema migration system or binary ABI guarantee yet.
 - Event JSONL is a CLI diagnostic format, not a core serialization contract or replay engine.
-- MSVC should be validated on a machine with Visual Studio 2022 before embedding into Unreal.
+- The viewer uses deliberately simple engine meshes and an orthographic overview, not production airport assets or terrain.
+- Development scenario lookup expects the viewer to remain at `unreal/RampLabViewer`; packaged scenario staging is not implemented yet.
+- Playback and mirroring run on the game thread; a copied-snapshot worker handoff is a later scaling concern.
 
 ## Next milestone
 
-Build the smallest Unreal plugin adapter that statically links or compiles the RampLab core, creates mirror Actors from an initial snapshot, advances the engine independently of frame rate, interpolates active vehicle journeys, and reacts to structured events. Do not move simulation authority into Unreal Actors.
+Keep the proven engine/viewer boundary and improve presentation with Auburn University Regional Airport geospatial context, better airport geometry and placeholder assets, clearer state visualization, and a polished demo camera. Cesium should be evaluated in that milestone rather than added to the simulation core.

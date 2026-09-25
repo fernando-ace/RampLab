@@ -49,11 +49,15 @@ airside_scenario
 
 airside_cli
   argument parsing, event sinks, snapshot diagnostics, report formatting
+
+RampLabViewer (optional Unreal project)
+  RampLabIntegration   owns Simulation and read-only mirror synchronization
+  RampLabViewer        Unreal application target only
 ```
 
 ## Execution model
 
-Construction validates core duration invariants and schedules scenario events. `advance()` removes exactly one internal scheduled event, moves `SimTime`, mutates authoritative state, schedules consequences, and emits zero or more public event records. `finished()` reports an empty scheduler. `run()` is a convenience loop over `advance()`.
+Construction validates core duration invariants and schedules scenario events. `advance()` removes exactly one internal scheduled event, moves `SimTime`, mutates authoritative state, schedules consequences, and emits zero or more public event records. `next_event_time()` exposes the next scheduling boundary without mutation so a visual clock never processes a future event early. `finished()` reports an empty scheduler. `run()` is a convenience loop over `advance()`.
 
 Internal scheduling and public events are intentionally different types. Scheduler events are implementation commands such as `ServiceCompleted`; public records are integration facts such as `ServiceStarted`, `VehicleDeparted`, or `RoadClosed`.
 
@@ -129,9 +133,9 @@ Only `src/scenario/scenario_loader.cpp` includes yaml-cpp. Text IDs are checked 
 
 Determinism depends on stable event sequences, ordered resource queues, sorted graph adjacency, explicit A* tie-breaking, and owned seeded randomness. Event sinks and snapshot reads do not participate in scheduling. Tests compare identical-run event histories, final snapshots, and metrics.
 
-## Future integrations
+## Integrations
 
-- **Unreal Engine:** plugin adapter consumes snapshots/events; Actors mirror entities.
+- **Unreal Engine 5.8:** `URampLabSimulationSubsystem` consumes snapshots/events; stable Actors mirror entities and visual interpolation samples the authoritative journey timing.
 - **ROS2:** adapter maps records and snapshots to messages without importing ROS clocks into the core.
 - **Experiment runner:** process or C ABI builds `Scenario` values and consumes metrics.
 - **Network visualization:** server layer serializes snapshots/events outside the core.
