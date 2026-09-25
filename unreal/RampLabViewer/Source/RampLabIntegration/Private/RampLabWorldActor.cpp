@@ -56,7 +56,7 @@ ARampLabWorldActor::ARampLabWorldActor()
     CameraComponent->SetRelativeLocation(FVector(12000.0f, 0.0f, 50000.0f));
     CameraComponent->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
     CameraComponent->SetProjectionMode(ECameraProjectionMode::Orthographic);
-    CameraComponent->SetOrthoWidth(38000.0f);
+    CameraComponent->SetOrthoWidth(48000.0f);
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Cube(TEXT("/Engine/BasicShapes/Cube.Cube"));
     CubeMesh = Cube.Object;
