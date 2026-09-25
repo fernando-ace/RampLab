@@ -15,5 +15,11 @@
       "LoadingPhase": "Default",
       "AdditionalDependencies": ["RampLabIntegration"]
     }
+  ],
+  "Plugins": [
+    {
+      "Name": "CesiumForUnreal",
+      "Enabled": true
+    }
   ]
 }

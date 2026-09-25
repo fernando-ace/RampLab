@@ -10,7 +10,7 @@ public class RampLabIntegration : ModuleRules
         bEnableExceptions = true;
 
         PublicDependencyModuleNames.AddRange(new[] {
-            "Core", "CoreUObject", "Engine", "InputCore", "Slate", "SlateCore"
+            "Core", "CoreUObject", "Engine", "CesiumRuntime", "InputCore", "Slate", "SlateCore"
         });
 
         string RepositoryRoot = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", ".."));
@@ -24,5 +24,8 @@ public class RampLabIntegration : ModuleRules
         RuntimeDependencies.Add(
             "$(TargetOutputDir)/Scenarios/baseline.yaml",
             Path.Combine(RepositoryRoot, "scenarios", "baseline.yaml"));
+        RuntimeDependencies.Add(
+            "$(TargetOutputDir)/Scenarios/high_capacity.yaml",
+            Path.Combine(RepositoryRoot, "scenarios", "high_capacity.yaml"));
     }
 }

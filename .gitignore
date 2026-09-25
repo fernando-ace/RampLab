@@ -27,6 +27,11 @@ unreal/**/Intermediate/
 unreal/**/Saved/
 unreal/**/*.sln
 
+# Project-local Cesium dependency and credentials
+unreal/RampLabViewer/Plugins/CesiumForUnreal/
+unreal/RampLabViewer/Config/CesiumIon.local.ini
+unreal/RampLabViewer/.env.local
+
 # Test and coverage output
 Testing/
 coverage/
