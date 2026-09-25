@@ -33,6 +33,15 @@ else()
     target_compile_options(airside_sim PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
 endif()
 
+add_executable(airside_cli apps/airside_cli/main.cpp)
+target_link_libraries(airside_cli PRIVATE airside::sim)
+
+if(MSVC)
+    target_compile_options(airside_cli PRIVATE /W4 /permissive- /EHsc)
+else()
+    target_compile_options(airside_cli PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
+endif()
+
 if(BUILD_TESTING)
     include(FetchContent)
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
