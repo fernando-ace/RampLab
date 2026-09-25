@@ -1,0 +1,15 @@
+name: disruption_resilience
+scenario: ../scenarios/baseline.yaml
+
+seeds: [41, 42, 43]
+
+parameters:
+  disruptions.road_closure.enabled: [true, false]
+  disruptions.road_closure.time_seconds: [240, 360]
+  fleet.fuel_trucks: [1, 2]
+  fleet.baggage_carts: [1, 2]
+
+workers: auto
+
+outputs:
+  directory: ../results/disruption_resilience

@@ -36,6 +36,7 @@ unreal/RampLabViewer/cesium-request-cache.sqlite*
 # Test and coverage output
 Testing/
 coverage/
+/results/
 
 # OS metadata
 .DS_Store

@@ -41,10 +41,10 @@ SimulationEventRecord aircraft_event(SimulationEventType type, const Aircraft& a
 
 }  // namespace
 
-Simulation::Simulation(Scenario scenario, std::uint64_t seed)
+Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryPolicy history_policy)
     : scenario_(std::move(scenario)), seed_(seed), random_(seed),
       fuel_pool_(vehicle_ids(scenario_, ServiceType::Fueling)),
-      baggage_pool_(vehicle_ids(scenario_, ServiceType::Baggage)) {
+      baggage_pool_(vehicle_ids(scenario_, ServiceType::Baggage)), history_policy_(history_policy) {
     for (const auto type : {ServiceType::Fueling, ServiceType::Baggage}) {
         if (!scenario_.service_durations.contains(type) || duration(type) <= SimTime::zero()) {
             throw std::invalid_argument("scenario requires positive service durations");
@@ -295,9 +295,13 @@ void Simulation::handle_departure(AircraftId id) {
 void Simulation::emit(SimulationEventRecord event) {
     event.sequence = next_event_record_sequence_++;
     event.timestamp = now_;
-    event_history_.push_back(std::move(event));
-    log_.push_back(std::format("{}  {}", format_sim_time(now_), format_event(event_history_.back())));
-    for (auto* sink : event_sinks_) sink->on_event(event_history_.back());
+    if (history_policy_ == SimulationHistoryPolicy::Retain) {
+        event_history_.push_back(std::move(event));
+        log_.push_back(std::format("{}  {}", format_sim_time(now_), format_event(event_history_.back())));
+        for (auto* sink : event_sinks_) sink->on_event(event_history_.back());
+    } else {
+        for (auto* sink : event_sinks_) sink->on_event(event);
+    }
 }
 
 void Simulation::emit_aircraft_state(Aircraft& flight, AircraftState previous) {

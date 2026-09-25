@@ -1,0 +1,14 @@
+name: small_validation
+scenario: ../scenarios/baseline.yaml
+
+seeds:
+  start: 40
+  count: 3
+
+parameters:
+  fleet.fuel_trucks: [1, 2]
+
+workers: auto
+
+outputs:
+  directory: ../results/small_validation

@@ -1,0 +1,16 @@
+name: development_benchmark
+scenario: ../scenarios/baseline.yaml
+
+seeds:
+  start: 1
+  count: 100
+
+parameters:
+  fleet.fuel_trucks: [1, 2, 3, 4, 5]
+  fleet.baggage_carts: [1, 2, 3, 4, 5]
+  disruptions.road_closure.enabled: [true, false]
+
+workers: auto
+
+outputs:
+  directory: ../results/development_benchmark

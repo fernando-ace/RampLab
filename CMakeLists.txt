@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 
 project(
     airside_sim
-    VERSION 0.2.0
+    VERSION 0.3.0
     DESCRIPTION "Deterministic airport airside discrete-event simulation engine"
     LANGUAGES CXX
 )
@@ -61,10 +61,34 @@ target_include_directories(airside_scenario PUBLIC include)
 target_link_libraries(airside_scenario PUBLIC airside::sim PRIVATE yaml-cpp::yaml-cpp)
 airside_enable_warnings(airside_scenario)
 
+add_library(airside_experiment STATIC
+    src/experiment/definition.cpp
+    src/experiment/case_generator.cpp
+    src/experiment/executor.cpp
+    src/experiment/statistics.cpp
+    src/experiment/writer.cpp
+)
+add_library(airside::experiment ALIAS airside_experiment)
+target_include_directories(airside_experiment PUBLIC include)
+target_link_libraries(airside_experiment PUBLIC airside::sim)
+airside_enable_warnings(airside_experiment)
+
+add_library(airside_experiment_yaml STATIC src/experiment/experiment_loader.cpp)
+add_library(airside::experiment_yaml ALIAS airside_experiment_yaml)
+target_include_directories(airside_experiment_yaml PUBLIC include)
+target_link_libraries(airside_experiment_yaml PUBLIC airside::experiment PRIVATE yaml-cpp::yaml-cpp)
+airside_enable_warnings(airside_experiment_yaml)
+
 add_executable(airside_cli apps/airside_cli/main.cpp)
 target_link_libraries(airside_cli PRIVATE airside::sim airside::scenario)
 
 airside_enable_warnings(airside_cli)
+
+add_executable(airside_experiment_cli apps/airside_experiment/main.cpp)
+set_target_properties(airside_experiment_cli PROPERTIES OUTPUT_NAME airside_experiment)
+target_compile_definitions(airside_experiment_cli PRIVATE AIRSIDE_PROJECT_VERSION="${PROJECT_VERSION}")
+target_link_libraries(airside_experiment_cli PRIVATE airside::experiment airside::experiment_yaml airside::scenario)
+airside_enable_warnings(airside_experiment_cli)
 
 if(BUILD_TESTING)
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
@@ -86,10 +110,15 @@ if(BUILD_TESTING)
         tests/operations/resource_pool_test.cpp
         tests/operations/simulation_test.cpp
         tests/metrics/metrics_test.cpp
+        tests/experiment/definition_test.cpp
+        tests/experiment/loader_test.cpp
+        tests/experiment/executor_test.cpp
+        tests/experiment/statistics_test.cpp
     )
     target_include_directories(airside_tests PRIVATE tests)
     target_compile_definitions(airside_tests PRIVATE AIRSIDE_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-    target_link_libraries(airside_tests PRIVATE airside::sim airside::scenario GTest::gtest_main)
+    target_link_libraries(airside_tests PRIVATE
+        airside::sim airside::scenario airside::experiment airside::experiment_yaml GTest::gtest_main)
     airside_enable_warnings(airside_tests)
     include(GoogleTest)
     gtest_discover_tests(airside_tests)

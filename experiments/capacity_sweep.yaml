@@ -1,0 +1,15 @@
+name: capacity_sweep
+scenario: ../scenarios/baseline.yaml
+
+seeds:
+  start: 1
+  count: 10
+
+parameters:
+  fleet.fuel_trucks: [1, 2, 3]
+  fleet.baggage_carts: [1, 2, 3]
+
+workers: auto
+
+outputs:
+  directory: ../results/capacity_sweep

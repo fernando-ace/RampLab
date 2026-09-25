@@ -47,9 +47,14 @@ struct SimulationResult {
 
 };
 
+enum class SimulationHistoryPolicy { Retain, Discard };
+
 class Simulation {
 public:
-    Simulation(Scenario scenario, std::uint64_t seed);
+    Simulation(
+        Scenario scenario,
+        std::uint64_t seed,
+        SimulationHistoryPolicy history_policy = SimulationHistoryPolicy::Retain);
     void add_event_sink(ISimulationEventSink& sink);
     [[nodiscard]] bool finished() const noexcept;
     [[nodiscard]] std::optional<SimTime> next_event_time() const noexcept;
@@ -92,6 +97,7 @@ private:
     std::vector<SimulationEventRecord> event_history_;
     std::vector<ISimulationEventSink*> event_sinks_;
     std::uint64_t next_event_record_sequence_{0};
+    SimulationHistoryPolicy history_policy_{SimulationHistoryPolicy::Retain};
 };
 
 [[nodiscard]] std::string format_sim_time(SimTime time);
