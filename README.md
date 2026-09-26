@@ -14,6 +14,7 @@ RampLab is a portable C++23 discrete-event simulation engine for airport ramp op
 - Validated YAML scenarios through an isolated loader library.
 - Human-readable snapshot diagnostics and optional JSON Lines event recording.
 - Turnaround, delay, waiting-time, and fleet-utilization metrics.
+- Parallel deterministic parameter sweeps with reproducible CSV/JSON experiment results.
 - Optional Unreal 5.8/Cesium digital twin anchored at Auburn University Regional Airport, with entity inspection and actual scenario comparison.
 
 ## Architecture
@@ -21,13 +22,17 @@ RampLab is a portable C++23 discrete-event simulation engine for airport ramp op
 The core `airside_sim` library contains no YAML, UI, network, Unreal, ROS2, or platform rendering code. `airside_scenario` is the only target that knows about yaml-cpp. Both the CLI and future adapters consume ordinary C++ domain values.
 
 ```text
-YAML Scenario -> airside_scenario -> Scenario -> airside_sim
-                                             /              \
-                                    Event Stream          Snapshot API
-                                             \              /
-                                              External consumers
-                                                       |
-                                             Unreal mirror Actors
+                  RampLab Core
+                 /            \
+                /              \
+               v                v
+       Unreal Viewer      Experiment Runner
+                              |
+                              v
+                       Parallel simulations
+                              |
+                              v
+                       Aggregated results
 ```
 
 See [architecture.md](docs/architecture.md) and [unreal-integration.md](docs/unreal-integration.md).
@@ -36,9 +41,12 @@ See [architecture.md](docs/architecture.md) and [unreal-integration.md](docs/unr
 
 ```text
 apps/airside_cli/          CLI adapter and diagnostic serializers
+apps/airside_experiment/   Parallel experiment CLI
+experiments/               Versioned experiment definitions
 include/airside/
   agents/                 Aircraft and service vehicles
   core/                   Time, IDs, event queue, structured events
+  experiment/             Typed sweeps, worker pool, results, statistics
   integration/            Snapshot schema
   metrics/                Independently testable metrics
   operations/             Resource pools and simulation coordinator
@@ -109,6 +117,17 @@ powershell -ExecutionPolicy Bypass -File .\unreal\RampLabViewer\Scripts\InstallC
 For streamed Auburn geographic context, copy `unreal/RampLabViewer/.env.example` to the ignored `.env.local` and add an ion token authorized for terrain asset 1 and imagery asset 2. The viewer is anchored to KAUO on a Cesium WGS84 globe while the authoritative simulation remains in local meters. See [Unreal integration](docs/unreal-integration.md), [Unreal development](docs/unreal-development.md), and [visual assets/data sources](docs/assets.md).
 
 The viewer starts with `scenarios/baseline.yaml` and its configured seed. Its compact Slate operator panel provides Play/Pause, Reset, 1x/5x/10x/20x playback, baseline/high-capacity selection, entity inspection, four camera presets, engine-derived comparison metrics, and structured events. See [Unreal development](docs/unreal-development.md) for the exact validated workflow, camera controls, demo mode, and diagnostic launch flags.
+
+## Parallel experiments
+
+`airside_experiment` expands external YAML definitions into stable parameter cases and explicit seeds, then executes independent copies of the same `Simulation` engine through a bounded worker pool. The YAML loader is separate from the reusable execution library, and no experiment target depends on Unreal.
+
+```powershell
+.\build\Release\airside_experiment.exe --experiment experiments\small_validation.yaml --dry-run
+.\build\Release\airside_experiment.exe --experiment experiments\capacity_sweep.yaml --workers 4
+```
+
+Each completed experiment writes `runs.csv`, `summary.csv`, and `experiment.json`. The batch path discards per-event history and snapshots while retaining final run metrics. See [experiments.md](docs/experiments.md) for the schema, supported typed overrides, seed rules, statistics, output contracts, worker policy, and development benchmark.
 
 ## Snapshot API
 
@@ -204,4 +223,4 @@ For a fixed validated scenario and seed, event history, final snapshot, and metr
 
 ## Next milestone
 
-Add a scalable experiment runner around the preserved headless engine: parallel deterministic scenario batches, structured run manifests, aggregate comparison output, and profiling for larger fleets. Keep ROS2/sensor and vehicle-dynamics work behind that repeatable experiment foundation, and keep Cesium confined to visualization.
+Evaluate a ROS2 bridge, simulated sensors, and closed-loop ground-vehicle autonomy against the measured experiment-runner scaling results. Keep the deterministic engine authoritative, use the experiment subsystem for repeatable validation, and add more local performance work first only if profiling identifies an actual scaling constraint.

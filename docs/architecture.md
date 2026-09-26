@@ -16,13 +16,12 @@ RampLab is a deterministic, headless discrete-event engine. It owns simulation t
                        |
                        v
                 Simulation Engine
-                 /             \
-                /               \
-               v                 v
-      Structured Events      Snapshot API
-               |                 |
-               v                 v
-          Consumers          Consumers
+            /          |          \
+           v           v           v
+ Structured Events  Snapshot API  Experiment runs
+           |           |           |
+           v           v           v
+       Consumers   Consumers   Aggregation/output
 ```
 
 - **Simulation engine:** authoritative mutable domain model.
@@ -47,8 +46,18 @@ airside_sim
 airside_scenario
   YAML document -> validation -> Scenario domain value
 
+airside_experiment
+  typed definitions and overrides -> stable cases -> bounded worker pool
+  final run metrics -> Welford/percentile aggregation -> CSV/JSON writers
+
+airside_experiment_yaml
+  YAML document -> validation -> ExperimentDefinition
+
 airside_cli
   argument parsing, event sinks, snapshot diagnostics, report formatting
+
+airside_experiment executable
+  argument parsing, progress, dry-run, output overrides, comparison table
 
 RampLabViewer (optional Unreal project)
   RampLabIntegration   owns Simulation and read-only mirror synchronization
@@ -140,8 +149,8 @@ Determinism depends on stable event sequences, ordered resource queues, sorted g
 
 - **Unreal Engine 5.8:** `URampLabSimulationSubsystem` consumes snapshots/events; stable Actors mirror entities and visual interpolation samples the authoritative journey timing.
 - **ROS2:** adapter maps records and snapshots to messages without importing ROS clocks into the core.
-- **Experiment runner:** process or C ABI builds `Scenario` values and consumes metrics.
+- **Experiment runner:** implemented standalone library and CLI build fresh `Scenario` values, execute independent simulations in a bounded pool, and aggregate final metrics without retaining batch event histories.
 - **Network visualization:** server layer serializes snapshots/events outside the core.
 - **Record/replay:** stable external schema can later be specified without changing event production.
 
-Parallel execution, sensor simulation, continuous motion, and ABI stabilization are later work and are not implemented here.
+Parallel execution across independent simulations is implemented. Parallelism within a simulation, sensor simulation, continuous motion, distributed execution, and ABI stabilization remain later work.
