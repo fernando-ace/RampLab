@@ -3,7 +3,7 @@ scenario: ../scenarios/baseline.yaml
 
 seeds:
   start: 1
-  count: 100
+  count: 1000
 
 parameters:
   fleet.fuel_trucks: [1, 2, 3, 4, 5]

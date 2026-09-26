@@ -156,7 +156,7 @@ The generated `results/` tree is ignored. Keep experiment definitions under vers
 
 ## Development benchmark
 
-`experiments/development_benchmark.yaml` expands to 5,000 runs. It is a development throughput sanity check, not a scientific benchmark. Run the same definition serially and in parallel:
+`experiments/development_benchmark.yaml` expands to 50,000 runs. The tiny baseline simulation completes 5,000 runs too quickly for a useful timing sample on the development machine, so this optional workload is intentionally larger. It is still a development throughput sanity check, not a scientific benchmark. Run the same definition serially and in parallel:
 
 ```powershell
 .\build\Release\airside_experiment.exe `
