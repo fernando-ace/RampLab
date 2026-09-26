@@ -61,6 +61,12 @@ TEST(ExperimentDefinitionTest, RejectsInvalidDefinitionsAndOverrideValues) {
     value = definition();
     value.parameters[0].values = {std::int64_t{0}};
     EXPECT_THROW({ [[maybe_unused]] const auto ignored = generate_cases(value); }, std::invalid_argument);
+    value = definition();
+    value.seeds.values = {7, 7};
+    EXPECT_THROW({ [[maybe_unused]] const auto ignored = generate_cases(value); }, std::invalid_argument);
+    value = definition();
+    value.parameters[0].values = {std::int64_t{1}, std::int64_t{1}};
+    EXPECT_THROW({ [[maybe_unused]] const auto ignored = generate_cases(value); }, std::invalid_argument);
 }
 
 TEST(ExperimentDefinitionTest, AppliesTypedOverridesWithoutMutatingBaseScenario) {

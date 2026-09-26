@@ -125,6 +125,12 @@ void write_experiment_outputs(
              << "  \"replications\": " << definition.seeds.replications << ",\n"
              << "  \"run_count\": " << execution.runs.size() << ",\n"
              << "  \"execution_seconds\": " << std::fixed << std::setprecision(6) << execution.wall_time.count() << ",\n"
+             << "  \"seeds\": {\"values\": [";
+    for (std::size_t index = 0; index < definition.seeds.values.size(); ++index) {
+        if (index != 0) metadata << ", ";
+        metadata << definition.seeds.values[index];
+    }
+    metadata << "], \"replications\": " << definition.seeds.replications << "},\n"
              << "  \"parameters\": {\n";
     for (std::size_t axis_index = 0; axis_index < definition.parameters.size(); ++axis_index) {
         const auto& axis = definition.parameters[axis_index];

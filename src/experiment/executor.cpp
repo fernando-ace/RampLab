@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <exception>
 #include <mutex>
 #include <stdexcept>
@@ -71,6 +72,8 @@ ExecutionReport execute_runs(
     std::atomic_size_t completed{0};
     std::atomic_bool failed{false};
     std::mutex error_mutex;
+    std::mutex progress_mutex;
+    std::condition_variable progress_changed;
     std::exception_ptr first_error;
     const auto started = std::chrono::steady_clock::now();
 
@@ -84,10 +87,12 @@ ExecutionReport execute_runs(
                 try {
                     results[task] = execute_one(base_scenario, requests[task]);
                     completed.fetch_add(1, std::memory_order_release);
+                    progress_changed.notify_one();
                 } catch (...) {
                     failed.store(true, std::memory_order_relaxed);
                     std::lock_guard lock{error_mutex};
                     if (!first_error) first_error = std::current_exception();
+                    progress_changed.notify_one();
                 }
             }
         });
@@ -100,7 +105,10 @@ ExecutionReport execute_runs(
             progress({current, requests.size(), worker_count, std::chrono::steady_clock::now() - started});
             last_reported = current;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds{25});
+        std::unique_lock lock{progress_mutex};
+        progress_changed.wait_for(lock, std::chrono::milliseconds{250}, [&] {
+            return completed.load(std::memory_order_acquire) != current || failed.load();
+        });
     }
     workers.clear();
     if (first_error) std::rethrow_exception(first_error);

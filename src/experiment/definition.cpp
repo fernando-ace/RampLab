@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <format>
 #include <stdexcept>
+#include <set>
 #include <thread>
 #include <unordered_set>
 
@@ -47,6 +48,10 @@ void validate_definition(const ExperimentDefinition& definition) {
     if (!definition.workers.automatic && definition.workers.count == 0) {
         throw std::invalid_argument("worker count must be positive");
     }
+    std::unordered_set<std::uint64_t> seeds;
+    for (const auto seed : definition.seeds.values) {
+        if (!seeds.insert(seed).second) throw std::invalid_argument("seed values must be unique");
+    }
     std::unordered_set<ParameterKey> keys;
     for (const auto& axis : definition.parameters) {
         if (axis.values.empty()) {
@@ -54,6 +59,13 @@ void validate_definition(const ExperimentDefinition& definition) {
         }
         if (!keys.insert(axis.key).second) {
             throw std::invalid_argument(std::format("duplicate parameter '{}'", parameter_name(axis.key)));
+        }
+        std::set<std::pair<std::size_t, std::string>> values;
+        for (const auto& value : axis.values) {
+            const auto identity = std::pair{value.index(), format_parameter_value(value)};
+            if (!values.insert(identity).second) {
+                throw std::invalid_argument(std::format("parameter '{}' contains duplicate values", parameter_name(axis.key)));
+            }
         }
     }
 }
