@@ -15,7 +15,7 @@ class UStaticMeshComponent;
 class UTextRenderComponent;
 class AStaticMeshActor;
 struct FLinearColor;
-namespace airside { struct SimulationSnapshot; struct Vec2; }
+namespace airside { struct SimulationSnapshot; struct Vec2; namespace autonomy { struct AutonomySnapshot; } }
 
 UCLASS()
 class RAMPLABINTEGRATION_API ARampLabWorldActor final : public AActor
@@ -32,6 +32,8 @@ private:
     void BuildTopology(const airside::SimulationSnapshot& Snapshot);
     void ClearTopology();
     void Reconcile(const airside::SimulationSnapshot& Snapshot, float DeltaSeconds);
+    void BuildAutonomyTopology(const airside::autonomy::AutonomySnapshot& Snapshot);
+    void ReconcileAutonomy(const airside::autonomy::AutonomySnapshot& Snapshot);
     void MaybeCapture();
     void UpdateCamera(float DeltaSeconds);
     void ApplyCameraPreset(const FString& Preset);
@@ -56,6 +58,12 @@ private:
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> AircraftReadyMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> FuelMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> BaggageMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> AutonomyMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> GnssMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> ObstacleMaterial;
+    UPROPERTY() TObjectPtr<AStaticMeshActor> AutonomyVehicleActor;
+    UPROPERTY() TObjectPtr<AStaticMeshActor> GnssMarkerActor;
+    UPROPERTY() TArray<TObjectPtr<AStaticMeshActor>> AutonomyObstacleActors;
 
     UPROPERTY() TMap<uint32, TObjectPtr<UStaticMeshComponent>> RoadMeshes;
     UPROPERTY() TMap<uint32, TObjectPtr<UStaticMeshComponent>> ClosureBarriers;
@@ -83,4 +91,7 @@ private:
     double RuntimeWallSeconds{0.0};
     uint64 RuntimeFrames{0};
     bool bPerformanceReported{false};
+    bool bAutonomyTopologyBuilt{false};
+    double LastAutonomyTrailSampleTime{-1.0};
+    TArray<FVector> AutonomyTrail;
 };

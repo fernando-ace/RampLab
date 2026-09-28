@@ -5,6 +5,7 @@
 #include "Tickable.h"
 
 #include "airside/operations/simulation.hpp"
+#include "airside/autonomy/simulation.hpp"
 
 #include "RampLabSimulationSubsystem.generated.h"
 
@@ -35,13 +36,15 @@ public:
     void SetPlaybackSpeed(double NewSpeed);
     void AttachControlPanel();
 
-    [[nodiscard]] bool IsReady() const noexcept { return Simulation != nullptr; }
+    [[nodiscard]] bool IsReady() const noexcept { return Simulation != nullptr || AutonomySimulation != nullptr; }
     [[nodiscard]] bool IsPlaying() const noexcept { return bPlaying; }
     [[nodiscard]] bool IsFinished() const noexcept;
     [[nodiscard]] double GetPlaybackSpeed() const noexcept { return PlaybackSpeed; }
     [[nodiscard]] bool IsCaptureAccelerationActive() const noexcept { return CaptureMultiplier > 1.0; }
     [[nodiscard]] airside::SimTime GetPlaybackTime() const noexcept;
     [[nodiscard]] const airside::SimulationSnapshot* GetSnapshot() const noexcept;
+    [[nodiscard]] const airside::autonomy::AutonomySnapshot* GetAutonomySnapshot() const noexcept;
+    [[nodiscard]] bool IsAutonomyMode() const noexcept { return AutonomySimulation != nullptr; }
     [[nodiscard]] const TArray<FString>& GetRecentEvents() const noexcept { return RecentEvents; }
     [[nodiscard]] uint64 GetSeed() const noexcept { return Seed; }
     [[nodiscard]] FString GetScenarioName() const { return ScenarioName; }
@@ -62,6 +65,9 @@ private:
     void RunControlCheck(float DeltaTime);
 
     TUniquePtr<airside::Simulation> Simulation;
+    TUniquePtr<airside::autonomy::AutonomySimulation> AutonomySimulation;
+    TUniquePtr<airside::autonomy::ReferenceController> AutonomyController;
+    TOptional<airside::autonomy::AutonomySnapshot> AutonomySnapshot;
     TOptional<airside::SimulationSnapshot> Snapshot;
     TArray<FString> RecentEvents;
     TSharedPtr<SWidget> ControlPanel;
@@ -83,8 +89,11 @@ private:
     bool bViewerReady{false};
     bool bCompletionReported{false};
     bool bControlCheck{false};
+    bool bCaptureQA{false};
     bool bDemoMode{false};
     bool bDemoAdvancedToHighCapacity{false};
+    bool bDemoAdvancedToAutonomy{false};
+    double AutonomyAccumulator{0.0};
     bool bControlCheckPassed{true};
     int32 ControlCheckStage{0};
     double ControlCheckWallSeconds{0.0};

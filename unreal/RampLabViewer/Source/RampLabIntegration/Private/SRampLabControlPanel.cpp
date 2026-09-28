@@ -13,6 +13,7 @@
 #include "Widgets/Text/STextBlock.h"
 
 #include <algorithm>
+#include <cmath>
 
 void SRampLabControlPanel::Construct(const FArguments& Arguments)
 {
@@ -68,6 +69,8 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                     [ SNew(SButton).Text(FText::FromString(TEXT("Baseline"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("baseline"))) ]
                     + SHorizontalBox::Slot().AutoWidth()
                     [ SNew(SButton).Text(FText::FromString(TEXT("High Capacity"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("high_capacity"))) ]
+                    + SHorizontalBox::Slot().AutoWidth().Padding(6, 0, 0, 0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Autonomy"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_tug"))) ]
                 ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(SSeparator) ]
@@ -102,7 +105,7 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(SSeparator) ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 4)
-                [ SNew(STextBlock).Text(FText::FromString(TEXT("SCENARIO RESULTS  /  AUTHORITATIVE ENGINE RUNS"))).ColorAndOpacity(FLinearColor(0.75f, 0.78f, 0.80f)) ]
+                [ SNew(STextBlock).Text(FText::FromString(TEXT("SCENARIO RESULTS / AUTONOMY MISSION"))).ColorAndOpacity(FLinearColor(0.75f, 0.78f, 0.80f)) ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(STextBlock).Text(this, &SRampLabControlPanel::ResultsText) ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 4)
@@ -125,6 +128,21 @@ FText SRampLabControlPanel::SummaryText() const
         return FText::FromString(Subsystem == nullptr ? TEXT("Simulation unavailable") : Subsystem->GetStatusText());
     }
 
+    if (Subsystem->IsAutonomyMode()) {
+        const auto* State = Subsystem->GetAutonomySnapshot();
+        if (State == nullptr) return FText::FromString(Subsystem->GetStatusText());
+        double LidarMinimum = 0.0;
+        if (State->sensors.lidar && !State->sensors.lidar->ranges_m.empty()) LidarMinimum = *std::min_element(State->sensors.lidar->ranges_m.begin(), State->sensors.lidar->ranges_m.end());
+        double GoalDistance = 0.0;
+        if (State->sensors.gnss) GoalDistance = std::hypot(State->mission.goal.x_m-State->sensors.gnss->position.x_m,State->mission.goal.y_m-State->sensors.gnss->position.y_m);
+        const double EstimatedVelocity=State->sensors.odometry?State->sensors.odometry->speed_mps:0.0;
+        return FText::FromString(FString::Printf(TEXT("Vehicle  Tug-1\nMission  Depot -> Gate A2\nController source  Built-in reference\nMission state  %s\nSimulation time  %.2f s\nSpeed  %.2f m/s    Estimated velocity  %.2f m/s\nEstimated distance to goal  %.1f m\nMinimum LiDAR range  %.2f m\nEmergency stops  %llu    Collisions  %llu\nGNSS estimate  %.1f, %.1f m\n%s"),
+            State->finished ? TEXT("Finished") : (Subsystem->IsPlaying()?TEXT("Running"):TEXT("Paused")), State->timestamp_s,
+            State->ground_truth.speed_mps, EstimatedVelocity, GoalDistance, LidarMinimum,
+            static_cast<unsigned long long>(State->metrics.emergency_stops),static_cast<unsigned long long>(State->metrics.collision_count),
+            State->sensors.gnss?State->sensors.gnss->position.x_m:0.0,State->sensors.gnss?State->sensors.gnss->position.y_m:0.0,
+            *Subsystem->GetGeospatialStatus()));
+    }
     const auto Time = Subsystem->GetPlaybackTime().count();
     const auto* Snapshot = Subsystem->GetSnapshot();
     int32 ActiveAircraft = 0;
@@ -170,12 +188,17 @@ FText SRampLabControlPanel::EventsText() const
 FText SRampLabControlPanel::SelectedEntityText() const
 {
     const auto* Subsystem = SimulationSubsystem.Get();
+    if (Subsystem != nullptr && Subsystem->IsAutonomyMode()) return FText::FromString(TEXT("Tug-1 / ground truth body\nGNSS marker / sensor estimate\nBlue line / A* route\nYellow rays / simulated LiDAR"));
     return FText::FromString(Subsystem == nullptr ? TEXT("Unavailable") : Subsystem->GetSelectedEntityText());
 }
 
 FText SRampLabControlPanel::ResultsText() const
 {
     const auto* Subsystem = SimulationSubsystem.Get();
+    if (Subsystem != nullptr && Subsystem->IsAutonomyMode()) {
+        const auto* State=Subsystem->GetAutonomySnapshot();
+        return FText::FromString(State!=nullptr&&State->finished?Subsystem->GetFinalResultText():TEXT("Closed-loop mission is running from SensorFrame observations."));
+    }
     return FText::FromString(Subsystem == nullptr ? TEXT("Unavailable") : Subsystem->GetComparisonText());
 }
 

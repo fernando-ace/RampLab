@@ -4,6 +4,7 @@
 #include "SRampLabControlPanel.h"
 #include "airside/core/event_stream.hpp"
 #include "airside/scenario/scenario_loader.hpp"
+#include "airside/autonomy/scenario_loader.hpp"
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -63,7 +64,8 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
 {
     Super::Initialize(Collection);
     double RequestedCaptureMultiplier = CaptureMultiplier;
-    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"))) {
+    bCaptureQA = FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
+    if (bCaptureQA) {
         CaptureWarmupRemaining = 15.0;
         if (FParse::Value(FCommandLine::Get(), TEXT("RampLabCaptureMultiplier="), RequestedCaptureMultiplier)) {
             CaptureMultiplier = FMath::Clamp(RequestedCaptureMultiplier, 1.0, 20.0);
@@ -85,6 +87,9 @@ void URampLabSimulationSubsystem::Deinitialize()
     }
     ControlPanel.Reset();
     Snapshot.Reset();
+    AutonomySnapshot.Reset();
+    AutonomySimulation.Reset();
+    AutonomyController.Reset();
     Simulation.Reset();
     Super::Deinitialize();
 }
@@ -96,6 +101,33 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
         CaptureWarmupRemaining = FMath::Max(0.0, CaptureWarmupRemaining - DeltaTime);
         return;
     }
+    if (AutonomySimulation != nullptr) {
+        if (!bPlaying || AutonomySimulation->finished()) return;
+        const double FrameBudget = bCaptureQA
+            ? FMath::Min(static_cast<double>(DeltaTime) * PlaybackSpeed * CaptureMultiplier, 0.2)
+            : static_cast<double>(DeltaTime) * PlaybackSpeed * CaptureMultiplier;
+        AutonomyAccumulator += FrameBudget;
+        constexpr double FixedStep = 0.02;
+        while (AutonomyAccumulator + 1e-9 >= FixedStep && !AutonomySimulation->finished()) {
+            (void)AutonomySimulation->advance(*AutonomyController);
+            AutonomyAccumulator -= FixedStep;
+            AutonomySnapshot = AutonomySimulation->snapshot();
+        }
+        if (AutonomySnapshot.IsSet()) PlaybackSeconds = AutonomySnapshot->timestamp_s;
+        if (AutonomySimulation->finished()) {
+            bPlaying = false;
+            const auto Run = AutonomySimulation->result();
+            FinalResultText = FString::Printf(TEXT("AUTONOMY %s\nCompletion %.2f s\nDistance %.2f m\nMean route error %.2f m\nMinimum clearance %.2f m\nEmergency stops %llu\nCollisions %llu"),
+                UTF8_TO_TCHAR(airside::autonomy::to_string(Run.metrics.result).c_str()), Run.metrics.completion_time_s,
+                Run.metrics.distance_traveled_m, Run.metrics.mean_route_error_m, Run.metrics.minimum_obstacle_clearance_m,
+                static_cast<unsigned long long>(Run.metrics.emergency_stops), static_cast<unsigned long long>(Run.metrics.collision_count));
+            StatusText = TEXT("Autonomy mission finished");
+            UE_LOG(LogRampLab, Display, TEXT("RampLab autonomy completed: result=%s time=%.2f distance=%.2f collisions=%llu"),
+                UTF8_TO_TCHAR(airside::autonomy::to_string(Run.metrics.result).c_str()), Run.metrics.completion_time_s,
+                Run.metrics.distance_traveled_m, static_cast<unsigned long long>(Run.metrics.collision_count));
+        }
+        return;
+    }
     if (Simulation != nullptr && Simulation->finished()) {
         if (bDemoMode && !bDemoAdvancedToHighCapacity && SelectedScenarioKey == TEXT("baseline")) {
             DemoTransitionWallSeconds += DeltaTime;
@@ -103,6 +135,10 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
                 bDemoAdvancedToHighCapacity = true;
                 SelectScenario(TEXT("high_capacity"));
             }
+        }
+        if (bDemoMode && bDemoAdvancedToHighCapacity && !bDemoAdvancedToAutonomy && SelectedScenarioKey == TEXT("high_capacity")) {
+            DemoTransitionWallSeconds += DeltaTime;
+            if (DemoTransitionWallSeconds >= 2.0) { bDemoAdvancedToAutonomy = true; SelectScenario(TEXT("autonomy_tug")); }
         }
         return;
     }
@@ -171,6 +207,7 @@ void URampLabSimulationSubsystem::on_event(const airside::SimulationEventRecord&
 
 void URampLabSimulationSubsystem::TogglePlaying()
 {
+    if (AutonomySimulation != nullptr && !AutonomySimulation->finished()) { bPlaying = !bPlaying; return; }
     if (Simulation != nullptr && !Simulation->finished()) bPlaying = !bPlaying;
 }
 
@@ -181,7 +218,7 @@ void URampLabSimulationSubsystem::ResetSimulation()
 
 void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
 {
-    if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity")) return;
+    if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity") && ScenarioKey != TEXT("autonomy_tug")) return;
     SelectedScenarioKey = ScenarioKey;
     LoadSelectedScenario();
 }
@@ -237,6 +274,7 @@ void URampLabSimulationSubsystem::AttachControlPanel()
 
 bool URampLabSimulationSubsystem::IsFinished() const noexcept
 {
+    if (AutonomySimulation != nullptr) return AutonomySimulation->finished();
     return Simulation != nullptr && Simulation->finished();
 }
 
@@ -250,9 +288,18 @@ const airside::SimulationSnapshot* URampLabSimulationSubsystem::GetSnapshot() co
     return Snapshot.IsSet() ? &Snapshot.GetValue() : nullptr;
 }
 
+const airside::autonomy::AutonomySnapshot* URampLabSimulationSubsystem::GetAutonomySnapshot() const noexcept
+{
+    return AutonomySnapshot.IsSet() ? &AutonomySnapshot.GetValue() : nullptr;
+}
+
 bool URampLabSimulationSubsystem::LoadSelectedScenario()
 {
     try {
+        AutonomySimulation.Reset();
+        AutonomyController.Reset();
+        AutonomySnapshot.Reset();
+        AutonomyAccumulator = 0.0;
         const FString Path = FindScenarioPath(SelectedScenarioKey + TEXT(".yaml"));
         if (Path.IsEmpty()) {
             StatusText = SelectedScenarioKey + TEXT(".yaml was not found");
@@ -260,6 +307,22 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
             return false;
         }
 
+        if (SelectedScenarioKey == TEXT("autonomy_tug")) {
+            auto Scenario = airside::autonomy::load_scenario(std::filesystem::path{*Path});
+            ScenarioName = UTF8_TO_TCHAR(Scenario.name.c_str());
+            Seed = Scenario.default_seed;
+            const double SafetyRange = Scenario.safety_stop_range_m;
+            auto AirportScenario = Scenario.airport;
+            Simulation = MakeUnique<airside::Simulation>(std::move(AirportScenario), Seed);
+            ReconcileSnapshot();
+            AutonomySimulation = MakeUnique<airside::autonomy::AutonomySimulation>(std::move(Scenario), Seed);
+            AutonomyController = MakeUnique<airside::autonomy::ReferenceController>(SafetyRange);
+            AutonomySnapshot = AutonomySimulation->snapshot();
+            RecentEvents.Reset(); PlaybackSeconds = 0.0; bPlaying = true; bCompletionReported = false;
+            FinalResultText.Reset(); StatusText = FString::Printf(TEXT("Loaded A* Depot to Gate A2 autonomy mission with seed %llu"), Seed);
+            UE_LOG(LogRampLab, Display, TEXT("%s"), *StatusText);
+            return true;
+        }
         auto Scenario = airside::load_scenario(std::filesystem::path{*Path});
         ScenarioName = UTF8_TO_TCHAR(Scenario.name.c_str());
         Seed = airside::resolve_seed(Scenario, std::nullopt);
@@ -286,6 +349,9 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
     } catch (const std::exception& Error) {
         Simulation.Reset();
         Snapshot.Reset();
+        AutonomySimulation.Reset();
+        AutonomyController.Reset();
+        AutonomySnapshot.Reset();
         StatusText = FString::Printf(TEXT("RampLab initialization failed: %s"), UTF8_TO_TCHAR(Error.what()));
         UE_LOG(LogRampLab, Error, TEXT("%s"), *StatusText);
         return false;

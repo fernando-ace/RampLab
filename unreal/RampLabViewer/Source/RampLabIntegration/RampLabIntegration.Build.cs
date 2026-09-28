@@ -14,10 +14,12 @@ public class RampLabIntegration : ModuleRules
         });
 
         string RepositoryRoot = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", ".."));
-        string CoreBuild = Path.Combine(RepositoryRoot, "build-unreal-core");
+        string CoreBuild = Path.Combine(RepositoryRoot, "build-unreal-core-v143");
         PublicIncludePaths.Add(Path.Combine(RepositoryRoot, "include"));
 
         PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_sim.lib"));
+        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_autonomy.lib"));
+        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_autonomy_scenario.lib"));
         PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_scenario.lib"));
         PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "_deps", "yaml-cpp-build", "Release", "yaml-cpp.lib"));
 
@@ -27,5 +29,8 @@ public class RampLabIntegration : ModuleRules
         RuntimeDependencies.Add(
             "$(TargetOutputDir)/Scenarios/high_capacity.yaml",
             Path.Combine(RepositoryRoot, "scenarios", "high_capacity.yaml"));
+        RuntimeDependencies.Add(
+            "$(TargetOutputDir)/Scenarios/autonomy_tug.yaml",
+            Path.Combine(RepositoryRoot, "scenarios", "autonomy_tug.yaml"));
     }
 }

@@ -14,6 +14,7 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "DrawDebugHelpers.h"
 #include "GameFramework/PlayerController.h"
 #include "InputCoreTypes.h"
 #include "HAL/FileManager.h"
@@ -26,6 +27,8 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+
+#include <cmath>
 
 namespace {
 
@@ -95,6 +98,9 @@ void ARampLabWorldActor::BeginPlay()
     ActiveRouteMaterial = CreateMaterial(FLinearColor(0.008f, 0.18f, 0.34f));
     GateOpenMaterial = CreateMaterial(FLinearColor(0.010f, 0.13f, 0.045f));
     GateOccupiedMaterial = CreateMaterial(FLinearColor(0.34f, 0.16f, 0.008f));
+    AutonomyMaterial = CreateMaterial(FLinearColor(0.92f, 0.37f, 0.035f));
+    GnssMaterial = CreateMaterial(FLinearColor(0.02f, 0.76f, 0.94f));
+    ObstacleMaterial = CreateMaterial(FLinearColor(0.62f, 0.045f, 0.025f));
     AircraftMaterial = CreateMaterial(FLinearColor(0.26f, 0.30f, 0.34f));
     AircraftWaitingMaterial = CreateMaterial(FLinearColor(0.38f, 0.18f, 0.012f));
     AircraftReadyMaterial = CreateMaterial(FLinearColor(0.025f, 0.24f, 0.055f));
@@ -125,7 +131,16 @@ void ARampLabWorldActor::Tick(float DeltaSeconds)
         bPerformanceReported = false;
     }
     if (!bTopologyBuilt) BuildTopology(*Snapshot);
-    Reconcile(*Snapshot, DeltaSeconds);
+    if (Subsystem->IsAutonomyMode()) {
+        const auto* Autonomy = Subsystem->GetAutonomySnapshot();
+        if (Autonomy == nullptr) return;
+        if (!bAutonomyTopologyBuilt) BuildAutonomyTopology(*Autonomy);
+        ReconcileAutonomy(*Autonomy);
+    } else {
+        bAutonomyTopologyBuilt = false;
+        AutonomyTrail.Reset();
+        Reconcile(*Snapshot, DeltaSeconds);
+    }
     if (Subsystem->IsDemoMode() && !bCaptureRun) {
         const int64 Time = Subsystem->GetPlaybackTime().count();
         int32 DesiredStage = 0;
@@ -135,9 +150,12 @@ void ARampLabWorldActor::Tick(float DeltaSeconds)
             else if (Time >= 840) { DesiredStage = 3; DesiredPreset = TEXT("Service Roads"); }
             else if (Time >= 300) { DesiredStage = 2; DesiredPreset = TEXT("Service Roads"); }
             else if (Time >= 180) { DesiredStage = 1; DesiredPreset = TEXT("Ramp"); }
-        } else {
+        } else if (Subsystem->GetScenarioName().Equals(TEXT("high_capacity"), ESearchCase::IgnoreCase)) {
             DesiredStage = 5;
             DesiredPreset = TEXT("Overview");
+        } else {
+            DesiredStage = 6;
+            DesiredPreset = TEXT("Service Roads");
         }
         if (DesiredStage != DemoCameraStage) {
             DemoCameraStage = DesiredStage;
@@ -276,6 +294,71 @@ void ARampLabWorldActor::ClearTopology()
     AircraftWingActors.Empty();
     VehicleActors.Empty();
     VehicleDetailActors.Empty();
+    if (AutonomyVehicleActor) AutonomyVehicleActor->Destroy();
+    if (GnssMarkerActor) GnssMarkerActor->Destroy();
+    for (auto& Actor : AutonomyObstacleActors) if (Actor) Actor->Destroy();
+    AutonomyVehicleActor = nullptr;
+    GnssMarkerActor = nullptr;
+    AutonomyObstacleActors.Empty();
+    AutonomyTrail.Reset();
+    bAutonomyTopologyBuilt = false;
+    LastAutonomyTrailSampleTime = -1.0;
+}
+
+void ARampLabWorldActor::BuildAutonomyTopology(const airside::autonomy::AutonomySnapshot& Snapshot)
+{
+    for (auto& Pair : AircraftActors) if (Pair.Value) Pair.Value->SetActorHiddenInGame(true);
+    for (auto& Pair : AircraftWingActors) if (Pair.Value) Pair.Value->SetActorHiddenInGame(true);
+    for (auto& Pair : VehicleActors) if (Pair.Value) Pair.Value->SetActorHiddenInGame(true);
+    for (auto& Pair : VehicleDetailActors) if (Pair.Value) Pair.Value->SetActorHiddenInGame(true);
+    for (auto& Pair : AircraftLabels) if (Pair.Value) Pair.Value->SetVisibility(false);
+    for (auto& Pair : VehicleLabels) if (Pair.Value) Pair.Value->SetVisibility(false);
+    AutonomyVehicleActor = CreateMirrorActor(TEXT("AutonomyTug"), 900001, CubeMesh);
+    AutonomyVehicleActor->SetActorScale3D(FVector(6.5f, 3.4f, 1.7f));
+    AutonomyVehicleActor->GetStaticMeshComponent()->SetMaterial(0, AutonomyMaterial);
+    GnssMarkerActor = CreateMirrorActor(TEXT("GnssEstimate"), 900002, CylinderMesh);
+    GnssMarkerActor->SetActorScale3D(FVector(0.35f, 0.35f, 0.35f));
+    GnssMarkerActor->GetStaticMeshComponent()->SetMaterial(0, GnssMaterial);
+    uint32 Id = 910000;
+    for (const auto& Obstacle : Snapshot.obstacles) {
+        auto* Actor = CreateMirrorActor(TEXT("AutonomyObstacle"), Id++, CubeMesh);
+        Actor->SetActorLocation(ToWorld(Obstacle.center, 55.0f));
+        Actor->SetActorScale3D(FVector(static_cast<float>(Obstacle.radius_m*2.0), static_cast<float>(Obstacle.radius_m*2.0), 1.1f));
+        Actor->GetStaticMeshComponent()->SetMaterial(0, ObstacleMaterial);
+        AutonomyObstacleActors.Add(Actor);
+    }
+    bAutonomyTopologyBuilt = true;
+}
+
+void ARampLabWorldActor::ReconcileAutonomy(const airside::autonomy::AutonomySnapshot& Snapshot)
+{
+    if (!AutonomyVehicleActor || !GnssMarkerActor) return;
+    const auto p = Snapshot.ground_truth.position;
+    const FVector Position = ToWorld(p, 100.0f);
+    AutonomyVehicleActor->SetActorLocation(Position);
+    const FVector Ahead = ToWorld({p.x_m + std::cos(Snapshot.ground_truth.heading_rad), p.y_m + std::sin(Snapshot.ground_truth.heading_rad)}, 100.0f);
+    const FVector Direction = Ahead - Position;
+    AutonomyVehicleActor->SetActorRotation(FRotator(0.0f, FMath::RadiansToDegrees(FMath::Atan2(Direction.Y, Direction.X)), 0.0f));
+    if (Snapshot.sensors.gnss) GnssMarkerActor->SetActorLocation(ToWorld(Snapshot.sensors.gnss->position, 150.0f));
+    for (std::size_t i=1; i<Snapshot.mission.waypoints.size(); ++i) {
+        DrawDebugLine(GetWorld(), ToWorld(Snapshot.mission.waypoints[i-1], 90.0f), ToWorld(Snapshot.mission.waypoints[i], 90.0f), FColor(20, 125, 245), false, 0.0f, 0, 22.0f);
+    }
+    if (Snapshot.timestamp_s-LastAutonomyTrailSampleTime>=0.2) {
+        AutonomyTrail.Add(Position);
+        LastAutonomyTrailSampleTime=Snapshot.timestamp_s;
+        if (AutonomyTrail.Num()>1200) AutonomyTrail.RemoveAt(0,200,EAllowShrinking::No);
+    }
+    for (int32 i=1;i<AutonomyTrail.Num();++i) DrawDebugLine(GetWorld(),AutonomyTrail[i-1],AutonomyTrail[i],FColor(255,145,20),false,0.0f,0,8.0f);
+    if (Snapshot.sensors.lidar) {
+        const auto& Scan=*Snapshot.sensors.lidar;
+        const std::size_t stride=std::max<std::size_t>(1,Scan.ranges_m.size()/60);
+        for(std::size_t i=0;i<Scan.ranges_m.size();i+=stride){
+            const double Angle=Snapshot.ground_truth.heading_rad+Scan.angle_min_rad+static_cast<double>(i)*Scan.angle_increment_rad;
+            const double Range=Scan.ranges_m[i];
+            const airside::Vec2 End{p.x_m+Range*std::cos(Angle),p.y_m+Range*std::sin(Angle)};
+            DrawDebugLine(GetWorld(),Position,ToWorld(End,100.0f),FColor(255,220,55),false,0.0f,0,2.0f);
+        }
+    }
 }
 
 void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, float DeltaSeconds)
@@ -435,7 +518,10 @@ void ARampLabWorldActor::MaybeCapture()
     auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>();
     if (Subsystem == nullptr) return;
 
-    const int64 Time = Subsystem->GetPlaybackTime().count();
+    const auto* AutonomySnapshot = Subsystem->GetAutonomySnapshot();
+    const double Time = AutonomySnapshot != nullptr
+        ? AutonomySnapshot->timestamp_s
+        : static_cast<double>(Subsystem->GetPlaybackTime().count());
     struct FCapturePoint { const TCHAR* Scenario; int64 Time; const TCHAR* Name; const TCHAR* Camera; };
     const FCapturePoint Points[] = {
         {TEXT("baseline"), 0, TEXT("00-auburn-overview"), TEXT("Overview")},
@@ -444,10 +530,16 @@ void ARampLabWorldActor::MaybeCapture()
         {TEXT("baseline"), 900, TEXT("03-alternate-route"), TEXT("Service Roads")},
         {TEXT("baseline"), 3000, TEXT("04-baseline-results"), TEXT("Ramp")},
         {TEXT("high_capacity"), 2100, TEXT("05-high-capacity-comparison"), TEXT("Overview")},
+        {TEXT("autonomy_tug"), 0, TEXT("06-autonomy-depot-route"), TEXT("Service Roads")},
+        {TEXT("autonomy_tug"), 20, TEXT("07-autonomy-sensors-obstacles"), TEXT("Service Roads")},
+        {TEXT("autonomy_tug"), 66, TEXT("08-autonomy-gate-a2-result"), TEXT("Gate A2")},
     };
     if (CaptureStage >= UE_ARRAY_COUNT(Points)) return;
     const auto& Point = Points[CaptureStage];
-    if (!Subsystem->GetScenarioName().Equals(Point.Scenario, ESearchCase::IgnoreCase) || Time < Point.Time) return;
+    const bool bFinalAutonomyCapture = CaptureStage == UE_ARRAY_COUNT(Points) - 1;
+    if (!Subsystem->GetScenarioName().Equals(Point.Scenario, ESearchCase::IgnoreCase)
+        || Time < static_cast<double>(Point.Time)
+        || (bFinalAutonomyCapture && !Subsystem->IsFinished())) return;
     Subsystem->SetCameraPreset(Point.Camera);
     ApplyCameraPreset(Point.Camera);
     if (const auto* CaptureSnapshot = Subsystem->GetSnapshot()) Reconcile(*CaptureSnapshot, 0.0f);
@@ -456,6 +548,8 @@ void ARampLabWorldActor::MaybeCapture()
     IFileManager::Get().MakeDirectory(*Directory, true);
     const FString Filename = FPaths::Combine(Directory, FString(Point.Name) + TEXT(".png"));
     FScreenshotRequest::RequestScreenshot(Filename, true, false, false, FIntRect(), true);
+    UE_LOG(LogRampLab, Display, TEXT("RampLab capture saved: %s scenario=%s time=%.2f"),
+        *Filename, *Subsystem->GetScenarioName(), Time);
     ++CaptureStage;
     if (CaptureStage == UE_ARRAY_COUNT(Points)) CaptureExitCountdown = 2.0f;
 }
