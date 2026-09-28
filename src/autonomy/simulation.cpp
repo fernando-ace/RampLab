@@ -151,22 +151,36 @@ const VehicleState&AutonomySimulation::state()const noexcept{return impl_->state
 double AutonomySimulation::time_s()const noexcept{return impl_->time;}
 bool AutonomySimulation::finished()const noexcept{return impl_->complete;}
 SensorFrame AutonomySimulation::observe()const{return impl_->frame;}
-AutonomyRun AutonomySimulation::run(IAutonomyController& controller,std::ostream* csv){
-    if(csv)*csv<<"time_s,x_m,y_m,estimated_x_m,estimated_y_m,heading_rad,speed_mps,command_speed_mps,command_yaw_rate_radps,route_error_m,lidar_min_m\n";
-    while(!impl_->complete&&impl_->time<impl_->scenario.timeout_s){
-        VehicleCommand command;try{command=controller.update(impl_->frame,impl_->mission);}catch(...){impl_->metrics.result=MissionResult::ControllerFailure;impl_->complete=true;break;}
-        impl_->step(command);
-        if(csv){const auto est=impl_->frame.gnss?impl_->frame.gnss->position:impl_->state.position;double lidar=impl_->scenario.sensors.lidar_max_range_m;if(impl_->frame.lidar)for(double r:impl_->frame.lidar->ranges_m)lidar=std::min(lidar,r);
-            *csv<<impl_->time<<','<<impl_->state.position.x_m<<','<<impl_->state.position.y_m<<','<<est.x_m<<','<<est.y_m<<','<<impl_->state.heading_rad<<','<<impl_->state.speed_mps<<','<<command.target_speed_mps<<','<<command.target_yaw_rate_radps<<','<<route_error(impl_->state.position,impl_->mission.waypoints)<<','<<lidar<<'\n';}
-        if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&impl_->state.speed_mps<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
-    }
-    if(!impl_->complete){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
-    auto&m=impl_->metrics;m.completion_time_s=impl_->time;m.distance_traveled_m=impl_->state.distance_m;
+AutonomySnapshot AutonomySimulation::snapshot()const{return{impl_->time,impl_->state,impl_->frame,impl_->mission,impl_->scenario.obstacles,impl_->metrics,impl_->complete};}
+bool AutonomySimulation::advance(IAutonomyController& controller){
+    if(impl_->complete)return false;
+    VehicleCommand command;
+    try{command=controller.update(impl_->frame,impl_->mission);}catch(...){impl_->metrics.result=MissionResult::ControllerFailure;impl_->complete=true;return false;}
+    impl_->step(command);
+    if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller))impl_->metrics.emergency_stops=ref->emergency_stops();
+    if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&impl_->state.speed_mps<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
+    if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
+    return !impl_->complete;
+}
+AutonomyRun AutonomySimulation::result()const{
+    auto m=impl_->metrics;m.completion_time_s=impl_->time;m.distance_traveled_m=impl_->state.distance_m;
     double route=0;for(std::size_t i=1;i<impl_->mission.waypoints.size();++i)route+=distance(impl_->mission.waypoints[i-1],impl_->mission.waypoints[i]);
     m.path_efficiency=m.distance_traveled_m>0?std::min(1.0,route/m.distance_traveled_m):0.0;m.mean_route_error_m=impl_->route_error_count?impl_->route_error_sum/static_cast<double>(impl_->route_error_count):0.0;
     if(!std::isfinite(m.minimum_obstacle_clearance_m))m.minimum_obstacle_clearance_m=0.0;
-    if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller))m.emergency_stops=ref->emergency_stops();m.trajectory_digest=impl_->digest;
-    return{impl_->state,m};
+    m.trajectory_digest=impl_->digest;return{impl_->state,m};
+}
+AutonomyRun AutonomySimulation::run(IAutonomyController& controller,std::ostream* csv){
+    if(csv)*csv<<"time_s,x_m,y_m,estimated_x_m,estimated_y_m,heading_rad,speed_mps,command_speed_mps,command_yaw_rate_radps,route_error_m,lidar_min_m\n";
+    while(!impl_->complete){
+        VehicleCommand command;
+        try{command=controller.update(impl_->frame,impl_->mission);}catch(...){impl_->metrics.result=MissionResult::ControllerFailure;impl_->complete=true;break;}
+        impl_->step(command);
+        if(csv){const auto est=impl_->frame.gnss?impl_->frame.gnss->position:impl_->state.position;double lidar=impl_->scenario.sensors.lidar_max_range_m;if(impl_->frame.lidar)for(double r:impl_->frame.lidar->ranges_m)lidar=std::min(lidar,r);*csv<<impl_->time<<','<<impl_->state.position.x_m<<','<<impl_->state.position.y_m<<','<<est.x_m<<','<<est.y_m<<','<<impl_->state.heading_rad<<','<<impl_->state.speed_mps<<','<<command.target_speed_mps<<','<<command.target_yaw_rate_radps<<','<<route_error(impl_->state.position,impl_->mission.waypoints)<<','<<lidar<<'\n';}
+        if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&impl_->state.speed_mps<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
+        if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
+        if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller))impl_->metrics.emergency_stops=ref->emergency_stops();
+    }
+    return result();
 }
 std::string to_string(MissionResult r){switch(r){case MissionResult::Success:return"SUCCESS";case MissionResult::Collision:return"COLLISION";case MissionResult::Timeout:return"TIMEOUT";case MissionResult::ControllerFailure:return"CONTROLLER_FAILURE";}return"UNKNOWN";}
 } // namespace airside::autonomy

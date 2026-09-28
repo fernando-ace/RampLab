@@ -138,6 +138,15 @@ struct AutonomyRun {
     VehicleState final_state{};
     MissionMetrics metrics{};
 };
+struct AutonomySnapshot {
+    double timestamp_s{};
+    VehicleState ground_truth{};
+    SensorFrame sensors{};
+    MissionState mission{};
+    std::vector<CircleObstacle> obstacles;
+    MissionMetrics metrics{};
+    bool finished{};
+};
 
 class AutonomySimulation {
 public:
@@ -154,6 +163,9 @@ public:
     [[nodiscard]] double time_s() const noexcept;
     [[nodiscard]] bool finished() const noexcept;
     [[nodiscard]] SensorFrame observe() const;
+    [[nodiscard]] AutonomySnapshot snapshot() const;
+    [[nodiscard]] bool advance(IAutonomyController& controller);
+    [[nodiscard]] AutonomyRun result() const;
     [[nodiscard]] AutonomyRun run(IAutonomyController& controller, std::ostream* trajectory_csv = nullptr);
 private:
     struct Impl;

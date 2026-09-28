@@ -1,0 +1,6 @@
+name: autonomy_noise_validation
+scenario: ../scenarios/autonomy_tug.yaml
+seed_start: 42
+runs_per_noise_level: 100
+workers: 4
+gnss_sigma_m: [0.1, 0.5, 1.5]

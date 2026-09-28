@@ -61,6 +61,12 @@ endfunction()
 airside_enable_warnings(airside_sim)
 airside_enable_warnings(airside_autonomy)
 
+add_library(airside_autonomy_experiment STATIC src/autonomy/experiment.cpp)
+add_library(airside::autonomy_experiment ALIAS airside_autonomy_experiment)
+target_include_directories(airside_autonomy_experiment PUBLIC include)
+target_link_libraries(airside_autonomy_experiment PUBLIC airside::autonomy)
+airside_enable_warnings(airside_autonomy_experiment)
+
 add_library(airside_scenario STATIC src/scenario/scenario_loader.cpp)
 add_library(airside::scenario ALIAS airside_scenario)
 target_include_directories(airside_scenario PUBLIC include)
@@ -101,6 +107,11 @@ set_target_properties(airside_autonomy_cli PROPERTIES OUTPUT_NAME airside_autono
 target_link_libraries(airside_autonomy_cli PRIVATE airside::autonomy_scenario)
 airside_enable_warnings(airside_autonomy_cli)
 
+add_executable(airside_autonomy_experiment_cli apps/airside_autonomy_experiment/main.cpp)
+set_target_properties(airside_autonomy_experiment_cli PROPERTIES OUTPUT_NAME airside_autonomy_experiment)
+target_link_libraries(airside_autonomy_experiment_cli PRIVATE airside::autonomy_experiment airside::autonomy_scenario yaml-cpp::yaml-cpp)
+airside_enable_warnings(airside_autonomy_experiment_cli)
+
 add_executable(airside_experiment_cli apps/airside_experiment/main.cpp)
 set_target_properties(airside_experiment_cli PROPERTIES OUTPUT_NAME airside_experiment)
 target_compile_definitions(airside_experiment_cli PRIVATE AIRSIDE_PROJECT_VERSION="${PROJECT_VERSION}")
@@ -136,7 +147,7 @@ if(BUILD_TESTING)
     target_include_directories(airside_tests PRIVATE tests)
     target_compile_definitions(airside_tests PRIVATE AIRSIDE_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     target_link_libraries(airside_tests PRIVATE
-        airside::sim airside::scenario airside::autonomy airside::autonomy_scenario airside::experiment airside::experiment_yaml GTest::gtest_main)
+        airside::sim airside::scenario airside::autonomy airside::autonomy_experiment airside::autonomy_scenario airside::experiment airside::experiment_yaml GTest::gtest_main)
     airside_enable_warnings(airside_tests)
     include(GoogleTest)
     gtest_discover_tests(airside_tests)
