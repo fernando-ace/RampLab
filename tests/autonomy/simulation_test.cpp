@@ -1,0 +1,28 @@
+#include "airside/autonomy/scenario_loader.hpp"
+
+#include <gtest/gtest.h>
+
+#include <cmath>
+#include <algorithm>
+#include <filesystem>
+#include <sstream>
+#include <string>
+
+namespace airside::autonomy {
+namespace {
+AutonomyScenario scenario(){return load_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_tug.yaml");}
+class MaximumCommand final:public IAutonomyController{public:VehicleCommand update(const SensorFrame&,const MissionState&)override{return{100.0,100.0};}};
+}
+
+TEST(AutonomyTest, AStarRouteBecomesAirportLocalWaypoints){AutonomySimulation sim{scenario(),42};ASSERT_EQ(sim.mission().waypoints.size(),3U);EXPECT_EQ(sim.mission().waypoints.front(),(Vec2{0,0}));EXPECT_EQ(sim.mission().goal,(Vec2{240,0}));}
+TEST(AutonomyTest, SensorRatesAreIndependentAndTimestampsUseSimulationTime){auto s=scenario();s.timeout_s=2.0;AutonomySimulation sim{std::move(s),42};ReferenceController c;const auto r=sim.run(c);EXPECT_EQ(r.metrics.imu_samples,101U);EXPECT_EQ(r.metrics.odometry_samples,41U);EXPECT_EQ(r.metrics.lidar_scans,21U);EXPECT_EQ(r.metrics.gnss_samples,11U);EXPECT_NEAR(sim.observe().timestamp_s,sim.time_s(),1e-9);}
+TEST(AutonomyTest, SameSeedProducesIdenticalClosedLoopDigestAndState){auto a=scenario(),b=scenario();AutonomySimulation first{std::move(a),42},second{std::move(b),42};ReferenceController c1,d1;const auto x=first.run(c1),y=second.run(d1);EXPECT_EQ(x.metrics.result,MissionResult::Success);EXPECT_EQ(x.metrics.trajectory_digest,y.metrics.trajectory_digest);EXPECT_EQ(x.final_state.position,y.final_state.position);EXPECT_EQ(x.metrics.gnss_samples,y.metrics.gnss_samples);EXPECT_EQ(x.metrics.lidar_scans,y.metrics.lidar_scans);}
+TEST(AutonomyTest, DifferentSeedsChangeSensorAndTrajectoryDigest){AutonomySimulation a{scenario(),42},b{scenario(),43};ReferenceController c,d;const auto x=a.run(c),y=b.run(d);EXPECT_NE(x.metrics.trajectory_digest,y.metrics.trajectory_digest);EXPECT_EQ(x.metrics.result,MissionResult::Success);EXPECT_EQ(y.metrics.result,MissionResult::Success);}
+TEST(AutonomyTest, CircleLidarReportsNearestHitAndMaximumRange){auto s=scenario();s.obstacles={{"near",{10,0},1.0},{"far",{15,0},1.0}};s.sensors.lidar_fov_rad=3.14159265358979323846;s.sensors.lidar_beams=3;s.sensors.lidar_sigma_m=0;s.initial_state.heading_rad=0;AutonomySimulation sim{std::move(s),7};const auto scan=sim.observe().lidar;ASSERT_TRUE(scan);ASSERT_EQ(scan->ranges_m.size(),3U);EXPECT_NEAR(scan->ranges_m[1],9.0,1e-9);EXPECT_DOUBLE_EQ(scan->ranges_m.front(),scan->range_max_m);EXPECT_DOUBLE_EQ(scan->ranges_m.front(),scan->ranges_m.back());EXPECT_GT(scan->angle_increment_rad,0.0);EXPECT_LT(scan->angle_min_rad,0.0);}
+TEST(AutonomyTest, LidarRotatesAndTranslatesWithVehicle){auto s=scenario();s.obstacles={{"east",{10,5},1.0}};s.sensors.lidar_fov_rad=3.14159265358979323846;s.sensors.lidar_beams=3;s.sensors.lidar_sigma_m=0;s.initial_state.position={5,5};s.initial_state.heading_rad=0;AutonomySimulation sim{std::move(s),1};EXPECT_NEAR(sim.observe().lidar->ranges_m[1],4.0,1e-9);auto rotated=scenario();rotated.obstacles={{"north",{5,15},1.0}};rotated.sensors.lidar_fov_rad=3.14159265358979323846;rotated.sensors.lidar_beams=3;rotated.sensors.lidar_sigma_m=0;rotated.initial_state.position={5,5};rotated.initial_state.heading_rad=1.5707963267948966;AutonomySimulation turn{std::move(rotated),1};EXPECT_NEAR(turn.observe().lidar->ranges_m[1],9.0,1e-9);}
+TEST(AutonomyTest, SensorNoiseIsDeterministicAndDifferentSeedsVary){auto a=scenario(),b=scenario(),c=scenario();a.sensors.lidar_beams=b.sensors.lidar_beams=c.sensors.lidar_beams=21;AutonomySimulation first{std::move(a),42},repeat{std::move(b),42},different{std::move(c),43};EXPECT_EQ(first.observe().lidar->ranges_m,repeat.observe().lidar->ranges_m);EXPECT_NE(first.observe().gnss->position,different.observe().gnss->position);}
+TEST(AutonomyTest, VehicleEnforcesSpeedAndYawLimits){auto s=scenario();s.obstacles.clear();s.timeout_s=0.5;AutonomySimulation sim{std::move(s),2};MaximumCommand controller;const auto result=sim.run(controller);EXPECT_LE(result.final_state.speed_mps,sim.mission().limits.maximum_speed_mps);EXPECT_LE(std::abs(result.final_state.yaw_rate_radps),sim.mission().limits.maximum_yaw_rate_radps);}
+TEST(AutonomyTest, LidarSafetyStopsBeforePhysicalCollision){auto s=scenario();s.obstacles={{"safety-barrier",{4,0},0.8}};s.initial_state.heading_rad=0;s.safety_stop_range_m=4.5;s.timeout_s=0.5;AutonomySimulation sim{std::move(s),42};ReferenceController controller{4.5};const auto result=sim.run(controller);EXPECT_EQ(result.metrics.result,MissionResult::Timeout);EXPECT_GT(result.metrics.emergency_stops,0U);EXPECT_EQ(result.metrics.collision_count,0U);EXPECT_DOUBLE_EQ(result.final_state.distance_m,0.0);}
+TEST(AutonomyTest, IndependentCollisionSystemRecordsImpact){auto s=scenario();s.obstacles={{"blocking-barrier",{0,0},0.8}};AutonomySimulation sim{std::move(s),42};MaximumCommand controller;const auto result=sim.run(controller);EXPECT_EQ(result.metrics.result,MissionResult::Collision);EXPECT_EQ(result.metrics.collision_count,1U);ASSERT_TRUE(result.metrics.first_collision_time_s);EXPECT_EQ(result.metrics.collided_obstacle,"blocking-barrier");}
+TEST(AutonomyTest, OptionalTrajectoryRecordingHasGroundTruthAndObservationColumns){AutonomySimulation sim{scenario(),42};ReferenceController controller;std::ostringstream csv;const auto result=sim.run(controller,&csv);const auto contents=csv.str();EXPECT_EQ(result.metrics.result,MissionResult::Success);EXPECT_NE(contents.find("estimated_x_m"),std::string::npos);EXPECT_GT(std::count(contents.begin(),contents.end(),'\n'),2);}
+}

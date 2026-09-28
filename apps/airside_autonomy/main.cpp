@@ -1,0 +1,12 @@
+#include "airside/autonomy/scenario_loader.hpp"
+#include <charconv>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <optional>
+#include <string_view>
+namespace {
+struct Options { std::string scenario="scenarios/autonomy_tug.yaml"; std::optional<std::uint64_t> seed; std::string trajectory; };
+Options parse(int argc,char**argv){Options o;for(int i=1;i<argc;++i){std::string_view a=argv[i];auto next=[&]()->std::string_view{if(++i>=argc)throw std::runtime_error("missing value after "+std::string(a));return argv[i];};if(a=="--scenario")o.scenario=next();else if(a=="--seed"){std::uint64_t v{};auto s=next();if(std::from_chars(s.data(),s.data()+s.size(),v).ec!=std::errc{})throw std::runtime_error("invalid seed");o.seed=v;}else if(a=="--record-trajectory")o.trajectory=next();else if(a=="--help"){std::cout<<"airside_autonomy --scenario FILE --seed N [--record-trajectory FILE]\n";std::exit(0);}else throw std::runtime_error("unknown option: "+std::string(a));}return o;}
+}
+int main(int argc,char**argv){try{const auto opt=parse(argc,argv);auto scenario=airside::autonomy::load_scenario(opt.scenario);const auto seed=opt.seed.value_or(scenario.default_seed);const auto stop=scenario.safety_stop_range_m;airside::autonomy::AutonomySimulation sim(std::move(scenario),seed);airside::autonomy::ReferenceController controller(stop);std::ofstream file;if(!opt.trajectory.empty()){file.open(opt.trajectory);if(!file)throw std::runtime_error("cannot open trajectory output");file<<std::setprecision(9);}const auto run=sim.run(controller,file?&file:nullptr);const auto&m=run.metrics;std::cout<<std::fixed<<std::setprecision(2)<<"=== RampLab Autonomy Mission ===\n\nVehicle: Tug-1\nMission: Depot -> Gate A2\nSeed: "<<seed<<"\n\nResult: "<<airside::autonomy::to_string(m.result)<<"\nCompletion time: "<<m.completion_time_s<<" s\nDistance traveled: "<<m.distance_traveled_m<<" m\nPath efficiency: "<<m.path_efficiency*100.0<<"%\nMean route error: "<<m.mean_route_error_m<<" m\nMaximum route error: "<<m.maximum_route_error_m<<" m\nMinimum obstacle clearance: "<<m.minimum_obstacle_clearance_m<<" m\nEmergency stops: "<<m.emergency_stops<<"\nCollisions: "<<m.collision_count<<"\n\nSensors\nGNSS samples: "<<m.gnss_samples<<"\nIMU samples: "<<m.imu_samples<<"\nOdometry samples: "<<m.odometry_samples<<"\nLiDAR scans: "<<m.lidar_scans<<"\nTrajectory digest: "<<m.trajectory_digest<<"\n";return m.result==airside::autonomy::MissionResult::Success?0:2;}catch(const std::exception&e){std::cerr<<"airside_autonomy: "<<e.what()<<'\n';return 1;}}
