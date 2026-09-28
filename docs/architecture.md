@@ -53,6 +53,16 @@ airside_experiment
 airside_experiment_yaml
   YAML document -> validation -> ExperimentDefinition
 
+airside_autonomy
+  fixed-step continuous vehicle -> seeded sensors -> controller interface
+  reuses airside_sim road graph and deterministic A* route
+
+airside_autonomy_scenario
+  autonomy YAML + existing airport map scenario -> validated mission values
+
+airside_autonomy_experiment
+  independent autonomy simulations -> final-only metrics -> stable run order
+
 airside_cli
   argument parsing, event sinks, snapshot diagnostics, report formatting
 
@@ -61,6 +71,7 @@ airside_experiment executable
 
 RampLabViewer (optional Unreal project)
   RampLabIntegration   owns Simulation and read-only mirror synchronization
+    Autonomy demo       visualizes an actual sensor-driven autonomy run
     AirportPlacement   config-driven local-meter to airport east/north transform
     AirportEnvironment Cesium WGS84 context plus synthetic operational layer
     WorldActor         stable visual mirrors, heading interpolation, cameras
@@ -150,7 +161,8 @@ Determinism depends on stable event sequences, ordered resource queues, sorted g
 - **Unreal Engine 5.8:** `URampLabSimulationSubsystem` consumes snapshots/events; stable Actors mirror entities and visual interpolation samples the authoritative journey timing.
 - **ROS2:** adapter maps records and snapshots to messages without importing ROS clocks into the core.
 - **Experiment runner:** implemented standalone library and CLI build fresh `Scenario` values, execute independent simulations in a bounded pool, and aggregate final metrics without retaining batch event histories.
+- **Autonomy simulation:** a separate 20 ms fixed-step subsystem simulates tug dynamics, seeded GNSS/IMU/odometry/LiDAR, A* waypoint following, safety stops, and collision metrics. Its controller sees observations and mission data, never ground truth. Autonomy experiments retain compact mission results only.
 - **Network visualization:** server layer serializes snapshots/events outside the core.
 - **Record/replay:** stable external schema can later be specified without changing event production.
 
-Parallel execution across independent simulations is implemented. Parallelism within a simulation, sensor simulation, continuous motion, distributed execution, and ABI stabilization remain later work.
+Parallel execution across operational and autonomy runs is implemented. Parallelism within a single simulation, distributed execution, and ABI stabilization remain later work. ROS2 remains an optional adapter and requires an installed compatible development environment.

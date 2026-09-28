@@ -1,6 +1,6 @@
 # Unreal Development on Windows
 
-These steps were validated on Windows 11 with Unreal Engine 5.8, Visual Studio Community 2026 18.10.2, MSVC 19.51.36260, Windows SDK 10.0.26100.0, and CMake 4.4.3.
+These steps were validated on Windows 11 with Unreal Engine 5.8.3, Visual Studio 18, the MSVC 14.44 toolset, Windows SDK 10.0.26100.0, and CMake 4.4.3.
 
 Run commands from the repository root in PowerShell.
 
@@ -20,7 +20,7 @@ Cesium 2.29.1's official `57` archive supports UE 5.7/5.8 but declares 5.7 in it
 
 Copy `unreal/RampLabViewer/.env.example` to `.env.local`, then replace the placeholder with an ion token authorized for Cesium World Terrain (asset 1) and Bing Maps Aerial (asset 2). `.env.local` is ignored by Git. Do not pass the token on the command line or commit it.
 
-The script configures `build-unreal-core` with Visual Studio 18 2026, x64, Release, and tests disabled. `RampLabIntegration.Build.cs` links `airside_sim.lib`, `airside_scenario.lib`, and `yaml-cpp.lib` from that tree.
+The script configures `build-unreal-core-v143` with Visual Studio 18 2026, x64, Release, tests disabled, and toolset v143 14.44 to match Unreal's linker runtime. `RampLabIntegration.Build.cs` links the operations, autonomy, scenario, and yaml-cpp libraries from that tree.
 
 ## Build the Unreal editor target
 
@@ -31,7 +31,7 @@ The script configures `build-unreal-core` with Visual Studio 18 2026, x64, Relea
   -WaitMutex -NoHotReload
 ```
 
-The validated build result is `Succeeded`. UBT currently warns that installed MSVC 14.51 is newer than its preferred 14.50 toolchain; this is a compatibility warning, not a build failure.
+The validated build result is `Succeeded` with MSVC 14.44. The linked core libraries and Unreal modules must use compatible MSVC toolsets.
 
 ## Open or launch the demo
 
@@ -71,7 +71,7 @@ Capture the deterministic visual milestones at accelerated developer speed:
 
 The capture multiplier is a debug-only wall-clock accelerator applied on top of the visible operator playback setting. It is accepted only with `-RampLabCapture`; the UI continues to show one of the supported operator speeds and labels the QA acceleration explicitly.
 
-The six captures are written to `unreal/RampLabViewer/Saved/Screenshots/RampLab`: Auburn overview, baseline operations, road closure, alternate route, baseline result, and high-capacity comparison. `Saved`, `Intermediate`, `Binaries`, `DerivedDataCache`, solution files, and all CMake build trees remain ignored by Git.
+The capture sequence now includes the Auburn overview, five operational milestones, and three autonomy frames (depot/route, obstacle sensing, Gate A2 result) under `unreal/RampLabViewer/Saved/Screenshots/RampLab`. The Autonomy scenario uses the same fixed-step autonomy library and controller as the headless CLI; the renderer displays its snapshot, GNSS estimate, route, obstacle circles, LiDAR returns, and trajectory. `Saved`, `Intermediate`, `Binaries`, `DerivedDataCache`, solution files, and all CMake build trees remain ignored by Git.
 
 For the deterministic two-scenario presentation flow, launch with:
 
@@ -81,6 +81,6 @@ For the deterministic two-scenario presentation flow, launch with:
   -game -windowed -ResX=1600 -ResY=900 -log -RampLabDemo
 ```
 
-The demo runs the real baseline scenario, pauses on its final result, switches to the real high-capacity YAML, and leaves the comparison visible. `-RampLabCapture -RampLabCaptureMultiplier=10` adds ignored runtime captures for overview, operations, closure, reroute, baseline results, and high-capacity comparison. The multiplier accelerates wall-clock capture only; the visible operator playback remains one of 1x, 5x, 10x, or 20x and the simulation timeline/outcomes are unchanged.
+The demo runs the real baseline scenario, the real high-capacity YAML, and then the sensor-driven Autonomy mission. `-RampLabCapture -RampLabCaptureMultiplier=10` captures their actual simulated states. The multiplier accelerates wall-clock capture only; the visible operator playback remains one of 1x, 5x, 10x, or 20x and the fixed simulation step/outcomes are unchanged.
 
 Camera controls are `W/A/S/D` to pan, `Q/E` to rotate, and mouse wheel to zoom. The UI also provides Overview, Ramp, Gate A2, and Service Roads presets.

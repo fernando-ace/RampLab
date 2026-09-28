@@ -15,24 +15,28 @@ RampLab is a portable C++23 discrete-event simulation engine for airport ramp op
 - Human-readable snapshot diagnostics and optional JSON Lines event recording.
 - Turnaround, delay, waiting-time, and fleet-utilization metrics.
 - Parallel deterministic parameter sweeps with reproducible CSV/JSON experiment results.
+- Separate fixed-step ground-vehicle autonomy simulation with deterministic GNSS, IMU, odometry, LiDAR, A* route following, collision checking, and sensor-noise experiments.
 - Optional Unreal 5.8/Cesium digital twin anchored at Auburn University Regional Airport, with entity inspection and actual scenario comparison.
+- Optional Unreal autonomy mode with the closed-loop tug, A* route, obstacles, GNSS estimate, and LiDAR overlays.
 
 ## Architecture
 
-The core `airside_sim` library contains no YAML, UI, network, Unreal, ROS2, or platform rendering code. `airside_scenario` is the only target that knows about yaml-cpp. Both the CLI and future adapters consume ordinary C++ domain values.
+The core `airside_sim` and `airside_autonomy` libraries contain no YAML, UI, network, Unreal, ROS2, or platform rendering code. YAML parsing stays in the scenario-loader targets. Both the CLI and viewer adapters consume ordinary C++ domain values.
 
 ```text
-                  RampLab Core
-                 /            \
-                /              \
-               v                v
-       Unreal Viewer      Experiment Runner
-                              |
-                              v
-                       Parallel simulations
-                              |
-                              v
-                       Aggregated results
+                         RampLab
+                           |
+             +-------------+--------------+
+             |                            |
+     Operational Simulation       Autonomy Simulation
+     discrete events / services    fixed-step tug / sensors
+             |                            |
+             +-------------+--------------+
+                           |
+                   Experiment Runners
+                           |
+                    Aggregated results
+             (Unreal mirrors both simulation domains)
 ```
 
 See [architecture.md](docs/architecture.md) and [unreal-integration.md](docs/unreal-integration.md).
@@ -45,6 +49,7 @@ apps/airside_experiment/   Parallel experiment CLI
 experiments/               Versioned experiment definitions
 include/airside/
   agents/                 Aircraft and service vehicles
+  autonomy/               Fixed-step vehicle, observations, controllers, experiments
   core/                   Time, IDs, event queue, structured events
   experiment/             Typed sweeps, worker pool, results, statistics
   integration/            Snapshot schema
@@ -128,6 +133,17 @@ The viewer starts with `scenarios/baseline.yaml` and its configured seed. Its co
 ```
 
 Each completed experiment writes `runs.csv`, `summary.csv`, and `experiment.json`. The batch path discards per-event history and snapshots while retaining final run metrics. See [experiments.md](docs/experiments.md) for the schema, supported typed overrides, seed rules, statistics, output contracts, worker policy, and development benchmark.
+
+## Ground-vehicle autonomy
+
+```powershell
+.\build\Release\airside_autonomy.exe --scenario scenarios\autonomy_tug.yaml --seed 42
+.\build\Release\airside_autonomy.exe --scenario scenarios\autonomy_tug.yaml --seed 42 --record-trajectory results\tug.csv
+.\build\Release\airside_autonomy.exe --scenario scenarios\autonomy_safety_stop.yaml --seed 42
+.\build\Release\airside_autonomy_experiment.exe --experiment experiments\autonomy_noise_validation.yaml --workers 4
+```
+
+The optional autonomy library and headless tools build without Unreal or ROS2. The autonomy architecture, equations, sensor assumptions, and current ROS2 prerequisite are documented in [autonomy.md](docs/autonomy.md).
 
 ## Snapshot API
 
