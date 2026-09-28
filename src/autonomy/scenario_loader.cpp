@@ -40,10 +40,12 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         s.sensors.gnss_sigma_m=value<double>(sensors,"gnss_sigma_m",0.5);
         s.sensors.gnss_bias_m={value<double>(sensors,"gnss_bias_x_m",0.0),value<double>(sensors,"gnss_bias_y_m",0.0)};
         s.sensors.imu_hz=value<double>(sensors,"imu_hz",50.0);
-        s.sensors.imu_yaw_sigma_radps=value<double>(sensors,"imu_yaw_sigma_radps",0.005);
+        s.sensors.imu_heading_sigma_rad=value<double>(sensors,"imu_heading_sigma_rad",0.005);
+        s.sensors.imu_yaw_rate_sigma_radps=value<double>(sensors,"imu_yaw_rate_sigma_radps",0.005);
         s.sensors.imu_accel_sigma_mps2=value<double>(sensors,"imu_accel_sigma_mps2",0.03);
         s.sensors.odometry_hz=value<double>(sensors,"odometry_hz",20.0);
         s.sensors.odometry_sigma_mps=value<double>(sensors,"odometry_sigma_mps",0.02);
+        s.sensors.odometry_sigma_m=value<double>(sensors,"odometry_sigma_m",0.01);
         s.sensors.lidar_hz=value<double>(sensors,"lidar_hz",10.0);
         s.sensors.lidar_fov_rad=value<double>(sensors,"lidar_fov_deg",180.0)*3.14159265358979323846/180.0;
         s.sensors.lidar_beams=value<std::size_t>(sensors,"lidar_beams",181);

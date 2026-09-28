@@ -39,10 +39,12 @@ struct SensorConfig {
     double gnss_sigma_m{0.5};
     Vec2 gnss_bias_m{};
     double imu_hz{50.0};
-    double imu_yaw_sigma_radps{0.005};
+    double imu_heading_sigma_rad{0.005};
+    double imu_yaw_rate_sigma_radps{0.005};
     double imu_accel_sigma_mps2{0.03};
     double odometry_hz{20.0};
     double odometry_sigma_mps{0.02};
+    double odometry_sigma_m{0.01};
     double lidar_hz{10.0};
     double lidar_fov_rad{3.14159265358979323846};
     std::size_t lidar_beams{181};

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 namespace airside::autonomy {
@@ -28,4 +29,5 @@ TEST(AutonomyTest, LidarSafetyStopsBeforePhysicalCollision){auto s=scenario();s.
 TEST(AutonomyTest, IndependentCollisionSystemRecordsImpact){auto s=scenario();s.obstacles={{"blocking-barrier",{0,0},0.8}};AutonomySimulation sim{std::move(s),42};MaximumCommand controller;const auto result=sim.run(controller);EXPECT_EQ(result.metrics.result,MissionResult::Collision);EXPECT_EQ(result.metrics.collision_count,1U);ASSERT_TRUE(result.metrics.first_collision_time_s);EXPECT_EQ(result.metrics.collided_obstacle,"blocking-barrier");}
 TEST(AutonomyTest, OptionalTrajectoryRecordingHasGroundTruthAndObservationColumns){AutonomySimulation sim{scenario(),42};ReferenceController controller;std::ostringstream csv;const auto result=sim.run(controller,&csv);const auto contents=csv.str();EXPECT_EQ(result.metrics.result,MissionResult::Success);EXPECT_NE(contents.find("estimated_x_m"),std::string::npos);EXPECT_GT(std::count(contents.begin(),contents.end(),'\n'),2);}
 TEST(AutonomyExperimentTest, SerialAndParallelRunsHaveStableOrdinalAndIdenticalResults){std::vector<AutonomyRunRequest> requests;for(std::size_t i=0;i<6;++i){auto s=scenario();s.sensors.gnss_sigma_m=i%2?.1:1.5;requests.push_back({std::move(s),42+i,10-i});}const auto serial=execute_runs(requests,1),parallel=execute_runs(std::move(requests),3);ASSERT_EQ(serial.runs.size(),parallel.runs.size());for(std::size_t i=0;i<serial.runs.size();++i){EXPECT_EQ(serial.runs[i].ordinal,parallel.runs[i].ordinal);EXPECT_EQ(serial.runs[i].seed,parallel.runs[i].seed);EXPECT_EQ(serial.runs[i].metrics.result,parallel.runs[i].metrics.result);EXPECT_EQ(serial.runs[i].metrics.trajectory_digest,parallel.runs[i].metrics.trajectory_digest);}}
+TEST(AutonomyExperimentTest, WorkerFailurePropagatesToCaller){auto s=scenario();s.sensors.gnss_hz=0.0;EXPECT_THROW((void)execute_runs({AutonomyRunRequest{std::move(s),42,0}},2),std::invalid_argument);}
 }

@@ -51,7 +51,7 @@ struct AutonomySimulation::Impl {
     std::normal_distribution<double> normal{0.0, 1.0};
     MissionState mission;
     VehicleState state;
-    double time{0.0}, previous_accel{0.0};
+    double time{0.0}, previous_accel{0.0}, initial_heading{0.0};
     SensorFrame frame;
     double next_gnss{0.0}, next_imu{0.0}, next_odom{0.0}, next_lidar{0.0};
     bool complete{false}, safety_was_active{false};
@@ -61,8 +61,14 @@ struct AutonomySimulation::Impl {
     std::uint64_t digest{14695981039346656037ULL};
 
     Impl(AutonomyScenario input, std::uint64_t seed) : scenario(std::move(input)), random(seed), state(scenario.initial_state) {
+        const auto& sensor=scenario.sensors;
         if (!(scenario.timestep_s>0.0) || !(scenario.timeout_s>0.0) || !(scenario.limits.maximum_speed_mps>0.0) ||
-            scenario.sensors.lidar_beams<2 || !(scenario.sensors.lidar_max_range_m>scenario.sensors.lidar_min_range_m))
+            !(scenario.limits.maximum_acceleration_mps2>0.0) || !(scenario.limits.maximum_deceleration_mps2>0.0) ||
+            !(scenario.limits.maximum_yaw_rate_radps>0.0) || !(sensor.gnss_hz>0.0) || !(sensor.imu_hz>0.0) ||
+            !(sensor.odometry_hz>0.0) || !(sensor.lidar_hz>0.0) || sensor.lidar_beams<2 ||
+            !(sensor.lidar_max_range_m>sensor.lidar_min_range_m) || !(sensor.lidar_fov_rad>0.0) ||
+            sensor.gnss_sigma_m<0.0 || sensor.imu_heading_sigma_rad<0.0 || sensor.imu_yaw_rate_sigma_radps<0.0 ||
+            sensor.imu_accel_sigma_mps2<0.0 || sensor.odometry_sigma_mps<0.0 || sensor.odometry_sigma_m<0.0 || sensor.lidar_sigma_m<0.0)
             throw std::invalid_argument("invalid autonomy simulation configuration");
         const auto start=find_node(scenario.airport.graph,scenario.start_node), goal=find_node(scenario.airport.graph,scenario.goal_node);
         const auto route=find_route(scenario.airport.graph,start,goal);
@@ -70,6 +76,7 @@ struct AutonomySimulation::Impl {
         for (const auto node:route->nodes) mission.waypoints.push_back(scenario.airport.graph.node(node).position);
         mission.goal=mission.waypoints.back(); mission.limits=scenario.limits;
         if (state.position==Vec2{}) state.position=mission.waypoints.front();
+        initial_heading=state.heading_rad;
         metrics.minimum_obstacle_clearance_m=std::numeric_limits<double>::infinity();
         produce_sensors();
     }
@@ -89,8 +96,8 @@ struct AutonomySimulation::Impl {
     }
     void produce_sensors() {
         frame.timestamp_s=time; const auto& c=scenario.sensors;
-        if(time+1e-9>=next_imu){frame.imu=ImuMeasurement{time,wrap_angle(state.heading_rad+noise(c.imu_yaw_sigma_radps)),state.yaw_rate_radps+noise(c.imu_yaw_sigma_radps),previous_accel+noise(c.imu_accel_sigma_mps2)};next_imu+=1.0/c.imu_hz;++metrics.imu_samples;}
-        if(time+1e-9>=next_odom){frame.odometry=OdometryMeasurement{time,state.distance_m+noise(c.odometry_sigma_mps*0.01),std::max(0.0,state.speed_mps+noise(c.odometry_sigma_mps)),state.heading_rad};next_odom+=1.0/c.odometry_hz;++metrics.odometry_samples;}
+        if(time+1e-9>=next_imu){frame.imu=ImuMeasurement{time,wrap_angle(state.heading_rad+noise(c.imu_heading_sigma_rad)),state.yaw_rate_radps+noise(c.imu_yaw_rate_sigma_radps),previous_accel+noise(c.imu_accel_sigma_mps2)};next_imu+=1.0/c.imu_hz;++metrics.imu_samples;}
+        if(time+1e-9>=next_odom){frame.odometry=OdometryMeasurement{time,state.distance_m+noise(c.odometry_sigma_m),std::max(0.0,state.speed_mps+noise(c.odometry_sigma_mps)),wrap_angle(state.heading_rad-initial_heading)};next_odom+=1.0/c.odometry_hz;++metrics.odometry_samples;}
         if(time+1e-9>=next_lidar){frame.lidar=make_lidar();next_lidar+=1.0/c.lidar_hz;++metrics.lidar_scans;}
         if(time+1e-9>=next_gnss){frame.gnss=GnssMeasurement{time,{state.position.x_m+c.gnss_bias_m.x_m+noise(c.gnss_sigma_m),state.position.y_m+c.gnss_bias_m.y_m+noise(c.gnss_sigma_m)},c.gnss_sigma_m*1.96};next_gnss+=1.0/c.gnss_hz;++metrics.gnss_samples;}
     }
