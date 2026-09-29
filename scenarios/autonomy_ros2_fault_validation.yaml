@@ -1,0 +1,26 @@
+name: autonomy_ros2_fault_validation
+default_seed: 42
+map_scenario: baseline.yaml
+mission:
+  start_node: Service Depot
+  goal_node: Gate A2
+vehicle:
+  x_m: 0.0
+  y_m: 0.0
+  heading_rad: 0.7853981633974483
+simulation:
+  timestep_s: 0.02
+  timeout_s: 240.0
+  safety_stop_range_m: 2.2
+  localization_timeout_s: 3.0
+  perception_timeout_s: 0.5
+sensors: {}
+faults:
+  - {sensor: gnss, type: dropout, start_s: 5.0, duration_s: 3.0}
+  - {sensor: lidar, type: range_limit, start_s: 8.0, duration_s: 3.0, magnitude: 12.0}
+  - {sensor: odometry, type: scale, start_s: 11.0, duration_s: 3.0, magnitude: 0.25}
+  - {sensor: gnss, type: dropout, start_s: 14.0, duration_s: 4.0}
+  - {sensor: odometry, type: scale, start_s: 14.0, duration_s: 4.0, magnitude: 0.15}
+  - {sensor: lidar, type: dropout, start_s: 18.0, duration_s: 10.0}
+  - {sensor: gnss, type: dropout, start_s: 18.0, duration_s: 10.0}
+  - {sensor: imu, type: dropout, start_s: 18.0, duration_s: 10.0}

@@ -41,6 +41,7 @@ using ramplab_ros2_bridge::CommandWatchdog;
 struct Options {
   std::string scenario{"scenarios/autonomy_tug.yaml"};
   std::optional<std::uint64_t> seed;
+  std::optional<std::uint64_t> fault_seed;
   double realtime_factor{1.0};
   double command_timeout_s{0.5};
   std::optional<double> max_simulation_s;
@@ -65,11 +66,12 @@ Options parse_options(int argc, char** argv) {
     };
     if (arg == "--scenario") result.scenario = next();
     else if (arg == "--seed") result.seed = std::stoull(std::string(next()));
+    else if (arg == "--fault-seed") result.fault_seed = std::stoull(std::string(next()));
     else if (arg == "--realtime-factor") result.realtime_factor = parse_double(next(), arg);
     else if (arg == "--command-timeout-s") result.command_timeout_s = parse_double(next(), arg);
     else if (arg == "--max-sim-seconds") result.max_simulation_s = parse_double(next(), arg);
     else if (arg == "--help") {
-      std::cout << "ramplab_ros2_bridge [--scenario FILE] [--seed N] [--realtime-factor N] "
+      std::cout << "ramplab_ros2_bridge [--scenario FILE] [--seed N] [--fault-seed N] [--realtime-factor N] "
                    "[--command-timeout-s N] [--max-sim-seconds N]\n";
       std::exit(0);
     } else if (arg != "--ros-args" && arg != "--") {
@@ -335,7 +337,8 @@ int main(int argc, char** argv) {
     const auto options = parse_options(argc, argv);
     auto scenario = airside::autonomy::load_scenario(options.scenario);
     const auto seed = options.seed.value_or(scenario.default_seed);
-    AutonomySimulation simulation(scenario, seed);
+    const auto fault_seed = options.fault_seed.value_or(seed ^ 0x9e3779b97f4a7c15ULL);
+    AutonomySimulation simulation(scenario, seed, fault_seed);
     rclcpp::init(argc, argv);
     auto bridge = std::make_shared<BridgeNode>(simulation, scenario, options.command_timeout_s);
     bridge->initialize_transforms();

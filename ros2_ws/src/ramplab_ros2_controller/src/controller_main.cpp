@@ -1,6 +1,7 @@
 #include "ramplab_ros2_common/geodesy.hpp"
 
 #include <geometry_msgs/msg/twist.hpp>
+#include <builtin_interfaces/msg/time.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -28,6 +29,8 @@ public:
     maximum_deceleration_mps2_ = declare_parameter<double>("maximum_deceleration_mps2", 1.5);
     maximum_yaw_rate_radps_ = declare_parameter<double>("maximum_yaw_rate_radps", 0.8);
     safety_stop_range_m_ = declare_parameter<double>("safety_stop_range_m", 2.2);
+    localization_timeout_s_ = declare_parameter<double>("localization_timeout_s", 3.0);
+    perception_timeout_s_ = declare_parameter<double>("perception_timeout_s", 0.5);
     const auto sensor_qos = rclcpp::SensorDataQoS().keep_last(1);
     const auto command_qos = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile();
     command_pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel", command_qos);
@@ -47,7 +50,7 @@ public:
 
   void report() const {
     RCLCPP_INFO(get_logger(), "Controller stopped: commands=%zu, LiDAR emergency stops=%zu, "
-        "goal stop latched=%s", commands_published_, emergency_stops_,
+        "degraded safety stops=%zu, goal stop latched=%s", commands_published_, emergency_stops_, degraded_safety_stops_,
         goal_stop_latched_ ? "true" : "false");
   }
 
@@ -95,10 +98,21 @@ private:
       estimated_position_.y = 0.85 * estimated_position_.y + 0.15 * gnss_->north_m;
       last_fused_gnss_stamp_ = gnss_stamp_;
     }
-    if (waypoints_.size() < 2 || !imu_ || !scan_ || !gnss_) {
+    const double clock_now = get_clock()->now().seconds();
+    const double now = std::isfinite(clock_now) && clock_now > 0.0 ? clock_now : stamp_seconds(message.header.stamp);
+    const bool perception_stale = !scan_ || now - stamp_seconds(scan_->header.stamp) > perception_timeout_s_;
+    const bool heading_stale = !imu_ || now - stamp_seconds(imu_->header.stamp) > localization_timeout_s_;
+    const bool gnss_stale = gnss_stamp_ < 0.0 || now - gnss_stamp_ > localization_timeout_s_;
+    if (waypoints_.size() < 2 || heading_stale || perception_stale || gnss_stale) {
+      if ((heading_stale || perception_stale || gnss_stale) && !degraded_stop_active_) {
+        ++degraded_safety_stops_;
+        RCLCPP_WARN(get_logger(), "Degraded sensing exceeded simulation-time health limits; commanding stop");
+      }
+      degraded_stop_active_ = heading_stale || perception_stale || gnss_stale;
       publish_command({});
       return;
     }
+    degraded_stop_active_ = false;
     const double heading = 2.0 * std::atan2(imu_->orientation.z, imu_->orientation.w);
     const Point goal = waypoints_.back();
     const double goal_distance = distance(estimated_position_, goal);
@@ -147,6 +161,10 @@ private:
     return false;
   }
 
+  static double stamp_seconds(const builtin_interfaces::msg::Time& stamp) {
+    return static_cast<double>(stamp.sec) + static_cast<double>(stamp.nanosec) / 1.0e9;
+  }
+
   void publish_command(std::pair<double, double> command) {
     geometry_msgs::msg::Twist message;
     message.linear.x = std::clamp(command.first, 0.0, maximum_speed_mps_);
@@ -163,6 +181,8 @@ private:
   double maximum_deceleration_mps2_{1.5};
   double maximum_yaw_rate_radps_{0.8};
   double safety_stop_range_m_{2.2};
+  double localization_timeout_s_{3.0};
+  double perception_timeout_s_{0.5};
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr command_pub_;
   rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr route_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
@@ -179,7 +199,8 @@ private:
   Point last_odom_position_{};
   std::size_t target_waypoint_index_{1};
   std::size_t emergency_stops_{}, commands_published_{};
-  bool have_odom_{}, safety_active_{};
+  std::size_t degraded_safety_stops_{};
+  bool have_odom_{}, safety_active_{}, degraded_stop_active_{};
   bool goal_stop_latched_{};
 };
 }  // namespace

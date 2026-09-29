@@ -101,6 +101,31 @@ The independent live-topic/rate probe is:
 python .\ros2_ws\scripts\verify_live_topics.py --duration 8 --factor 1
 ```
 
+## Deterministic sensor fault validation
+
+The bridge loads fault entries from the same autonomy scenario YAML as the headless simulation. It publishes faulted `SensorFrame` values through the existing ROS conversion boundary: GNSS dropout omits `NavSatFix`, range faults change `LaserScan.range_max`, odometry faults change the measured increments/speed, delayed messages retain their original simulation-time header stamp, and `/clock` keeps advancing. The controller remains an independent process and receives only ROS route/sensor messages; the ROS graph has no ground-truth topic.
+
+Build the core first, then rebuild the native ROS overlay after core changes:
+
+```powershell
+Set-Location C:\dev\ros2_lyrical
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\scripts\build.ps1'"
+```
+
+The script below launches the separately compiled controller and bridge as distinct processes and observes `/clock`, GNSS, LiDAR, odometry, and `cmd_vel`. Its staged scenario checks GNSS dropout, LiDAR range degradation, wheel slip, combined localization faults, and a severe LiDAR/GNSS/IMU outage that causes the external controller to command zero speed:
+
+```powershell
+Set-Location C:\dev\ros2_lyrical
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_ros2_fault_validation.yaml --seed 42 --fault-seed 7019 --factor 1"
+```
+
+The same two-process probe can regression-check the Goal 6B command watchdog by stopping only the external controller at simulation time 5 s. The probe requires a command-timeout activation after controller termination and a zero-speed finish without collision. Windows process scheduling can also produce an earlier startup timeout if the controller has not published its first command yet:
+
+```powershell
+Set-Location C:\dev\ros2_lyrical
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_tug.yaml --max-sim-seconds 12 --kill-controller-at 5 --factor 1"
+```
+
 The verified external Depot → Gate A2 mission completed successfully: 66.700 s simulation time, 310.063 m travelled, 0.767 m mean route error, 3.348 m maximum route error, 4.724 m minimum obstacle clearance, zero emergency stops, zero collisions, and zero command timeouts. It published 668 scans, 3336 IMUs, 1335 odometry messages, and 334 GNSS messages.
 
 ## Command timeout and determinism
