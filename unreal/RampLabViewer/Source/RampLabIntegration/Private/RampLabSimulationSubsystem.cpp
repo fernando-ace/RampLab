@@ -297,6 +297,11 @@ const airside::autonomy::AutonomySnapshot* URampLabSimulationSubsystem::GetAuton
     return AutonomySnapshot.IsSet() ? &AutonomySnapshot.GetValue() : nullptr;
 }
 
+const airside::autonomy::AutonomyScenario* URampLabSimulationSubsystem::GetAutonomyScenario() const noexcept
+{
+    return AutonomySimulation == nullptr ? nullptr : &AutonomySimulation->scenario();
+}
+
 bool URampLabSimulationSubsystem::LoadSelectedScenario()
 {
     try {

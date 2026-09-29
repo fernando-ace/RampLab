@@ -1,5 +1,6 @@
 #include "airside/autonomy/scenario_loader.hpp"
 #include "airside/autonomy/simulation.hpp"
+#include "ramplab_ros2_bridge/camera_transport.hpp"
 #include "ramplab_ros2_bridge/command_watchdog.hpp"
 #include "ramplab_ros2_bridge/conversions.hpp"
 
@@ -9,6 +10,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rosgraph_msgs/msg/clock.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <std_msgs/msg/u_int8.hpp>
@@ -28,6 +31,7 @@
 #include <string>
 #include <string_view>
 #include <thread>
+#include <memory>
 #include <vector>
 
 namespace {
@@ -39,6 +43,7 @@ using airside::autonomy::SensorFrame;
 using airside::autonomy::VehicleCommand;
 using airside::autonomy::VehicleLimits;
 using ramplab_ros2_bridge::CommandWatchdog;
+using ramplab_ros2_bridge::CameraTcpReceiver;
 
 struct Options {
   std::string scenario{"scenarios/autonomy_tug.yaml"};
@@ -46,6 +51,7 @@ struct Options {
   std::optional<std::uint64_t> fault_seed;
   double realtime_factor{1.0};
   double command_timeout_s{0.5};
+  std::uint16_t camera_port{39010};
   std::optional<double> max_simulation_s;
 };
 
@@ -71,10 +77,15 @@ Options parse_options(int argc, char** argv) {
     else if (arg == "--fault-seed") result.fault_seed = std::stoull(std::string(next()));
     else if (arg == "--realtime-factor") result.realtime_factor = parse_double(next(), arg);
     else if (arg == "--command-timeout-s") result.command_timeout_s = parse_double(next(), arg);
+    else if (arg == "--camera-port") {
+      const auto port = std::stoul(std::string(next()));
+      if (port == 0 || port > 65535) throw std::invalid_argument("camera port must be in [1,65535]");
+      result.camera_port = static_cast<std::uint16_t>(port);
+    }
     else if (arg == "--max-sim-seconds") result.max_simulation_s = parse_double(next(), arg);
     else if (arg == "--help") {
       std::cout << "ramplab_ros2_bridge [--scenario FILE] [--seed N] [--fault-seed N] [--realtime-factor N] "
-                   "[--command-timeout-s N] [--max-sim-seconds N]\n";
+                   "[--command-timeout-s N] [--max-sim-seconds N] [--camera-port N]\n";
       std::exit(0);
     } else if (arg != "--ros-args" && arg != "--") {
       throw std::invalid_argument("unknown option: " + std::string(arg));
@@ -100,13 +111,15 @@ private:
 class BridgeNode final : public rclcpp::Node {
 public:
   BridgeNode(AutonomySimulation& simulation, const AutonomyScenario& scenario,
-             double timeout_s)
+             double timeout_s, std::uint16_t camera_port)
       : Node("ramplab_bridge", "/ramplab/tug1"), simulation_(simulation), scenario_(scenario),
         timeout_s_(timeout_s), watchdog_(timeout_s, simulation.time_s()),
         scan_pub_(create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::SensorDataQoS().keep_last(1))),
         imu_pub_(create_publisher<sensor_msgs::msg::Imu>("imu", rclcpp::SensorDataQoS().keep_last(1))),
         odom_pub_(create_publisher<nav_msgs::msg::Odometry>("odom", rclcpp::SensorDataQoS().keep_last(1))),
         gnss_pub_(create_publisher<sensor_msgs::msg::NavSatFix>("gnss", rclcpp::SensorDataQoS().keep_last(1))),
+        camera_image_pub_(create_publisher<sensor_msgs::msg::Image>("camera/image_raw", rclcpp::SensorDataQoS().keep_last(1))),
+        camera_info_pub_(create_publisher<sensor_msgs::msg::CameraInfo>("camera/camera_info", rclcpp::SensorDataQoS().keep_last(1))),
         filtered_odom_pub_(create_publisher<nav_msgs::msg::Odometry>("filtered_odom", rclcpp::SensorDataQoS().keep_last(1))),
         estimator_health_pub_(create_publisher<std_msgs::msg::UInt8>("estimator_health", rclcpp::SensorDataQoS().keep_last(1))),
         estimator_diagnostics_pub_(create_publisher<std_msgs::msg::Float64MultiArray>("estimator_diagnostics", rclcpp::SensorDataQoS().keep_last(1))),
@@ -114,6 +127,7 @@ public:
             rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local())),
         clock_pub_(create_publisher<rosgraph_msgs::msg::Clock>("/clock",
             rclcpp::QoS(rclcpp::KeepLast(10)).reliable())) {
+    camera_receiver_ = std::make_unique<CameraTcpReceiver>(camera_port);
     cmd_sub_ = create_subscription<geometry_msgs::msg::Twist>("cmd_vel",
         rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile(),
         [this](geometry_msgs::msg::Twist::ConstSharedPtr message) { receive_command(*message); });
@@ -129,11 +143,12 @@ public:
     dynamic_tf_ = std::make_shared<tf2_ros::TransformBroadcaster>(dynamic_interfaces);
     std::vector<geometry_msgs::msg::TransformStamped> transforms;
     transforms.push_back(identity_transform("map", "odom"));
-    transforms.push_back(identity_transform("base_link", "gnss", 0.0, 0.0, 0.20));
-    transforms.push_back(identity_transform("base_link", "imu", 0.0, 0.0, 0.0));
-    transforms.push_back(identity_transform("base_link", "wheel_odom", 0.0, 0.0, 0.0));
-    transforms.push_back(identity_transform("base_link", "lidar", 3.40, 0.0, -0.30));
-    transforms.push_back(identity_transform("base_link", "camera", 3.40, 0.0, 0.0));
+    const auto& sensors = scenario_.sensors;
+    transforms.push_back(sensor_transform("gnss", sensors.gnss_extrinsics));
+    transforms.push_back(sensor_transform("imu", sensors.imu_extrinsics));
+    transforms.push_back(sensor_transform("wheel_odom", sensors.odometry_extrinsics));
+    transforms.push_back(sensor_transform("lidar", sensors.lidar_extrinsics));
+    transforms.push_back(sensor_transform("camera", sensors.camera_extrinsics));
     static_tf_->sendTransform(transforms);
   }
 
@@ -143,7 +158,15 @@ public:
     publish_frame(simulation_.observe());
   }
 
-  void spin_once() { rclcpp::spin_some(shared_from_this()); }
+  void spin_once() {
+    rclcpp::spin_some(shared_from_this());
+    if (auto frame = camera_receiver_->poll()) {
+      auto messages = ramplab_ros2_bridge::to_camera_messages(*frame);
+      camera_image_pub_->publish(messages.image);
+      camera_info_pub_->publish(messages.info);
+      ++camera_count_;
+    }
+  }
 
   void advance_one(ExternalCommand& adapter) {
     adapter.set(command_for_step());
@@ -160,6 +183,7 @@ public:
   [[nodiscard]] std::uint64_t count_imu() const noexcept { return imu_count_; }
   [[nodiscard]] std::uint64_t count_odom() const noexcept { return odom_count_; }
   [[nodiscard]] std::uint64_t count_gnss() const noexcept { return gnss_count_; }
+  [[nodiscard]] std::uint64_t count_camera() const noexcept { return camera_count_; }
 
 private:
   static geometry_msgs::msg::TransformStamped identity_transform(
@@ -172,6 +196,13 @@ private:
     tf.transform.translation.y = y_m;
     tf.transform.translation.z = z_m;
     tf.transform.rotation.w = 1.0;
+    return tf;
+  }
+
+  static geometry_msgs::msg::TransformStamped sensor_transform(
+      const std::string& child, const airside::autonomy::SensorExtrinsics& extrinsics) {
+    auto tf = identity_transform("base_link", child, extrinsics.x_m, extrinsics.y_m, extrinsics.z_m);
+    tf.transform.rotation = ramplab_ros2_bridge::yaw_quaternion(extrinsics.yaw_rad);
     return tf;
   }
 
@@ -327,12 +358,15 @@ private:
   rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr estimator_health_pub_;
   rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr estimator_diagnostics_pub_;
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr gnss_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_pub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr route_pub_;
   rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr clock_pub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> dynamic_tf_;
-  std::uint64_t scan_count_{}, imu_count_{}, odom_count_{}, gnss_count_{};
+  std::unique_ptr<CameraTcpReceiver> camera_receiver_;
+  std::uint64_t scan_count_{}, imu_count_{}, odom_count_{}, gnss_count_{}, camera_count_{};
   double last_scan_stamp_{-1.0}, last_imu_stamp_{-1.0}, last_odom_stamp_{-1.0}, last_gnss_stamp_{-1.0};
   double last_filtered_stamp_{-1.0};
   bool odom_initialized_{};
@@ -361,7 +395,8 @@ void print_result(const airside::autonomy::AutonomyRun& run, const BridgeNode& b
       << "Command timeout activations: " << bridge.timeout_count() << '\n'
       << "Latest command age: " << bridge.latest_command_age() << " s\n"
       << "Published messages: scan=" << bridge.count_scan() << " imu=" << bridge.count_imu()
-      << " odom=" << bridge.count_odom() << " gnss=" << bridge.count_gnss() << '\n'
+      << " odom=" << bridge.count_odom() << " gnss=" << bridge.count_gnss()
+      << " camera=" << bridge.count_camera() << '\n'
       << "Trajectory digest: " << metrics.trajectory_digest << '\n';
   if (run_limit) std::cout << "Stopped at requested simulation limit: " << *run_limit << " s\n";
 }
@@ -376,7 +411,8 @@ int main(int argc, char** argv) {
     const auto fault_seed = options.fault_seed.value_or(seed ^ 0x9e3779b97f4a7c15ULL);
     AutonomySimulation simulation(scenario, seed, fault_seed);
     rclcpp::init(argc, argv);
-    auto bridge = std::make_shared<BridgeNode>(simulation, scenario, options.command_timeout_s);
+    auto bridge = std::make_shared<BridgeNode>(simulation, scenario, options.command_timeout_s,
+        options.camera_port);
     bridge->initialize_transforms();
     ExternalCommand command;
     bridge->publish_initial();

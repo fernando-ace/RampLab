@@ -1,4 +1,5 @@
 #include "ramplab_ros2_bridge/conversions.hpp"
+#include "ramplab_ros2_bridge/camera_transport.hpp"
 #include "ramplab_ros2_bridge/command_watchdog.hpp"
 #include "ramplab_ros2_common/geodesy.hpp"
 
@@ -10,6 +11,40 @@
 #include <stdexcept>
 
 using namespace ramplab_ros2_bridge;
+
+TEST(Ros2Conversions, UnrealCameraFramePublishesImageAndCalibratedCameraInfo) {
+  CameraFrame frame;
+  frame.timestamp_ns = 1'250'000'000ULL;
+  frame.sequence = 7;
+  frame.width = 4;
+  frame.height = 2;
+  frame.horizontal_fov_degrees = 90.0F;
+  frame.bgra8.assign(4U * 2U * 4U, 0x5a);
+  const auto messages = to_camera_messages(frame);
+  EXPECT_EQ(messages.image.header.frame_id, "camera");
+  EXPECT_NEAR(from_ros_time(messages.image.header.stamp), 1.25, 1e-9);
+  EXPECT_EQ(messages.image.encoding, "bgra8");
+  EXPECT_EQ(messages.image.width, 4U);
+  EXPECT_EQ(messages.image.height, 2U);
+  EXPECT_EQ(messages.image.step, 16U);
+  EXPECT_EQ(messages.image.data, frame.bgra8);
+  EXPECT_EQ(messages.info.header, messages.image.header);
+  EXPECT_EQ(messages.info.distortion_model, "plumb_bob");
+  EXPECT_NEAR(messages.info.k[0], 2.0, 1e-12);
+  EXPECT_NEAR(messages.info.k[4], 2.0, 1e-12);
+  EXPECT_NEAR(messages.info.k[2], 1.5, 1e-12);
+  EXPECT_NEAR(messages.info.k[5], 0.5, 1e-12);
+  EXPECT_EQ(messages.info.d.size(), 5U);
+}
+
+TEST(Ros2Conversions, UnrealCameraTransportRejectsMalformedPixelBuffers) {
+  CameraFrame frame;
+  frame.width = 2;
+  frame.height = 2;
+  frame.horizontal_fov_degrees = 90.0F;
+  frame.bgra8.resize(3);
+  EXPECT_THROW((void)to_camera_messages(frame), std::invalid_argument);
+}
 
 TEST(Ros2Conversions, SimulationTimeRoundTripsWithNanosecondPrecision) {
   const auto stamp = to_ros_time(12.345678901);

@@ -10,7 +10,8 @@ public class RampLabIntegration : ModuleRules
         bEnableExceptions = true;
 
         PublicDependencyModuleNames.AddRange(new[] {
-            "Core", "CoreUObject", "Engine", "CesiumRuntime", "InputCore", "Slate", "SlateCore"
+            "Core", "CoreUObject", "Engine", "CesiumRuntime", "InputCore", "Slate", "SlateCore",
+            "Sockets", "Networking"
         });
 
         string RepositoryRoot = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", ".."));

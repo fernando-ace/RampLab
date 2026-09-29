@@ -36,6 +36,8 @@ struct CircleObstacle {
     double radius_m{1.0};
 };
 
+struct SensorExtrinsics { double x_m{}, y_m{}, z_m{}, yaw_rad{}; };
+
 struct SensorConfig {
     double gnss_hz{10.0};
     double gnss_sigma_m{0.5};
@@ -48,6 +50,7 @@ struct SensorConfig {
     double odometry_sigma_mps{0.02};
     double odometry_sigma_m{0.01};
     double lidar_hz{10.0};
+    double camera_hz{20.0};
     double lidar_fov_rad{3.14159265358979323846};
     std::size_t lidar_beams{181};
     double lidar_min_range_m{0.1};
@@ -57,6 +60,12 @@ struct SensorConfig {
     SensorTimingConfig imu_timing{};
     SensorTimingConfig odometry_timing{};
     SensorTimingConfig lidar_timing{};
+    SensorTimingConfig camera_timing{};
+    SensorExtrinsics gnss_extrinsics{0.0, 0.0, 0.20, 0.0};
+    SensorExtrinsics imu_extrinsics{};
+    SensorExtrinsics odometry_extrinsics{};
+    SensorExtrinsics lidar_extrinsics{3.40, 0.0, -0.30, 0.0};
+    SensorExtrinsics camera_extrinsics{3.40, 0.0, 0.0, 0.0};
 };
 
 // Covariance is row-major for state [east, north, yaw, forward speed].
@@ -152,6 +161,12 @@ struct LidarScan {
     std::vector<double> ranges_m;
     ObservationMetadata metadata{};
 };
+struct CameraFrameMetadata {
+    ObservationMetadata metadata{};
+    std::uint32_t width{320};
+    std::uint32_t height{180};
+    double horizontal_fov_rad{1.5707963267948966};
+};
 
 struct SensorFrame {
     double timestamp_s{};
@@ -159,6 +174,7 @@ struct SensorFrame {
     std::optional<ImuMeasurement> imu;
     std::optional<OdometryMeasurement> odometry;
     std::optional<LidarScan> lidar;
+    std::optional<CameraFrameMetadata> camera;
     std::optional<EstimatedState> estimate;
 };
 
@@ -279,6 +295,7 @@ public:
     [[nodiscard]] bool finished() const noexcept;
     [[nodiscard]] SensorFrame observe() const;
     [[nodiscard]] AutonomySnapshot snapshot() const;
+    [[nodiscard]] const AutonomyScenario& scenario() const noexcept;
     [[nodiscard]] bool advance(IAutonomyController& controller);
     [[nodiscard]] AutonomyRun result() const;
     [[nodiscard]] AutonomyRun run(IAutonomyController& controller, std::ostream* trajectory_csv = nullptr,

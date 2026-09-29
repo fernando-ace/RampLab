@@ -24,6 +24,7 @@ public:
     URampLabLidarSensorComponent();
     bool CaptureAtSimulationTime(double TimeSeconds);
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1")) int32 RayCount{181};
+    UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.1")) float UpdateRateHz{10.0f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1.0", ClampMax="360.0")) float HorizontalFovDegrees{180.0f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.01")) float MinimumRangeMeters{0.1f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.1")) float MaximumRangeMeters{30.0f};
@@ -39,12 +40,18 @@ class RAMPLABINTEGRATION_API URampLabCameraSensorComponent final : public UScene
     GENERATED_BODY()
 public:
     URampLabCameraSensorComponent();
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     bool CaptureAtSimulationTime(double TimeSeconds);
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1.0", ClampMax="179.0")) float HorizontalFovDegrees{90.0f};
+    UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.1")) float UpdateRateHz{20.0f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1")) int32 ImageWidth{320};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1")) int32 ImageHeight{180};
+    UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1", ClampMax="65535")) int32 TransportPort{39010};
     UPROPERTY(VisibleAnywhere, Category="Sensor") FRampLabSensorFrameMetadata Metadata;
 private:
     TObjectPtr<class UTextureRenderTarget2D> ImageTarget;
+    class FSocket* TransportSocket{};
     double NextCaptureSeconds{0.0};
+    double NextConnectAttemptSeconds{0.0};
+    bool bLoggedConnectFailure{false};
 };

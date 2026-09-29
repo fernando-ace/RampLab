@@ -36,7 +36,7 @@ set_target_properties(ramplab_yaml_cpp PROPERTIES
   IMPORTED_LOCATION "${_ramplab_yaml}"
   INTERFACE_INCLUDE_DIRECTORIES "${RAMPLAB_BUILD_DIR}/_deps/yaml-cpp-src/include")
 
-add_library(ramplab_ros2_conversions STATIC src/conversions.cpp)
+add_library(ramplab_ros2_conversions STATIC src/conversions.cpp src/camera_transport.cpp)
 target_compile_features(ramplab_ros2_conversions PUBLIC cxx_std_20)
 target_include_directories(ramplab_ros2_conversions PUBLIC include)
 target_link_libraries(ramplab_ros2_conversions PUBLIC
@@ -44,6 +44,9 @@ target_link_libraries(ramplab_ros2_conversions PUBLIC
   sensor_msgs::sensor_msgs nav_msgs::nav_msgs geometry_msgs::geometry_msgs
   std_msgs::std_msgs
   builtin_interfaces::builtin_interfaces ramplab_ros2_common::ramplab_ros2_coordinates)
+if(WIN32)
+  target_link_libraries(ramplab_ros2_conversions PUBLIC ws2_32)
+endif()
 
 add_executable(ramplab_ros2_bridge src/bridge_main.cpp)
 target_compile_features(ramplab_ros2_bridge PRIVATE cxx_std_20)

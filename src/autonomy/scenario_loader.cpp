@@ -74,6 +74,7 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         s.sensors.odometry_sigma_mps=value<double>(sensors,"odometry_sigma_mps",0.02);
         s.sensors.odometry_sigma_m=value<double>(sensors,"odometry_sigma_m",0.01);
         s.sensors.lidar_hz=value<double>(sensors,"lidar_hz",10.0);
+        s.sensors.camera_hz=value<double>(sensors,"camera_hz",20.0);
         s.sensors.lidar_fov_rad=value<double>(sensors,"lidar_fov_deg",180.0)*3.14159265358979323846/180.0;
         s.sensors.lidar_beams=value<std::size_t>(sensors,"lidar_beams",181);
         s.sensors.lidar_min_range_m=value<double>(sensors,"lidar_min_range_m",0.1);
@@ -93,6 +94,20 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         s.sensors.imu_timing=timing("imu",s.sensors.imu_hz);
         s.sensors.odometry_timing=timing("odometry",s.sensors.odometry_hz);
         s.sensors.lidar_timing=timing("lidar",s.sensors.lidar_hz);
+        s.sensors.camera_timing=timing("camera",s.sensors.camera_hz);
+        const auto extrinsics = [&](std::string_view prefix, SensorExtrinsics defaults) {
+            const std::string key{prefix};
+            return SensorExtrinsics{
+                value<double>(sensors,(key+"_extrinsic_x_m").c_str(),defaults.x_m),
+                value<double>(sensors,(key+"_extrinsic_y_m").c_str(),defaults.y_m),
+                value<double>(sensors,(key+"_extrinsic_z_m").c_str(),defaults.z_m),
+                value<double>(sensors,(key+"_extrinsic_yaw_rad").c_str(),defaults.yaw_rad)};
+        };
+        s.sensors.gnss_extrinsics=extrinsics("gnss",s.sensors.gnss_extrinsics);
+        s.sensors.imu_extrinsics=extrinsics("imu",s.sensors.imu_extrinsics);
+        s.sensors.odometry_extrinsics=extrinsics("odometry",s.sensors.odometry_extrinsics);
+        s.sensors.lidar_extrinsics=extrinsics("lidar",s.sensors.lidar_extrinsics);
+        s.sensors.camera_extrinsics=extrinsics("camera",s.sensors.camera_extrinsics);
         if(const auto faults=root["faults"]) for(const auto& f:faults){
             SensorFault fault; fault.sensor=sensor_kind(f["sensor"].as<std::string>()); fault.kind=fault_kind(f["type"].as<std::string>());
             fault.start_s=f["start_s"].as<double>(); fault.duration_s=f["duration_s"].as<double>();

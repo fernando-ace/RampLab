@@ -44,6 +44,7 @@ public:
     [[nodiscard]] airside::SimTime GetPlaybackTime() const noexcept;
     [[nodiscard]] const airside::SimulationSnapshot* GetSnapshot() const noexcept;
     [[nodiscard]] const airside::autonomy::AutonomySnapshot* GetAutonomySnapshot() const noexcept;
+    [[nodiscard]] const airside::autonomy::AutonomyScenario* GetAutonomyScenario() const noexcept;
     [[nodiscard]] bool IsAutonomyMode() const noexcept { return AutonomySimulation != nullptr; }
     [[nodiscard]] const TArray<FString>& GetRecentEvents() const noexcept { return RecentEvents; }
     [[nodiscard]] uint64 GetSeed() const noexcept { return Seed; }

@@ -335,11 +335,29 @@ void ARampLabWorldActor::BuildAutonomyTopology(const airside::autonomy::Autonomy
     }
     AutonomyLidarSensor = NewObject<URampLabLidarSensorComponent>(AutonomyVehicleActor, TEXT("RampLabLidar"));
     AutonomyLidarSensor->SetupAttachment(AutonomyVehicleActor->GetRootComponent());
-    AutonomyLidarSensor->SetRelativeLocation(FVector(340.0f, 0.0f, -30.0f));
+    const auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>();
+    const auto* SensorScenario = Subsystem == nullptr ? nullptr : Subsystem->GetAutonomyScenario();
+    const auto LidarExtrinsics = SensorScenario == nullptr
+        ? airside::autonomy::SensorExtrinsics{3.40, 0.0, -0.30, 0.0}
+        : SensorScenario->sensors.lidar_extrinsics;
+    AutonomyLidarSensor->SetRelativeLocation(FVector(LidarExtrinsics.x_m * 100.0, LidarExtrinsics.y_m * 100.0, LidarExtrinsics.z_m * 100.0));
+    AutonomyLidarSensor->SetRelativeRotation(FRotator(0.0, FMath::RadiansToDegrees(LidarExtrinsics.yaw_rad), 0.0));
+    if (SensorScenario != nullptr) {
+        AutonomyLidarSensor->UpdateRateHz = static_cast<float>(SensorScenario->sensors.lidar_hz);
+        AutonomyLidarSensor->RayCount = static_cast<int32>(SensorScenario->sensors.lidar_beams);
+        AutonomyLidarSensor->HorizontalFovDegrees = FMath::RadiansToDegrees(static_cast<float>(SensorScenario->sensors.lidar_fov_rad));
+        AutonomyLidarSensor->MinimumRangeMeters = static_cast<float>(SensorScenario->sensors.lidar_min_range_m);
+        AutonomyLidarSensor->MaximumRangeMeters = static_cast<float>(SensorScenario->sensors.lidar_max_range_m);
+    }
     AutonomyLidarSensor->RegisterComponent();
     AutonomyCameraSensor = NewObject<URampLabCameraSensorComponent>(AutonomyVehicleActor, TEXT("RampLabCamera"));
     AutonomyCameraSensor->SetupAttachment(AutonomyVehicleActor->GetRootComponent());
-    AutonomyCameraSensor->SetRelativeLocation(FVector(340.0f, 0.0f, 0.0f));
+    const auto CameraExtrinsics = SensorScenario == nullptr
+        ? airside::autonomy::SensorExtrinsics{3.40, 0.0, 0.0, 0.0}
+        : SensorScenario->sensors.camera_extrinsics;
+    AutonomyCameraSensor->SetRelativeLocation(FVector(CameraExtrinsics.x_m * 100.0, CameraExtrinsics.y_m * 100.0, CameraExtrinsics.z_m * 100.0));
+    AutonomyCameraSensor->SetRelativeRotation(FRotator(0.0, FMath::RadiansToDegrees(CameraExtrinsics.yaw_rad), 0.0));
+    if (SensorScenario != nullptr) AutonomyCameraSensor->UpdateRateHz = static_cast<float>(SensorScenario->sensors.camera_hz);
     AutonomyCameraSensor->RegisterComponent();
     bAutonomyTopologyBuilt = true;
 }
