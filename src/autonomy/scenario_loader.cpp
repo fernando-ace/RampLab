@@ -4,11 +4,14 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <cmath>
 #include <stdexcept>
 
 namespace airside::autonomy {
 namespace {
 template<class T> T value(const YAML::Node& n,const char* key,T fallback){return n[key]?n[key].as<T>():fallback;}
+SensorKind sensor_kind(const std::string& v){if(v=="gnss")return SensorKind::Gnss;if(v=="imu")return SensorKind::Imu;if(v=="odometry")return SensorKind::Odometry;if(v=="lidar")return SensorKind::Lidar;throw std::invalid_argument("unknown fault sensor '"+v+"'");}
+SensorFaultKind fault_kind(const std::string& v){if(v=="dropout")return SensorFaultKind::Dropout;if(v=="noise")return SensorFaultKind::Noise;if(v=="bias")return SensorFaultKind::Bias;if(v=="range_limit")return SensorFaultKind::RangeLimit;if(v=="obstruction")return SensorFaultKind::Obstruction;if(v=="scale")return SensorFaultKind::Scale;if(v=="drift")return SensorFaultKind::Drift;if(v=="delay")return SensorFaultKind::Delay;if(v=="packet_loss")return SensorFaultKind::PacketLoss;if(v=="burst_loss")return SensorFaultKind::BurstLoss;throw std::invalid_argument("unknown sensor fault type '"+v+"'");}
 }
 AutonomyScenario load_scenario(const std::filesystem::path& path){
     try {
@@ -35,6 +38,8 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         s.goal_tolerance_m=value<double>(simulation,"goal_tolerance_m",2.0);
         s.stopped_speed_mps=value<double>(simulation,"stopped_speed_mps",0.15);
         s.safety_stop_range_m=value<double>(simulation,"safety_stop_range_m",2.2);
+        s.localization_timeout_s=value<double>(simulation,"localization_timeout_s",3.0);
+        s.perception_timeout_s=value<double>(simulation,"perception_timeout_s",0.5);
         const auto sensors=root["sensors"];
         s.sensors.gnss_hz=value<double>(sensors,"gnss_hz",5.0);
         s.sensors.gnss_sigma_m=value<double>(sensors,"gnss_sigma_m",0.5);
@@ -52,6 +57,21 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         s.sensors.lidar_min_range_m=value<double>(sensors,"lidar_min_range_m",0.1);
         s.sensors.lidar_max_range_m=value<double>(sensors,"lidar_max_range_m",30.0);
         s.sensors.lidar_sigma_m=value<double>(sensors,"lidar_sigma_m",0.01);
+        if(const auto faults=root["faults"]) for(const auto& f:faults){
+            SensorFault fault; fault.sensor=sensor_kind(f["sensor"].as<std::string>()); fault.kind=fault_kind(f["type"].as<std::string>());
+            fault.start_s=f["start_s"].as<double>(); fault.duration_s=f["duration_s"].as<double>();
+            fault.magnitude=value<double>(f,"magnitude",0.0); fault.probability=value<double>(f,"probability",0.0);
+            fault.offset={value<double>(f,"x_m",0.0),value<double>(f,"y_m",0.0)};
+            fault.angle_min_rad=value<double>(f,"angle_min_deg",0.0)*3.14159265358979323846/180.0;
+            fault.angle_max_rad=value<double>(f,"angle_max_deg",0.0)*3.14159265358979323846/180.0;
+            if(!std::isfinite(fault.start_s)||!std::isfinite(fault.duration_s)||!std::isfinite(fault.magnitude)||!std::isfinite(fault.probability)||!std::isfinite(fault.offset.x_m)||!std::isfinite(fault.offset.y_m)||!std::isfinite(fault.angle_min_rad)||!std::isfinite(fault.angle_max_rad)||fault.start_s<0.0||fault.duration_s<=0.0||fault.magnitude<0.0||fault.probability<0.0||fault.probability>1.0||fault.angle_max_rad<fault.angle_min_rad)throw std::invalid_argument("invalid fault interval or parameter");
+            if((fault.kind==SensorFaultKind::Noise||fault.kind==SensorFaultKind::RangeLimit||fault.kind==SensorFaultKind::Delay)&&fault.magnitude<=0.0)throw std::invalid_argument("fault magnitude must be positive");
+            if((fault.kind==SensorFaultKind::Noise&&fault.sensor!=SensorKind::Gnss&&fault.sensor!=SensorKind::Imu)||(fault.kind==SensorFaultKind::Bias&&fault.sensor!=SensorKind::Gnss&&fault.sensor!=SensorKind::Imu)||(fault.kind==SensorFaultKind::RangeLimit&&fault.sensor!=SensorKind::Lidar)||(fault.kind==SensorFaultKind::Obstruction&&fault.sensor!=SensorKind::Lidar)||(fault.kind==SensorFaultKind::Scale&&fault.sensor!=SensorKind::Odometry)||(fault.kind==SensorFaultKind::Drift&&fault.sensor!=SensorKind::Odometry))throw std::invalid_argument("fault type is incompatible with selected sensor");
+            if(fault.kind==SensorFaultKind::Scale&&fault.magnitude>1.0)throw std::invalid_argument("odometry scale magnitude must be at most 1.0");
+            if(fault.kind==SensorFaultKind::RangeLimit&&fault.magnitude<=s.sensors.lidar_min_range_m)throw std::invalid_argument("LiDAR range limit must exceed minimum range");
+            if(fault.kind==SensorFaultKind::Obstruction&&(fault.angle_min_rad< -s.sensors.lidar_fov_rad*0.5||fault.angle_max_rad>s.sensors.lidar_fov_rad*0.5))throw std::invalid_argument("LiDAR obstruction sector is outside configured field of view");
+            s.faults.push_back(fault);
+        }
         if(const auto obstacles=root["obstacles"])for(const auto& o:obstacles)s.obstacles.push_back({o["id"].as<std::string>(),{o["x_m"].as<double>(),o["y_m"].as<double>()},o["radius_m"].as<double>()});
         return s;
     } catch(const std::exception& e){throw std::runtime_error("autonomy scenario '"+path.string()+"': "+e.what());}

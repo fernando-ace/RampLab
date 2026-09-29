@@ -53,6 +53,21 @@ struct SensorConfig {
     double lidar_sigma_m{0.01};
 };
 
+enum class SensorKind { Gnss, Imu, Odometry, Lidar };
+enum class SensorFaultKind { Dropout, Noise, Bias, RangeLimit, Obstruction, Scale, Drift, Delay, PacketLoss, BurstLoss };
+struct FaultEventRecord { std::size_t fault_index{}; double time_s{}; std::string event; };
+struct SensorFault {
+    SensorKind sensor{SensorKind::Gnss};
+    SensorFaultKind kind{SensorFaultKind::Dropout};
+    double start_s{};
+    double duration_s{};
+    double magnitude{};
+    Vec2 offset{};
+    double angle_min_rad{};
+    double angle_max_rad{};
+    double probability{};
+};
+
 struct AutonomyScenario {
     std::string name{"autonomy_tug"};
     std::uint64_t default_seed{42};
@@ -68,6 +83,9 @@ struct AutonomyScenario {
     double stopped_speed_mps{0.15};
     double timeout_s{240.0};
     double safety_stop_range_m{2.2};
+    double localization_timeout_s{3.0};
+    double perception_timeout_s{0.5};
+    std::vector<SensorFault> faults;
 };
 
 struct GnssMeasurement { double timestamp_s{}; Vec2 position{}; double accuracy_m{}; };
@@ -101,9 +119,12 @@ public:
 
 class ReferenceController final : public IAutonomyController {
 public:
-    explicit ReferenceController(double safety_stop_range_m = 2.2);
+    explicit ReferenceController(double safety_stop_range_m = 2.2, double perception_timeout_s = 0.5, double localization_timeout_s = 3.0);
     [[nodiscard]] VehicleCommand update(const SensorFrame&, const MissionState&) override;
     [[nodiscard]] std::size_t emergency_stops() const noexcept { return emergency_stops_; }
+    [[nodiscard]] std::size_t degraded_mode_entries() const noexcept { return degraded_mode_entries_; }
+    [[nodiscard]] std::size_t safety_stop_entries() const noexcept { return safety_stop_entries_; }
+    [[nodiscard]] double degraded_stop_time_s() const noexcept { return degraded_stop_time_s_; }
 private:
     double safety_stop_range_m_;
     std::size_t emergency_stops_{0};
@@ -115,6 +136,12 @@ private:
     double last_gnss_timestamp_s_{-1.0};
     double last_odometry_timestamp_s_{-1.0};
     std::size_t target_waypoint_index_{1};
+    std::size_t degraded_mode_entries_{}, safety_stop_entries_{};
+    double perception_timeout_s_{0.5}, localization_timeout_s_{3.0};
+    double degraded_since_s_{-1.0}, degraded_stop_time_s_{};
+    double last_lidar_timestamp_s_{-1.0}, last_imu_timestamp_s_{-1.0}, safety_stop_since_s_{-1.0};
+    double last_update_timestamp_s_{-1.0};
+    bool degraded_active_{}, safety_due_to_degraded_sensing_{};
 };
 
 enum class MissionResult { Success, Collision, Timeout, ControllerFailure };
@@ -134,6 +161,20 @@ struct MissionMetrics {
     std::size_t imu_samples{};
     std::size_t odometry_samples{};
     std::size_t lidar_scans{};
+    std::size_t messages_dropped{};
+    std::size_t messages_delayed{};
+    std::size_t gnss_dropped{}, imu_dropped{}, odometry_dropped{}, lidar_dropped{};
+    std::size_t gnss_delayed{}, imu_delayed{}, odometry_delayed{}, lidar_delayed{};
+    std::size_t gnss_delivered{}, imu_delivered{}, odometry_delivered{}, lidar_delivered{};
+    double final_x_m{}, final_y_m{}, final_heading_rad{}, final_speed_mps{};
+    std::size_t degraded_mode_entries{};
+    std::size_t safety_stop_entries{};
+    double time_stopped_degraded_s{};
+    double unavailable_duration_s{};
+    double maximum_delay_s{};
+    std::vector<double> fault_activation_times_s;
+    std::vector<double> fault_deactivation_times_s;
+    std::vector<FaultEventRecord> fault_events;
     std::uint64_t trajectory_digest{};
 };
 struct AutonomyRun {
@@ -152,7 +193,7 @@ struct AutonomySnapshot {
 
 class AutonomySimulation {
 public:
-    AutonomySimulation(AutonomyScenario scenario, std::uint64_t seed);
+    AutonomySimulation(AutonomyScenario scenario, std::uint64_t seed, std::uint64_t fault_seed = 0);
     ~AutonomySimulation();
     AutonomySimulation(AutonomySimulation&&) noexcept;
     AutonomySimulation& operator=(AutonomySimulation&&) noexcept;

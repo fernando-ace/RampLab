@@ -6,6 +6,7 @@
 #include <bit>
 #include <cmath>
 #include <cstdint>
+#include <deque>
 #include <limits>
 #include <stdexcept>
 
@@ -48,7 +49,9 @@ double route_error(Vec2 point, const std::vector<Vec2>& waypoints) {
 struct AutonomySimulation::Impl {
     AutonomyScenario scenario;
     std::mt19937_64 random;
+    std::mt19937_64 fault_random;
     std::normal_distribution<double> normal{0.0, 1.0};
+    std::normal_distribution<double> fault_normal{0.0, 1.0};
     MissionState mission;
     VehicleState state;
     double time{0.0}, previous_accel{0.0}, initial_heading{0.0};
@@ -59,10 +62,19 @@ struct AutonomySimulation::Impl {
     std::size_t emergency_stops{0}, route_error_count{0};
     double route_error_sum{0.0};
     std::uint64_t digest{14695981039346656037ULL};
+    std::vector<bool> fault_active;
+    std::vector<bool> fault_drop_recorded, fault_delay_recorded;
+    std::deque<std::pair<double,GnssMeasurement>> delayed_gnss;
+    std::deque<std::pair<double,ImuMeasurement>> delayed_imu;
+    std::deque<std::pair<double,OdometryMeasurement>> delayed_odometry;
+    std::deque<std::pair<double,LidarScan>> delayed_lidar;
+    double odometry_scale{1.0}, odometry_anchor_truth{}, odometry_anchor_reported{};
+    double unavailable_since{-1.0};
 
-    Impl(AutonomyScenario input, std::uint64_t seed) : scenario(std::move(input)), random(seed), state(scenario.initial_state) {
+    Impl(AutonomyScenario input, std::uint64_t seed, std::uint64_t fault_seed) : scenario(std::move(input)), random(seed), fault_random(fault_seed==0?seed^0x9e3779b97f4a7c15ULL:fault_seed), state(scenario.initial_state), fault_active(scenario.faults.size(), false), fault_drop_recorded(scenario.faults.size(),false), fault_delay_recorded(scenario.faults.size(),false) {
+        for(std::size_t i=0;i<scenario.faults.size();++i)metrics.fault_events.push_back({i,0.0,"scheduled"});
         const auto& sensor=scenario.sensors;
-        if (!(scenario.timestep_s>0.0) || !(scenario.timeout_s>0.0) || !(scenario.limits.maximum_speed_mps>0.0) ||
+        if (!(scenario.timestep_s>0.0) || !(scenario.timeout_s>0.0) || !(scenario.localization_timeout_s>0.0) || !(scenario.perception_timeout_s>0.0) || !(scenario.limits.maximum_speed_mps>0.0) ||
             !(scenario.limits.maximum_acceleration_mps2>0.0) || !(scenario.limits.maximum_deceleration_mps2>0.0) ||
             !(scenario.limits.maximum_yaw_rate_radps>0.0) || !(sensor.gnss_hz>0.0) || !(sensor.imu_hz>0.0) ||
             !(sensor.odometry_hz>0.0) || !(sensor.lidar_hz>0.0) || sensor.lidar_beams<2 ||
@@ -81,6 +93,7 @@ struct AutonomySimulation::Impl {
         produce_sensors();
     }
     double noise(double sigma) { return sigma==0.0 ? 0.0 : normal(random)*sigma; }
+    double fault_noise(double sigma) { return sigma==0.0 ? 0.0 : fault_normal(fault_random)*sigma; }
     LidarScan make_lidar() {
         const auto& c=scenario.sensors; LidarScan scan;
         scan.timestamp_s=time; scan.angle_min_rad=-c.lidar_fov_rad*0.5;
@@ -96,10 +109,61 @@ struct AutonomySimulation::Impl {
     }
     void produce_sensors() {
         frame.timestamp_s=time; const auto& c=scenario.sensors;
+        double desired_odom_scale=1.0;for(const auto& fault:scenario.faults)if(fault.sensor==SensorKind::Odometry&&fault.kind==SensorFaultKind::Scale&&time+1e-9>=fault.start_s&&time<fault.start_s+fault.duration_s-1e-9)desired_odom_scale*=1.0-fault.magnitude;
+        if(std::abs(desired_odom_scale-odometry_scale)>1e-12){odometry_anchor_reported=odometry_anchor_reported+(state.distance_m-odometry_anchor_truth)*odometry_scale;odometry_anchor_truth=state.distance_m;odometry_scale=desired_odom_scale;}
+        const double reported_distance=odometry_anchor_reported+(state.distance_m-odometry_anchor_truth)*odometry_scale;
         if(time+1e-9>=next_imu){frame.imu=ImuMeasurement{time,wrap_angle(state.heading_rad+noise(c.imu_heading_sigma_rad)),state.yaw_rate_radps+noise(c.imu_yaw_rate_sigma_radps),previous_accel+noise(c.imu_accel_sigma_mps2)};next_imu+=1.0/c.imu_hz;++metrics.imu_samples;}
-        if(time+1e-9>=next_odom){frame.odometry=OdometryMeasurement{time,state.distance_m+noise(c.odometry_sigma_m),std::max(0.0,state.speed_mps+noise(c.odometry_sigma_mps)),wrap_angle(state.heading_rad-initial_heading)};next_odom+=1.0/c.odometry_hz;++metrics.odometry_samples;}
+        if(time+1e-9>=next_odom){frame.odometry=OdometryMeasurement{time,reported_distance+noise(c.odometry_sigma_m),std::max(0.0,state.speed_mps*odometry_scale+noise(c.odometry_sigma_mps)),wrap_angle(state.heading_rad-initial_heading)};next_odom+=1.0/c.odometry_hz;++metrics.odometry_samples;}
         if(time+1e-9>=next_lidar){frame.lidar=make_lidar();next_lidar+=1.0/c.lidar_hz;++metrics.lidar_scans;}
         if(time+1e-9>=next_gnss){frame.gnss=GnssMeasurement{time,{state.position.x_m+c.gnss_bias_m.x_m+noise(c.gnss_sigma_m),state.position.y_m+c.gnss_bias_m.y_m+noise(c.gnss_sigma_m)},c.gnss_sigma_m*1.96};next_gnss+=1.0/c.gnss_hz;++metrics.gnss_samples;}
+        bool any_unavailable=false;double gnss_delay=0.0,imu_delay=0.0,odometry_delay=0.0,lidar_delay=0.0;
+        for(std::size_t i=0;i<scenario.faults.size();++i){
+            const auto& fault=scenario.faults[i]; const bool active=time+1e-9>=fault.start_s&&time<fault.start_s+fault.duration_s-1e-9;
+            if(active!=fault_active[i]){fault_active[i]=active;(active?metrics.fault_activation_times_s:metrics.fault_deactivation_times_s).push_back(time);metrics.fault_events.push_back({i,time,active?"activated":"deactivated"});}
+            if(!active)continue;
+            bool dropped=false;
+            if(fault.kind==SensorFaultKind::Dropout||fault.kind==SensorFaultKind::BurstLoss){
+                std::size_t queued=0;
+                if(fault.sensor==SensorKind::Gnss){queued=delayed_gnss.size();delayed_gnss.clear();if(frame.gnss){frame.gnss.reset();++queued;}metrics.gnss_dropped+=queued;}
+                else if(fault.sensor==SensorKind::Imu){queued=delayed_imu.size();delayed_imu.clear();if(frame.imu){frame.imu.reset();++queued;}metrics.imu_dropped+=queued;}
+                else if(fault.sensor==SensorKind::Odometry){queued=delayed_odometry.size();delayed_odometry.clear();if(frame.odometry){frame.odometry.reset();++queued;}metrics.odometry_dropped+=queued;}
+                else {queued=delayed_lidar.size();delayed_lidar.clear();if(frame.lidar){frame.lidar.reset();++queued;}metrics.lidar_dropped+=queued;}
+                metrics.messages_dropped+=queued;if(queued>0&&!fault_drop_recorded[i]){metrics.fault_events.push_back({i,time,"measurement_dropped"});fault_drop_recorded[i]=true;}any_unavailable=true;continue;
+            }
+            auto loss=[&](bool fresh){return fault.kind==SensorFaultKind::Dropout||fault.kind==SensorFaultKind::BurstLoss||(fault.kind==SensorFaultKind::PacketLoss&&fresh&&std::generate_canonical<double,53>(fault_random)<fault.probability);};
+            if(fault.sensor==SensorKind::Gnss&&frame.gnss){auto& m=*frame.gnss;
+                const bool fresh=std::abs(m.timestamp_s-time)<1e-9;
+                if(fresh&&fault.kind==SensorFaultKind::Noise){m.position.x_m+=fault_noise(fault.magnitude);m.position.y_m+=fault_noise(fault.magnitude);m.accuracy_m=std::hypot(m.accuracy_m,fault.magnitude*1.96);}
+                else if(fresh&&fault.kind==SensorFaultKind::Bias){m.position.x_m+=fault.offset.x_m;m.position.y_m+=fault.offset.y_m;}
+                else if(fresh&&fault.kind==SensorFaultKind::Delay)gnss_delay=std::max(gnss_delay,fault.magnitude);
+                if(loss(fresh)){frame.gnss.reset();++metrics.messages_dropped;++metrics.gnss_dropped;dropped=true;}
+            } else if(fault.sensor==SensorKind::Imu&&frame.imu){auto& m=*frame.imu;
+                const bool fresh=std::abs(m.timestamp_s-time)<1e-9;
+                if(fresh&&fault.kind==SensorFaultKind::Noise){m.heading_rad=wrap_angle(m.heading_rad+fault_noise(fault.magnitude));m.yaw_rate_radps+=fault_noise(fault.magnitude);}
+                else if(fresh&&fault.kind==SensorFaultKind::Bias){m.heading_rad=wrap_angle(m.heading_rad+fault.magnitude);m.yaw_rate_radps+=fault.magnitude;}
+                else if(fresh&&fault.kind==SensorFaultKind::Delay)imu_delay=std::max(imu_delay,fault.magnitude);
+                if(loss(fresh)){frame.imu.reset();++metrics.messages_dropped;++metrics.imu_dropped;dropped=true;}
+            } else if(fault.sensor==SensorKind::Odometry&&frame.odometry){auto& m=*frame.odometry;
+                const bool fresh=std::abs(m.timestamp_s-time)<1e-9;
+                if(fresh&&fault.kind==SensorFaultKind::Drift)m.distance_m+=fault.magnitude*std::max(0.0,time-fault.start_s);
+                else if(fresh&&fault.kind==SensorFaultKind::Delay)odometry_delay=std::max(odometry_delay,fault.magnitude);
+                if(loss(fresh)){frame.odometry.reset();++metrics.messages_dropped;++metrics.odometry_dropped;dropped=true;}
+            } else if(fault.sensor==SensorKind::Lidar&&frame.lidar){auto& scan=*frame.lidar;
+                const bool fresh=std::abs(scan.timestamp_s-time)<1e-9;
+                if(fresh&&fault.kind==SensorFaultKind::RangeLimit){scan.range_max_m=std::min(scan.range_max_m,fault.magnitude);for(auto& r:scan.ranges_m)r=std::min(r,scan.range_max_m);}
+                else if(fresh&&fault.kind==SensorFaultKind::Obstruction){for(std::size_t b=0;b<scan.ranges_m.size();++b){const double angle=scan.angle_min_rad+static_cast<double>(b)*scan.angle_increment_rad;if(angle>=fault.angle_min_rad&&angle<=fault.angle_max_rad)scan.ranges_m[b]=scan.range_max_m;}}
+                else if(fresh&&fault.kind==SensorFaultKind::Delay)lidar_delay=std::max(lidar_delay,fault.magnitude);
+                if(loss(fresh)){frame.lidar.reset();++metrics.messages_dropped;++metrics.lidar_dropped;dropped=true;}
+            }
+            if(dropped&&!fault_drop_recorded[i]){metrics.fault_events.push_back({i,time,"measurement_dropped"});fault_drop_recorded[i]=true;}
+            if((fault.sensor==SensorKind::Gnss?gnss_delay:fault.sensor==SensorKind::Imu?imu_delay:fault.sensor==SensorKind::Odometry?odometry_delay:lidar_delay)>0.0&&!fault_delay_recorded[i]){metrics.fault_events.push_back({i,time,"measurement_delayed"});fault_delay_recorded[i]=true;}
+            any_unavailable=any_unavailable||dropped||fault.kind==SensorFaultKind::Dropout||fault.kind==SensorFaultKind::BurstLoss;
+        }
+        const auto enqueue_delay=[&](auto& value,auto& queue,double delay,std::size_t& sensor_delayed){if(value&&delay>0.0&&std::abs(value->timestamp_s-time)<1e-9){queue.emplace_back(time+delay,*value);value.reset();++metrics.messages_delayed;++sensor_delayed;metrics.maximum_delay_s=std::max(metrics.maximum_delay_s,delay);}};
+        enqueue_delay(frame.gnss,delayed_gnss,gnss_delay,metrics.gnss_delayed);enqueue_delay(frame.imu,delayed_imu,imu_delay,metrics.imu_delayed);enqueue_delay(frame.odometry,delayed_odometry,odometry_delay,metrics.odometry_delayed);enqueue_delay(frame.lidar,delayed_lidar,lidar_delay,metrics.lidar_delayed);
+        const auto release=[&](auto& queue,auto& value){while(!queue.empty()&&queue.front().first<=time+1e-9){value=std::move(queue.front().second);queue.pop_front();}};
+        release(delayed_gnss,frame.gnss);release(delayed_imu,frame.imu);release(delayed_odometry,frame.odometry);release(delayed_lidar,frame.lidar);
+        if(any_unavailable){if(unavailable_since<0.0){unavailable_since=time;metrics.fault_events.push_back({std::numeric_limits<std::size_t>::max(),time,"sensor_unavailable"});}}else if(unavailable_since>=0.0){metrics.unavailable_duration_s+=time-unavailable_since;metrics.fault_events.push_back({std::numeric_limits<std::size_t>::max(),time,"sensor_recovered"});unavailable_since=-1.0;}
     }
     bool collided(std::string& id)const{for(const auto&o:scenario.obstacles)if(distance(state.position,o.center)<=scenario.limits.radius_m+o.radius_m){id=o.id;return true;}return false;}
     void step(VehicleCommand command){
@@ -121,8 +185,13 @@ struct AutonomySimulation::Impl {
     }
 };
 
-ReferenceController::ReferenceController(double stopping):safety_stop_range_m_(stopping){}
+ReferenceController::ReferenceController(double stopping,double perception_timeout,double localization_timeout):safety_stop_range_m_(stopping),perception_timeout_s_(perception_timeout),localization_timeout_s_(localization_timeout){}
 VehicleCommand ReferenceController::update(const SensorFrame& f,const MissionState&m){
+    if(last_update_timestamp_s_>=0.0&&safety_was_active_&&safety_due_to_degraded_sensing_)
+        degraded_stop_time_s_+=std::max(0.0,f.timestamp_s-last_update_timestamp_s_);
+    last_update_timestamp_s_=f.timestamp_s;
+    if(f.lidar)last_lidar_timestamp_s_=std::max(last_lidar_timestamp_s_,f.lidar->timestamp_s);
+    if(f.imu)last_imu_timestamp_s_=std::max(last_imu_timestamp_s_,f.imu->timestamp_s);
     if(f.odometry && f.odometry->timestamp_s != last_odometry_timestamp_s_){
         if(have_position_){const double delta=f.odometry->distance_m-last_odometry_distance_m_;estimated_position_.x_m+=delta*std::cos(estimated_heading_rad_);estimated_position_.y_m+=delta*std::sin(estimated_heading_rad_);}
         last_odometry_distance_m_=f.odometry->distance_m;last_odometry_timestamp_s_=f.odometry->timestamp_s;
@@ -133,9 +202,22 @@ VehicleCommand ReferenceController::update(const SensorFrame& f,const MissionSta
         have_position_=true;last_gnss_timestamp_s_=f.gnss->timestamp_s;
     }
     if(f.imu)estimated_heading_rad_=f.imu->heading_rad;
+    const double gnss_age=last_gnss_timestamp_s_<0.0?f.timestamp_s:f.timestamp_s-last_gnss_timestamp_s_;
+    const double odom_age=last_odometry_timestamp_s_<0.0?f.timestamp_s:f.timestamp_s-last_odometry_timestamp_s_;
+    const double imu_age=last_imu_timestamp_s_<0.0?std::numeric_limits<double>::infinity():f.timestamp_s-last_imu_timestamp_s_;
+    const double lidar_age=last_lidar_timestamp_s_<0.0?std::numeric_limits<double>::infinity():f.timestamp_s-last_lidar_timestamp_s_;
+    const bool degraded=gnss_age>0.25||imu_age>0.10||odom_age>0.10||lidar_age>0.20;
+    if(degraded&&!degraded_active_){++degraded_mode_entries_;degraded_since_s_=f.timestamp_s;}
+    if(!degraded&&degraded_active_&&degraded_since_s_>=0.0)degraded_since_s_=-1.0;
+    degraded_active_=degraded;
+    const bool localization_lost=gnss_age>localization_timeout_s_||imu_age>localization_timeout_s_||
+        odom_age>localization_timeout_s_;
+    const bool perception_lost=lidar_age>perception_timeout_s_;
+    if(localization_lost||perception_lost){if(!safety_was_active_){++safety_stop_entries_;safety_stop_since_s_=f.timestamp_s;}safety_was_active_=true;safety_due_to_degraded_sensing_=true;return{};}
     const double goal=distance(estimated_position_,m.goal);
     if(f.lidar){bool blocked=false;for(std::size_t i=0;i<f.lidar->ranges_m.size();++i){const double a=f.lidar->angle_min_rad+static_cast<double>(i)*f.lidar->angle_increment_rad;if(std::abs(a)<=.20&&f.lidar->ranges_m[i]<safety_stop_range_m_)blocked=true;}
-        if(blocked){if(!safety_was_active_)++emergency_stops_;safety_was_active_=true;return{};}safety_was_active_=false;}
+        if(blocked){if(!safety_was_active_){++emergency_stops_;++safety_stop_entries_;safety_stop_since_s_=f.timestamp_s;}safety_was_active_=true;safety_due_to_degraded_sensing_=false;return{};}}
+    if(safety_was_active_){safety_stop_since_s_=-1.0;safety_was_active_=false;safety_due_to_degraded_sensing_=false;}
     if(goal<=1.5)return{};
     target_waypoint_index_=std::min(target_waypoint_index_,m.waypoints.size()-1);
     while(target_waypoint_index_+1<m.waypoints.size()&&distance(estimated_position_,m.waypoints[target_waypoint_index_])<=8.0)++target_waypoint_index_;
@@ -147,7 +229,7 @@ VehicleCommand ReferenceController::update(const SensorFrame& f,const MissionSta
     return{std::min({m.limits.maximum_speed_mps,turn_speed,stop_speed}),yaw};
 }
 
-AutonomySimulation::AutonomySimulation(AutonomyScenario scenario,std::uint64_t seed):impl_(std::make_unique<Impl>(std::move(scenario),seed)){}
+AutonomySimulation::AutonomySimulation(AutonomyScenario scenario,std::uint64_t seed,std::uint64_t fault_seed):impl_(std::make_unique<Impl>(std::move(scenario),seed,fault_seed)){}
 AutonomySimulation::~AutonomySimulation()=default;
 AutonomySimulation::AutonomySimulation(AutonomySimulation&&) noexcept=default;
 AutonomySimulation&AutonomySimulation::operator=(AutonomySimulation&&) noexcept=default;
@@ -164,13 +246,16 @@ bool AutonomySimulation::advance(IAutonomyController& controller){
     VehicleCommand command;
     try{command=controller.update(impl_->frame,impl_->mission);}catch(...){impl_->metrics.result=MissionResult::ControllerFailure;impl_->complete=true;return false;}
     impl_->step(command);
-    if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller))impl_->metrics.emergency_stops=ref->emergency_stops();
+    if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller)){impl_->metrics.emergency_stops=ref->emergency_stops();impl_->metrics.degraded_mode_entries=ref->degraded_mode_entries();impl_->metrics.safety_stop_entries=ref->safety_stop_entries();impl_->metrics.time_stopped_degraded_s=ref->degraded_stop_time_s();}
     if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&impl_->state.speed_mps<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
     if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
     return !impl_->complete;
 }
 AutonomyRun AutonomySimulation::result()const{
     auto m=impl_->metrics;m.completion_time_s=impl_->time;m.distance_traveled_m=impl_->state.distance_m;
+    if(impl_->unavailable_since>=0.0)m.unavailable_duration_s+=std::max(0.0,impl_->time-impl_->unavailable_since);
+    m.gnss_delivered=m.gnss_samples-m.gnss_dropped-impl_->delayed_gnss.size();m.imu_delivered=m.imu_samples-m.imu_dropped-impl_->delayed_imu.size();m.odometry_delivered=m.odometry_samples-m.odometry_dropped-impl_->delayed_odometry.size();m.lidar_delivered=m.lidar_scans-m.lidar_dropped-impl_->delayed_lidar.size();
+    m.final_x_m=impl_->state.position.x_m;m.final_y_m=impl_->state.position.y_m;m.final_heading_rad=impl_->state.heading_rad;m.final_speed_mps=impl_->state.speed_mps;
     double route=0;for(std::size_t i=1;i<impl_->mission.waypoints.size();++i)route+=distance(impl_->mission.waypoints[i-1],impl_->mission.waypoints[i]);
     m.path_efficiency=m.distance_traveled_m>0?std::min(1.0,route/m.distance_traveled_m):0.0;m.mean_route_error_m=impl_->route_error_count?impl_->route_error_sum/static_cast<double>(impl_->route_error_count):0.0;
     if(!std::isfinite(m.minimum_obstacle_clearance_m))m.minimum_obstacle_clearance_m=0.0;
@@ -185,7 +270,7 @@ AutonomyRun AutonomySimulation::run(IAutonomyController& controller,std::ostream
         if(csv){const auto est=impl_->frame.gnss?impl_->frame.gnss->position:impl_->state.position;double lidar=impl_->scenario.sensors.lidar_max_range_m;if(impl_->frame.lidar)for(double r:impl_->frame.lidar->ranges_m)lidar=std::min(lidar,r);*csv<<impl_->time<<','<<impl_->state.position.x_m<<','<<impl_->state.position.y_m<<','<<est.x_m<<','<<est.y_m<<','<<impl_->state.heading_rad<<','<<impl_->state.speed_mps<<','<<command.target_speed_mps<<','<<command.target_yaw_rate_radps<<','<<route_error(impl_->state.position,impl_->mission.waypoints)<<','<<lidar<<'\n';}
         if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&impl_->state.speed_mps<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
         if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
-        if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller))impl_->metrics.emergency_stops=ref->emergency_stops();
+        if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller)){impl_->metrics.emergency_stops=ref->emergency_stops();impl_->metrics.degraded_mode_entries=ref->degraded_mode_entries();impl_->metrics.safety_stop_entries=ref->safety_stop_entries();impl_->metrics.time_stopped_degraded_s=ref->degraded_stop_time_s();}
     }
     return result();
 }
