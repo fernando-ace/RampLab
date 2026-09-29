@@ -32,5 +32,8 @@ public class RampLabIntegration : ModuleRules
         RuntimeDependencies.Add(
             "$(TargetOutputDir)/Scenarios/autonomy_tug.yaml",
             Path.Combine(RepositoryRoot, "scenarios", "autonomy_tug.yaml"));
+        RuntimeDependencies.Add(
+            "$(TargetOutputDir)/Scenarios/autonomy_sensor_validation.yaml",
+            Path.Combine(RepositoryRoot, "scenarios", "autonomy_sensor_validation.yaml"));
     }
 }

@@ -63,14 +63,14 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         s.localization_timeout_s=value<double>(simulation,"localization_timeout_s",3.0);
         s.perception_timeout_s=value<double>(simulation,"perception_timeout_s",0.5);
         const auto sensors=root["sensors"];
-        s.sensors.gnss_hz=value<double>(sensors,"gnss_hz",5.0);
+        s.sensors.gnss_hz=value<double>(sensors,"gnss_hz",10.0);
         s.sensors.gnss_sigma_m=value<double>(sensors,"gnss_sigma_m",0.5);
         s.sensors.gnss_bias_m={value<double>(sensors,"gnss_bias_x_m",0.0),value<double>(sensors,"gnss_bias_y_m",0.0)};
         s.sensors.imu_hz=value<double>(sensors,"imu_hz",50.0);
         s.sensors.imu_heading_sigma_rad=value<double>(sensors,"imu_heading_sigma_rad",0.005);
         s.sensors.imu_yaw_rate_sigma_radps=value<double>(sensors,"imu_yaw_rate_sigma_radps",0.005);
         s.sensors.imu_accel_sigma_mps2=value<double>(sensors,"imu_accel_sigma_mps2",0.03);
-        s.sensors.odometry_hz=value<double>(sensors,"odometry_hz",20.0);
+        s.sensors.odometry_hz=value<double>(sensors,"odometry_hz",50.0);
         s.sensors.odometry_sigma_mps=value<double>(sensors,"odometry_sigma_mps",0.02);
         s.sensors.odometry_sigma_m=value<double>(sensors,"odometry_sigma_m",0.01);
         s.sensors.lidar_hz=value<double>(sensors,"lidar_hz",10.0);
@@ -79,6 +79,20 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         s.sensors.lidar_min_range_m=value<double>(sensors,"lidar_min_range_m",0.1);
         s.sensors.lidar_max_range_m=value<double>(sensors,"lidar_max_range_m",30.0);
         s.sensors.lidar_sigma_m=value<double>(sensors,"lidar_sigma_m",0.01);
+        const auto timing = [&](std::string_view prefix, double rate) {
+            const std::string key{prefix};
+            return SensorTimingConfig{
+                rate,
+                value<double>(sensors,(key+"_phase_s").c_str(),0.0),
+                value<double>(sensors,(key+"_latency_s").c_str(),0.0),
+                value<double>(sensors,(key+"_jitter_s").c_str(),0.0),
+                value<double>(sensors,(key+"_packet_loss_probability").c_str(),0.0),
+                value<double>(sensors,(key+"_stale_after_s").c_str(),0.0)};
+        };
+        s.sensors.gnss_timing=timing("gnss",s.sensors.gnss_hz);
+        s.sensors.imu_timing=timing("imu",s.sensors.imu_hz);
+        s.sensors.odometry_timing=timing("odometry",s.sensors.odometry_hz);
+        s.sensors.lidar_timing=timing("lidar",s.sensors.lidar_hz);
         if(const auto faults=root["faults"]) for(const auto& f:faults){
             SensorFault fault; fault.sensor=sensor_kind(f["sensor"].as<std::string>()); fault.kind=fault_kind(f["type"].as<std::string>());
             fault.start_s=f["start_s"].as<double>(); fault.duration_s=f["duration_s"].as<double>();

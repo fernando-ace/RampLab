@@ -73,6 +73,12 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                     [ SNew(SButton).Text(FText::FromString(TEXT("Autonomy"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_tug"))) ]
                 ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [
+                    SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot().AutoWidth()
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Sensor Validation"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_sensor_validation"))) ]
+                ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(SSeparator) ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 5)
                 [ SNew(STextBlock).Text(FText::FromString(TEXT("SELECTED ENTITY"))).ColorAndOpacity(FLinearColor(0.75f, 0.78f, 0.80f)) ]
@@ -188,7 +194,7 @@ FText SRampLabControlPanel::EventsText() const
 FText SRampLabControlPanel::SelectedEntityText() const
 {
     const auto* Subsystem = SimulationSubsystem.Get();
-    if (Subsystem != nullptr && Subsystem->IsAutonomyMode()) return FText::FromString(TEXT("Tug-1 / ground truth body\nGNSS marker / sensor estimate\nBlue line / A* route\nYellow rays / simulated LiDAR"));
+    if (Subsystem != nullptr && Subsystem->IsAutonomyMode()) return FText::FromString(TEXT("Tug-1 / ground truth body\nGNSS marker / sensor estimate\nBlue line / A* route\nYellow rays / Unreal geometry LiDAR"));
     return FText::FromString(Subsystem == nullptr ? TEXT("Unavailable") : Subsystem->GetSelectedEntityText());
 }
 

@@ -77,16 +77,22 @@ An independent safety check looks for LiDAR returns within 0.20 rad of the forwa
 
 ## Sensors
 
-Sensor schedules use simulation time and retain their most recent measurement between updates. Noise comes from one `std::mt19937_64` seeded per run; there is no global or wall-clock RNG.
+Sensor schedules use simulation time and retain their most recent measurement between updates. Per-sensor clocks have independent deterministic random streams for jitter and packet loss. Each delivered sample carries its sensor ID, measurement timestamp, delivery timestamp, sequence, frame ID, and explicit validity state. The scheduler does not consult wall-clock time.
 
 | Sensor | Default rate | Values and noise |
 |---|---:|---|
-| GNSS | 5 Hz | Local x/y with configurable constant bias and independent Gaussian horizontal noise; accuracy field is 1.96σ. |
-| IMU | 50 Hz | Heading, yaw rate, and longitudinal acceleration with independently configured Gaussian noise; no drift or gravity model. |
-| Wheel odometry | 20 Hz | Integrated distance, speed, and heading change with configured Gaussian distance/speed noise; no wheel quantization or slip. |
+| GNSS | 10 Hz default | Local x/y with configurable constant bias and independent Gaussian horizontal noise; accuracy field is 1.96σ. |
+| IMU | 50 Hz default | Heading, yaw rate, and longitudinal acceleration with independently configured Gaussian noise; no drift or gravity model. The fixed 20 ms simulation tick caps headless production at 50 Hz. |
+| Wheel odometry | 50 Hz default | Integrated distance, speed, and heading change with configured Gaussian distance/speed noise; no wheel quantization or slip. |
 | 2D LiDAR | 10 Hz | 181 beams over 180°, configurable range limits and Gaussian range noise. Headless ray/circle intersections return the nearest hit in beam order. |
 
-The initial obstacle geometry uses circles. There are no graphics raycasts, camera images, SLAM, or map updates. Unreal mirrors these circles and the simulated sensor values.
+`scenarios/autonomy_tug.yaml` retains the earlier 5/50/20 Hz rates for Goal 1–9 behavior. Unspecified configuration rates default to the table above. Each sensor accepts `<sensor>_phase_s`, `<sensor>_latency_s`, `<sensor>_jitter_s`, `<sensor>_packet_loss_probability`, and `<sensor>_stale_after_s` under `sensors:`. Jitter must be smaller than one sample interval. Configured latency is simulation time; messages exceeding the stale threshold are marked stale and dropped before estimator/controller consumption.
+
+Frames use east `+x`, north `+y`, up `+z`, angles in radians counter-clockwise from east, and meters. `base_link` is at the tug mesh pivot (body center). Sensor frames are `gnss`, `imu`, `wheel_odom`, `lidar`, and `camera`; headless GNSS/IMU/odometry/LiDAR samples include IDs, sequence and source frame metadata. Nominal Unreal/ROS sensor poses relative to `base_link` are LiDAR `(3.40, 0, -0.30) m` and camera `(3.40, 0, 0) m`; GNSS is `(0,0,0.20) m` and IMU/wheel odometry are centered. ROS publishes these `base_link` static transforms. The local ENU plane maps to Unreal through the existing placement adapter.
+
+Unreal LiDAR uses CPU visibility-channel raycasts, a 181-ray horizontal sweep over 180 degrees, 0.1–30 m range, and max-range values for misses. Configured obstacle actors block the visibility channel; the tug is ignored. The RGB SceneCapture uses a 90-degree horizontal FOV and a 320×180 RGBA8 render target, captured at 20 Hz simulation time. Both producers keep simulation timestamp, sequence and frame ID. Camera frames stay in Unreal's render target and are not copied into automated test buffers. In the direct Unreal sensor-validation run, the camera's first GPU readback contained 57,600 pixels, 36,720 non-black pixels, and a stable in-run digest; LiDAR progressed from 0 to 1+ geometry hits as the tug approached the configured obstacle. The 20-second scenario ended by timeout with zero collisions. This establishes a geometry-backed Unreal producer, but the current tug controller and ROS bridge still consume the portable headless `SensorFrame`; Unreal observations are displayed/logged and are not sent back across the process boundary. Unreal reproducibility is not claimed.
+
+The machine-readable observation recording is JSON Lines. Run the headless mission with `--record-sensors results\sensors.jsonl`; it writes delivered observations and their metadata, including compact numeric LiDAR ranges, and reports a deterministic stream digest. It excludes image pixels. Repeated seeded recordings are compared byte-for-byte in the core test suite. There is no playback controller yet; the JSONL file supports offline comparison/replay tooling.
 
 ## Deterministic fault injection and health policy
 

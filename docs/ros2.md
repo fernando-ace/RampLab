@@ -64,7 +64,7 @@ All tug topics are under `/ramplab/tug1`. Sensor rates below are configured simu
 | `/ramplab/tug1/route` | `nav_msgs/msg/Path` | bridge publishes once, transient-local | mission route | `map` |
 | `/ramplab/tug1/cmd_vel` | `geometry_msgs/msg/Twist` | controller publishes; bridge subscribes | not stamped / measured 20.05 Hz wall rate | — |
 | `/tf` | `tf2_msgs/msg/TFMessage` | bridge publishes | filtered odometry updates | `odom` → `base_link` |
-| `/tf_static` | `tf2_msgs/msg/TFMessage` | bridge publishes | static | `map` → `odom`; `base_link` → `lidar`, `imu` |
+| `/tf_static` | `tf2_msgs/msg/TFMessage` | bridge publishes | static | `map` → `odom`; `base_link` → `gnss`, `imu`, `wheel_odom`, `lidar`, `camera` |
 
 The measured wall rates at factor 1 were approximately 50.93, 10.05, 49.29, 20.10, and 4.99 Hz respectively for clock, scan, IMU, odometry, and GNSS. The probe enforces strictly increasing simulation stamps and checks rates within 35% of configured values. `*`IMU's measured rate is lower because the best-effort depth-one stream may drop samples while the Windows processes are scheduled; its simulation timestamp span is 49.13 Hz and the wall observation was 49.29 Hz.
 
@@ -74,7 +74,7 @@ Sensor streams use best-effort depth one. The path is reliable, transient-local,
 
 The bridge publishes `/clock` at the 20 ms simulation step, before publishing the measurements for that step. Measurement headers use that same simulation clock, never wall time. The monitor confirmed strictly increasing clock and sensor stamps. `geometry_msgs/Twist` has no header timestamp; command freshness is measured by the bridge's simulation-time receive stamp. Non-finite velocity values are rejected, and finite speed/yaw values are clamped to scenario limits.
 
-`map` is the local east/north tangent plane. `odom` is identity-aligned to `map`. TF has one owner: the bridge publishes static `map → odom`, dynamic `odom → base_link` from `/filtered_odom`, and static `base_link → lidar` / `base_link → imu`. Raw wheel `/odom` does not publish TF. Filtered pose covariance maps east/north/yaw into ROS 6×6 pose covariance; speed variance is in twist covariance and unmodeled axes carry large variances. GNSS converts local ENU to WGS84 about the KAUO reference (32.6151667°, -85.4340000°, 208.27 m ellipsoid height); `NavSatFix` reports horizontal variance on its diagonal.
+`map` is the local east/north tangent plane. `odom` is identity-aligned to `map`. TF has one owner: the bridge publishes static `map → odom`, dynamic `odom → base_link` from `/filtered_odom`, and static `base_link → gnss`, `imu`, `wheel_odom`, `lidar`, and `camera` transforms. Raw wheel `/odom` does not publish TF. Camera frames are not currently published as `sensor_msgs/Image` or `CameraInfo`; the camera transform reserves the frame boundary for the Unreal producer but does not represent an active ROS image stream. Filtered pose covariance maps east/north/yaw into ROS 6×6 pose covariance; speed variance is in twist covariance and unmodeled axes carry large variances. GNSS converts local ENU to WGS84 about the KAUO reference (32.6151667°, -85.4340000°, 208.27 m ellipsoid height); `NavSatFix` reports horizontal variance on its diagonal.
 
 ## Run the external mission
 

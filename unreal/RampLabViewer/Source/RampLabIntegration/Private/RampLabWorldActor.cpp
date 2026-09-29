@@ -2,6 +2,7 @@
 
 #include "RampLabIntegration.h"
 #include "RampLabSimulationSubsystem.h"
+#include "RampLabSensors.h"
 #include "airside/integration/visualization.hpp"
 
 #include "Components/SceneComponent.h"
@@ -299,6 +300,8 @@ void ARampLabWorldActor::ClearTopology()
     for (auto& Actor : AutonomyObstacleActors) if (Actor) Actor->Destroy();
     AutonomyVehicleActor = nullptr;
     GnssMarkerActor = nullptr;
+    AutonomyLidarSensor = nullptr;
+    AutonomyCameraSensor = nullptr;
     AutonomyObstacleActors.Empty();
     AutonomyTrail.Reset();
     bAutonomyTopologyBuilt = false;
@@ -325,8 +328,19 @@ void ARampLabWorldActor::BuildAutonomyTopology(const airside::autonomy::Autonomy
         Actor->SetActorLocation(ToWorld(Obstacle.center, 55.0f));
         Actor->SetActorScale3D(FVector(static_cast<float>(Obstacle.radius_m*2.0), static_cast<float>(Obstacle.radius_m*2.0), 1.1f));
         Actor->GetStaticMeshComponent()->SetMaterial(0, ObstacleMaterial);
+        Actor->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        Actor->GetStaticMeshComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+        Actor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
         AutonomyObstacleActors.Add(Actor);
     }
+    AutonomyLidarSensor = NewObject<URampLabLidarSensorComponent>(AutonomyVehicleActor, TEXT("RampLabLidar"));
+    AutonomyLidarSensor->SetupAttachment(AutonomyVehicleActor->GetRootComponent());
+    AutonomyLidarSensor->SetRelativeLocation(FVector(340.0f, 0.0f, -30.0f));
+    AutonomyLidarSensor->RegisterComponent();
+    AutonomyCameraSensor = NewObject<URampLabCameraSensorComponent>(AutonomyVehicleActor, TEXT("RampLabCamera"));
+    AutonomyCameraSensor->SetupAttachment(AutonomyVehicleActor->GetRootComponent());
+    AutonomyCameraSensor->SetRelativeLocation(FVector(340.0f, 0.0f, 0.0f));
+    AutonomyCameraSensor->RegisterComponent();
     bAutonomyTopologyBuilt = true;
 }
 
@@ -339,6 +353,27 @@ void ARampLabWorldActor::ReconcileAutonomy(const airside::autonomy::AutonomySnap
     const FVector Ahead = ToWorld({p.x_m + std::cos(Snapshot.ground_truth.heading_rad), p.y_m + std::sin(Snapshot.ground_truth.heading_rad)}, 100.0f);
     const FVector Direction = Ahead - Position;
     AutonomyVehicleActor->SetActorRotation(FRotator(0.0f, FMath::RadiansToDegrees(FMath::Atan2(Direction.Y, Direction.X)), 0.0f));
+    if (AutonomyLidarSensor != nullptr && AutonomyLidarSensor->CaptureAtSimulationTime(Snapshot.timestamp_s)) {
+        std::size_t HitCount = 0;
+        for (const float Range : AutonomyLidarSensor->RangesMeters) {
+            if (Range < AutonomyLidarSensor->MaximumRangeMeters) ++HitCount;
+        }
+        if (AutonomyLidarSensor->Metadata.Sequence == 1 || HitCount > 0) {
+            UE_LOG(LogRampLab, Display, TEXT("Unreal LiDAR frame=%s seq=%llu sim_time=%.2f rays=%d hits=%llu"),
+                *AutonomyLidarSensor->Metadata.FrameId,
+                static_cast<unsigned long long>(AutonomyLidarSensor->Metadata.Sequence),
+                Snapshot.timestamp_s, AutonomyLidarSensor->RangesMeters.Num(),
+                static_cast<unsigned long long>(HitCount));
+        }
+    }
+    if (AutonomyCameraSensor != nullptr && AutonomyCameraSensor->CaptureAtSimulationTime(Snapshot.timestamp_s) &&
+        AutonomyCameraSensor->Metadata.Sequence == 1) {
+        UE_LOG(LogRampLab, Display, TEXT("Unreal RGB camera frame=%s seq=%llu sim_time=%.2f size=%dx%d horizontal_fov=%.1f"),
+            *AutonomyCameraSensor->Metadata.FrameId,
+            static_cast<unsigned long long>(AutonomyCameraSensor->Metadata.Sequence),
+            Snapshot.timestamp_s, AutonomyCameraSensor->ImageWidth, AutonomyCameraSensor->ImageHeight,
+            AutonomyCameraSensor->HorizontalFovDegrees);
+    }
     if (Snapshot.sensors.gnss) GnssMarkerActor->SetActorLocation(ToWorld(Snapshot.sensors.gnss->position, 150.0f));
     for (std::size_t i=1; i<Snapshot.mission.waypoints.size(); ++i) {
         DrawDebugLine(GetWorld(), ToWorld(Snapshot.mission.waypoints[i-1], 90.0f), ToWorld(Snapshot.mission.waypoints[i], 90.0f), FColor(20, 125, 245), false, 0.0f, 0, 22.0f);
@@ -349,12 +384,14 @@ void ARampLabWorldActor::ReconcileAutonomy(const airside::autonomy::AutonomySnap
         if (AutonomyTrail.Num()>1200) AutonomyTrail.RemoveAt(0,200,EAllowShrinking::No);
     }
     for (int32 i=1;i<AutonomyTrail.Num();++i) DrawDebugLine(GetWorld(),AutonomyTrail[i-1],AutonomyTrail[i],FColor(255,145,20),false,0.0f,0,8.0f);
-    if (Snapshot.sensors.lidar) {
-        const auto& Scan=*Snapshot.sensors.lidar;
-        const std::size_t stride=std::max<std::size_t>(1,Scan.ranges_m.size()/60);
-        for(std::size_t i=0;i<Scan.ranges_m.size();i+=stride){
-            const double Angle=Snapshot.ground_truth.heading_rad+Scan.angle_min_rad+static_cast<double>(i)*Scan.angle_increment_rad;
-            const double Range=Scan.ranges_m[i];
+    if (AutonomyLidarSensor != nullptr && AutonomyLidarSensor->Metadata.bValid) {
+        const auto& Ranges=AutonomyLidarSensor->RangesMeters;
+        const std::size_t stride=std::max<std::size_t>(1,static_cast<std::size_t>(Ranges.Num())/60);
+        const double AngleMin=FMath::DegreesToRadians(-AutonomyLidarSensor->HorizontalFovDegrees*0.5);
+        const double AngleIncrement=-2.0*AngleMin/static_cast<double>(std::max(1,Ranges.Num()-1));
+        for(std::size_t i=0;i<static_cast<std::size_t>(Ranges.Num());i+=stride){
+            const double Angle=Snapshot.ground_truth.heading_rad+AngleMin+static_cast<double>(i)*AngleIncrement;
+            const double Range=Ranges[static_cast<int32>(i)];
             const airside::Vec2 End{p.x_m+Range*std::cos(Angle),p.y_m+Range*std::sin(Angle)};
             DrawDebugLine(GetWorld(),Position,ToWorld(End,100.0f),FColor(255,220,55),false,0.0f,0,2.0f);
         }
@@ -522,6 +559,21 @@ void ARampLabWorldActor::MaybeCapture()
     const double Time = AutonomySnapshot != nullptr
         ? AutonomySnapshot->timestamp_s
         : static_cast<double>(Subsystem->GetPlaybackTime().count());
+    if (Subsystem->GetScenarioName().Equals(TEXT("goal10_sensor_validation"), ESearchCase::IgnoreCase)) {
+        if (CaptureStage >= 2 || Time < (CaptureStage == 0 ? 0.0 : 5.0)) return;
+        Subsystem->SetCameraPreset(TEXT("Service Roads"));
+        ApplyCameraPreset(TEXT("Service Roads"));
+        if (const auto* CaptureSnapshot = Subsystem->GetSnapshot()) Reconcile(*CaptureSnapshot, 0.0f);
+        const FString Directory = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("RampLab"));
+        IFileManager::Get().MakeDirectory(*Directory, true);
+        const FString Name = CaptureStage == 0 ? TEXT("goal10-sensor-validation-start.png") : TEXT("goal10-sensor-validation-obstacle.png");
+        const FString Filename = FPaths::Combine(Directory, Name);
+        FScreenshotRequest::RequestScreenshot(Filename, true, false, false, FIntRect(), true);
+        UE_LOG(LogRampLab, Display, TEXT("Goal 10 Unreal sensor capture saved: %s simulation_time=%.2f"), *Filename, Time);
+        ++CaptureStage;
+        if (CaptureStage == 2) CaptureExitCountdown = 2.0f;
+        return;
+    }
     struct FCapturePoint { const TCHAR* Scenario; int64 Time; const TCHAR* Name; const TCHAR* Camera; };
     const FCapturePoint Points[] = {
         {TEXT("baseline"), 0, TEXT("00-auburn-overview"), TEXT("Overview")},

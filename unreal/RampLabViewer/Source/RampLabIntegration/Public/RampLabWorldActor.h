@@ -14,6 +14,8 @@ class UStaticMesh;
 class UStaticMeshComponent;
 class UTextRenderComponent;
 class AStaticMeshActor;
+class URampLabLidarSensorComponent;
+class URampLabCameraSensorComponent;
 struct FLinearColor;
 namespace airside { struct SimulationSnapshot; struct Vec2; namespace autonomy { struct AutonomySnapshot; } }
 
@@ -63,6 +65,8 @@ private:
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> ObstacleMaterial;
     UPROPERTY() TObjectPtr<AStaticMeshActor> AutonomyVehicleActor;
     UPROPERTY() TObjectPtr<AStaticMeshActor> GnssMarkerActor;
+    UPROPERTY() TObjectPtr<URampLabLidarSensorComponent> AutonomyLidarSensor;
+    UPROPERTY() TObjectPtr<URampLabCameraSensorComponent> AutonomyCameraSensor;
     UPROPERTY() TArray<TObjectPtr<AStaticMeshActor>> AutonomyObstacleActors;
 
     UPROPERTY() TMap<uint32, TObjectPtr<UStaticMeshComponent>> RoadMeshes;

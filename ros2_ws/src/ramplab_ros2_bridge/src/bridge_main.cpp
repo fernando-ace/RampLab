@@ -129,8 +129,11 @@ public:
     dynamic_tf_ = std::make_shared<tf2_ros::TransformBroadcaster>(dynamic_interfaces);
     std::vector<geometry_msgs::msg::TransformStamped> transforms;
     transforms.push_back(identity_transform("map", "odom"));
-    transforms.push_back(identity_transform("base_link", "lidar"));
-    transforms.push_back(identity_transform("base_link", "imu"));
+    transforms.push_back(identity_transform("base_link", "gnss", 0.0, 0.0, 0.20));
+    transforms.push_back(identity_transform("base_link", "imu", 0.0, 0.0, 0.0));
+    transforms.push_back(identity_transform("base_link", "wheel_odom", 0.0, 0.0, 0.0));
+    transforms.push_back(identity_transform("base_link", "lidar", 3.40, 0.0, -0.30));
+    transforms.push_back(identity_transform("base_link", "camera", 3.40, 0.0, 0.0));
     static_tf_->sendTransform(transforms);
   }
 
@@ -160,10 +163,14 @@ public:
 
 private:
   static geometry_msgs::msg::TransformStamped identity_transform(
-      const std::string& parent, const std::string& child) {
+      const std::string& parent, const std::string& child,
+      double x_m = 0.0, double y_m = 0.0, double z_m = 0.0) {
     geometry_msgs::msg::TransformStamped tf;
     tf.header.frame_id = parent;
     tf.child_frame_id = child;
+    tf.transform.translation.x = x_m;
+    tf.transform.translation.y = y_m;
+    tf.transform.translation.z = z_m;
     tf.transform.rotation.w = 1.0;
     return tf;
   }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "airside/operations/simulation.hpp"
+#include "airside/autonomy/sensor_model.hpp"
 
 #include <cstdint>
 #include <array>
@@ -36,14 +37,14 @@ struct CircleObstacle {
 };
 
 struct SensorConfig {
-    double gnss_hz{5.0};
+    double gnss_hz{10.0};
     double gnss_sigma_m{0.5};
     Vec2 gnss_bias_m{};
     double imu_hz{50.0};
     double imu_heading_sigma_rad{0.005};
     double imu_yaw_rate_sigma_radps{0.005};
     double imu_accel_sigma_mps2{0.03};
-    double odometry_hz{20.0};
+    double odometry_hz{50.0};
     double odometry_sigma_mps{0.02};
     double odometry_sigma_m{0.01};
     double lidar_hz{10.0};
@@ -52,6 +53,10 @@ struct SensorConfig {
     double lidar_min_range_m{0.1};
     double lidar_max_range_m{30.0};
     double lidar_sigma_m{0.01};
+    SensorTimingConfig gnss_timing{};
+    SensorTimingConfig imu_timing{};
+    SensorTimingConfig odometry_timing{};
+    SensorTimingConfig lidar_timing{};
 };
 
 // Covariance is row-major for state [east, north, yaw, forward speed].
@@ -135,9 +140,9 @@ struct AutonomyScenario {
     std::vector<SensorFault> faults;
 };
 
-struct GnssMeasurement { double timestamp_s{}; Vec2 position{}; double accuracy_m{}; };
-struct ImuMeasurement { double timestamp_s{}; double heading_rad{}; double yaw_rate_radps{}; double longitudinal_accel_mps2{}; };
-struct OdometryMeasurement { double timestamp_s{}; double distance_m{}; double speed_mps{}; double heading_change_rad{}; };
+struct GnssMeasurement { double timestamp_s{}; Vec2 position{}; double accuracy_m{}; ObservationMetadata metadata{}; };
+struct ImuMeasurement { double timestamp_s{}; double heading_rad{}; double yaw_rate_radps{}; double longitudinal_accel_mps2{}; ObservationMetadata metadata{}; };
+struct OdometryMeasurement { double timestamp_s{}; double distance_m{}; double speed_mps{}; double heading_change_rad{}; ObservationMetadata metadata{}; };
 struct LidarScan {
     double timestamp_s{};
     double angle_min_rad{};
@@ -145,6 +150,7 @@ struct LidarScan {
     double range_min_m{};
     double range_max_m{};
     std::vector<double> ranges_m;
+    ObservationMetadata metadata{};
 };
 
 struct SensorFrame {
@@ -239,6 +245,8 @@ struct MissionMetrics {
     std::vector<double> fault_deactivation_times_s;
     std::vector<FaultEventRecord> fault_events;
     std::uint64_t trajectory_digest{};
+    std::uint64_t sensor_stream_digest{};
+    std::uint64_t sensor_stream_records{};
 };
 struct AutonomyRun {
     VehicleState final_state{};
@@ -273,7 +281,8 @@ public:
     [[nodiscard]] AutonomySnapshot snapshot() const;
     [[nodiscard]] bool advance(IAutonomyController& controller);
     [[nodiscard]] AutonomyRun result() const;
-    [[nodiscard]] AutonomyRun run(IAutonomyController& controller, std::ostream* trajectory_csv = nullptr);
+    [[nodiscard]] AutonomyRun run(IAutonomyController& controller, std::ostream* trajectory_csv = nullptr,
+                                  std::ostream* sensor_jsonl = nullptr);
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

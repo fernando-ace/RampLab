@@ -74,6 +74,9 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
             PlaybackSpeed, CaptureMultiplier);
     }
     bControlCheck = FParse::Param(FCommandLine::Get(), TEXT("RampLabControlCheck"));
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabSensorValidation"))) {
+        SelectedScenarioKey = TEXT("autonomy_sensor_validation");
+    }
     bDemoMode = FParse::Param(FCommandLine::Get(), TEXT("RampLabDemo"))
         || FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
     BuildScenarioComparison();
@@ -218,7 +221,8 @@ void URampLabSimulationSubsystem::ResetSimulation()
 
 void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
 {
-    if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity") && ScenarioKey != TEXT("autonomy_tug")) return;
+    if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity") &&
+        ScenarioKey != TEXT("autonomy_tug") && ScenarioKey != TEXT("autonomy_sensor_validation")) return;
     SelectedScenarioKey = ScenarioKey;
     LoadSelectedScenario();
 }
@@ -307,7 +311,7 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
             return false;
         }
 
-        if (SelectedScenarioKey == TEXT("autonomy_tug")) {
+        if (SelectedScenarioKey == TEXT("autonomy_tug") || SelectedScenarioKey == TEXT("autonomy_sensor_validation")) {
             auto Scenario = airside::autonomy::load_scenario(std::filesystem::path{*Path});
             ScenarioName = UTF8_TO_TCHAR(Scenario.name.c_str());
             Seed = Scenario.default_seed;
