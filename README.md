@@ -18,6 +18,7 @@ RampLab is a portable C++23 discrete-event simulation engine for airport ramp op
 - Separate fixed-step ground-vehicle autonomy simulation with deterministic GNSS, IMU, odometry, LiDAR, A* route following, collision checking, and sensor-noise experiments.
 - Optional Unreal 5.8/Cesium digital twin anchored at Auburn University Regional Airport, with entity inspection and actual scenario comparison.
 - Optional Unreal autonomy mode with the closed-loop tug, A* route, obstacles, GNSS estimate, and LiDAR overlays.
+- Optional native Windows ROS 2 bridge and separately running external controller for the tug autonomy simulation.
 
 ## Architecture
 
@@ -143,7 +144,7 @@ Each completed experiment writes `runs.csv`, `summary.csv`, and `experiment.json
 .\build\Release\airside_autonomy_experiment.exe --experiment experiments\autonomy_noise_validation.yaml --workers 4
 ```
 
-The optional autonomy library and headless tools build without Unreal or ROS2. The autonomy architecture, equations, sensor assumptions, and current ROS2 prerequisite are documented in [autonomy.md](docs/autonomy.md).
+The optional autonomy library and headless tools build without Unreal or ROS 2. The autonomy architecture, equations, and sensor assumptions are documented in [autonomy.md](docs/autonomy.md). The native ROS 2 workspace, activation sequence, topics, external mission, and timeout behavior are documented in [ros2.md](docs/ros2.md).
 
 ## Snapshot API
 

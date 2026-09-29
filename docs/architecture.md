@@ -159,10 +159,10 @@ Determinism depends on stable event sequences, ordered resource queues, sorted g
 ## Integrations
 
 - **Unreal Engine 5.8:** `URampLabSimulationSubsystem` consumes snapshots/events; stable Actors mirror entities and visual interpolation samples the authoritative journey timing.
-- **ROS2:** adapter maps records and snapshots to messages without importing ROS clocks into the core.
+- **ROS 2:** optional native Windows workspace adapts autonomy measurements and commands to messages without importing ROS clocks or dependencies into the core. A separate `rclcpp` controller consumes those messages and publishes `cmd_vel`; see [ros2.md](ros2.md).
 - **Experiment runner:** implemented standalone library and CLI build fresh `Scenario` values, execute independent simulations in a bounded pool, and aggregate final metrics without retaining batch event histories.
 - **Autonomy simulation:** a separate 20 ms fixed-step subsystem simulates tug dynamics, seeded GNSS/IMU/odometry/LiDAR, A* waypoint following, safety stops, and collision metrics. Its controller sees observations and mission data, never ground truth. Autonomy experiments retain compact mission results only.
 - **Network visualization:** server layer serializes snapshots/events outside the core.
 - **Record/replay:** stable external schema can later be specified without changing event production.
 
-Parallel execution across operational and autonomy runs is implemented. Parallelism within a single simulation, distributed execution, and ABI stabilization remain later work. ROS2 remains an optional adapter and requires an installed compatible development environment.
+Parallel execution across operational and autonomy runs is implemented. Parallelism within a single simulation, distributed execution, and ABI stabilization remain later work. ROS 2 remains an optional adapter requiring the separately installed Windows environment described in [ros2.md](ros2.md).

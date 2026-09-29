@@ -78,7 +78,7 @@ The definition uses paired seeds at GNSS σ values 0.1 m, 0.5 m, and 1.5 m. It r
 
 Unreal remains a non-authoritative consumer. It advances the same fixed-step controller/sensor model and renders its read-only snapshots; it does not move the vehicle along a hand-authored spline or feed renderer state back to the controller. Airport placement remains governed by the existing KAUO transform.
 
-ROS2 was not installed in the inspected Windows environment (no `ros2` command, ROS environment variables, or common install roots). The core and CLI therefore have no ROS2 dependency. To implement and validate that optional bridge, an installed ROS2 development environment compatible with the MSVC build is required, including `rclcpp`, `sensor_msgs`, `geometry_msgs`, `nav_msgs`, and `rosgraph_msgs`. No external controller, topic, `/clock`, or command-timeout behavior is claimed.
+The core and CLI have no ROS2 dependency. The optional native Windows ROS 2 Lyrical bridge and separately running external controller are implemented and validated; see [ros2.md](ros2.md) for the exact Pixi activation sequence, topics, frames, timing, mission results, and command-timeout behavior.
 
 ## Known limits
 
