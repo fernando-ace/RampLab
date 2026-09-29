@@ -45,7 +45,7 @@ add_library(airside_sim STATIC
 add_library(airside::sim ALIAS airside_sim)
 target_include_directories(airside_sim PUBLIC include)
 
-add_library(airside_autonomy STATIC src/autonomy/simulation.cpp)
+add_library(airside_autonomy STATIC src/autonomy/simulation.cpp src/autonomy/state_estimator.cpp)
 add_library(airside::autonomy ALIAS airside_autonomy)
 target_include_directories(airside_autonomy PUBLIC include)
 target_link_libraries(airside_autonomy PUBLIC airside::sim)

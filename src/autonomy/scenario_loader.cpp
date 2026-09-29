@@ -18,6 +18,27 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         const auto root=YAML::LoadFile(path.string());
         AutonomyScenario s;
         s.name=value<std::string>(root,"name","autonomy_tug");
+        if(const auto estimator=root["estimator"]) {
+            s.estimator_enabled=value<bool>(estimator,"enabled",true);
+            s.estimator.initial_position_variance_m2=value<double>(estimator,"initial_position_variance_m2",s.estimator.initial_position_variance_m2);
+            s.estimator.initial_heading_variance_rad2=value<double>(estimator,"initial_heading_variance_rad2",s.estimator.initial_heading_variance_rad2);
+            s.estimator.initial_speed_variance_m2ps2=value<double>(estimator,"initial_speed_variance_m2ps2",s.estimator.initial_speed_variance_m2ps2);
+            s.estimator.position_process_noise_m2ps=value<double>(estimator,"position_process_noise_m2ps",s.estimator.position_process_noise_m2ps);
+            s.estimator.heading_process_noise_rad2ps=value<double>(estimator,"heading_process_noise_rad2ps",s.estimator.heading_process_noise_rad2ps);
+            s.estimator.speed_process_noise_m2ps3=value<double>(estimator,"speed_process_noise_m2ps3",s.estimator.speed_process_noise_m2ps3);
+            s.estimator.gnss_sigma_m=value<double>(estimator,"gnss_sigma_m",s.estimator.gnss_sigma_m);
+            s.estimator.imu_heading_sigma_rad=value<double>(estimator,"imu_heading_sigma_rad",s.estimator.imu_heading_sigma_rad);
+            s.estimator.imu_yaw_rate_sigma_radps=value<double>(estimator,"imu_yaw_rate_sigma_radps",s.estimator.imu_yaw_rate_sigma_radps);
+            s.estimator.odometry_speed_sigma_mps=value<double>(estimator,"odometry_speed_sigma_mps",s.estimator.odometry_speed_sigma_mps);
+            s.estimator.odometry_heading_sigma_rad=value<double>(estimator,"odometry_heading_sigma_rad",s.estimator.odometry_heading_sigma_rad);
+            s.estimator.gnss_nis_gate=value<double>(estimator,"gnss_nis_gate",s.estimator.gnss_nis_gate);
+            s.estimator.maximum_measurement_age_s=value<double>(estimator,"maximum_measurement_age_s",s.estimator.maximum_measurement_age_s);
+            s.estimator.degraded_position_sigma_m=value<double>(estimator,"degraded_position_sigma_m",s.estimator.degraded_position_sigma_m);
+            s.estimator.unsafe_position_sigma_m=value<double>(estimator,"unsafe_position_sigma_m",s.estimator.unsafe_position_sigma_m);
+            s.estimator.degraded_heading_sigma_rad=value<double>(estimator,"degraded_heading_sigma_rad",s.estimator.degraded_heading_sigma_rad);
+            s.estimator.unsafe_heading_sigma_rad=value<double>(estimator,"unsafe_heading_sigma_rad",s.estimator.unsafe_heading_sigma_rad);
+            s.estimator.unsafe_without_gnss_s=value<double>(estimator,"unsafe_without_gnss_s",s.estimator.unsafe_without_gnss_s);
+        }
         s.default_seed=value<std::uint64_t>(root,"default_seed",42);
         const auto map_path=path.parent_path()/value<std::string>(root,"map_scenario","baseline.yaml");
         s.airport=airside::load_scenario(map_path);
