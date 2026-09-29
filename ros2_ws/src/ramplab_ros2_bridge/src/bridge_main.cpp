@@ -261,7 +261,13 @@ private:
       diagnostics.data={frame.estimate->position_uncertainty_m,frame.estimate->heading_uncertainty_rad,
           frame.estimate->time_since_gnss_s,static_cast<double>(frame.estimate->gnss_accepted),
           static_cast<double>(frame.estimate->gnss_rejected),static_cast<double>(frame.estimate->stale_rejected),
-          static_cast<double>(frame.estimate->gate_activations),frame.estimate->last_gnss_nis};
+          static_cast<double>(frame.estimate->gate_activations),frame.estimate->last_gnss_nis,
+          static_cast<double>(frame.estimate->wheel_health),static_cast<double>(frame.estimate->gnss_recovery),
+          static_cast<double>(frame.estimate->wheel_inconsistency_count),static_cast<double>(frame.estimate->wheel_health_transitions),
+          static_cast<double>(frame.estimate->reacquisition_attempts),
+          static_cast<double>(frame.estimate->reacquisition_successes),static_cast<double>(frame.estimate->reacquisition_candidates_rejected),
+          static_cast<double>(frame.estimate->wheel_downweighted),frame.estimate->localization_degraded_time_s};
+      diagnostics.data.push_back(frame.estimate->maximum_gnss_nis);
       estimator_diagnostics_pub_->publish(diagnostics);
       publish_dynamic_transform(message);
       last_filtered_stamp_=frame.estimate->timestamp_s;

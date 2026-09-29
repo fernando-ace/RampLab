@@ -35,6 +35,36 @@ cases:
     faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 30.0, magnitude: 0.10}]
   - name: wheel_slip_25pct
     faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 30.0, magnitude: 0.25}]
+  - name: wheel_scale_0pct
+  - name: wheel_scale_5pct
+    faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 45.0, magnitude: 0.05}]
+  - name: wheel_scale_10pct
+    faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 45.0, magnitude: 0.10}]
+  - name: wheel_scale_15pct
+    faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 45.0, magnitude: 0.15}]
+  - name: wheel_scale_20pct
+    faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 45.0, magnitude: 0.20}]
+  - name: wheel_scale_25pct
+    faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 45.0, magnitude: 0.25}]
+  - name: wheel_scale_30pct
+    faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 45.0, magnitude: 0.30}]
+  - name: wheel_slip_with_gnss_noise
+    faults:
+      - {sensor: odometry, type: scale, start_s: 20.0, duration_s: 35.0, magnitude: 0.20}
+      - {sensor: gnss, type: noise, start_s: 20.0, duration_s: 20.0, magnitude: 1.0}
+  - name: wheel_slip_with_gnss_dropout
+    faults:
+      - {sensor: odometry, type: scale, start_s: 20.0, duration_s: 40.0, magnitude: 0.25}
+      - {sensor: gnss, type: dropout, start_s: 20.0, duration_s: 8.0}
+  - name: wheel_slip_with_imu_dropout
+    faults:
+      - {sensor: odometry, type: scale, start_s: 20.0, duration_s: 40.0, magnitude: 0.25}
+      - {sensor: imu, type: dropout, start_s: 20.0, duration_s: 8.0}
+  - name: wheel_slip_gnss_imu_reacquisition
+    faults:
+      - {sensor: odometry, type: scale, start_s: 20.0, duration_s: 50.0, magnitude: 0.25}
+      - {sensor: gnss, type: dropout, start_s: 20.0, duration_s: 16.0}
+      - {sensor: imu, type: dropout, start_s: 20.0, duration_s: 10.0}
   - name: delayed_gnss_250ms
     faults: [{sensor: gnss, type: delay, start_s: 20.0, duration_s: 20.0, magnitude: 0.25}]
   - name: delayed_gnss_1s

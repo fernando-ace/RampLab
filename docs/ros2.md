@@ -59,7 +59,7 @@ All tug topics are under `/ramplab/tug1`. Sensor rates below are configured simu
 | `/ramplab/tug1/odom` | `nav_msgs/msg/Odometry` | bridge publishes | 20 / 20.03 Hz | `odom`, child `base_link` |
 | `/ramplab/tug1/filtered_odom` | `nav_msgs/msg/Odometry` | bridge publishes | 50 Hz simulation updates | `odom`, child `base_link` |
 | `/ramplab/tug1/estimator_health` | `std_msgs/msg/UInt8` | bridge publishes | 50 Hz simulation updates | 0 uninitialized, 1 healthy, 2 degraded, 3 unsafe, 4 invalid |
-| `/ramplab/tug1/estimator_diagnostics` | `std_msgs/msg/Float64MultiArray` | bridge publishes | 50 Hz simulation updates | `[position_sigma_m, heading_sigma_rad, gnss_age_s, accepted, rejected, stale, gate_activations, last_gnss_nis]` |
+| `/ramplab/tug1/estimator_diagnostics` | `std_msgs/msg/Float64MultiArray` | bridge publishes | 50 Hz simulation updates | `[position_sigma_m, heading_sigma_rad, gnss_age_s, accepted, rejected, stale, gate_activations, last_gnss_nis, wheel_health, gnss_recovery, wheel_inconsistencies, wheel_transitions, reacq_attempts, reacq_successes, candidate_rejections, wheel_downweighted, degraded_time_s, max_gnss_nis]` |
 | `/ramplab/tug1/gnss` | `sensor_msgs/msg/NavSatFix` | bridge publishes | 5 / 5.00 Hz | `gnss` |
 | `/ramplab/tug1/route` | `nav_msgs/msg/Path` | bridge publishes once, transient-local | mission route | `map` |
 | `/ramplab/tug1/cmd_vel` | `geometry_msgs/msg/Twist` | controller publishes; bridge subscribes | not stamped / measured 20.05 Hz wall rate | — |
@@ -148,9 +148,11 @@ The standalone deterministic simulator and its seeded tests remain deterministic
 
 ## Fused estimator interface
 
-The bridge adapts the core estimate to `/ramplab/tug1/filtered_odom` (`nav_msgs/msg/Odometry`) with simulation-time header stamps and planar pose/speed covariance. `/ramplab/tug1/estimator_health` is a `std_msgs/msg/UInt8` state code: 0 uninitialized, 1 healthy, 2 degraded, 3 unsafe, 4 invalid. `/ramplab/tug1/estimator_diagnostics` is a standard `Float64MultiArray` ordered as position sigma, heading sigma, age of last accepted GNSS, accepted GNSS count, rejected GNSS count, stale count, gate activation count, and latest GNSS NIS. The controller consumes filtered odometry and the health code; it does not recompute localization from GNSS or raw wheel odometry.
+The bridge adapts the core estimate to `/ramplab/tug1/filtered_odom` (`nav_msgs/msg/Odometry`) with simulation-time header stamps and planar pose/speed covariance. `/ramplab/tug1/estimator_health` is a `std_msgs/msg/UInt8` state code: 0 uninitialized, 1 healthy, 2 degraded, 3 unsafe, 4 invalid. The 18 diagnostic values preserve the original first eight fields and append wheel health (0 nominal, 1 suspect, 2 degraded), GNSS recovery (0 tracking, 1 inconsistent, 2 reacquiring, 3 recovered), wheel inconsistency and transition counts, reacquisition attempt and success counts, rejected-candidate and downweighted-wheel counts, degraded time, and maximum GNSS NIS. The controller consumes filtered odometry and the health code; it does not recompute localization from GNSS or raw wheel odometry.
 
 The bridge alone publishes dynamic `odom → base_link` from filtered odometry. Its static publisher owns `map → odom`, `base_link → lidar`, and `base_link → imu`. Raw `/odom` remains a sensor stream and has no associated TF broadcast. The live probe checks these frame edges and confirms a single `/tf` publisher.
+
+Goal 9 validation on 2026-09-29 rebuilt the native overlay and passed all 11 bridge conversion/harness tests. The staged fault probe ran to its requested 34 s horizon with zero collisions, observed health states healthy/degraded/unsafe, covariance growth from 0.300 to 0.540 m, 36 GNSS gate activations, no fixes during dropout, 12 m LiDAR range, and measured/command-model speed ratio 0.750 during 25% slip versus 0.998 nominal. A separate 80 s Goal 9 reacquisition probe observed degraded wheel health, six reacquisition-success updates, 4,001 filtered odometry samples, and zero collisions; it ended in `TIMEOUT` at the observation horizon, so it verifies the sensor, estimator, and graph behavior rather than mission completion. Both probes found no ground-truth topic and one dynamic TF publisher.
 
 ## Validation and limits
 

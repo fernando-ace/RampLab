@@ -1,4 +1,4 @@
-name: autonomy_tug
+name: autonomy_ros2_goal9_reacquisition
 default_seed: 42
 map_scenario: baseline.yaml
 mission:
@@ -62,3 +62,8 @@ obstacles:
   - { id: parked_tug, x_m: 60.0, y_m: 48.0, radius_m: 1.0 }
   - { id: barricade, x_m: 190.0, y_m: 43.0, radius_m: 1.2 }
   - { id: service_cart, x_m: 165.0, y_m: 65.0, radius_m: 1.0 }
+
+faults:
+  - {sensor: odometry, type: scale, start_s: 10.0, duration_s: 50.0, magnitude: 0.25}
+  - {sensor: gnss, type: dropout, start_s: 10.0, duration_s: 12.0}
+  - {sensor: imu, type: dropout, start_s: 10.0, duration_s: 8.0}

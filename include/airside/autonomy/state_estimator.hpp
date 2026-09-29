@@ -22,6 +22,13 @@ private:
     double last_odom_heading_estimate_rad_{}, odometry_heading_origin_rad_{};
     double last_imu_stamp_s_{-1.0}, last_odom_stamp_s_{-1.0}, last_gnss_stamp_s_{-1.0};
     double last_gnss_time_s_{-1.0};
+    Vec2 wheel_check_gnss_position_{}, reacquisition_center_{};
+    double wheel_check_gnss_time_s_{-1.0}, wheel_check_odom_distance_m_{};
+    double wheel_check_heading_rad_{};
+    double wheel_check_bad_windows_{}, wheel_check_good_windows_{};
+    std::array<Vec2, 8> reacquisition_candidates_{};
+    std::size_t reacquisition_candidate_count_{}, reacquisition_candidate_next_{}, reacquisition_correction_steps_{};
+    bool have_wheel_check_anchor_{}, reacquisition_active_{};
     bool have_odom_{}, have_imu_{}, have_odom_heading_origin_{};
     void refresh_health(double now_s) noexcept;
 };

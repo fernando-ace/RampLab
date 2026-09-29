@@ -67,6 +67,7 @@ struct AutonomySimulation::Impl {
     Vec2 last_estimated_position{};
     double last_estimated_heading{};
     bool estimator_stop_recorded{};
+    double reacquisition_started_s{-1.0};
     bool gnss_gate_active{}, stale_event_active{};
     double previous_time_eval{};
     double route_error_sum{0.0};
@@ -184,8 +185,13 @@ struct AutonomySimulation::Impl {
             const auto rejected_before=estimator.state().gnss_rejected;
             const auto accepted_before=estimator.state().gnss_accepted;
             const auto stale_before=estimator.state().stale_rejected;
+            const auto reacquisition_attempts_before=estimator.state().reacquisition_attempts;
+            const auto reacquisition_successes_before=estimator.state().reacquisition_successes;
             frame.estimate=estimator.update(frame);
             const auto& e=*frame.estimate;
+            if(e.reacquisition_attempts>reacquisition_attempts_before)reacquisition_started_s=time;
+            if(e.reacquisition_successes>reacquisition_successes_before&&reacquisition_started_s>=0.0&&metrics.gnss_recovery_latency_s<0.0)
+                metrics.gnss_recovery_latency_s=time-reacquisition_started_s;
             if(before!=e.health) {
                 const char* event=e.health==EstimatorHealth::Healthy?"healthy":e.health==EstimatorHealth::Degraded?"degraded":
                     e.health==EstimatorHealth::Unsafe?"unsafe":e.health==EstimatorHealth::Invalid?"invalid":"uninitialized";
@@ -199,12 +205,14 @@ struct AutonomySimulation::Impl {
             if(e.health==EstimatorHealth::Healthy)metrics.estimator_healthy_time_s+=dt_eval;
             else if(e.health==EstimatorHealth::Degraded)metrics.estimator_degraded_time_s+=dt_eval;
             else if(e.health==EstimatorHealth::Unsafe||e.health==EstimatorHealth::Invalid)metrics.estimator_unsafe_time_s+=dt_eval;
+            if(e.health==EstimatorHealth::Unsafe||e.health==EstimatorHealth::Invalid)metrics.estimator_safety_stop_time_s+=dt_eval;
             previous_time_eval=time;
             if(e.initialized) {
                 // Evaluation truth is read only here; it never enters StateEstimator2D::update.
                 evaluate_estimated_pose(e.position,e.heading_rad);
                 metrics.maximum_position_uncertainty_m=std::max(metrics.maximum_position_uncertainty_m,e.position_uncertainty_m);
                 metrics.maximum_heading_uncertainty_rad=std::max(metrics.maximum_heading_uncertainty_rad,e.heading_uncertainty_rad);
+                metrics.maximum_gnss_nis=std::max(metrics.maximum_gnss_nis,e.maximum_gnss_nis);
             }
             if(e.gnss_rejected>rejected_before&&!gnss_gate_active)metrics.estimator_events.push_back({time,"gnss_gate_activated"});
             if(e.gnss_rejected>rejected_before)gnss_gate_active=true;
@@ -217,6 +225,11 @@ struct AutonomySimulation::Impl {
             }
             metrics.gnss_updates_accepted=e.gnss_accepted;metrics.gnss_updates_rejected=e.gnss_rejected;
             metrics.stale_measurements_rejected=e.stale_rejected;metrics.gnss_gate_activations=e.gate_activations;
+            metrics.wheel_inconsistency_count=e.wheel_inconsistency_count;metrics.wheel_health_transitions=e.wheel_health_transitions;metrics.wheel_downweighted=e.wheel_downweighted;
+            metrics.gnss_reacquisition_attempts=e.reacquisition_attempts;metrics.gnss_reacquisition_successes=e.reacquisition_successes;
+            metrics.gnss_reacquisition_candidates_rejected=e.reacquisition_candidates_rejected;
+            metrics.localization_degraded_time_s=e.localization_degraded_time_s;metrics.final_wheel_health=e.wheel_health;
+            metrics.final_gnss_recovery=e.gnss_recovery;
         } else frame.estimate.reset();
         if(any_unavailable){if(unavailable_since<0.0){unavailable_since=time;metrics.fault_events.push_back({std::numeric_limits<std::size_t>::max(),time,"sensor_unavailable"});}}else if(unavailable_since>=0.0){metrics.unavailable_duration_s+=time-unavailable_since;metrics.fault_events.push_back({std::numeric_limits<std::size_t>::max(),time,"sensor_recovered"});unavailable_since=-1.0;}
     }
@@ -344,7 +357,7 @@ AutonomyRun AutonomySimulation::run(IAutonomyController& controller,std::ostream
         try{command=controller.update(impl_->frame,impl_->mission);}catch(...){impl_->metrics.result=MissionResult::ControllerFailure;impl_->complete=true;break;}
         if(!impl_->scenario.estimator_enabled)if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller);ref&&ref->has_estimated_position())impl_->evaluate_estimated_pose(ref->estimated_position(),ref->estimated_heading_rad());
         impl_->step(command);
-        if(csv){const auto est=impl_->frame.gnss?impl_->frame.gnss->position:impl_->state.position;double lidar=impl_->scenario.sensors.lidar_max_range_m;if(impl_->frame.lidar)for(double r:impl_->frame.lidar->ranges_m)lidar=std::min(lidar,r);*csv<<impl_->time<<','<<impl_->state.position.x_m<<','<<impl_->state.position.y_m<<','<<est.x_m<<','<<est.y_m<<','<<impl_->state.heading_rad<<','<<impl_->state.speed_mps<<','<<command.target_speed_mps<<','<<command.target_yaw_rate_radps<<','<<route_error(impl_->state.position,impl_->mission.waypoints)<<','<<lidar<<'\n';}
+        if(csv){const auto est=impl_->frame.estimate&&impl_->frame.estimate->initialized?impl_->frame.estimate->position:(impl_->frame.gnss?impl_->frame.gnss->position:impl_->state.position);double lidar=impl_->scenario.sensors.lidar_max_range_m;if(impl_->frame.lidar)for(double r:impl_->frame.lidar->ranges_m)lidar=std::min(lidar,r);*csv<<impl_->time<<','<<impl_->state.position.x_m<<','<<impl_->state.position.y_m<<','<<est.x_m<<','<<est.y_m<<','<<impl_->state.heading_rad<<','<<impl_->state.speed_mps<<','<<command.target_speed_mps<<','<<command.target_yaw_rate_radps<<','<<route_error(impl_->state.position,impl_->mission.waypoints)<<','<<lidar<<'\n';}
         if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&impl_->state.speed_mps<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
         if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
         if(const auto* ref=dynamic_cast<const ReferenceController*>(&controller)){impl_->metrics.emergency_stops=ref->emergency_stops();impl_->metrics.degraded_mode_entries=ref->degraded_mode_entries();impl_->metrics.safety_stop_entries=ref->safety_stop_entries();impl_->metrics.time_stopped_degraded_s=ref->degraded_stop_time_s();}

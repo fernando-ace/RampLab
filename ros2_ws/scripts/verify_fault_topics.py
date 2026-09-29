@@ -85,7 +85,7 @@ class Probe(Node):
 
     def on_estimator_diagnostics(self, msg):
         if len(msg.data) >= 8:
-            self.estimator_diagnostics.append((self.sim_time, *map(float, msg.data[:8])))
+            self.estimator_diagnostics.append((self.sim_time, *map(float, msg.data[:18])))
 
     def on_tf(self, msg):
         self.dynamic_tf.update((tf.header.frame_id, tf.child_frame_id) for tf in msg.transforms)
@@ -135,6 +135,8 @@ def main():
     parser.add_argument("--max-sim-seconds", type=float, default=34.0)
     parser.add_argument("--clean-mission", action="store_true",
                         help="verify a clean external-controller mission through completion")
+    parser.add_argument("--goal9", action="store_true",
+                        help="verify wheel degradation and safe GNSS reacquisition")
     parser.add_argument("--kill-controller-at", type=float,
                         help="stop the separate controller at this simulation time to verify the bridge watchdog")
     args = parser.parse_args()
@@ -218,6 +220,27 @@ def main():
                     f"expected one dynamic TF publisher, got {sorted(probe.dynamic_tf_publishers)}")
             print(f"ROS clean mission PASS: completion, collisions=0, filtered odometry={len(probe.filtered_odometry)}, "
                   f"/clock={max(probe.clock):.3f} sim s, TF owner={sorted(probe.dynamic_tf_publishers)}")
+            print("Bridge summary:\n" + bridge_output.strip())
+            return
+        require(probe.estimator_diagnostics and all(len(sample) == 19 for sample in probe.estimator_diagnostics),
+                "estimator diagnostics did not publish the 18-value Goal 9 contract")
+        if args.goal9:
+            diagnostics = probe.estimator_diagnostics
+            require(any(sample[9] == 2.0 for sample in diagnostics), "wheel health never reached degraded")
+            require(any(sample[13] > 0 for sample in diagnostics), "GNSS reacquisition was never attempted")
+            require(any(sample[14] > 0 for sample in diagnostics), "GNSS reacquisition was never confirmed")
+            require(any(code >= 3 for _, code in probe.estimator_health),
+                    "controller never received unsafe localization health during recovery")
+            require("Collisions: 0" in bridge_output, "Goal 9 ROS fault probe collided")
+            require(not any(10.0 <= stamp < 22.0 for stamp in probe.gnss),
+                    "GNSS dropout interval unexpectedly published a fix")
+            require(not any("ground_truth" in name or "groundtruth" in name for name, _ in probe.get_topic_names_and_types()),
+                    "a ground-truth topic was visible in the ROS graph")
+            require(("odom", "base_link") in probe.dynamic_tf and len(probe.dynamic_tf_publishers) == 1,
+                    "bridge did not remain sole dynamic TF publisher")
+            print(f"ROS Goal 9 fault probe PASS: wheel health={int(max(s[9] for s in diagnostics))}, "
+                  f"GNSS reacquisitions={int(max(s[14] for s in diagnostics))}, "
+                  f"filtered odometry={len(probe.filtered_odometry)}, zero collisions in bridge observation")
             print("Bridge summary:\n" + bridge_output.strip())
             return
         require(probe.estimator_health and any(code == 2 for _, code in probe.estimator_health),

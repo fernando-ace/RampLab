@@ -38,6 +38,7 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
             s.estimator.degraded_heading_sigma_rad=value<double>(estimator,"degraded_heading_sigma_rad",s.estimator.degraded_heading_sigma_rad);
             s.estimator.unsafe_heading_sigma_rad=value<double>(estimator,"unsafe_heading_sigma_rad",s.estimator.unsafe_heading_sigma_rad);
             s.estimator.unsafe_without_gnss_s=value<double>(estimator,"unsafe_without_gnss_s",s.estimator.unsafe_without_gnss_s);
+            s.estimator.unobserved_stop_deceleration_mps2=value<double>(estimator,"unobserved_stop_deceleration_mps2",s.estimator.unobserved_stop_deceleration_mps2);
         }
         s.default_seed=value<std::uint64_t>(root,"default_seed",42);
         const auto map_path=path.parent_path()/value<std::string>(root,"map_scenario","baseline.yaml");

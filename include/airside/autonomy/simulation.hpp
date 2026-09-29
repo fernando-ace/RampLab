@@ -73,9 +73,12 @@ struct EstimatorConfig {
     double unsafe_position_sigma_m{8.0};
     double degraded_heading_sigma_rad{0.5};
     double unsafe_heading_sigma_rad{1.2};
-    double unsafe_without_gnss_s{20.0};
+    double unsafe_without_gnss_s{6.0};
+    double unobserved_stop_deceleration_mps2{1.5};
 };
 enum class EstimatorHealth { Uninitialized, Healthy, Degraded, Unsafe, Invalid };
+enum class WheelHealth { Nominal, Suspect, Degraded };
+enum class GnssRecoveryState { Tracking, Inconsistent, Reacquiring, Recovered };
 struct EstimatedState {
     double timestamp_s{};
     Vec2 position{};
@@ -85,8 +88,13 @@ struct EstimatedState {
     bool initialized{};
     EstimatorHealth health{EstimatorHealth::Uninitialized};
     double position_uncertainty_m{}, heading_uncertainty_rad{}, time_since_gnss_s{};
-    std::size_t gnss_accepted{}, gnss_rejected{}, stale_rejected{}, gate_activations{};
+    std::size_t gnss_accepted{}, gnss_rejected{}, stale_rejected{}, gate_activations{}, gnss_reject_streak{};
     double maximum_gnss_innovation_m{}, last_gnss_nis{};
+    double maximum_gnss_nis{};
+    WheelHealth wheel_health{WheelHealth::Nominal};
+    GnssRecoveryState gnss_recovery{GnssRecoveryState::Tracking};
+    std::size_t wheel_inconsistency_count{}, wheel_health_transitions{}, wheel_downweighted{}, reacquisition_attempts{}, reacquisition_successes{}, reacquisition_candidates_rejected{};
+    double localization_degraded_time_s{};
 };
 
 enum class SensorKind { Gnss, Imu, Odometry, Lidar };
@@ -219,9 +227,13 @@ struct MissionMetrics {
     double mean_heading_error_rad{}, maximum_heading_error_rad{}, final_heading_error_rad{};
     double estimator_initialization_time_s{-1.0};
     double estimator_healthy_time_s{}, estimator_degraded_time_s{}, estimator_unsafe_time_s{};
-    double maximum_position_uncertainty_m{}, maximum_heading_uncertainty_rad{};
+    double maximum_position_uncertainty_m{}, maximum_heading_uncertainty_rad{}, maximum_gnss_nis{};
     std::size_t gnss_updates_accepted{}, gnss_updates_rejected{}, stale_measurements_rejected{}, gnss_gate_activations{};
     std::size_t estimator_uncertainty_safety_stops{};
+    std::size_t wheel_inconsistency_count{}, wheel_health_transitions{}, wheel_downweighted{}, gnss_reacquisition_attempts{}, gnss_reacquisition_successes{}, gnss_reacquisition_candidates_rejected{};
+    double localization_degraded_time_s{}, estimator_safety_stop_time_s{}, gnss_recovery_latency_s{-1.0};
+    WheelHealth final_wheel_health{WheelHealth::Nominal};
+    GnssRecoveryState final_gnss_recovery{GnssRecoveryState::Tracking};
     std::vector<EstimatorEventRecord> estimator_events;
     std::vector<double> fault_activation_times_s;
     std::vector<double> fault_deactivation_times_s;
