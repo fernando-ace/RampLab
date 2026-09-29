@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>ramplab_ros2_common</name>
+  <version>0.1.0</version>
+  <description>Coordinate conventions shared by RampLab ROS 2 adapters.</description>
+  <maintainer email="ramplab@example.invalid">RampLab</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>
