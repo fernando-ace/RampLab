@@ -1,0 +1,56 @@
+name: autonomy_robustness
+scenario: ../scenarios/autonomy_tug.yaml
+seed_start: 42
+fault_seed_start: 7001
+runs_per_case: 3
+workers: 4
+output_directory: ../results/autonomy_robustness
+cases:
+  - name: baseline
+  - name: gnss_dropout_2s
+    faults: [{sensor: gnss, type: dropout, start_s: 20.0, duration_s: 2.0}]
+  - name: gnss_dropout_5s
+    faults: [{sensor: gnss, type: dropout, start_s: 20.0, duration_s: 5.0}]
+  - name: gnss_dropout_10s
+    faults: [{sensor: gnss, type: dropout, start_s: 20.0, duration_s: 10.0}]
+  - name: gnss_noise_0_75m
+    faults: [{sensor: gnss, type: noise, start_s: 20.0, duration_s: 20.0, magnitude: 0.75}]
+  - name: gnss_noise_2m
+    faults: [{sensor: gnss, type: noise, start_s: 20.0, duration_s: 20.0, magnitude: 2.0}]
+  - name: gnss_bias_8m
+    faults: [{sensor: gnss, type: bias, start_s: 20.0, duration_s: 20.0, x_m: 8.0, y_m: -3.0}]
+  - name: lidar_dropout
+    faults: [{sensor: lidar, type: dropout, start_s: 20.0, duration_s: 3.0}]
+  - name: lidar_range_15m
+    faults: [{sensor: lidar, type: range_limit, start_s: 20.0, duration_s: 25.0, magnitude: 15.0}]
+  - name: lidar_range_8m
+    faults: [{sensor: lidar, type: range_limit, start_s: 20.0, duration_s: 25.0, magnitude: 8.0}]
+  - name: lidar_partial_obstruction
+    faults: [{sensor: lidar, type: obstruction, start_s: 20.0, duration_s: 20.0, angle_min_deg: 30.0, angle_max_deg: 65.0}]
+  - name: imu_noise
+    faults: [{sensor: imu, type: noise, start_s: 20.0, duration_s: 20.0, magnitude: 0.05}]
+  - name: imu_dropout
+    faults: [{sensor: imu, type: dropout, start_s: 20.0, duration_s: 2.0}]
+  - name: wheel_slip_10pct
+    faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 30.0, magnitude: 0.10}]
+  - name: wheel_slip_25pct
+    faults: [{sensor: odometry, type: scale, start_s: 20.0, duration_s: 30.0, magnitude: 0.25}]
+  - name: delayed_gnss_250ms
+    faults: [{sensor: gnss, type: delay, start_s: 20.0, duration_s: 20.0, magnitude: 0.25}]
+  - name: gnss_packet_loss_10pct
+    faults: [{sensor: gnss, type: packet_loss, start_s: 20.0, duration_s: 20.0, probability: 0.10}]
+  - name: gnss_burst_loss
+    faults: [{sensor: gnss, type: burst_loss, start_s: 20.0, duration_s: 2.0}]
+  - name: combined_localization
+    faults:
+      - {sensor: gnss, type: noise, start_s: 20.0, duration_s: 30.0, magnitude: 1.5}
+      - {sensor: odometry, type: scale, start_s: 20.0, duration_s: 30.0, magnitude: 0.10}
+  - name: combined_perception_localization
+    faults:
+      - {sensor: lidar, type: range_limit, start_s: 20.0, duration_s: 30.0, magnitude: 8.0}
+      - {sensor: gnss, type: dropout, start_s: 20.0, duration_s: 5.0}
+  - name: severe_safe_stop
+    faults:
+      - {sensor: lidar, type: dropout, start_s: 20.0, duration_s: 12.0}
+      - {sensor: gnss, type: dropout, start_s: 20.0, duration_s: 12.0}
+      - {sensor: imu, type: dropout, start_s: 20.0, duration_s: 12.0}
