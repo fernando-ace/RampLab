@@ -8,6 +8,7 @@ find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(ramplab_ros2_common REQUIRED)
 
 set(RAMPLAB_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../.." CACHE PATH
@@ -41,13 +42,14 @@ target_include_directories(ramplab_ros2_conversions PUBLIC include)
 target_link_libraries(ramplab_ros2_conversions PUBLIC
   ramplab_airside_autonomy
   sensor_msgs::sensor_msgs nav_msgs::nav_msgs geometry_msgs::geometry_msgs
+  std_msgs::std_msgs
   builtin_interfaces::builtin_interfaces ramplab_ros2_common::ramplab_ros2_coordinates)
 
 add_executable(ramplab_ros2_bridge src/bridge_main.cpp)
 target_compile_features(ramplab_ros2_bridge PRIVATE cxx_std_20)
 target_link_libraries(ramplab_ros2_bridge PRIVATE
   rclcpp::rclcpp sensor_msgs::sensor_msgs nav_msgs::nav_msgs geometry_msgs::geometry_msgs
-  rosgraph_msgs::rosgraph_msgs tf2_ros::tf2_ros ramplab_ros2_conversions
+  rosgraph_msgs::rosgraph_msgs std_msgs::std_msgs tf2_ros::tf2_ros ramplab_ros2_conversions
   ramplab_airside_autonomy_scenario ramplab_airside_autonomy
   ramplab_airside_scenario ramplab_airside_sim ramplab_yaml_cpp)
 

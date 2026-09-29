@@ -11,6 +11,8 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <std_msgs/msg/u_int8.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
 #include <tf2_ros/static_transform_broadcaster.hpp>
 #include <tf2_ros/transform_broadcaster.hpp>
 
@@ -105,6 +107,9 @@ public:
         imu_pub_(create_publisher<sensor_msgs::msg::Imu>("imu", rclcpp::SensorDataQoS().keep_last(1))),
         odom_pub_(create_publisher<nav_msgs::msg::Odometry>("odom", rclcpp::SensorDataQoS().keep_last(1))),
         gnss_pub_(create_publisher<sensor_msgs::msg::NavSatFix>("gnss", rclcpp::SensorDataQoS().keep_last(1))),
+        filtered_odom_pub_(create_publisher<nav_msgs::msg::Odometry>("filtered_odom", rclcpp::SensorDataQoS().keep_last(1))),
+        estimator_health_pub_(create_publisher<std_msgs::msg::UInt8>("estimator_health", rclcpp::SensorDataQoS().keep_last(1))),
+        estimator_diagnostics_pub_(create_publisher<std_msgs::msg::Float64MultiArray>("estimator_diagnostics", rclcpp::SensorDataQoS().keep_last(1))),
         route_pub_(create_publisher<nav_msgs::msg::Path>("route",
             rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local())),
         clock_pub_(create_publisher<rosgraph_msgs::msg::Clock>("/clock",
@@ -243,9 +248,23 @@ private:
       auto message = ramplab_ros2_bridge::to_odometry(frame.odometry->timestamp_s,
           estimated_position_, estimated_heading_rad_, frame.odometry->speed_mps, estimated_yaw_rate_);
       odom_pub_->publish(message);
-      publish_dynamic_transform(message);
       last_odom_stamp_ = frame.odometry->timestamp_s;
       ++odom_count_;
+    }
+    if(frame.estimate&&frame.estimate->initialized&&frame.estimate->timestamp_s!=last_filtered_stamp_) {
+      auto message=ramplab_ros2_bridge::to_filtered_odometry(*frame.estimate);
+      filtered_odom_pub_->publish(message);
+      std_msgs::msg::UInt8 status;
+      status.data=static_cast<std::uint8_t>(frame.estimate->health);
+      estimator_health_pub_->publish(status);
+      std_msgs::msg::Float64MultiArray diagnostics;
+      diagnostics.data={frame.estimate->position_uncertainty_m,frame.estimate->heading_uncertainty_rad,
+          frame.estimate->time_since_gnss_s,static_cast<double>(frame.estimate->gnss_accepted),
+          static_cast<double>(frame.estimate->gnss_rejected),static_cast<double>(frame.estimate->stale_rejected),
+          static_cast<double>(frame.estimate->gate_activations),frame.estimate->last_gnss_nis};
+      estimator_diagnostics_pub_->publish(diagnostics);
+      publish_dynamic_transform(message);
+      last_filtered_stamp_=frame.estimate->timestamp_s;
     }
   }
 
@@ -291,6 +310,9 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr scan_pub_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr filtered_odom_pub_;
+  rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr estimator_health_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr estimator_diagnostics_pub_;
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr gnss_pub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr route_pub_;
   rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr clock_pub_;
@@ -299,6 +321,7 @@ private:
   std::shared_ptr<tf2_ros::TransformBroadcaster> dynamic_tf_;
   std::uint64_t scan_count_{}, imu_count_{}, odom_count_{}, gnss_count_{};
   double last_scan_stamp_{-1.0}, last_imu_stamp_{-1.0}, last_odom_stamp_{-1.0}, last_gnss_stamp_{-1.0};
+  double last_filtered_stamp_{-1.0};
   bool odom_initialized_{};
   double last_measured_distance_m_{}, last_heading_change_rad_{};
   double estimated_heading_rad_{}, estimated_yaw_rate_{};

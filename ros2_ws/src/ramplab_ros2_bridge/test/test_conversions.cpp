@@ -83,6 +83,23 @@ TEST(Ros2Conversions, OdometryUsesOdomAndBaseLinkFrames) {
   EXPECT_DOUBLE_EQ(message.twist.twist.angular.z, -0.1);
 }
 
+TEST(Ros2Conversions, FilteredOdometryMapsCoreCovarianceIntoRosPoseAndTwist) {
+  airside::autonomy::EstimatedState e;
+  e.timestamp_s=5.0;e.position={4.0,-2.0};e.heading_rad=0.3;e.speed_mps=1.7;
+  e.covariance[0]=0.4;e.covariance[1]=0.03;e.covariance[2]=0.01;
+  e.covariance[4]=0.03;e.covariance[5]=0.5;e.covariance[6]=0.02;
+  e.covariance[8]=0.01;e.covariance[9]=0.02;e.covariance[10]=0.06;e.covariance[15]=0.2;
+  e.heading_uncertainty_rad=std::sqrt(0.06);
+  const auto message=to_filtered_odometry(e);
+  EXPECT_NEAR(from_ros_time(message.header.stamp),5.0,1e-9);
+  EXPECT_DOUBLE_EQ(message.pose.covariance[0],0.4);
+  EXPECT_DOUBLE_EQ(message.pose.covariance[1],0.03);
+  EXPECT_DOUBLE_EQ(message.pose.covariance[5],0.01);
+  EXPECT_DOUBLE_EQ(message.pose.covariance[7],0.5);
+  EXPECT_DOUBLE_EQ(message.pose.covariance[35],0.06);
+  EXPECT_DOUBLE_EQ(message.twist.covariance[0],0.2);
+}
+
 TEST(Ros2Conversions, TwistRejectsNonFiniteAndClampsPhysicalLimits) {
   airside::autonomy::VehicleLimits limits;
   geometry_msgs::msg::Twist input;

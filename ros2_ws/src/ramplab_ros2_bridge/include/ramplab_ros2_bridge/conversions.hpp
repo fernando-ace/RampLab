@@ -27,6 +27,8 @@ namespace ramplab_ros2_bridge {
 [[nodiscard]] nav_msgs::msg::Odometry to_odometry(
     double timestamp_s, airside::Vec2 position, double heading_rad,
     double speed_mps, double yaw_rate_radps);
+[[nodiscard]] nav_msgs::msg::Odometry to_filtered_odometry(
+    const airside::autonomy::EstimatedState& estimate);
 [[nodiscard]] std::optional<airside::autonomy::VehicleCommand> from_twist(
     const geometry_msgs::msg::Twist& message,
     const airside::autonomy::VehicleLimits& limits) noexcept;
