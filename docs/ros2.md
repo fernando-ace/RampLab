@@ -26,7 +26,7 @@ Set-Location C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab
 . 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab\ros2_ws\scripts\build.ps1'
 ```
 
-`build.ps1` puts the verified CMake 4.4.3 binary directory first on `PATH`, then builds the bridge and controller with colcon. Override `-CMakeBin` if CMake 4.4 is installed elsewhere. To run the nine conversion/watchdog cases:
+`build.ps1` puts the verified CMake 4.4.3 binary directory first on `PATH`, then builds the bridge and controller with colcon. Override `-CMakeBin` if CMake 4.4 is installed elsewhere. The bridge conversion suite has ten GTest cases plus one CTest harness result:
 
 ```powershell
 Set-Location C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab\ros2_ws
@@ -45,7 +45,7 @@ ros2_ws/src/
 └── ramplab_ros2_controller/   # independent rclcpp executable
 ```
 
-The bridge imports the already-built RampLab autonomy libraries; this is an adapter, not a new simulation implementation. The external controller links only ROS packages and the small coordinate-conversion header. It does not include or link RampLab simulation, ground-truth, obstacle-state, or controller internals. It consumes the published route, GNSS, IMU, wheel odometry, and LiDAR messages and publishes `cmd_vel`.
+The bridge imports the already-built RampLab autonomy libraries; this is an adapter, not a new simulation implementation. The external controller links ROS packages only. It does not include or link RampLab simulation, ground-truth, obstacle-state, estimator, or controller internals. It consumes the route, fused odometry, estimator health, and LiDAR messages and publishes `cmd_vel`.
 
 ## Topics and QoS
 
@@ -57,10 +57,13 @@ All tug topics are under `/ramplab/tug1`. Sensor rates below are configured simu
 | `/ramplab/tug1/scan` | `sensor_msgs/msg/LaserScan` | bridge publishes | 10 / 10.00 Hz | `lidar` |
 | `/ramplab/tug1/imu` | `sensor_msgs/msg/Imu` | bridge publishes | 50 / 49.13 Hz* | `imu` |
 | `/ramplab/tug1/odom` | `nav_msgs/msg/Odometry` | bridge publishes | 20 / 20.03 Hz | `odom`, child `base_link` |
+| `/ramplab/tug1/filtered_odom` | `nav_msgs/msg/Odometry` | bridge publishes | 50 Hz simulation updates | `odom`, child `base_link` |
+| `/ramplab/tug1/estimator_health` | `std_msgs/msg/UInt8` | bridge publishes | 50 Hz simulation updates | 0 uninitialized, 1 healthy, 2 degraded, 3 unsafe, 4 invalid |
+| `/ramplab/tug1/estimator_diagnostics` | `std_msgs/msg/Float64MultiArray` | bridge publishes | 50 Hz simulation updates | `[position_sigma_m, heading_sigma_rad, gnss_age_s, accepted, rejected, stale, gate_activations, last_gnss_nis]` |
 | `/ramplab/tug1/gnss` | `sensor_msgs/msg/NavSatFix` | bridge publishes | 5 / 5.00 Hz | `gnss` |
 | `/ramplab/tug1/route` | `nav_msgs/msg/Path` | bridge publishes once, transient-local | mission route | `map` |
 | `/ramplab/tug1/cmd_vel` | `geometry_msgs/msg/Twist` | controller publishes; bridge subscribes | not stamped / measured 20.05 Hz wall rate | — |
-| `/tf` | `tf2_msgs/msg/TFMessage` | bridge publishes | odometry updates | `odom` → `base_link` |
+| `/tf` | `tf2_msgs/msg/TFMessage` | bridge publishes | filtered odometry updates | `odom` → `base_link` |
 | `/tf_static` | `tf2_msgs/msg/TFMessage` | bridge publishes | static | `map` → `odom`; `base_link` → `lidar`, `imu` |
 
 The measured wall rates at factor 1 were approximately 50.93, 10.05, 49.29, 20.10, and 4.99 Hz respectively for clock, scan, IMU, odometry, and GNSS. The probe enforces strictly increasing simulation stamps and checks rates within 35% of configured values. `*`IMU's measured rate is lower because the best-effort depth-one stream may drop samples while the Windows processes are scheduled; its simulation timestamp span is 49.13 Hz and the wall observation was 49.29 Hz.
@@ -71,7 +74,7 @@ Sensor streams use best-effort depth one. The path is reliable, transient-local,
 
 The bridge publishes `/clock` at the 20 ms simulation step, before publishing the measurements for that step. Measurement headers use that same simulation clock, never wall time. The monitor confirmed strictly increasing clock and sensor stamps. `geometry_msgs/Twist` has no header timestamp; command freshness is measured by the bridge's simulation-time receive stamp. Non-finite velocity values are rejected, and finite speed/yaw values are clamped to scenario limits.
 
-`map` is the local east/north tangent plane. `odom` is currently identity-aligned to `map`. `odom → base_link` is derived from measured wheel-odometry increments (with heading corrected from IMU), rather than the simulation's truth pose. `base_link → lidar` and `base_link → imu` are fixed identity transforms for this planar sensor model. GNSS converts local ENU to WGS84 about the KAUO reference (32.6151667°, -85.4340000°, 208.27 m ellipsoid height); `NavSatFix` reports horizontal variance on its diagonal.
+`map` is the local east/north tangent plane. `odom` is identity-aligned to `map`. TF has one owner: the bridge publishes static `map → odom`, dynamic `odom → base_link` from `/filtered_odom`, and static `base_link → lidar` / `base_link → imu`. Raw wheel `/odom` does not publish TF. Filtered pose covariance maps east/north/yaw into ROS 6×6 pose covariance; speed variance is in twist covariance and unmodeled axes carry large variances. GNSS converts local ENU to WGS84 about the KAUO reference (32.6151667°, -85.4340000°, 208.27 m ellipsoid height); `NavSatFix` reports horizontal variance on its diagonal.
 
 ## Run the external mission
 
@@ -112,12 +115,14 @@ Set-Location C:\dev\ros2_lyrical
 pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\scripts\build.ps1'"
 ```
 
-The script below launches the separately compiled controller and bridge as distinct processes and observes `/clock`, GNSS, LiDAR, odometry, and `cmd_vel`. Its staged scenario checks GNSS dropout, LiDAR range degradation, wheel slip, combined localization faults, and a severe LiDAR/GNSS/IMU outage that causes the external controller to command zero speed:
+The script below launches the separately compiled controller and bridge as distinct processes and observes `/clock`, GNSS, LiDAR, raw/filtered odometry, estimator covariance/health/gates, TF, and `cmd_vel`. Its staged scenario checks GNSS dropout and covariance growth, LiDAR range degradation, wheel slip, biased GNSS plus IMU degradation and gate activation, combined faults, and a severe outage that causes the external controller to command zero speed. It also confirms the graph has no ground-truth topic and one dynamic TF publisher:
 
 ```powershell
 Set-Location C:\dev\ros2_lyrical
 pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_ros2_fault_validation.yaml --seed 42 --fault-seed 7019 --factor 1"
 ```
+
+The final staged probe passed over 34.000 simulation seconds and published 1,628 filtered odometry samples. Reported radial position uncertainty increased from 0.300 to 0.540 m during GNSS loss; the biased-GNSS interval triggered 54 gate activations. The measured odometry/command-model speed ratio was 0.750 during 25% slip versus 0.965 nominal. The severe-loss interval produced 321 zero-speed controller commands. The requested 34 s horizon ended as `TIMEOUT` by design; collisions were zero, GNSS dropout fixes were zero, and the ROS graph had no ground-truth topic.
 
 The same two-process probe can regression-check the Goal 6B command watchdog by stopping only the external controller at simulation time 5 s. The probe requires a command-timeout activation after controller termination and a zero-speed finish without collision. Windows process scheduling can also produce an earlier startup timeout if the controller has not published its first command yet:
 
@@ -126,13 +131,26 @@ Set-Location C:\dev\ros2_lyrical
 pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_tug.yaml --max-sim-seconds 12 --kill-controller-at 5 --factor 1"
 ```
 
-The verified external Depot → Gate A2 mission completed successfully: 66.700 s simulation time, 310.063 m travelled, 0.767 m mean route error, 3.348 m maximum route error, 4.724 m minimum obstacle clearance, zero emergency stops, zero collisions, and zero command timeouts. It published 668 scans, 3336 IMUs, 1335 odometry messages, and 334 GNSS messages.
+The clean external Depot → Gate A2 run with the estimator completed successfully at 66.660 s simulation time, travelled 309.459 m, had 0.799 m mean and 3.465 m maximum route error, 4.793 m minimum obstacle clearance, zero collisions, and final speed 0.135 m/s. It published 667 scans, 3334 IMUs, 1334 raw odometry messages, and 334 GNSS messages. The 2× probe observed 3326 filtered-odometry messages and one `/tf` publisher (`ramplab_bridge`). Two startup command timeouts at 3.640 s and 5.680 s cleared when fresh controller commands arrived.
+
+Reproduce this clean separate-process mission and frame/graph check with:
+
+```powershell
+Set-Location C:\dev\ros2_lyrical
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_tug.yaml --seed 42 --fault-seed 7019 --factor 2 --max-sim-seconds 80 --clean-mission"
+```
 
 ## Command timeout and determinism
 
-The bridge defaults to a 0.500 simulation-second command timeout. On expiry it supplies zero target speed and yaw rate to the unchanged tug dynamics, which decelerate the tug under the scenario's limit. A second run force-terminated the native controller process at about simulation time 5.66 s. The bridge logged expiry at 6.180 s (last-command age 0.520 s), counted one timeout, and ended its 15 s observation with speed 0.000 m/s and zero collisions.
+The bridge defaults to a 0.500 simulation-second command timeout. On expiry it supplies zero target speed and yaw rate to the unchanged tug dynamics, which decelerate the tug under the scenario's limit. In the watchdog regression the external controller was terminated at 5.000 s; the bridge logged expiry at 6.380 s (last-command age 0.520 s), counted one post-termination timeout, and ended its 15 s observation at speed 0.000 m/s with zero collisions.
 
 The standalone deterministic simulator and its seeded tests remain deterministic and ROS-independent. With an external process, DDS delivery, Windows scheduling, sensor sample reception, and command callback timing depend on process scheduling; therefore the ROS-controlled trajectory digest is not expected to match the built-in controller. The built-in seed-42 reference is 66.36 s, 309.76 m, 0.73 m mean route error, zero collisions, digest `1488735950019943363`. No lockstep transport was implemented.
+
+## Fused estimator interface
+
+The bridge adapts the core estimate to `/ramplab/tug1/filtered_odom` (`nav_msgs/msg/Odometry`) with simulation-time header stamps and planar pose/speed covariance. `/ramplab/tug1/estimator_health` is a `std_msgs/msg/UInt8` state code: 0 uninitialized, 1 healthy, 2 degraded, 3 unsafe, 4 invalid. `/ramplab/tug1/estimator_diagnostics` is a standard `Float64MultiArray` ordered as position sigma, heading sigma, age of last accepted GNSS, accepted GNSS count, rejected GNSS count, stale count, gate activation count, and latest GNSS NIS. The controller consumes filtered odometry and the health code; it does not recompute localization from GNSS or raw wheel odometry.
+
+The bridge alone publishes dynamic `odom → base_link` from filtered odometry. Its static publisher owns `map → odom`, `base_link → lidar`, and `base_link → imu`. Raw `/odom` remains a sensor stream and has no associated TF broadcast. The live probe checks these frame edges and confirms a single `/tf` publisher.
 
 ## Validation and limits
 

@@ -18,6 +18,43 @@ Airport map + deterministic A* route
 
 The controller receives `SensorFrame` and `MissionState` values. It does not receive `VehicleState`, the mutable simulation, obstacle geometry, or any ground-truth accessor. Collision detection and mission metrics remain in the simulator. `AutonomySnapshot` is a read-only value intended for visualization.
 
+## Goal 8: 2D state estimation
+
+The core estimator is `StateEstimator2D` in `airside_autonomy`; it has no ROS dependency. At each simulation timestamp the faulted sensor frame is validated and consumed, then only the resulting estimate and health are exposed to the controller:
+
+```text
+sensor measurements
+        ↓
+health / timestamp validation
+        ↓
+EKF prediction + GNSS / IMU / wheel updates
+        ↓
+estimated state + covariance + health
+        ↓
+controller
+```
+
+The state is `[east_m, north_m, yaw_rad, forward_speed_mps]`. East/north use the existing local Cartesian map with east `+x`, north `+y`, radians counter-clockwise from east. ROS geographic conversion uses the existing KAUO WGS84 origin: 32.6151667° N, 85.4340000° W, 208.27 m ellipsoid height. The simulator already supplies GNSS in this local plane, so the core does not create a second conversion.
+
+The motion prediction uses the last wheel-speed observation and IMU yaw rate at the simulation interval:
+
+```text
+x' = x + v cos(ψ) Δt
+y' = y + v sin(ψ) Δt
+ψ' = wrap(ψ + gyro_z Δt)
+v' = wheel-speed scalar measurement update
+```
+
+IMU gyro is integrated using measurement timestamps; IMU heading is a scalar angle update with normalized residual. The reported wheel speed updates forward speed; the cumulative wheel distance and relative heading remain sensor observations and wheel-speed faults naturally change the dead-reckoning rate. If heading IMU data is unavailable at a new wheel sample, relative wheel heading is used as a lower-confidence yaw observation. During wheel-message loss, the last estimated speed continues the motion prediction while covariance grows. No IMU acceleration is treated as perfect speed. Startup requires a valid GNSS fix and a fresh IMU heading; until then the estimate is explicitly uninitialized and the controller commands a stop.
+
+The covariance uses the linearized motion Jacobian `F` (`F[0,2] = -v sin(ψ) Δt`, `F[1,2] = v cos(ψ) Δt`, `F[0,3] = cos(ψ) Δt`, `F[1,3] = sin(ψ) Δt`) and `P' = F P Fᵀ + Q`. Scalar updates use the Joseph covariance form. It is symmetrized after updates and diagonal values are bounded nonnegative; this is a small fixed-size implementation, not a general-purpose matrix library. The default YAML tuning is under `estimator:` in `scenarios/autonomy_tug.yaml`: initial variances 4.0 m², 0.04 rad², 1.0 (m/s)²; per-second process terms 0.04 m²/s, 0.0025 rad²/s, 0.16 (m/s)²/s; GNSS σ 0.5 m; IMU heading σ 0.02 rad and yaw-rate σ 0.02 rad/s; wheel speed σ 0.1 m/s and relative heading σ 0.05 rad. The scenario's simulated GNSS accuracy is used when it implies more uncertainty than the configured minimum.
+
+GNSS gating computes the two-dimensional normalized innovation squared using the predicted east/north covariance and measurement covariance. The gate is 9.21034 (99% chi-square quantile, 2 degrees of freedom); accepted position measurements use Joseph-form scalar updates. A measurement more than 0.5 simulation seconds old or future-dated is rejected and counted rather than applied at the current time. There is no history rewind; a timestamp that is not newer than the last consumed sample is ignored. Gate activation is event-recorded without per-fix event spam; counters retain accepted, rejected, gate, and stale totals.
+
+Health reports uninitialized, healthy, degraded, unsafe, or invalid. Degraded begins if radial position uncertainty reaches 3 m, heading uncertainty reaches 0.5 rad, the last accepted absolute position fix is at least 0.25 s old, or IMU/wheel data is not yet available. Unsafe begins at 8 m radial position uncertainty, 1.2 rad heading uncertainty, or 20 s without an accepted GNSS fix. Nonfinite state/covariance or covariance magnitude above 1e12 is invalid. Degraded operation may continue; uninitialized, unsafe, and invalid states command controlled zero speed. If GNSS returns after unsafe dead reckoning but remains statistically inconsistent, the NIS gate keeps rejecting it and the tug remains stopped; the filter does not hard-reset position or resume on an unverified jump. Recovery occurs when returned measurements are consistent with the propagated estimate. These thresholds describe what the filter reports, not its actual error.
+
+The experiment metrics use truth only in a separate evaluation path to calculate mean/RMS/maximum/final position error, heading error, uncertainty maxima, health durations, initialization time, gate counters, and uncertainty safety stops. Truth is never passed to the estimator or used by the controller. Run data is paired by seed in both estimator modes; every scenario has a fused row and a `_legacy` row. Do not interpret the covariance as calibrated confidence outside these simulated models.
+
 ## Vehicle model and time
 
 The tug uses airport-local meters (`+x` east, `+y` north), radians, and seconds. Its fixed time step is 0.02 s. For command speed `v_cmd`, speed changes by at most configured acceleration or deceleration per step and remains in `[0, maximum_speed]`. The yaw-rate command is clamped to its configured limit. The midpoint heading is used for integration:
@@ -34,7 +71,7 @@ The model is kinematic. It omits tire slip, steering geometry, grade, and suspen
 
 ## Routing and controller
 
-The mission resolves the named Depot and Gate A2 nodes from `map_scenario`, calls the existing deterministic A* implementation, and converts route nodes to waypoints. The controller follows those waypoints in order with a bounded heading-rate command and reduces speed for turns and goal approach. It uses GNSS to correct a local position estimate, integrates wheel-odometry distance along the IMU heading between fixes, and uses the IMU yaw measurement as heading. GNSS corrections use a fixed 15% complementary blend.
+The mission resolves the named Depot and Gate A2 nodes from `map_scenario`, calls the existing deterministic A* implementation, and converts route nodes to waypoints. The reference controller follows those waypoints in order with a bounded heading-rate command and reduces speed for turns and goal approach. Fused mode uses the estimate in `SensorFrame`; setting `estimator.enabled: false` retains the Goal 7 wheel dead-reckoning plus 15% GNSS blend for paired regression and comparison.
 
 An independent safety check looks for LiDAR returns within 0.20 rad of the forward axis and inside the configured stopping envelope; it requests zero target speed and counts the transition into an emergency stop. Collision checking separately treats the tug and obstacles as circles and records the first intersecting obstacle/time. Mission success requires being within goal tolerance at low speed; otherwise the result is collision, timeout, or controller failure.
 
@@ -90,7 +127,7 @@ The YAML loader rejects unknown sensor/type names, non-finite or invalid interva
 
 The controller tracks message ages against `SensorFrame.timestamp_s`. Sensor ages above 0.25 s (GNSS), 0.10 s (IMU and odometry), or 0.20 s (LiDAR) enter degraded mode. A GNSS gap up to the configured 3.0 s localization timeout can use IMU/odometry dead reckoning. GNSS, IMU, or odometry older than 3.0 s commands zero speed. LiDAR older than the configured 0.5 s perception timeout also commands zero speed. The vehicle model then decelerates under its existing configured limit. Health timeouts are scenario fields under `simulation`; ROS controller parameters with the same names use the corresponding message timestamps and `/clock`. Recovered measurements allow motion to resume.
 
-The robustness CSV/JSON reports include configured faults, simulation and fault seeds, mission result, completion and route/clearance metrics, collision/emergency/safety counts, degraded-sensing stop time, fault transition times, final pose/speed, and generated/delivered/dropped/delayed counts per sensor. `command_timeouts` is zero for built-in runs; it is measured separately by the ROS bridge watchdog. No aggregate robustness score is computed.
+The robustness CSV/JSON reports include configured faults, simulation and fault seeds, mission result, completion and route/clearance metrics, collision/emergency/safety counts, degraded-sensing stop time, fault transition times, final pose/speed, sensor counts, estimator errors/uncertainty/health durations/gate counters, and uncertainty stops. Every scenario runs fused and legacy modes for the same seeds; `runs.csv` and `runs.json` export direct measurements rather than a composite score. `command_timeouts` is zero for built-in runs and is measured separately by the ROS bridge watchdog.
 
 ## Headless use
 
@@ -113,7 +150,25 @@ The autonomy experiment executor has its own result type and bounded `std::jthre
 .\build-final-msvc\Release\airside_autonomy_experiment.exe --experiment experiments\autonomy_robustness.yaml --case severe_safe_stop --workers 1 --output results\severe_fault
 ```
 
-The matrix includes a no-fault baseline, 2/5/10 s GNSS gaps, two GNSS noise levels and bias, LiDAR dropout/range/masking, IMU noise/dropout, two wheel-slip scales, delayed and lost packets, and three combined cases including a severe recoverable safe stop. Each row is a paired seed against the baseline and exports `runs.csv` and `runs.json`. Output contains raw measurements rather than a composite score. The older `autonomy_noise_validation.yaml` remains available for its 0.1/0.5/1.5 m GNSS-noise sweep.
+The 24-case matrix includes a no-fault baseline, 2/5/10 s GNSS gaps, two GNSS noise levels and bias, LiDAR dropout/range/masking, IMU noise/dropout, two wheel-slip scales, delayed and lost packets, and combined faults including an uncertainty-triggered safe stop. Every scenario has a same-seed fused row and `_legacy` row, for 144 runs across three seeds. Results export raw measurements to `runs.csv` and `runs.json`; there is no composite score. The older `autonomy_noise_validation.yaml` remains available for its 0.1/0.5/1.5 m GNSS-noise sweep.
+
+## Goal 8 measured comparison
+
+The final Release matrix ran 144/144 rows. All 63 rows corresponding to the original 21 Goal 7 cases in legacy mode completed with zero collisions. The table reports averages across seeds 42–44 and compares direct measures; the worst high-slip and combined cases below are deliberate unsafe-stop timeouts.
+
+| Scenario | Fused outcome / time (s) | Legacy outcome / time (s) | Fused / legacy position RMSE (m) | Fused / legacy mean route error (m) | Fused / legacy minimum clearance (m) |
+|---|---:|---:|---:|---:|---:|
+| Clean baseline | Success / 66.21 | Success / 66.29 | 0.22 / 0.25 | 0.78 / 0.76 | 4.82 / 4.79 |
+| GNSS dropout 10 s | Success / 66.25 | Success / 74.28 | 0.23 / 0.25 | 0.72 / 0.70 | 4.73 / 4.81 |
+| GNSS noise 2 m | Success / 66.23 | Success / 66.38 | 0.29 / 0.52 | 0.77 / 0.74 | 4.80 / 4.73 |
+| GNSS bias 8 m | Success / 66.26 | Success / 67.35 | 0.24 / 4.49 | 0.72 / 1.72 | 4.71 / 5.66 |
+| Wheel slip 10% | Success / 66.31 | Success / 66.41 | 0.46 / 0.50 | 0.62 / 0.58 | 4.58 / 4.51 |
+| Wheel slip 25% | Timeout / 240.00 | Success / 66.57 | 19.82 / 1.04 | 10.14 / 0.34 | 6.51 / 4.15 |
+| GNSS noise + 10% slip | Success / 66.55 | Success / 66.45 | 1.24 / 0.64 | 0.20 / 0.57 | 3.89 / 4.47 |
+| GNSS outage + IMU loss + 25% slip | Timeout / 240.00 | Success / 76.53 | 18.36 / 2.07 | 11.62 / 0.34 | 6.51 / 4.20 |
+| Severe localization uncertainty | Success / 82.59 | Success / 89.33 | 15.82 / 11.18 | 1.05 / 0.66 | 4.79 / 4.74 |
+
+Every row had zero collisions, including the fused timeouts. At 25% wheel slip and the combined outage/slip/IMU fault, 3/3 fused runs entered one estimator safety stop and stayed stopped through the 240 s limit; the legacy controller completed. In the severe all-localization-sensor outage, both modes stopped and recovered after sensors returned, but fused maximum actual position error averaged 67.20 m versus 22.61 m legacy even though final errors were 0.26 m versus 0.09 m. This exposes a real limitation: covariance does not capture persistent wheel scale bias, and the NIS gate can keep rejecting GNSS after the estimate diverges. The controller favors a no-collision stop over an unverified pose jump.
 
 ## Goal 7 validation snapshot
 
@@ -125,12 +180,31 @@ Unreal remains a non-authoritative consumer. It advances the same fixed-step con
 
 The core and CLI have no ROS2 dependency. The optional native Windows ROS 2 Lyrical bridge and separately running external controller are implemented and validated; see [ros2.md](ros2.md) for the exact Pixi activation sequence, topics, frames, timing, mission results, and command-timeout behavior.
 
+## Reproduction
+
+```powershell
+cmake --build build-final-msvc --config Release
+ctest --test-dir build-final-msvc -C Release --output-on-failure
+.\build-final-msvc\Release\airside_autonomy.exe --scenario scenarios\autonomy_tug.yaml --seed 42
+.\build-final-msvc\Release\airside_autonomy_experiment.exe --experiment experiments\autonomy_robustness.yaml --workers 4
+.\build-final-msvc\Release\airside_autonomy_experiment.exe --experiment experiments\autonomy_robustness.yaml --case severe_estimator_uncertainty_stop --workers 1 --output results\goal8_severe
+.\build-final-msvc\Release\airside_experiment.exe --experiment experiments\small_validation.yaml --workers 4 --output results\goal8_operational_regression --quiet
+Set-Location C:\dev\ros2_lyrical
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\scripts\build.ps1'"
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_tug.yaml --seed 42 --fault-seed 7019 --factor 2 --max-sim-seconds 80 --clean-mission"
+python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_ros2_fault_validation.yaml --seed 42 --fault-seed 7019 --factor 1
+powershell -ExecutionPolicy Bypass -File .\unreal\RampLabViewer\Scripts\BuildRampLabCore.ps1
+& 'C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat' RampLabViewerEditor Win64 Development "-Project=$PWD\unreal\RampLabViewer\RampLabViewer.uproject" -WaitMutex -NoHotReload
+```
+
+The Unreal Editor target command and selected toolchain are in [unreal-integration.md](unreal-integration.md); standalone ROS topics and live validation are in [ros2.md](ros2.md).
+
 ## Known limits
 
 - The mission uses a small synthetic road graph and circle obstacles, not surveyed service-road geometry.
 - The route follower is a simple deterministic geometric controller; very large GNSS noise can produce a timeout.
 - The safety rule stops on close forward returns; it does not perform obstacle avoidance or replan around dynamic obstacles.
 - Sensor and fault models are illustrative abstractions; they are not hardware-calibrated or certified distributions.
-- Health checks and complementary GNSS/odometry behavior are not a probabilistic fusion stack or EKF.
+- This is a small 2D EKF, not SLAM or a production-certified localization stack; simulated sensor models are not hardware calibrated.
 - Fault scheduling is deterministic in simulation time, while ROS 2/DDS reception and Windows process scheduling remain wall-clock nondeterministic.
 - Unreal visualization displays snapshots from the live deterministic autonomy simulation; Cesium remains subject to its existing local credential and network requirements.
