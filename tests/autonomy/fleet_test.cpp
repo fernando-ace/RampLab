@@ -3,6 +3,7 @@
 #include "airside/autonomy/experiment.hpp"
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <filesystem>
 
 namespace airside::autonomy {
@@ -22,6 +23,7 @@ TEST(FleetTest, ThreeVehiclesShareClockAndResolveCompetingTrafficSafely){
     EXPECT_GT(result.reservation_requests,0U);EXPECT_GT(result.reservation_contentions,0U);
     EXPECT_GT(result.traffic_waiting_time_s,0.0);EXPECT_EQ(result.collisions,0U);
     EXPECT_EQ(result.vehicles.size(),3U);EXPECT_GT(result.minimum_separation_m,2.0);
+    EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::Request&&(event.resource.starts_with("edge/")||event.resource.starts_with("intersection/"));}));
 }
 
 TEST(FleetTest, SameSeedProducesIdenticalFleetEventAndMetricDigest){

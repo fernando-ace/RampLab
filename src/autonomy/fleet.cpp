@@ -1,10 +1,12 @@
 #include "airside/autonomy/fleet.hpp"
+#include "airside/routing/astar.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
 #include <ranges>
+#include <set>
 
 namespace airside::autonomy {
 namespace {
@@ -19,6 +21,29 @@ AutonomyScenario mission_scenario(AutonomyScenario s,const FleetMission& m) {
     s.initial_state.heading_rad=std::atan2(goal->position.y_m-start->position.y_m,goal->position.x_m-start->position.x_m);
     s.faults.insert(s.faults.end(),m.faults.begin(),m.faults.end());
     return s;
+}
+
+std::vector<std::string> route_resources(const AutonomyScenario& scenario,const FleetMission& mission) {
+    std::optional<NodeId> start,goal;
+    for(const auto& node:scenario.airport.graph.nodes()){
+        if(node.name==mission.start_node)start=node.id;
+        if(node.name==mission.goal_node)goal=node.id;
+    }
+    if(!start||!goal)throw std::invalid_argument("fleet mission references an unknown road node");
+    const auto route=airside::find_route(scenario.airport.graph,*start,*goal);
+    if(!route)throw std::invalid_argument("fleet mission has no route through the airport road graph");
+    std::vector<std::string> keys;
+    keys.reserve(route->edges.size()+route->nodes.size());
+    for(const auto edge:route->edges)keys.push_back("edge/"+std::to_string(edge.value()));
+    for(const auto node:route->nodes)keys.push_back("intersection/"+std::to_string(node.value()));
+    return keys;
+}
+
+std::string shared_route_resource(const std::vector<std::string>& a,const std::vector<std::string>& b,
+                                 const VehicleId& a_id,const VehicleId& b_id) {
+    for(const auto& key:a)if(key.starts_with("edge/")&&std::ranges::find(b,key)!=b.end())return key;
+    for(const auto& key:a)if(key.starts_with("intersection/")&&std::ranges::find(b,key)!=b.end())return key;
+    return "vehicle_conflict/"+a_id.value+"/"+b_id.value;
 }
 
 }
@@ -81,13 +106,14 @@ std::optional<VehicleId> TrafficReservationTable::owner(const std::string& resou
 struct FleetSimulation::Impl {
     struct Member {
         FleetMission mission;
+        std::vector<std::string> route_resources;
         AutonomySimulation simulation;
         ReferenceController controller;
         VehicleCommand command{};
         bool waiting{};
         double wait_s{};
-        Member(FleetMission m, AutonomyScenario s, std::uint64_t seed)
-            : mission(std::move(m)), simulation(std::move(s),seed),
+        Member(FleetMission m, AutonomyScenario s, std::vector<std::string> resources,std::uint64_t seed)
+            : mission(std::move(m)), route_resources(std::move(resources)), simulation(std::move(s),seed),
               controller(simulation.scenario().safety_stop_range_m,simulation.scenario().perception_timeout_s,simulation.scenario().localization_timeout_s) {}
     };
     std::vector<Member> members;
@@ -103,7 +129,9 @@ struct FleetSimulation::Impl {
         std::ranges::sort(missions, {}, &FleetMission::id);
         for(std::size_t i=0;i<missions.size();++i) {
             if(missions[i].id.value.empty() || (i && missions[i-1].id==missions[i].id)) throw std::invalid_argument("fleet vehicle IDs must be nonempty and unique");
-            members.emplace_back(missions[i],mission_scenario(base,missions[i]),seed+static_cast<std::uint64_t>(i)*0x9e3779b97f4a7c15ULL);
+            auto member_scenario=mission_scenario(base,missions[i]);
+            auto resources=route_resources(base,missions[i]);
+            members.emplace_back(missions[i],std::move(member_scenario),std::move(resources),seed+static_cast<std::uint64_t>(i)*0x9e3779b97f4a7c15ULL);
         }
         was_conflicting.resize(members.size()*members.size());
     }
@@ -120,6 +148,8 @@ bool FleetSimulation::advance(){
     const double dt=x.members.front().simulation.scenario().timestep_s;
     for(auto& m:x.members) if(!m.simulation.finished()) m.command=m.controller.update(m.simulation.observe(),m.simulation.mission());
     std::vector<bool> yielding(x.members.size());
+    std::set<std::string> active_resources;
+    std::vector<std::string> release_candidates;
     for(std::size_t i=0;i<x.members.size();++i) for(std::size_t j=i+1;j<x.members.size();++j) {
         auto& a=x.members[i]; auto& b=x.members[j];
         const auto& sa=a.simulation.estimated_state(); const auto& sb=b.simulation.estimated_state();
@@ -133,9 +163,10 @@ bool FleetSimulation::advance(){
         const double hard=a.simulation.scenario().limits.radius_m+b.simulation.scenario().limits.radius_m+1.25;
         const double activation=x.was_conflicting[index]?45.0:35.0;
         const bool conflict=current<activation || closest<hard;
+        const auto resource=shared_route_resource(a.route_resources,b.route_resources,a.mission.id,b.mission.id);
         if(conflict) {
+            active_resources.insert(resource);
             if(!x.was_conflicting[index]) {
-                const auto& resource="vehicle_conflict/"+a.mission.id.value+"/"+b.mission.id.value;
                 const int blocked_priority=std::numeric_limits<int>::min();
                 std::vector<ReservationRequest> batch{
                     {a.mission.id,x.now,a.simulation.finished()?blocked_priority:a.mission.priority},
@@ -148,21 +179,34 @@ bool FleetSimulation::advance(){
                     if(batch.size()>1){++x.contentions;const auto loser=*owner==a.mission.id?b.mission.id:a.mission.id;x.events.push_back({x.now,TrafficEventKind::Deferred,loser,*owner,resource});}
                 }
             }
-            const auto& resource="vehicle_conflict/"+a.mission.id.value+"/"+b.mission.id.value;
             const auto owner=x.reservations.owner(resource);
-            const std::size_t winner_index=owner&&*owner==b.mission.id?j:i;
-            const std::size_t loser=winner_index==i?j:i;
-            if(!x.members[loser].simulation.finished()) {
-                yielding[loser]=true;
-                if(!x.members[loser].waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,x.members[loser].mission.id,x.members[winner_index].mission.id,"vehicle_conflict"});
+            if(owner&&*owner==a.mission.id){
+                if(!b.simulation.finished()){
+                    yielding[j]=true;
+                    if(!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,resource});
+                }
+            }else if(owner&&*owner==b.mission.id){
+                if(!a.simulation.finished()){
+                    yielding[i]=true;
+                    if(!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,resource});
+                }
+            }else{
+                if(!a.simulation.finished())yielding[i]=true;
+                if(!b.simulation.finished())yielding[j]=true;
+                if(!a.simulation.finished()&&!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,owner.value_or(VehicleId{}),resource});
+                if(!b.simulation.finished()&&!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,owner.value_or(VehicleId{}),resource});
             }
         }
         if(!conflict && x.was_conflicting[index]){
-            const auto& resource="vehicle_conflict/"+a.mission.id.value+"/"+b.mission.id.value;
-            const auto owner=x.reservations.owner(resource);
-            if(owner){(void)x.reservations.release(resource,*owner);x.events.push_back({x.now,TrafficEventKind::ReleasedConflict,*owner,{},resource});}
+            release_candidates.push_back(resource);
         }
         x.was_conflicting[index]=conflict;
+    }
+    std::ranges::sort(release_candidates);
+    release_candidates.erase(std::unique(release_candidates.begin(),release_candidates.end()),release_candidates.end());
+    for(const auto& resource:release_candidates)if(!active_resources.contains(resource)){
+        const auto owner=x.reservations.owner(resource);
+        if(owner){(void)x.reservations.release(resource,*owner);x.events.push_back({x.now,TrafficEventKind::ReleasedConflict,*owner,{},resource});}
     }
     for(std::size_t i=0;i<x.members.size();++i) {
         auto& m=x.members[i]; if(m.simulation.finished())continue;
