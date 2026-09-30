@@ -45,6 +45,19 @@ TEST(FleetTest, AggregateMetricsMatchVehicleResultsAndCommonCompletionHorizon){
     EXPECT_DOUBLE_EQ(result.throughput_per_simulated_hour,3.0*3600.0/completion_horizon);
     EXPECT_EQ(result.collisions,0U);
 }
+TEST(FleetScenarioTest, IndependentTrafficCompletesWithoutReservations){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_independent.yaml");
+    FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42};while(fleet.advance()){}const auto result=fleet.result();
+    EXPECT_EQ(result.vehicle_count,3U);EXPECT_EQ(result.missions_completed,3U);EXPECT_EQ(result.safe_timeouts,0U);
+    EXPECT_EQ(result.reservation_contentions,0U);EXPECT_DOUBLE_EQ(result.traffic_waiting_time_s,0.0);EXPECT_EQ(result.collisions,0U);
+}
+TEST(FleetScenarioTest, SharedSegmentMergeWaitsThenCompletesWithoutCollision){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_narrow_segment.yaml");
+    FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42};while(fleet.advance()){}const auto result=fleet.result();
+    EXPECT_EQ(result.vehicle_count,3U);EXPECT_EQ(result.missions_completed,3U);EXPECT_EQ(result.safe_timeouts,0U);
+    EXPECT_GT(result.reservation_contentions,0U);EXPECT_GT(result.traffic_waiting_time_s,0.0);EXPECT_EQ(result.collisions,0U);
+    EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::Waiting&&event.resource.starts_with("edge/");}));
+}
 TEST(FleetTest, DifferentSeedsChangeStochasticVehicleTrajectories){
     auto a=competing_missions();auto b=competing_missions();
     FleetSimulation first{base_scenario(),std::move(a),42},second{base_scenario(),std::move(b),43};

@@ -1,0 +1,16 @@
+name: autonomy_fleet_independent_traffic
+default_seed: 42
+vehicle_scenario: autonomy_tug.yaml
+missions:
+  - id: tug_01
+    start_node: Service Depot
+    goal_node: North Junction
+    priority: 0
+  - id: tug_02
+    start_node: South Junction
+    goal_node: Gate A3
+    priority: 0
+  - id: tug_03
+    start_node: Gate A1
+    goal_node: Gate A2
+    priority: 0
