@@ -164,6 +164,8 @@ Goal 9 validation on 2026-09-29 rebuilt the native overlay and passed all 11 bri
 
 ## Validation and limits
 
+The bridge accepts `--vehicle-id tug_01` to set its ROS namespace to `/ramplab/tug_01`; the default remains `tug1`. Run one bridge process per vehicle and choose unique `--camera-port` and `--lidar-port` values. The namespace unit test rejects IDs containing path separators or punctuation. The local ROS 2 CLI topic-list command stalled during a two-process namespace probe, so namespace isolation is unit-tested and reflected in each bridge's startup logs, but topic-list isolation remains unverified.
+
 The environment check found ROS 2 Lyrical, `rclcpp`, `ament_cmake`, colcon-core 0.17.1, all six requested message interfaces, and the Fast DDS RMW. `ros2 --help`, C++ demo talker/listener processes, and a separately compiled native `rclcpp` node succeeded. The normal RampLab build remains usable without this installation.
 
 This is a planar synthetic mission, not surveyed airport-road geometry or hardware-calibrated sensing. The GNSS/odometry estimate and geometric route follower are deliberately modest; the LiDAR rule can stop but cannot route around a blockage. ROS 2 middleware scheduling is not deterministic lockstep. The camera stream is observational and does not feed the controller. There is no Nav2, Gazebo, or multi-vehicle stack in this milestone.

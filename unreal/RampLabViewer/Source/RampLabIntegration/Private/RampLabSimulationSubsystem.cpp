@@ -65,6 +65,8 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     Super::Initialize(Collection);
     double RequestedCaptureMultiplier = CaptureMultiplier;
     bCaptureQA = FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
+    bFleetValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabFleetValidation"));
+    if(bFleetValidation){SelectedScenarioKey=TEXT("autonomy_fleet");PlaybackSpeed=10.0;}
     if (bCaptureQA) {
         CaptureWarmupRemaining = 15.0;
         if (FParse::Value(FCommandLine::Get(), TEXT("RampLabCaptureMultiplier="), RequestedCaptureMultiplier)) {
@@ -93,6 +95,8 @@ void URampLabSimulationSubsystem::Deinitialize()
     Snapshot.Reset();
     AutonomySnapshot.Reset();
     AutonomySimulation.Reset();
+    FleetSimulation.Reset();
+    FleetSnapshots.clear();
     AutonomyController.Reset();
     Simulation.Reset();
     Super::Deinitialize();
@@ -103,6 +107,14 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
     if (bControlCheck) RunControlCheck(DeltaTime);
     if (CaptureWarmupRemaining > 0.0 && bViewerReady) {
         CaptureWarmupRemaining = FMath::Max(0.0, CaptureWarmupRemaining - DeltaTime);
+        return;
+    }
+    if (FleetSimulation != nullptr) {
+        if (!bPlaying || FleetSimulation->finished()) return;
+        const double FrameBudget=static_cast<double>(DeltaTime)*PlaybackSpeed*CaptureMultiplier;AutonomyAccumulator+=FrameBudget;constexpr double FixedStep=0.02;
+        while(AutonomyAccumulator+1e-9>=FixedStep&&!FleetSimulation->finished()){(void)FleetSimulation->advance();AutonomyAccumulator-=FixedStep;FleetSnapshots=FleetSimulation->snapshots();}
+        if(!FleetSnapshots.empty())PlaybackSeconds=FleetSnapshots.front().autonomy.timestamp_s;
+        if(FleetSimulation->finished()){bPlaying=false;const auto M=FleetSimulation->result();FinalResultText=FString::Printf(TEXT("FLEET %llu vehicles\nMissions %llu / %llu\nWaiting %.1f s\nCollisions %llu\nMinimum separation %.2f m"),static_cast<unsigned long long>(M.vehicle_count),static_cast<unsigned long long>(M.missions_completed),static_cast<unsigned long long>(M.missions_attempted),M.traffic_waiting_time_s,static_cast<unsigned long long>(M.collisions),M.minimum_separation_m);StatusText=TEXT("Fleet scenario finished");UE_LOG(LogRampLab,Display,TEXT("Fleet runtime validation: vehicles=%llu completed=%llu/%llu timeouts=%llu waiting_s=%.2f reservations=%llu contentions=%llu collisions=%llu minimum_separation_m=%.3f digest=%llu"),static_cast<unsigned long long>(M.vehicle_count),static_cast<unsigned long long>(M.missions_completed),static_cast<unsigned long long>(M.missions_attempted),static_cast<unsigned long long>(M.safe_timeouts),M.traffic_waiting_time_s,static_cast<unsigned long long>(M.reservation_requests),static_cast<unsigned long long>(M.reservation_contentions),static_cast<unsigned long long>(M.collisions),M.minimum_separation_m,static_cast<unsigned long long>(M.deterministic_digest));if(bFleetValidation)FPlatformMisc::RequestExit(false);}
         return;
     }
     if (AutonomySimulation != nullptr) {
@@ -211,6 +223,7 @@ void URampLabSimulationSubsystem::on_event(const airside::SimulationEventRecord&
 
 void URampLabSimulationSubsystem::TogglePlaying()
 {
+    if (FleetSimulation != nullptr && !FleetSimulation->finished()) { bPlaying = !bPlaying; return; }
     if (AutonomySimulation != nullptr && !AutonomySimulation->finished()) { bPlaying = !bPlaying; return; }
     if (Simulation != nullptr && !Simulation->finished()) bPlaying = !bPlaying;
 }
@@ -279,6 +292,7 @@ void URampLabSimulationSubsystem::AttachControlPanel()
 
 bool URampLabSimulationSubsystem::IsFinished() const noexcept
 {
+    if (FleetSimulation != nullptr) return FleetSimulation->finished();
     if (AutonomySimulation != nullptr) return AutonomySimulation->finished();
     return Simulation != nullptr && Simulation->finished();
 }
@@ -307,6 +321,7 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
 {
     try {
         AutonomySimulation.Reset();
+        FleetSimulation.Reset(); FleetSnapshots.clear();
         AutonomyController.Reset();
         AutonomySnapshot.Reset();
         AutonomyAccumulator = 0.0;
@@ -332,6 +347,9 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
             FinalResultText.Reset(); StatusText = FString::Printf(TEXT("Loaded A* Depot to Gate A2 autonomy mission with seed %llu"), Seed);
             UE_LOG(LogRampLab, Display, TEXT("%s"), *StatusText);
             return true;
+        }
+        if(SelectedScenarioKey==TEXT("autonomy_fleet")||SelectedScenarioKey==TEXT("autonomy_fleet_fault")){
+            auto Fleet=airside::autonomy::load_fleet_scenario(std::filesystem::path{*Path});ScenarioName=UTF8_TO_TCHAR(Fleet.name.c_str());Seed=Fleet.default_seed;auto Airport=Fleet.vehicle_scenario.airport;Simulation=MakeUnique<airside::Simulation>(std::move(Airport),Seed);ReconcileSnapshot();FleetSimulation=MakeUnique<airside::autonomy::FleetSimulation>(std::move(Fleet.vehicle_scenario),std::move(Fleet.missions),Seed);FleetSnapshots=FleetSimulation->snapshots();RecentEvents.Reset();PlaybackSeconds=0.0;bPlaying=true;bCompletionReported=false;FinalResultText.Reset();StatusText=FString::Printf(TEXT("Loaded %llu-vehicle deterministic fleet seed %llu"),static_cast<unsigned long long>(FleetSnapshots.size()),Seed);UE_LOG(LogRampLab,Display,TEXT("%s"),*StatusText);return true;
         }
         auto Scenario = airside::load_scenario(std::filesystem::path{*Path});
         ScenarioName = UTF8_TO_TCHAR(Scenario.name.c_str());
@@ -360,6 +378,7 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
         Simulation.Reset();
         Snapshot.Reset();
         AutonomySimulation.Reset();
+        FleetSimulation.Reset(); FleetSnapshots.clear();
         AutonomyController.Reset();
         AutonomySnapshot.Reset();
         StatusText = FString::Printf(TEXT("RampLab initialization failed: %s"), UTF8_TO_TCHAR(Error.what()));

@@ -12,6 +12,12 @@
 
 using namespace ramplab_ros2_bridge;
 
+TEST(Ros2VehicleNamespace, SeparatesArbitraryVehicleIDsAndRejectsInvalidNames) {
+  EXPECT_EQ(vehicle_namespace("tug_01"),"/ramplab/tug_01");
+  EXPECT_EQ(vehicle_namespace("cart2"),"/ramplab/cart2");
+  EXPECT_THROW(vehicle_namespace("../other"),std::invalid_argument);
+}
+
 TEST(Ros2Conversions, UnrealCameraFramePublishesImageAndCalibratedCameraInfo) {
   CameraFrame frame;
   frame.timestamp_ns = 1'250'000'000ULL;

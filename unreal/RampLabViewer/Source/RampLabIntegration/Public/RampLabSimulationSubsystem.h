@@ -6,6 +6,7 @@
 
 #include "airside/operations/simulation.hpp"
 #include "airside/autonomy/simulation.hpp"
+#include "airside/autonomy/fleet.hpp"
 
 #include "RampLabSimulationSubsystem.generated.h"
 
@@ -36,7 +37,7 @@ public:
     void SetPlaybackSpeed(double NewSpeed);
     void AttachControlPanel();
 
-    [[nodiscard]] bool IsReady() const noexcept { return Simulation != nullptr || AutonomySimulation != nullptr; }
+    [[nodiscard]] bool IsReady() const noexcept { return Simulation != nullptr || AutonomySimulation != nullptr || FleetSimulation != nullptr; }
     [[nodiscard]] bool IsPlaying() const noexcept { return bPlaying; }
     [[nodiscard]] bool IsFinished() const noexcept;
     [[nodiscard]] double GetPlaybackSpeed() const noexcept { return PlaybackSpeed; }
@@ -45,7 +46,9 @@ public:
     [[nodiscard]] const airside::SimulationSnapshot* GetSnapshot() const noexcept;
     [[nodiscard]] const airside::autonomy::AutonomySnapshot* GetAutonomySnapshot() const noexcept;
     [[nodiscard]] const airside::autonomy::AutonomyScenario* GetAutonomyScenario() const noexcept;
-    [[nodiscard]] bool IsAutonomyMode() const noexcept { return AutonomySimulation != nullptr; }
+    [[nodiscard]] bool IsAutonomyMode() const noexcept { return AutonomySimulation != nullptr || FleetSimulation != nullptr; }
+    [[nodiscard]] bool IsFleetMode() const noexcept { return FleetSimulation != nullptr; }
+    [[nodiscard]] const std::vector<airside::autonomy::FleetVehicleSnapshot>& GetFleetSnapshots() const noexcept { return FleetSnapshots; }
     [[nodiscard]] const TArray<FString>& GetRecentEvents() const noexcept { return RecentEvents; }
     [[nodiscard]] uint64 GetSeed() const noexcept { return Seed; }
     [[nodiscard]] FString GetScenarioName() const { return ScenarioName; }
@@ -67,6 +70,8 @@ private:
 
     TUniquePtr<airside::Simulation> Simulation;
     TUniquePtr<airside::autonomy::AutonomySimulation> AutonomySimulation;
+    TUniquePtr<airside::autonomy::FleetSimulation> FleetSimulation;
+    std::vector<airside::autonomy::FleetVehicleSnapshot> FleetSnapshots;
     TUniquePtr<airside::autonomy::ReferenceController> AutonomyController;
     TOptional<airside::autonomy::AutonomySnapshot> AutonomySnapshot;
     TOptional<airside::SimulationSnapshot> Snapshot;
@@ -91,6 +96,7 @@ private:
     bool bCompletionReported{false};
     bool bControlCheck{false};
     bool bCaptureQA{false};
+    bool bFleetValidation{false};
     bool bDemoMode{false};
     bool bDemoAdvancedToHighCapacity{false};
     bool bDemoAdvancedToAutonomy{false};

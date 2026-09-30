@@ -77,6 +77,10 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                     SNew(SHorizontalBox)
                     + SHorizontalBox::Slot().AutoWidth()
                     [ SNew(SButton).Text(FText::FromString(TEXT("Sensor Validation"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_sensor_validation"))) ]
+                    + SHorizontalBox::Slot().AutoWidth().Padding(0,0,6,0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Three Vehicle Fleet"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_fleet"))) ]
+                    + SHorizontalBox::Slot().AutoWidth()
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Faulted Fleet"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_fleet_fault"))) ]
                 ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(SSeparator) ]

@@ -45,7 +45,7 @@ add_library(airside_sim STATIC
 add_library(airside::sim ALIAS airside_sim)
 target_include_directories(airside_sim PUBLIC include)
 
-add_library(airside_autonomy STATIC src/autonomy/simulation.cpp src/autonomy/state_estimator.cpp src/autonomy/sensor_model.cpp)
+add_library(airside_autonomy STATIC src/autonomy/simulation.cpp src/autonomy/state_estimator.cpp src/autonomy/sensor_model.cpp src/autonomy/fleet.cpp)
 add_library(airside::autonomy ALIAS airside_autonomy)
 target_include_directories(airside_autonomy PUBLIC include)
 target_link_libraries(airside_autonomy PUBLIC airside::sim)
@@ -112,6 +112,11 @@ set_target_properties(airside_autonomy_experiment_cli PROPERTIES OUTPUT_NAME air
 target_link_libraries(airside_autonomy_experiment_cli PRIVATE airside::autonomy_experiment airside::autonomy_scenario yaml-cpp::yaml-cpp)
 airside_enable_warnings(airside_autonomy_experiment_cli)
 
+add_executable(airside_fleet_cli apps/airside_fleet/main.cpp)
+set_target_properties(airside_fleet_cli PROPERTIES OUTPUT_NAME airside_fleet)
+target_link_libraries(airside_fleet_cli PRIVATE airside::autonomy_scenario)
+airside_enable_warnings(airside_fleet_cli)
+
 add_executable(airside_experiment_cli apps/airside_experiment/main.cpp)
 set_target_properties(airside_experiment_cli PROPERTIES OUTPUT_NAME airside_experiment)
 target_compile_definitions(airside_experiment_cli PRIVATE AIRSIDE_PROJECT_VERSION="${PROJECT_VERSION}")
@@ -143,6 +148,7 @@ if(BUILD_TESTING)
         tests/experiment/executor_test.cpp
         tests/experiment/statistics_test.cpp
         tests/autonomy/simulation_test.cpp
+        tests/autonomy/fleet_test.cpp
         tests/autonomy/sensor_model_test.cpp
     )
     target_include_directories(airside_tests PRIVATE tests)

@@ -10,9 +10,15 @@
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 #include <optional>
+#include <regex>
 #include <string>
 
 namespace ramplab_ros2_bridge {
+
+[[nodiscard]] inline std::string vehicle_namespace(const std::string& id) {
+  if(id.empty()||!std::regex_match(id,std::regex("[A-Za-z0-9_]+")))throw std::invalid_argument("vehicle ID must contain only letters, digits, or underscore");
+  return "/ramplab/"+id;
+}
 
 [[nodiscard]] builtin_interfaces::msg::Time to_ros_time(double seconds);
 [[nodiscard]] double from_ros_time(const builtin_interfaces::msg::Time& stamp) noexcept;

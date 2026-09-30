@@ -1,4 +1,5 @@
 #include "airside/autonomy/scenario_loader.hpp"
+#include "airside/autonomy/fleet.hpp"
 
 #include "airside/scenario/scenario_loader.hpp"
 
@@ -126,5 +127,17 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         if(const auto obstacles=root["obstacles"])for(const auto& o:obstacles)s.obstacles.push_back({o["id"].as<std::string>(),{o["x_m"].as<double>(),o["y_m"].as<double>()},o["radius_m"].as<double>()});
         return s;
     } catch(const std::exception& e){throw std::runtime_error("autonomy scenario '"+path.string()+"': "+e.what());}
+}
+
+FleetScenario load_fleet_scenario(const std::filesystem::path& path){
+    try{
+        const auto root=YAML::LoadFile(path.string());FleetScenario out;
+        out.name=value<std::string>(root,"name","autonomy_fleet");out.default_seed=value<std::uint64_t>(root,"default_seed",42);
+        out.vehicle_scenario=load_scenario(path.parent_path()/root["vehicle_scenario"].as<std::string>());
+        const auto list=root["missions"];if(!list||!list.IsSequence()||list.size()<2)throw std::invalid_argument("fleet scenario requires at least two missions");
+        for(const auto& item:list){FleetMission m;m.id.value=item["id"].as<std::string>();m.start_node=item["start_node"].as<std::string>();m.goal_node=item["goal_node"].as<std::string>();m.priority=value<int>(item,"priority",0);if(const auto faults=item["faults"])for(const auto& f:faults){SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);x.offset={value<double>(f,"x_m",0.0),value<double>(f,"y_m",0.0)};if(x.start_s<0||x.duration_s<=0||x.probability<0||x.probability>1)throw std::invalid_argument("invalid fleet sensor fault window");m.faults.push_back(x);}out.missions.push_back(std::move(m));}
+        std::ranges::sort(out.missions,{},&FleetMission::id);for(std::size_t i=0;i<out.missions.size();++i){if(out.missions[i].id.value.empty()||(i&&out.missions[i-1].id==out.missions[i].id))throw std::invalid_argument("fleet vehicle IDs must be nonempty and unique");}
+        return out;
+    }catch(const std::exception&e){throw std::runtime_error("fleet scenario '"+path.string()+"': "+e.what());}
 }
 }

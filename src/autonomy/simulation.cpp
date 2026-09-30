@@ -371,6 +371,14 @@ bool AutonomySimulation::advance(IAutonomyController& controller){
     if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
     return !impl_->complete;
 }
+bool AutonomySimulation::advance_with_command(VehicleCommand command,const ReferenceController& ref){
+    if(impl_->complete)return false;
+    impl_->step(command);
+    impl_->metrics.emergency_stops=ref.emergency_stops();impl_->metrics.degraded_mode_entries=ref.degraded_mode_entries();impl_->metrics.safety_stop_entries=ref.safety_stop_entries();impl_->metrics.time_stopped_degraded_s=ref.degraded_stop_time_s();
+    if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&impl_->state.speed_mps<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
+    if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
+    return !impl_->complete;
+}
 AutonomyRun AutonomySimulation::result()const{
     auto m=impl_->metrics;m.completion_time_s=impl_->time;m.distance_traveled_m=impl_->state.distance_m;
     if(impl_->estimate_count>0) {

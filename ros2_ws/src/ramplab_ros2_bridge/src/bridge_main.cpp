@@ -47,6 +47,7 @@ using ramplab_ros2_bridge::CameraTcpReceiver;
 
 struct Options {
   std::string scenario{"scenarios/autonomy_tug.yaml"};
+  std::string vehicle_id{"tug1"};
   std::optional<std::uint64_t> seed;
   std::optional<std::uint64_t> fault_seed;
   double realtime_factor{1.0};
@@ -75,6 +76,7 @@ Options parse_options(int argc, char** argv) {
       return argv[i];
     };
     if (arg == "--scenario") result.scenario = next();
+    else if (arg == "--vehicle-id") result.vehicle_id = next();
     else if (arg == "--seed") result.seed = std::stoull(std::string(next()));
     else if (arg == "--fault-seed") result.fault_seed = std::stoull(std::string(next()));
     else if (arg == "--realtime-factor") result.realtime_factor = parse_double(next(), arg);
@@ -99,7 +101,7 @@ Options parse_options(int argc, char** argv) {
     else if (arg == "--help") {
       std::cout << "ramplab_ros2_bridge [--scenario FILE] [--seed N] [--fault-seed N] [--realtime-factor N] "
                    "[--command-timeout-s N] [--max-sim-seconds N] [--camera-port N] "
-                   "[--lidar-port N] [--lidar-source synthetic|unreal]\n";
+                   "[--lidar-port N] [--lidar-source synthetic|unreal] [--vehicle-id ID]\n";
       std::exit(0);
     } else if (arg != "--ros-args" && arg != "--") {
       throw std::invalid_argument("unknown option: " + std::string(arg));
@@ -125,8 +127,8 @@ private:
 class BridgeNode final : public rclcpp::Node {
 public:
   BridgeNode(AutonomySimulation& simulation, const AutonomyScenario& scenario,
-             double timeout_s, std::uint16_t camera_port, std::uint16_t lidar_port, bool unreal_lidar)
-      : Node("ramplab_bridge", "/ramplab/tug1"), simulation_(simulation), scenario_(scenario),
+             double timeout_s, std::uint16_t camera_port, std::uint16_t lidar_port, bool unreal_lidar,const std::string& vehicle_id)
+      : Node("ramplab_bridge", ramplab_ros2_bridge::vehicle_namespace(vehicle_id)), simulation_(simulation), scenario_(scenario),
         timeout_s_(timeout_s), watchdog_(timeout_s, simulation.time_s()),
         scan_pub_(create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::SensorDataQoS().keep_last(1))),
         imu_pub_(create_publisher<sensor_msgs::msg::Imu>("imu", rclcpp::SensorDataQoS().keep_last(1))),
@@ -441,7 +443,7 @@ int main(int argc, char** argv) {
     AutonomySimulation simulation(scenario, seed, fault_seed);
     rclcpp::init(argc, argv);
     auto bridge = std::make_shared<BridgeNode>(simulation, scenario, options.command_timeout_s,
-        options.camera_port, options.lidar_port, options.unreal_lidar);
+        options.camera_port, options.lidar_port, options.unreal_lidar,options.vehicle_id);
     bridge->initialize_transforms();
     ExternalCommand command;
     bridge->publish_initial();

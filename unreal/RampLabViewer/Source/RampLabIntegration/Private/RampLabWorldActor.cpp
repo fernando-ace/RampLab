@@ -133,10 +133,13 @@ void ARampLabWorldActor::Tick(float DeltaSeconds)
     }
     if (!bTopologyBuilt) BuildTopology(*Snapshot);
     if (Subsystem->IsAutonomyMode()) {
-        const auto* Autonomy = Subsystem->GetAutonomySnapshot();
-        if (Autonomy == nullptr) return;
-        if (!bAutonomyTopologyBuilt) BuildAutonomyTopology(*Autonomy);
-        ReconcileAutonomy(*Autonomy);
+        if(Subsystem->IsFleetMode()) ReconcileFleet(Subsystem->GetFleetSnapshots());
+        else {
+            const auto* Autonomy = Subsystem->GetAutonomySnapshot();
+            if (Autonomy == nullptr) return;
+            if (!bAutonomyTopologyBuilt) BuildAutonomyTopology(*Autonomy);
+            ReconcileAutonomy(*Autonomy);
+        }
     } else {
         bAutonomyTopologyBuilt = false;
         AutonomyTrail.Reset();
@@ -202,6 +205,28 @@ void ARampLabWorldActor::Tick(float DeltaSeconds)
         }
         bPerformanceReported = true;
     }
+}
+
+void ARampLabWorldActor::ReconcileFleet(const std::vector<airside::autonomy::FleetVehicleSnapshot>& Snapshots)
+{
+    for(auto& Pair:AircraftActors)if(Pair.Value)Pair.Value->SetActorHiddenInGame(true);
+    for(auto& Pair:AircraftWingActors)if(Pair.Value)Pair.Value->SetActorHiddenInGame(true);
+    for(auto& Pair:VehicleActors)if(Pair.Value)Pair.Value->SetActorHiddenInGame(true);
+    for(auto& Pair:VehicleDetailActors)if(Pair.Value)Pair.Value->SetActorHiddenInGame(true);
+    for(auto& Pair:AircraftLabels)if(Pair.Value)Pair.Value->SetVisibility(false);
+    for(auto& Pair:VehicleLabels)if(Pair.Value)Pair.Value->SetVisibility(false);
+    uint32 Index=0;
+    for(const auto& Vehicle:Snapshots){
+        const FString Id=UTF8_TO_TCHAR(Vehicle.id.value.c_str());
+        if(!FleetVehicleActors.Contains(Id)){
+            auto* Actor=CreateMirrorActor(TEXT("FleetTug"),900100+Index,CubeMesh);Actor->GetStaticMeshComponent()->SetMaterial(0,AutonomyMaterial);Actor->SetActorScale3D(FVector(5.0f,2.4f,1.8f));FleetVehicleActors.Add(Id,Actor);
+            auto* Label=CreateLabel(TEXT("FleetTugLabel"),900100+Index);FleetVehicleLabels.Add(Id,Label);
+        }
+        const auto& Pose=Vehicle.autonomy.ground_truth;const FVector Position=ToWorld(Pose.position,100.0f);auto Actor=FleetVehicleActors[Id];Actor->SetActorLocation(Position);Actor->SetActorRotation(FRotator(0.0f,FMath::RadiansToDegrees(Pose.heading_rad),0.0f));
+        auto Label=FleetVehicleLabels[Id];Label->SetWorldLocation(Position+FVector(0.0f,0.0f,260.0f));Label->SetText(FText::FromString(FString::Printf(TEXT("%s -> %s | %s"),*Id,UTF8_TO_TCHAR(Vehicle.goal_node.c_str()),Vehicle.waiting?TEXT("WAITING"):Vehicle.autonomy.finished?TEXT("COMPLETE"):Pose.speed_mps<0.15?TEXT("STOPPED"):TEXT("MOVING"))));
+        ++Index;
+    }
+    const FVector CameraLocation=CameraComponent->GetComponentLocation();for(const auto& Pair:FleetVehicleLabels)if(Pair.Value)Pair.Value->SetWorldRotation((CameraLocation-Pair.Value->GetComponentLocation()).Rotation());
 }
 
 void ARampLabWorldActor::CalcCamera(float DeltaTime, FMinimalViewInfo& OutResult)
@@ -306,6 +331,8 @@ void ARampLabWorldActor::ClearTopology()
     for (auto& Pair : AircraftWingActors) if (Pair.Value) Pair.Value->Destroy();
     for (auto& Pair : VehicleActors) if (Pair.Value) Pair.Value->Destroy();
     for (auto& Pair : VehicleDetailActors) if (Pair.Value) Pair.Value->Destroy();
+    for (auto& Pair : FleetVehicleLabels) if (Pair.Value) Pair.Value->DestroyComponent();
+    for (auto& Pair : FleetVehicleActors) if (Pair.Value) Pair.Value->Destroy();
     RoadMeshes.Empty();
     ClosureBarriers.Empty();
     GateLabels.Empty();
@@ -316,6 +343,7 @@ void ARampLabWorldActor::ClearTopology()
     AircraftWingActors.Empty();
     VehicleActors.Empty();
     VehicleDetailActors.Empty();
+    FleetVehicleLabels.Empty(); FleetVehicleActors.Empty();
     if (AutonomyVehicleActor) AutonomyVehicleActor->Destroy();
     if (GnssMarkerActor) GnssMarkerActor->Destroy();
     for (auto& Actor : AutonomyObstacleActors) if (Actor) Actor->Destroy();
