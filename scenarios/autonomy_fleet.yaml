@@ -1,4 +1,4 @@
-name: autonomy_fleet_shared_gate
+name: autonomy_fleet_intersection_contention
 default_seed: 42
 vehicle_scenario: autonomy_tug.yaml
 missions:
@@ -8,9 +8,9 @@ missions:
     priority: 0
   - id: tug_02
     start_node: South Junction
-    goal_node: Gate A2
+    goal_node: Gate A1
     priority: 0
   - id: tug_03
     start_node: Gate A3
-    goal_node: Gate A1
+    goal_node: Service Depot
     priority: 0

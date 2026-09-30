@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <ranges>
 
 namespace airside::autonomy {
 namespace {
@@ -22,6 +23,61 @@ AutonomyScenario mission_scenario(AutonomyScenario s,const FleetMission& m) {
 
 }
 
+namespace {
+bool request_before(const ReservationRequest& a, const ReservationRequest& b) {
+    if (a.time_s != b.time_s) return a.time_s < b.time_s;
+    if (a.priority != b.priority) return a.priority < b.priority;
+    return a.vehicle < b.vehicle;
+}
+}
+
+std::optional<VehicleId> TrafficReservationTable::request_batch(
+    std::string resource, std::vector<ReservationRequest> requests) {
+    if (resource.empty()) throw std::invalid_argument("reservation resource cannot be empty");
+    auto& queue = waiting_[resource];
+    for (auto& request : requests) {
+        if (request.vehicle.value.empty() || !std::isfinite(request.time_s))
+            throw std::invalid_argument("reservation request requires a vehicle ID and finite timestamp");
+        if (const auto held = held_.find(resource); held != held_.end() && held->second.owner == request.vehicle)
+            continue;
+        const auto existing = std::ranges::find(queue, request.vehicle, &ReservationRequest::vehicle);
+        if (existing == queue.end()) queue.push_back(std::move(request));
+        else if (request_before(request, *existing)) *existing = std::move(request);
+    }
+    if (held_.contains(resource)) return held_.at(resource).owner;
+    if (queue.empty()) return std::nullopt;
+    std::ranges::sort(queue, request_before);
+    auto winner = queue.front();
+    queue.erase(queue.begin());
+    held_.emplace(resource, Entry{winner.vehicle, winner});
+    return winner.vehicle;
+}
+
+bool TrafficReservationTable::request(std::string resource, ReservationRequest request) {
+    const auto vehicle = request.vehicle;
+    return request_batch(std::move(resource), {std::move(request)}) == vehicle;
+}
+
+bool TrafficReservationTable::release(const std::string& resource, const VehicleId& vehicle) {
+    const auto held = held_.find(resource);
+    if (held == held_.end() || held->second.owner != vehicle) return false;
+    held_.erase(held);
+    const auto queue = waiting_.find(resource);
+    if (queue != waiting_.end() && !queue->second.empty()) {
+        std::ranges::sort(queue->second, request_before);
+        auto winner = queue->second.front();
+        queue->second.erase(queue->second.begin());
+        held_.emplace(resource, Entry{winner.vehicle, winner});
+    }
+    return true;
+}
+
+std::optional<VehicleId> TrafficReservationTable::owner(const std::string& resource) const {
+    const auto held = held_.find(resource);
+    if (held == held_.end()) return std::nullopt;
+    return held->second.owner;
+}
+
 struct FleetSimulation::Impl {
     struct Member {
         FleetMission mission;
@@ -37,6 +93,7 @@ struct FleetSimulation::Impl {
     std::vector<Member> members;
     std::vector<TrafficEvent> events;
     std::vector<bool> was_conflicting;
+    TrafficReservationTable reservations;
     double now{};
     double minimum_separation{std::numeric_limits<double>::infinity()};
     std::size_t collisions{}, requests{}, contentions{};
@@ -78,22 +135,33 @@ bool FleetSimulation::advance(){
         const bool conflict=current<activation || closest<hard;
         if(conflict) {
             if(!x.was_conflicting[index]) {
-                const auto before=[](const auto& left,const auto& right){if(left.mission.priority!=right.mission.priority)return left.mission.priority<right.mission.priority;return left.mission.id<right.mission.id;};
-                const std::size_t winner_index=a.simulation.finished()?i:(b.simulation.finished()?j:(before(a,b)?i:j));
-                const auto& winner=x.members[winner_index]; const auto& loser=x.members[winner_index==i?j:i];
-                ++x.requests; x.events.push_back({x.now,TrafficEventKind::Request,loser.mission.id,winner.mission.id,"vehicle_conflict"});
-                x.events.push_back({x.now,TrafficEventKind::Granted,winner.mission.id,loser.mission.id,"vehicle_conflict"});
-                ++x.contentions; x.events.push_back({x.now,TrafficEventKind::Deferred,loser.mission.id,winner.mission.id,"vehicle_conflict"});
+                const auto& resource="vehicle_conflict/"+a.mission.id.value+"/"+b.mission.id.value;
+                const int blocked_priority=std::numeric_limits<int>::min();
+                std::vector<ReservationRequest> batch{
+                    {a.mission.id,x.now,a.simulation.finished()?blocked_priority:a.mission.priority},
+                    {b.mission.id,x.now,b.simulation.finished()?blocked_priority:b.mission.priority}};
+                x.requests+=batch.size();
+                for(const auto& request:batch)x.events.push_back({x.now,TrafficEventKind::Request,request.vehicle,{},resource});
+                const auto owner=x.reservations.request_batch(resource,batch);
+                if(owner){
+                    x.events.push_back({x.now,TrafficEventKind::Granted,*owner,{},resource});
+                    if(batch.size()>1){++x.contentions;const auto loser=*owner==a.mission.id?b.mission.id:a.mission.id;x.events.push_back({x.now,TrafficEventKind::Deferred,loser,*owner,resource});}
+                }
             }
-            const auto before=[](const auto& left,const auto& right){if(left.mission.priority!=right.mission.priority)return left.mission.priority<right.mission.priority;return left.mission.id<right.mission.id;};
-            const std::size_t winner_index=a.simulation.finished()?i:(b.simulation.finished()?j:(before(a,b)?i:j));
+            const auto& resource="vehicle_conflict/"+a.mission.id.value+"/"+b.mission.id.value;
+            const auto owner=x.reservations.owner(resource);
+            const std::size_t winner_index=owner&&*owner==b.mission.id?j:i;
             const std::size_t loser=winner_index==i?j:i;
             if(!x.members[loser].simulation.finished()) {
                 yielding[loser]=true;
                 if(!x.members[loser].waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,x.members[loser].mission.id,x.members[winner_index].mission.id,"vehicle_conflict"});
             }
         }
-        if(!conflict && x.was_conflicting[index])x.events.push_back({x.now,TrafficEventKind::ReleasedConflict,a.mission.id,b.mission.id,"vehicle_conflict"});
+        if(!conflict && x.was_conflicting[index]){
+            const auto& resource="vehicle_conflict/"+a.mission.id.value+"/"+b.mission.id.value;
+            const auto owner=x.reservations.owner(resource);
+            if(owner){(void)x.reservations.release(resource,*owner);x.events.push_back({x.now,TrafficEventKind::ReleasedConflict,*owner,{},resource});}
+        }
         x.was_conflicting[index]=conflict;
     }
     for(std::size_t i=0;i<x.members.size();++i) {

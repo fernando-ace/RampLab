@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -33,6 +35,27 @@ struct FleetScenario {
 [[nodiscard]] FleetScenario load_fleet_scenario(const std::filesystem::path& path);
 
 enum class TrafficEventKind { Request, Granted, Deferred, Waiting, EnteredConflict, ReleasedConflict, Collision, DeadlockDetected, DeadlockRecovery };
+struct ReservationRequest {
+    VehicleId vehicle;
+    double time_s{};
+    int priority{};
+};
+
+// Deterministic exclusive-resource arbiter with timestamp, priority, and ID ordering.
+class TrafficReservationTable {
+public:
+    [[nodiscard]] bool request(std::string resource, ReservationRequest request);
+    [[nodiscard]] std::optional<VehicleId> request_batch(
+        std::string resource, std::vector<ReservationRequest> requests);
+    [[nodiscard]] bool release(const std::string& resource, const VehicleId& vehicle);
+    [[nodiscard]] std::optional<VehicleId> owner(const std::string& resource) const;
+
+private:
+    struct Entry { VehicleId owner; ReservationRequest request; };
+    std::map<std::string, Entry> held_;
+    std::map<std::string, std::vector<ReservationRequest>> waiting_;
+};
+
 struct TrafficEvent {
     double time_s{};
     TrafficEventKind kind{};

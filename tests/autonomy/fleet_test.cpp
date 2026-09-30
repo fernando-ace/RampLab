@@ -61,6 +61,21 @@ TEST(FleetTest, VehicleIdentifiersMustBeUnique){
     auto missions=competing_missions();missions[1].id=missions[0].id;
     EXPECT_THROW((FleetSimulation{base_scenario(),std::move(missions),42}),std::invalid_argument);
 }
+TEST(FleetReservationTest, SameTimestampUsesPriorityThenVehicleId){
+    TrafficReservationTable table;
+    const auto winner=table.request_batch("edge_north_south",{
+        {VehicleId{"tug_c"},4.0,0},{VehicleId{"tug_b"},4.0,-1},{VehicleId{"tug_a"},4.0,-1}});
+    ASSERT_TRUE(winner);EXPECT_EQ(winner->value,"tug_a");
+}
+TEST(FleetReservationTest, RequestsQueueAndReleaseTransfersExclusiveOwnership){
+    TrafficReservationTable table;
+    ASSERT_TRUE(table.request("intersection_a2",{VehicleId{"tug_a"},1.0,0}));
+    EXPECT_FALSE(table.request("intersection_a2",{VehicleId{"tug_b"},2.0,0}));
+    ASSERT_TRUE(table.owner("intersection_a2"));EXPECT_EQ(table.owner("intersection_a2")->value,"tug_a");
+    EXPECT_FALSE(table.release("intersection_a2",VehicleId{"tug_b"}));
+    EXPECT_TRUE(table.release("intersection_a2",VehicleId{"tug_a"}));
+    ASSERT_TRUE(table.owner("intersection_a2"));EXPECT_EQ(table.owner("intersection_a2")->value,"tug_b");
+}
 TEST(FleetTest, ScenarioLoadsThreeMissionsAndConfiguredFault){
     const auto path=std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_fault.yaml";
     const auto scenario=load_fleet_scenario(path);ASSERT_EQ(scenario.missions.size(),3U);

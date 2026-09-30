@@ -1,4 +1,4 @@
-name: autonomy_fleet_fault
+name: autonomy_fleet_faulted_intersection_contention
 default_seed: 42
 vehicle_scenario: autonomy_tug.yaml
 missions:
@@ -7,9 +7,9 @@ missions:
     goal_node: Gate A2
   - id: tug_02
     start_node: South Junction
-    goal_node: Gate A3
+    goal_node: Gate A1
     faults:
       - { sensor: gnss, type: dropout, start_s: 2.0, duration_s: 14.0 }
   - id: tug_03
     start_node: Gate A3
-    goal_node: Gate A1
+    goal_node: Service Depot
