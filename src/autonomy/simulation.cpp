@@ -154,6 +154,7 @@ struct AutonomySimulation::Impl {
         }
         if(lidar_clock->due(time)){
             frame.lidar=make_lidar(); frame.lidar->metadata=lidar_clock->metadata(time,"lidar"); ++metrics.lidar_scans;
+            metrics.lidar_hit_returns+=static_cast<std::size_t>(std::count_if(frame.lidar->ranges_m.begin(),frame.lidar->ranges_m.end(),[&](double range){return range<frame.lidar->range_max_m;}));
             if(!lidar_clock->packet_delivered()||frame.lidar->metadata.health==SensorHealth::Stale){frame.lidar.reset();++metrics.lidar_dropped;++metrics.messages_dropped;}
         }
         if(camera_clock->due(time)){

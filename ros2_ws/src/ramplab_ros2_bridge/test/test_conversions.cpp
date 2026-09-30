@@ -37,6 +37,27 @@ TEST(Ros2Conversions, UnrealCameraFramePublishesImageAndCalibratedCameraInfo) {
   EXPECT_EQ(messages.info.d.size(), 5U);
 }
 
+TEST(Ros2Conversions, UnrealLidarFramePublishesTimestampedLaserScan) {
+  LidarFrame frame{2'500'000'000ULL, 12, -0.5F, 0.25F, 0.1F, 20.0F,
+                   {4.0F, 3.0F, 2.0F, 20.0F, 5.0F}};
+  const auto message = to_laser_scan(frame, 0.1, "lidar");
+  EXPECT_EQ(message.header.frame_id, "lidar");
+  EXPECT_NEAR(from_ros_time(message.header.stamp), 2.5, 1e-9);
+  EXPECT_EQ(message.ranges.size(), 5U);
+  EXPECT_FLOAT_EQ(message.angle_min, -0.5F);
+  EXPECT_FLOAT_EQ(message.angle_max, 0.5F);
+  EXPECT_FLOAT_EQ(message.scan_time, 0.1F);
+  EXPECT_FLOAT_EQ(message.range_max, 20.0F);
+  EXPECT_TRUE(message.intensities.empty());
+}
+
+TEST(Ros2Conversions, UnrealLidarFrameRejectsInvalidMetadata) {
+  LidarFrame frame{0, 1, 0.0F, 0.1F, 0.1F, 10.0F, {1.0F}};
+  EXPECT_THROW(to_laser_scan(frame, 0.1, "lidar"), std::invalid_argument);
+  frame.ranges_m = {1.0F, 2.0F};
+  EXPECT_THROW(to_laser_scan(frame, 0.0, "lidar"), std::invalid_argument);
+}
+
 TEST(Ros2Conversions, UnrealCameraTransportRejectsMalformedPixelBuffers) {
   CameraFrame frame;
   frame.width = 2;

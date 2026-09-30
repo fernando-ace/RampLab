@@ -14,6 +14,7 @@ struct FRampLabSensorFrameMetadata
     UPROPERTY() FString SensorId;
     UPROPERTY() FString FrameId;
     UPROPERTY() bool bValid{false};
+    UPROPERTY(VisibleAnywhere) double CaptureCostMilliseconds{0.0};
 };
 
 UCLASS(ClassGroup=(RampLab), meta=(BlueprintSpawnableComponent))
@@ -22,9 +23,11 @@ class RAMPLABINTEGRATION_API URampLabLidarSensorComponent final : public USceneC
     GENERATED_BODY()
 public:
     URampLabLidarSensorComponent();
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     bool CaptureAtSimulationTime(double TimeSeconds);
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1")) int32 RayCount{181};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.1")) float UpdateRateHz{10.0f};
+    UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1", ClampMax="65535")) int32 TransportPort{39011};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1.0", ClampMax="360.0")) float HorizontalFovDegrees{180.0f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.01")) float MinimumRangeMeters{0.1f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.1")) float MaximumRangeMeters{30.0f};
@@ -32,6 +35,12 @@ public:
     UPROPERTY(VisibleAnywhere, Category="Sensor") TArray<float> RangesMeters;
 private:
     double NextCaptureSeconds{0.0};
+    double AccumulatedCaptureCostMilliseconds{0.0};
+    uint64 MeasuredCaptureCount{0};
+    uint64 TotalHitReturns{0};
+    class FSocket* TransportSocket{};
+    double NextConnectAttemptSeconds{0.0};
+    bool bLoggedConnectFailure{false};
 };
 
 UCLASS(ClassGroup=(RampLab), meta=(BlueprintSpawnableComponent))
@@ -53,5 +62,7 @@ private:
     class FSocket* TransportSocket{};
     double NextCaptureSeconds{0.0};
     double NextConnectAttemptSeconds{0.0};
+    double AccumulatedCaptureCostMilliseconds{0.0};
+    uint64 MeasuredCaptureCount{0};
     bool bLoggedConnectFailure{false};
 };

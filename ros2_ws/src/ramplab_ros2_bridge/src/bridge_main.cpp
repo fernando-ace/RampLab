@@ -52,6 +52,8 @@ struct Options {
   double realtime_factor{1.0};
   double command_timeout_s{0.5};
   std::uint16_t camera_port{39010};
+  std::uint16_t lidar_port{39011};
+  bool unreal_lidar{};
   std::optional<double> max_simulation_s;
 };
 
@@ -82,10 +84,22 @@ Options parse_options(int argc, char** argv) {
       if (port == 0 || port > 65535) throw std::invalid_argument("camera port must be in [1,65535]");
       result.camera_port = static_cast<std::uint16_t>(port);
     }
+    else if (arg == "--lidar-port") {
+      const auto port = std::stoul(std::string(next()));
+      if (port == 0 || port > 65535) throw std::invalid_argument("LiDAR port must be in [1,65535]");
+      result.lidar_port = static_cast<std::uint16_t>(port);
+    }
+    else if (arg == "--lidar-source") {
+      const auto source = next();
+      if (source == "unreal") result.unreal_lidar = true;
+      else if (source == "synthetic") result.unreal_lidar = false;
+      else throw std::invalid_argument("LiDAR source must be synthetic or unreal");
+    }
     else if (arg == "--max-sim-seconds") result.max_simulation_s = parse_double(next(), arg);
     else if (arg == "--help") {
       std::cout << "ramplab_ros2_bridge [--scenario FILE] [--seed N] [--fault-seed N] [--realtime-factor N] "
-                   "[--command-timeout-s N] [--max-sim-seconds N] [--camera-port N]\n";
+                   "[--command-timeout-s N] [--max-sim-seconds N] [--camera-port N] "
+                   "[--lidar-port N] [--lidar-source synthetic|unreal]\n";
       std::exit(0);
     } else if (arg != "--ros-args" && arg != "--") {
       throw std::invalid_argument("unknown option: " + std::string(arg));
@@ -111,7 +125,7 @@ private:
 class BridgeNode final : public rclcpp::Node {
 public:
   BridgeNode(AutonomySimulation& simulation, const AutonomyScenario& scenario,
-             double timeout_s, std::uint16_t camera_port)
+             double timeout_s, std::uint16_t camera_port, std::uint16_t lidar_port, bool unreal_lidar)
       : Node("ramplab_bridge", "/ramplab/tug1"), simulation_(simulation), scenario_(scenario),
         timeout_s_(timeout_s), watchdog_(timeout_s, simulation.time_s()),
         scan_pub_(create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::SensorDataQoS().keep_last(1))),
@@ -128,6 +142,8 @@ public:
         clock_pub_(create_publisher<rosgraph_msgs::msg::Clock>("/clock",
             rclcpp::QoS(rclcpp::KeepLast(10)).reliable())) {
     camera_receiver_ = std::make_unique<CameraTcpReceiver>(camera_port);
+    unreal_lidar_ = unreal_lidar;
+    if (unreal_lidar_) lidar_receiver_ = std::make_unique<ramplab_ros2_bridge::LidarTcpReceiver>(lidar_port);
     cmd_sub_ = create_subscription<geometry_msgs::msg::Twist>("cmd_vel",
         rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile(),
         [this](geometry_msgs::msg::Twist::ConstSharedPtr message) { receive_command(*message); });
@@ -166,6 +182,15 @@ public:
       camera_info_pub_->publish(messages.info);
       ++camera_count_;
     }
+    if (unreal_lidar_) {
+      if (auto frame = lidar_receiver_->poll()) {
+        scan_pub_->publish(ramplab_ros2_bridge::to_laser_scan(
+            *frame, 1.0 / scenario_.sensors.lidar_hz, "lidar"));
+        last_scan_stamp_ = static_cast<double>(frame->timestamp_ns) / 1.0e9;
+        ++scan_count_;
+        unreal_lidar_frame_received_ = true;
+      }
+    }
   }
 
   void advance_one(ExternalCommand& adapter) {
@@ -184,6 +209,7 @@ public:
   [[nodiscard]] std::uint64_t count_odom() const noexcept { return odom_count_; }
   [[nodiscard]] std::uint64_t count_gnss() const noexcept { return gnss_count_; }
   [[nodiscard]] std::uint64_t count_camera() const noexcept { return camera_count_; }
+  [[nodiscard]] bool has_unreal_lidar() const noexcept { return unreal_lidar_frame_received_; }
 
 private:
   static geometry_msgs::msg::TransformStamped identity_transform(
@@ -265,7 +291,7 @@ private:
   }
 
   void publish_frame(const SensorFrame& frame) {
-    if (frame.lidar && frame.lidar->timestamp_s != last_scan_stamp_) {
+    if (!unreal_lidar_ && frame.lidar && frame.lidar->timestamp_s != last_scan_stamp_) {
       scan_pub_->publish(ramplab_ros2_bridge::to_laser_scan(
           *frame.lidar, 1.0 / scenario_.sensors.lidar_hz, "lidar"));
       last_scan_stamp_ = frame.lidar->timestamp_s;
@@ -366,6 +392,9 @@ private:
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> dynamic_tf_;
   std::unique_ptr<CameraTcpReceiver> camera_receiver_;
+  std::unique_ptr<ramplab_ros2_bridge::LidarTcpReceiver> lidar_receiver_;
+  bool unreal_lidar_{};
+  bool unreal_lidar_frame_received_{};
   std::uint64_t scan_count_{}, imu_count_{}, odom_count_{}, gnss_count_{}, camera_count_{};
   double last_scan_stamp_{-1.0}, last_imu_stamp_{-1.0}, last_odom_stamp_{-1.0}, last_gnss_stamp_{-1.0};
   double last_filtered_stamp_{-1.0};
@@ -412,20 +441,26 @@ int main(int argc, char** argv) {
     AutonomySimulation simulation(scenario, seed, fault_seed);
     rclcpp::init(argc, argv);
     auto bridge = std::make_shared<BridgeNode>(simulation, scenario, options.command_timeout_s,
-        options.camera_port);
+        options.camera_port, options.lidar_port, options.unreal_lidar);
     bridge->initialize_transforms();
     ExternalCommand command;
     bridge->publish_initial();
     RCLCPP_INFO(bridge->get_logger(),
         "ROS 2 bridge active; controller source=external ROS process, pace=%.2fx, timeout=%.3f sim s",
         options.realtime_factor, options.command_timeout_s);
-    const auto start = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point start{};
+    bool pacing_started = false;
     while (rclcpp::ok() && !simulation.finished() &&
         (!options.max_simulation_s || simulation.time_s() + 1e-9 < *options.max_simulation_s)) {
+      bridge->spin_once();
+      if (options.unreal_lidar && !bridge->has_unreal_lidar()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        continue;
+      }
+      if (!pacing_started) { start = std::chrono::steady_clock::now(); pacing_started = true; }
       const auto next_wall_time = start + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
           std::chrono::duration<double>((simulation.time_s() + scenario.timestep_s) /
               options.realtime_factor));
-      bridge->spin_once();
       bridge->advance_one(command);
       std::this_thread::sleep_until(next_wall_time);
     }

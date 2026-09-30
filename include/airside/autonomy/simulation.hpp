@@ -234,6 +234,7 @@ struct MissionMetrics {
     std::size_t imu_samples{};
     std::size_t odometry_samples{};
     std::size_t lidar_scans{};
+    std::size_t lidar_hit_returns{};
     std::size_t messages_dropped{};
     std::size_t messages_delayed{};
     std::size_t gnss_dropped{}, imu_dropped{}, odometry_dropped{}, lidar_dropped{};
