@@ -103,6 +103,41 @@ std::optional<VehicleId> TrafficReservationTable::owner(const std::string& resou
     return held->second.owner;
 }
 
+std::vector<VehicleId> find_deadlocked_vehicles(
+    const std::map<VehicleId, std::vector<VehicleId>>& waits_for) {
+    std::map<VehicleId, std::set<VehicleId>> reachable;
+    for (const auto& [vehicle, blockers] : waits_for) {
+        for (const auto& blocker : blockers) {
+            if (blocker != vehicle) reachable[vehicle].insert(blocker);
+        }
+    }
+    for (const auto& [vehicle, blockers] : waits_for) {
+        (void)blockers;
+        reachable.try_emplace(vehicle);
+    }
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (auto& [vehicle, blockers] : reachable) {
+            (void)vehicle;
+            std::vector<VehicleId> additions;
+            for (const auto& blocker : blockers) {
+                if (const auto next = reachable.find(blocker); next != reachable.end()) {
+                    for (const auto& transitive : next->second) {
+                        if (!blockers.contains(transitive)) additions.push_back(transitive);
+                    }
+                }
+            }
+            for (const auto& addition : additions) changed = blockers.insert(addition).second || changed;
+        }
+    }
+    std::vector<VehicleId> deadlocked;
+    for (const auto& [vehicle, blockers] : reachable) {
+        if (blockers.contains(vehicle)) deadlocked.push_back(vehicle);
+    }
+    return deadlocked;
+}
+
 struct FleetSimulation::Impl {
     struct Member {
         FleetMission mission;
@@ -111,6 +146,7 @@ struct FleetSimulation::Impl {
         ReferenceController controller;
         VehicleCommand command{};
         bool waiting{};
+        bool deadlock_stopped{};
         double wait_s{};
         Member(FleetMission m, AutonomyScenario s, std::vector<std::string> resources,std::uint64_t seed)
             : mission(std::move(m)), route_resources(std::move(resources)), simulation(std::move(s),seed),
@@ -123,6 +159,7 @@ struct FleetSimulation::Impl {
     double now{};
     double minimum_separation{std::numeric_limits<double>::infinity()};
     std::size_t collisions{}, requests{}, contentions{};
+    std::size_t deadlock_count{};
 
     Impl(AutonomyScenario base, std::vector<FleetMission> missions, std::uint64_t seed) {
         if (missions.empty()) throw std::invalid_argument("fleet requires at least one mission");
@@ -154,6 +191,7 @@ bool FleetSimulation::advance(){
     std::vector<bool> yielding(x.members.size());
     std::set<std::string> active_resources;
     std::vector<std::string> release_candidates;
+    std::map<VehicleId, std::vector<VehicleId>> waits_for;
     for(std::size_t i=0;i<x.members.size();++i) for(std::size_t j=i+1;j<x.members.size();++j) {
         auto& a=x.members[i]; auto& b=x.members[j];
         const auto& sa=a.simulation.estimated_state(); const auto& sb=b.simulation.estimated_state();
@@ -205,17 +243,37 @@ bool FleetSimulation::advance(){
         if(pair.conflict){
             const auto owner=x.reservations.owner(pair.resource);
             if(owner&&*owner==a.mission.id){
-                if(!b.simulation.finished()){yielding[pair.j]=true;if(!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,pair.resource});}
+                if(!b.simulation.finished()){yielding[pair.j]=true;waits_for[b.mission.id].push_back(a.mission.id);if(!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,pair.resource});}
             }else if(owner&&*owner==b.mission.id){
-                if(!a.simulation.finished()){yielding[pair.i]=true;if(!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,pair.resource});}
+                if(!a.simulation.finished()){yielding[pair.i]=true;waits_for[a.mission.id].push_back(b.mission.id);if(!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,pair.resource});}
             }else{
                 if(!a.simulation.finished())yielding[pair.i]=true;
                 if(!b.simulation.finished())yielding[pair.j]=true;
+                if(owner){
+                    if(!a.simulation.finished())waits_for[a.mission.id].push_back(*owner);
+                    if(!b.simulation.finished())waits_for[b.mission.id].push_back(*owner);
+                }
                 if(!a.simulation.finished()&&!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,owner.value_or(VehicleId{}),pair.resource});
                 if(!b.simulation.finished()&&!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,owner.value_or(VehicleId{}),pair.resource});
             }
         }
         x.was_conflicting[pair.index]=pair.conflict;
+    }
+    const auto deadlocked=find_deadlocked_vehicles(waits_for);
+    if(!deadlocked.empty()){
+        std::vector<std::size_t> newly_deadlocked;
+        for(const auto& id:deadlocked){
+            const auto member=std::ranges::find(x.members,id,[](const auto& item){return item.mission.id;});
+            if(member!=x.members.end()&&!member->deadlock_stopped)newly_deadlocked.push_back(static_cast<std::size_t>(std::distance(x.members.begin(),member)));
+        }
+        if(!newly_deadlocked.empty()){
+            ++x.deadlock_count;
+            for(const auto i:newly_deadlocked){
+                auto& member=x.members[i];member.deadlock_stopped=true;yielding[i]=true;
+                x.events.push_back({x.now,TrafficEventKind::DeadlockDetected,member.mission.id,{},"wait_for_cycle"});
+                x.events.push_back({x.now,TrafficEventKind::DeadlockRecovery,member.mission.id,{},"safe_stop_until_timeout"});
+            }
+        }
     }
     std::ranges::sort(release_candidates);
     release_candidates.erase(std::unique(release_candidates.begin(),release_candidates.end()),release_candidates.end());
@@ -225,8 +283,8 @@ bool FleetSimulation::advance(){
     }
     for(std::size_t i=0;i<x.members.size();++i) {
         auto& m=x.members[i]; if(m.simulation.finished())continue;
-        if(yielding[i]) {m.command.target_speed_mps=0.0;m.wait_s+=dt;}
-        m.waiting=yielding[i];
+        if(yielding[i]||m.deadlock_stopped) {m.command.target_speed_mps=0.0;m.wait_s+=dt;}
+        m.waiting=yielding[i]||m.deadlock_stopped;
         (void)m.simulation.advance_with_command(m.command,m.controller);
     }
     x.now+=dt;
@@ -238,7 +296,7 @@ bool FleetSimulation::advance(){
     return !finished();
 }
 FleetMetrics FleetSimulation::result()const{
-    const auto&x=*impl_;FleetMetrics r;r.vehicle_count=x.members.size();r.collisions=x.collisions;r.minimum_separation_m=std::isfinite(x.minimum_separation)?x.minimum_separation:0.0;r.reservation_requests=x.requests;r.reservation_contentions=x.contentions;r.events=x.events;r.deterministic_digest=14695981039346656037ULL;
+    const auto&x=*impl_;FleetMetrics r;r.vehicle_count=x.members.size();r.collisions=x.collisions;r.minimum_separation_m=std::isfinite(x.minimum_separation)?x.minimum_separation:0.0;r.reservation_requests=x.requests;r.reservation_contentions=x.contentions;r.deadlock_count=x.deadlock_count;r.events=x.events;r.deterministic_digest=14695981039346656037ULL;
     for(const auto&m:x.members){const auto run=m.simulation.result();r.vehicles.push_back({m.mission.id,m.mission.start_node,m.mission.goal_node,run.metrics,run.final_state});++r.missions_attempted;if(run.metrics.result==MissionResult::Success)++r.missions_completed;else if(run.metrics.result==MissionResult::Timeout)++r.safe_timeouts;r.total_distance_m+=run.metrics.distance_traveled_m;r.total_mission_time_s=std::max(r.total_mission_time_s,run.metrics.completion_time_s);r.cumulative_waiting_time_s+=m.wait_s;r.traffic_waiting_time_s+=m.wait_s;r.safety_stop_time_s+=run.metrics.time_stopped_degraded_s;}
     r.throughput_per_simulated_hour=x.now>0.0?static_cast<double>(r.missions_completed)*3600.0/x.now:0.0;
     for(const auto&e:x.events){for(const auto c:e.vehicle.value) {r.deterministic_digest^=static_cast<unsigned char>(c);r.deterministic_digest*=1099511628211ULL;}r.deterministic_digest^=static_cast<std::uint64_t>(e.kind);r.deterministic_digest*=1099511628211ULL;}

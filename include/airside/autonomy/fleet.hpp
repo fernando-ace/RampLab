@@ -56,6 +56,10 @@ private:
     std::map<std::string, std::vector<ReservationRequest>> waiting_;
 };
 
+// Returns the sorted set of vehicles that participate in a directed wait-for cycle.
+[[nodiscard]] std::vector<VehicleId> find_deadlocked_vehicles(
+    const std::map<VehicleId, std::vector<VehicleId>>& waits_for);
+
 struct TrafficEvent {
     double time_s{};
     TrafficEventKind kind{};

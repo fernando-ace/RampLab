@@ -78,6 +78,19 @@ TEST(FleetReservationTest, RequestsQueueAndReleaseTransfersExclusiveOwnership){
     EXPECT_TRUE(table.release("intersection_a2",VehicleId{"tug_a"}));
     ASSERT_TRUE(table.owner("intersection_a2"));EXPECT_EQ(table.owner("intersection_a2")->value,"tug_b");
 }
+TEST(FleetDeadlockTest, DetectsEveryVehicleInCycleButNotVehiclesMerelyBlockedByIt){
+    const auto cycle=find_deadlocked_vehicles({
+        {VehicleId{"tug_a"},{VehicleId{"tug_b"}}},
+        {VehicleId{"tug_b"},{VehicleId{"tug_c"}}},
+        {VehicleId{"tug_c"},{VehicleId{"tug_a"}}},
+        {VehicleId{"tug_d"},{VehicleId{"tug_a"}}}});
+    ASSERT_EQ(cycle.size(),3U);
+    EXPECT_EQ(cycle[0].value,"tug_a");EXPECT_EQ(cycle[1].value,"tug_b");EXPECT_EQ(cycle[2].value,"tug_c");
+    EXPECT_TRUE(find_deadlocked_vehicles({
+        {VehicleId{"tug_a"},{VehicleId{"tug_b"}}},
+        {VehicleId{"tug_b"},{VehicleId{"tug_c"}}},
+        {VehicleId{"tug_c"},{}}}).empty());
+}
 TEST(FleetTest, ScenarioLoadsThreeMissionsAndConfiguredFault){
     const auto path=std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_fault.yaml";
     const auto scenario=load_fleet_scenario(path);ASSERT_EQ(scenario.missions.size(),3U);
