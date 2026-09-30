@@ -80,7 +80,7 @@ bool URampLabLidarSensorComponent::CaptureAtSimulationTime(double TimeSeconds)
         const TSharedRef<FInternetAddr> Address = Sockets->CreateInternetAddr();
         Address->SetIp(TEXT("127.0.0.1"), bValidAddress);
         Address->SetPort(TransportPort);
-        if (!bValidAddress || !TransportSocket->Connect(*Address)) {
+        if (!bValidAddress || !TransportSocket->SetNonBlocking(true) || !TransportSocket->Connect(*Address)) {
             TransportSocket->Close();
             Sockets->DestroySocket(TransportSocket);
             TransportSocket = nullptr;
@@ -89,11 +89,31 @@ bool URampLabLidarSensorComponent::CaptureAtSimulationTime(double TimeSeconds)
                 bLoggedConnectFailure = true;
             }
         } else {
-            TransportSocket->SetNonBlocking(true);
-            UE_LOG(LogTemp, Display, TEXT("RampLab LiDAR TCP transport connected to 127.0.0.1:%d"), TransportPort);
+            bTransportConnecting = true;
         }
     }
-    if (TransportSocket != nullptr) {
+    if (TransportSocket != nullptr && bTransportConnecting &&
+        TransportSocket->Wait(ESocketWaitConditions::WaitForWrite, FTimespan::Zero())) {
+        const ESocketConnectionState State = TransportSocket->GetConnectionState();
+        if (State == SCS_Connected) {
+            bTransportConnecting = false;
+            bTransportConnected = true;
+            UE_LOG(LogTemp, Display, TEXT("RampLab LiDAR TCP transport connected to 127.0.0.1:%d"), TransportPort);
+        } else if (State == SCS_ConnectionError) {
+            ISocketSubsystem* Sockets = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+            TransportSocket->Close();
+            Sockets->DestroySocket(TransportSocket);
+            TransportSocket = nullptr;
+            bTransportConnecting = false;
+            bTransportConnected = false;
+            NextConnectAttemptSeconds = TimeSeconds + 0.5;
+            if (!bLoggedConnectFailure) {
+                UE_LOG(LogTemp, Warning, TEXT("RampLab LiDAR TCP transport could not connect to 127.0.0.1:%d"), TransportPort);
+                bLoggedConnectFailure = true;
+            }
+        }
+    }
+    if (TransportSocket != nullptr && bTransportConnected) {
         TArray<uint8> Packet;
         Packet.Reserve(48 + RangesMeters.Num() * sizeof(float));
         Packet.Append({static_cast<uint8>('R'), static_cast<uint8>('L'), static_cast<uint8>('L'), static_cast<uint8>('D')});
@@ -124,6 +144,8 @@ bool URampLabLidarSensorComponent::CaptureAtSimulationTime(double TimeSeconds)
             TransportSocket->Close();
             ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(TransportSocket);
             TransportSocket = nullptr;
+            bTransportConnecting = false;
+            bTransportConnected = false;
             NextConnectAttemptSeconds = TimeSeconds + 0.5;
         }
     }
@@ -183,7 +205,7 @@ bool URampLabCameraSensorComponent::CaptureAtSimulationTime(double TimeSeconds)
         const TSharedRef<FInternetAddr> Address = Sockets->CreateInternetAddr();
         Address->SetIp(TEXT("127.0.0.1"), bValidAddress);
         Address->SetPort(TransportPort);
-        if (!bValidAddress || !TransportSocket->Connect(*Address)) {
+        if (!bValidAddress || !TransportSocket->SetNonBlocking(true) || !TransportSocket->Connect(*Address)) {
             TransportSocket->Close();
             Sockets->DestroySocket(TransportSocket);
             TransportSocket = nullptr;
@@ -192,11 +214,31 @@ bool URampLabCameraSensorComponent::CaptureAtSimulationTime(double TimeSeconds)
                 bLoggedConnectFailure = true;
             }
         } else {
-            TransportSocket->SetNonBlocking(true);
-            UE_LOG(LogTemp, Display, TEXT("RampLab camera TCP transport connected to 127.0.0.1:%d"), TransportPort);
+            bTransportConnecting = true;
         }
     }
-    if ((Metadata.Sequence == 1 || TransportSocket != nullptr) && TextureTarget != nullptr) {
+    if (TransportSocket != nullptr && bTransportConnecting &&
+        TransportSocket->Wait(ESocketWaitConditions::WaitForWrite, FTimespan::Zero())) {
+        const ESocketConnectionState State = TransportSocket->GetConnectionState();
+        if (State == SCS_Connected) {
+            bTransportConnecting = false;
+            bTransportConnected = true;
+            UE_LOG(LogTemp, Display, TEXT("RampLab camera TCP transport connected to 127.0.0.1:%d"), TransportPort);
+        } else if (State == SCS_ConnectionError) {
+            ISocketSubsystem* Sockets = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+            TransportSocket->Close();
+            Sockets->DestroySocket(TransportSocket);
+            TransportSocket = nullptr;
+            bTransportConnecting = false;
+            bTransportConnected = false;
+            NextConnectAttemptSeconds = TimeSeconds + 0.5;
+            if (!bLoggedConnectFailure) {
+                UE_LOG(LogTemp, Warning, TEXT("RampLab camera TCP transport could not connect to 127.0.0.1:%d"), TransportPort);
+                bLoggedConnectFailure = true;
+            }
+        }
+    }
+    if ((Metadata.Sequence == 1 || bTransportConnected) && TextureTarget != nullptr) {
         TArray<FColor> Pixels;
         if (FTextureRenderTargetResource* Resource = TextureTarget->GameThread_GetRenderTargetResource()) {
             Resource->ReadPixels(Pixels);
@@ -216,7 +258,7 @@ bool URampLabCameraSensorComponent::CaptureAtSimulationTime(double TimeSeconds)
                 Pixels.Num(), static_cast<unsigned long long>(NonBlackPixels),
                 static_cast<unsigned long long>(PixelDigest), Metadata.bValid ? TEXT("true") : TEXT("false"));
         }
-        if (Metadata.bValid && TransportSocket != nullptr) {
+        if (Metadata.bValid && TransportSocket != nullptr && bTransportConnected) {
             TArray<uint8> Packet;
             Packet.Reserve(40 + Pixels.Num() * sizeof(FColor));
             Packet.Append({static_cast<uint8>('R'), static_cast<uint8>('L'), static_cast<uint8>('S'), static_cast<uint8>('N')});
@@ -247,6 +289,8 @@ bool URampLabCameraSensorComponent::CaptureAtSimulationTime(double TimeSeconds)
                 TransportSocket->Close();
                 ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(TransportSocket);
                 TransportSocket = nullptr;
+                bTransportConnecting = false;
+                bTransportConnected = false;
                 NextConnectAttemptSeconds = TimeSeconds + 0.5;
             }
         }

@@ -25,6 +25,11 @@ public:
     URampLabLidarSensorComponent();
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     bool CaptureAtSimulationTime(double TimeSeconds);
+    [[nodiscard]] uint64 GetMeasuredCaptureCount() const noexcept { return MeasuredCaptureCount; }
+    [[nodiscard]] uint64 GetTotalHitReturns() const noexcept { return TotalHitReturns; }
+    [[nodiscard]] double GetMeanCaptureCostMilliseconds() const noexcept {
+        return MeasuredCaptureCount == 0 ? 0.0 : AccumulatedCaptureCostMilliseconds / static_cast<double>(MeasuredCaptureCount);
+    }
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1")) int32 RayCount{181};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.1")) float UpdateRateHz{10.0f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1", ClampMax="65535")) int32 TransportPort{39011};
@@ -40,6 +45,8 @@ private:
     uint64 TotalHitReturns{0};
     class FSocket* TransportSocket{};
     double NextConnectAttemptSeconds{0.0};
+    bool bTransportConnecting{false};
+    bool bTransportConnected{false};
     bool bLoggedConnectFailure{false};
 };
 
@@ -51,6 +58,10 @@ public:
     URampLabCameraSensorComponent();
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     bool CaptureAtSimulationTime(double TimeSeconds);
+    [[nodiscard]] uint64 GetMeasuredCaptureCount() const noexcept { return MeasuredCaptureCount; }
+    [[nodiscard]] double GetMeanCaptureCostMilliseconds() const noexcept {
+        return MeasuredCaptureCount == 0 ? 0.0 : AccumulatedCaptureCostMilliseconds / static_cast<double>(MeasuredCaptureCount);
+    }
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1.0", ClampMax="179.0")) float HorizontalFovDegrees{90.0f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="0.1")) float UpdateRateHz{20.0f};
     UPROPERTY(EditAnywhere, Category="Sensor", meta=(ClampMin="1")) int32 ImageWidth{320};
@@ -64,5 +75,7 @@ private:
     double NextConnectAttemptSeconds{0.0};
     double AccumulatedCaptureCostMilliseconds{0.0};
     uint64 MeasuredCaptureCount{0};
+    bool bTransportConnecting{false};
+    bool bTransportConnected{false};
     bool bLoggedConnectFailure{false};
 };

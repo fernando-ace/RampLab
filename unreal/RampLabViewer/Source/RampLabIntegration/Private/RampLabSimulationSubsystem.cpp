@@ -76,6 +76,7 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     bControlCheck = FParse::Param(FCommandLine::Get(), TEXT("RampLabControlCheck"));
     if (FParse::Param(FCommandLine::Get(), TEXT("RampLabSensorValidation"))) {
         SelectedScenarioKey = TEXT("autonomy_sensor_validation");
+        PlaybackSpeed = 1.0;
     }
     bDemoMode = FParse::Param(FCommandLine::Get(), TEXT("RampLabDemo"))
         || FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));

@@ -179,6 +179,27 @@ void ARampLabWorldActor::Tick(float DeltaSeconds)
         const double ApproximateFps = RuntimeWallSeconds > 0.0 ? static_cast<double>(RuntimeFrames) / RuntimeWallSeconds : 0.0;
         UE_LOG(LogRampLab, Display, TEXT("RampLab runtime sanity: scenario=%s approximate_fps=%.1f actor_count=%d cesium_loading_is_asynchronous=true"),
             *Subsystem->GetScenarioName(), ApproximateFps, ActorCount);
+        if (Subsystem->IsAutonomyMode()) {
+            const auto* Autonomy = Subsystem->GetAutonomySnapshot();
+            const double SimulationTime = Autonomy == nullptr ? 0.0 : Autonomy->timestamp_s;
+            if (AutonomyLidarSensor != nullptr) {
+                const double EffectiveRateHz = SimulationTime > 0.0
+                    ? static_cast<double>(AutonomyLidarSensor->GetMeasuredCaptureCount()) / SimulationTime : 0.0;
+                UE_LOG(LogRampLab, Display, TEXT("RampLab Unreal LiDAR metrics: frames=%llu effective_hz=%.2f rays=%d total_hits=%llu mean_capture_ms=%.4f"),
+                    static_cast<unsigned long long>(AutonomyLidarSensor->GetMeasuredCaptureCount()), EffectiveRateHz,
+                    AutonomyLidarSensor->RayCount,
+                    static_cast<unsigned long long>(AutonomyLidarSensor->GetTotalHitReturns()),
+                    AutonomyLidarSensor->GetMeanCaptureCostMilliseconds());
+            }
+            if (AutonomyCameraSensor != nullptr) {
+                const double EffectiveRateHz = SimulationTime > 0.0
+                    ? static_cast<double>(AutonomyCameraSensor->GetMeasuredCaptureCount()) / SimulationTime : 0.0;
+                UE_LOG(LogRampLab, Display, TEXT("RampLab Unreal camera metrics: frames=%llu effective_hz=%.2f size=%dx%d mean_capture_ms=%.4f"),
+                    static_cast<unsigned long long>(AutonomyCameraSensor->GetMeasuredCaptureCount()), EffectiveRateHz,
+                    AutonomyCameraSensor->ImageWidth, AutonomyCameraSensor->ImageHeight,
+                    AutonomyCameraSensor->GetMeanCaptureCostMilliseconds());
+            }
+        }
         bPerformanceReported = true;
     }
 }
