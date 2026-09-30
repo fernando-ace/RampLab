@@ -164,7 +164,15 @@ Goal 9 validation on 2026-09-29 rebuilt the native overlay and passed all 11 bri
 
 ## Validation and limits
 
-The bridge accepts `--vehicle-id tug_01` to set its ROS namespace to `/ramplab/tug_01`; the default remains `tug1`. Run one bridge process per vehicle and choose unique `--camera-port` and `--lidar-port` values. The namespace unit test rejects IDs containing path separators or punctuation. The local ROS 2 CLI topic-list command stalled during a two-process namespace probe, so namespace isolation is unit-tested and reflected in each bridge's startup logs, but topic-list isolation remains unverified.
+The bridge accepts `--vehicle-id tug_01` to set its ROS namespace to `/ramplab/tug_01`; the default remains `tug1`. Run one bridge process per vehicle and choose unique `--camera-port` and `--lidar-port` values. `--no-global-clock` disables that process's global `/clock` publisher so exactly one bridge owns `/clock` when independent bridge processes share a ROS graph. The namespace unit test rejects IDs containing path separators or punctuation.
+
+`ros2_ws/scripts/verify_multi_vehicle_isolation.py` starts two bridge processes concurrently, publishes different commands to their namespaced `cmd_vel` inputs, and checks namespaced odometry, LiDAR, and TF outputs. In one 12-second run, the commanded vehicle moved 15.651 m and the zero-command vehicle moved 0.002 m; both streams published sensor data, each command topic had one bridge subscriber, only one bridge published global `/clock`, and the two TF frame chains remained separate. Non-default IDs prefix the bridge's TF frames with the vehicle ID; default `tug1` retains the existing frame IDs. On this Windows Fast DDS 3.6.2 setup, the default shared-memory transport crashes when starting the second participant; the probe sets the documented `FASTDDS_BUILTIN_TRANSPORTS=UDPv4` transport setting for both bridges and its rclpy observer. Reproduce it from the ROS workspace with:
+
+```powershell
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\install\setup.ps1'; . '.\ros2_ws\install\setup.ps1'; python .\ros2_ws\scripts\verify_multi_vehicle_isolation.py"
+```
+
+This verifies namespaced command/sensor separation across two independent bridge simulations; it does not connect both bridges to one coordinated fleet simulation.
 
 The environment check found ROS 2 Lyrical, `rclcpp`, `ament_cmake`, colcon-core 0.17.1, all six requested message interfaces, and the Fast DDS RMW. `ros2 --help`, C++ demo talker/listener processes, and a separately compiled native `rclcpp` node succeeded. The normal RampLab build remains usable without this installation.
 
