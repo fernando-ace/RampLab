@@ -147,6 +147,10 @@ bool FleetSimulation::advance(){
     auto& x=*impl_; if(finished())return false;
     const double dt=x.members.front().simulation.scenario().timestep_s;
     for(auto& m:x.members) if(!m.simulation.finished()) m.command=m.controller.update(m.simulation.observe(),m.simulation.mission());
+    struct PairState { std::size_t i{},j{},index{}; bool conflict{}; std::string resource; };
+    std::vector<PairState> pairs;
+    std::map<std::string,std::vector<ReservationRequest>> requests_by_resource;
+    std::set<std::string> newly_conflicting_resources;
     std::vector<bool> yielding(x.members.size());
     std::set<std::string> active_resources;
     std::vector<std::string> release_candidates;
@@ -164,43 +168,54 @@ bool FleetSimulation::advance(){
         const double activation=x.was_conflicting[index]?45.0:35.0;
         const bool conflict=current<activation || closest<hard;
         const auto resource=shared_route_resource(a.route_resources,b.route_resources,a.mission.id,b.mission.id);
+        pairs.push_back({i,j,index,conflict,resource});
         if(conflict) {
             active_resources.insert(resource);
-            if(!x.was_conflicting[index]) {
+            auto& candidates=requests_by_resource[resource];
+            for(const auto member_index:{i,j}){
+                const auto& member=x.members[member_index];
+                if(!x.was_conflicting[index])newly_conflicting_resources.insert(resource);
                 const int blocked_priority=std::numeric_limits<int>::min();
-                std::vector<ReservationRequest> batch{
-                    {a.mission.id,x.now,a.simulation.finished()?blocked_priority:a.mission.priority},
-                    {b.mission.id,x.now,b.simulation.finished()?blocked_priority:b.mission.priority}};
-                x.requests+=batch.size();
-                for(const auto& request:batch)x.events.push_back({x.now,TrafficEventKind::Request,request.vehicle,{},resource});
-                const auto owner=x.reservations.request_batch(resource,batch);
-                if(owner){
-                    x.events.push_back({x.now,TrafficEventKind::Granted,*owner,{},resource});
-                    if(batch.size()>1){++x.contentions;const auto loser=*owner==a.mission.id?b.mission.id:a.mission.id;x.events.push_back({x.now,TrafficEventKind::Deferred,loser,*owner,resource});}
-                }
-            }
-            const auto owner=x.reservations.owner(resource);
-            if(owner&&*owner==a.mission.id){
-                if(!b.simulation.finished()){
-                    yielding[j]=true;
-                    if(!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,resource});
-                }
-            }else if(owner&&*owner==b.mission.id){
-                if(!a.simulation.finished()){
-                    yielding[i]=true;
-                    if(!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,resource});
-                }
-            }else{
-                if(!a.simulation.finished())yielding[i]=true;
-                if(!b.simulation.finished())yielding[j]=true;
-                if(!a.simulation.finished()&&!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,owner.value_or(VehicleId{}),resource});
-                if(!b.simulation.finished()&&!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,owner.value_or(VehicleId{}),resource});
+                const ReservationRequest request{member.mission.id,x.now,
+                    member.simulation.finished()?blocked_priority:member.mission.priority};
+                const auto existing=std::ranges::find(candidates,request.vehicle,&ReservationRequest::vehicle);
+                if(existing==candidates.end())candidates.push_back(request);
+                else if(request_before(request,*existing))*existing=request;
             }
         }
         if(!conflict && x.was_conflicting[index]){
             release_candidates.push_back(resource);
         }
-        x.was_conflicting[index]=conflict;
+    }
+    for(auto& [resource,batch]:requests_by_resource){
+        if(!newly_conflicting_resources.contains(resource)&&x.reservations.owner(resource))continue;
+        std::ranges::sort(batch,request_before);
+        for(const auto& request:batch)x.events.push_back({x.now,TrafficEventKind::Request,request.vehicle,{},resource});
+        x.requests+=batch.size();
+        const auto owner=x.reservations.request_batch(resource,batch);
+        if(owner){
+            x.events.push_back({x.now,TrafficEventKind::Granted,*owner,{},resource});
+            for(const auto& request:batch)if(request.vehicle!=*owner){
+                ++x.contentions;x.events.push_back({x.now,TrafficEventKind::Deferred,request.vehicle,*owner,resource});
+            }
+        }
+    }
+    for(const auto& pair:pairs){
+        const auto& a=x.members[pair.i];const auto& b=x.members[pair.j];
+        if(pair.conflict){
+            const auto owner=x.reservations.owner(pair.resource);
+            if(owner&&*owner==a.mission.id){
+                if(!b.simulation.finished()){yielding[pair.j]=true;if(!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,pair.resource});}
+            }else if(owner&&*owner==b.mission.id){
+                if(!a.simulation.finished()){yielding[pair.i]=true;if(!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,pair.resource});}
+            }else{
+                if(!a.simulation.finished())yielding[pair.i]=true;
+                if(!b.simulation.finished())yielding[pair.j]=true;
+                if(!a.simulation.finished()&&!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,owner.value_or(VehicleId{}),pair.resource});
+                if(!b.simulation.finished()&&!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,owner.value_or(VehicleId{}),pair.resource});
+            }
+        }
+        x.was_conflicting[pair.index]=pair.conflict;
     }
     std::ranges::sort(release_candidates);
     release_candidates.erase(std::unique(release_candidates.begin(),release_candidates.end()),release_candidates.end());
