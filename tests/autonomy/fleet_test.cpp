@@ -11,8 +11,8 @@ namespace {
 AutonomyScenario base_scenario(){return load_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_tug.yaml");}
 std::vector<FleetMission> competing_missions(){
     return {{VehicleId{"tug_01"},"Service Depot","Gate A2",0,{}},
-            {VehicleId{"tug_02"},"South Junction","Gate A2",0,{}},
-            {VehicleId{"tug_03"},"Gate A3","Gate A1",0,{}}};
+            {VehicleId{"tug_02"},"South Junction","Gate A1",0,{}},
+            {VehicleId{"tug_03"},"Gate A3","Service Depot",0,{}}};
 }
 FleetMetrics run_fleet(){FleetSimulation fleet{base_scenario(),competing_missions(),42};std::size_t steps=0;while(fleet.advance()&&++steps<15000){}return fleet.result();}
 }
@@ -33,6 +33,17 @@ TEST(FleetTest, SameSeedProducesIdenticalFleetEventAndMetricDigest){
     EXPECT_DOUBLE_EQ(a.traffic_waiting_time_s,b.traffic_waiting_time_s);
     ASSERT_EQ(a.events.size(),b.events.size());
     for(std::size_t i=0;i<a.events.size();++i){EXPECT_DOUBLE_EQ(a.events[i].time_s,b.events[i].time_s);EXPECT_EQ(a.events[i].kind,b.events[i].kind);EXPECT_EQ(a.events[i].vehicle,b.events[i].vehicle);}
+}
+TEST(FleetTest, AggregateMetricsMatchVehicleResultsAndCommonCompletionHorizon){
+    const auto result=run_fleet();
+    ASSERT_EQ(result.missions_completed,3U);
+    double total_distance=0.0,completion_horizon=0.0;
+    for(const auto& vehicle:result.vehicles){total_distance+=vehicle.metrics.distance_traveled_m;completion_horizon=std::max(completion_horizon,vehicle.metrics.completion_time_s);}
+    EXPECT_NEAR(result.total_distance_m,total_distance,1e-9);
+    EXPECT_DOUBLE_EQ(result.total_mission_time_s,completion_horizon);
+    EXPECT_DOUBLE_EQ(result.cumulative_waiting_time_s,result.traffic_waiting_time_s);
+    EXPECT_DOUBLE_EQ(result.throughput_per_simulated_hour,3.0*3600.0/completion_horizon);
+    EXPECT_EQ(result.collisions,0U);
 }
 TEST(FleetTest, DifferentSeedsChangeStochasticVehicleTrajectories){
     auto a=competing_missions();auto b=competing_missions();
