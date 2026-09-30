@@ -86,8 +86,15 @@ TEST(FleetTest, ScenarioLoadsThreeMissionsAndConfiguredFault){
 }
 TEST(FleetExperimentTest, SerialAndParallelFleetResultsAreIdentical){
     const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_fault.yaml");
-    std::vector<FleetRunRequest> requests;for(std::size_t i=0;i<4;++i)requests.push_back({scenario,42+i,10-i});
-    const auto serial=execute_fleet_runs(requests,1),parallel=execute_fleet_runs(std::move(requests),3);
-    ASSERT_EQ(serial.runs.size(),parallel.runs.size());for(std::size_t i=0;i<serial.runs.size();++i){EXPECT_EQ(serial.runs[i].ordinal,parallel.runs[i].ordinal);EXPECT_EQ(serial.runs[i].metrics.deterministic_digest,parallel.runs[i].metrics.deterministic_digest);EXPECT_EQ(serial.runs[i].metrics.collisions,parallel.runs[i].metrics.collisions);EXPECT_DOUBLE_EQ(serial.runs[i].metrics.traffic_waiting_time_s,parallel.runs[i].metrics.traffic_waiting_time_s);}
+    std::vector<FleetRunRequest> requests;for(std::size_t i=0;i<24;++i)requests.push_back({scenario,42+i,100-i});
+    const auto serial=execute_fleet_runs(requests,1),parallel=execute_fleet_runs(std::move(requests),4);
+    ASSERT_EQ(serial.runs.size(),parallel.runs.size());
+    for(std::size_t i=0;i<serial.runs.size();++i){
+        const auto& a=serial.runs[i];const auto& b=parallel.runs[i];
+        EXPECT_EQ(a.ordinal,b.ordinal);EXPECT_EQ(a.metrics.deterministic_digest,b.metrics.deterministic_digest);
+        EXPECT_EQ(a.metrics.collisions,b.metrics.collisions);EXPECT_DOUBLE_EQ(a.metrics.traffic_waiting_time_s,b.metrics.traffic_waiting_time_s);
+        EXPECT_DOUBLE_EQ(a.metrics.total_distance_m,b.metrics.total_distance_m);
+        EXPECT_EQ(a.metrics.missions_completed,3U);EXPECT_EQ(a.metrics.collisions,0U);
+    }
 }
 }
