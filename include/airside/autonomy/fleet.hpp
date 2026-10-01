@@ -37,7 +37,7 @@ struct FleetScenario {
 
 [[nodiscard]] FleetScenario load_fleet_scenario(const std::filesystem::path& path);
 
-enum class TrafficEventKind { Request, Granted, Deferred, Waiting, WaitEnded, EnteredConflict, ReleasedConflict, Collision, DeadlockDetected, DeadlockRecovery, RecoveryResolved, Retreat, Reroute, RoadClosed, RoadReopened, NearConflict, ForcedSafetyStop };
+enum class TrafficEventKind { Request, Granted, Deferred, Waiting, WaitEnded, EnteredConflict, ReleasedConflict, Collision, DeadlockDetected, DeadlockRecovery, RecoveryResolved, Retreat, RetreatSelected, RetreatStarted, RetreatProgress, RetreatResourceReleased, RetreatCompleted, MissionResumed, RetreatFailed, Reroute, RoadClosed, RoadReopened, NearConflict, ForcedSafetyStop };
 struct ReservationRequest {
     VehicleId vehicle;
     double time_s{};
@@ -55,6 +55,7 @@ public:
     void retain_waiters(const std::string& resource, const std::vector<VehicleId>& active_vehicles);
     [[nodiscard]] bool release(const std::string& resource, const VehicleId& vehicle);
     [[nodiscard]] std::optional<VehicleId> owner(const std::string& resource) const;
+    [[nodiscard]] std::vector<std::pair<std::string, VehicleId>> held_resources() const;
     [[nodiscard]] std::size_t starvation_preventions() const noexcept { return starvation_preventions_; }
 
 private:
@@ -75,6 +76,9 @@ struct TrafficEvent {
     VehicleId vehicle;
     VehicleId other;
     std::string resource;
+    Vec2 position{};
+    Vec2 target{};
+    double progress_m{};
     bool operator==(const TrafficEvent&) const = default;
 };
 
@@ -105,6 +109,11 @@ struct FleetVehicleSnapshot {
     std::string goal_node;
     bool waiting{};
     AutonomySnapshot autonomy;
+    std::string recovery_state;
+    std::string recovery_resource;
+    Vec2 retreat_target{};
+    double retreat_progress_m{};
+    std::size_t recovery_attempts{};
 };
 
 struct FleetMetrics {
@@ -128,6 +137,7 @@ struct FleetMetrics {
     std::size_t road_closure_replans{};
     std::size_t retreat_count{};
     std::size_t reservation_denials{};
+    std::size_t outstanding_reservations{};
     std::size_t starvation_preventions{};
     double maximum_resource_wait_s{};
     double mean_resource_wait_s{};

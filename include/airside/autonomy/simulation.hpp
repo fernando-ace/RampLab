@@ -303,6 +303,7 @@ public:
     void set_route(std::vector<Vec2> waypoints);
     [[nodiscard]] bool advance(IAutonomyController& controller);
     [[nodiscard]] bool advance_with_command(VehicleCommand command, const ReferenceController& controller);
+    [[nodiscard]] bool advance_with_reverse_command(VehicleCommand command, const ReferenceController& controller);
     [[nodiscard]] AutonomyRun result() const;
     [[nodiscard]] AutonomyRun run(IAutonomyController& controller, std::ostream* trajectory_csv = nullptr,
                                   std::ostream* sensor_jsonl = nullptr);

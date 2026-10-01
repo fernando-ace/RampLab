@@ -33,7 +33,7 @@ class FleetBridge final : public rclcpp::Node {
         scenario_(airside::autonomy::load_fleet_scenario(scenario_path)),
         simulation_(scenario_.vehicle_scenario, scenario_.missions,
                     seed == 0 ? scenario_.default_seed : seed,
-                    scenario_.road_events, scenario_.deadlock_persistence_s),
+                    scenario_.road_events, scenario_.deadlock_persistence_s, scenario_.resource_specific_tie_breaks),
         state_pub_(create_publisher<std_msgs::msg::String>(
             "/ramplab/fleet/state", rclcpp::QoS(1).reliable().transient_local())),
         events_pub_(create_publisher<std_msgs::msg::String>(
@@ -53,6 +53,8 @@ class FleetBridge final : public rclcpp::Node {
           << ",\"missions_attempted\":" << metrics.missions_attempted
           << ",\"deadlocks\":" << metrics.deadlock_count
           << ",\"recoveries\":" << metrics.recovery_attempts
+          << ",\"retreats\":" << metrics.retreat_count
+          << ",\"outstanding_reservations\":" << metrics.outstanding_reservations
           << ",\"vehicles\":[";
     const auto snapshots = simulation_.snapshots();
     for (std::size_t i = 0; i < snapshots.size(); ++i) {
@@ -64,7 +66,13 @@ class FleetBridge final : public rclcpp::Node {
             << ",\"y_m\":" << vehicle.autonomy.ground_truth.position.y_m
             << ",\"speed_mps\":" << vehicle.autonomy.ground_truth.speed_mps
             << ",\"waiting\":" << (vehicle.waiting ? "true" : "false")
-            << ",\"finished\":" << (vehicle.autonomy.finished ? "true" : "false");
+            << ",\"finished\":" << (vehicle.autonomy.finished ? "true" : "false")
+            << ",\"recovery_state\":" << quote(vehicle.recovery_state)
+            << ",\"recovery_resource\":" << quote(vehicle.recovery_resource)
+            << ",\"retreat_target_x_m\":" << vehicle.retreat_target.x_m
+            << ",\"retreat_target_y_m\":" << vehicle.retreat_target.y_m
+            << ",\"retreat_progress_m\":" << vehicle.retreat_progress_m
+            << ",\"recovery_attempts\":" << vehicle.recovery_attempts;
       if (const auto dependency = blockers.find(vehicle.id); dependency != blockers.end()) {
         state << ",\"blocking_vehicle\":" << quote(dependency->second.blocking_vehicle.value)
               << ",\"blocked_resource\":" << quote(dependency->second.resource)
@@ -85,7 +93,10 @@ class FleetBridge final : public rclcpp::Node {
               << ",\"kind\":" << quote(airside::autonomy::to_string(event.kind))
               << ",\"vehicle_id\":" << quote(event.vehicle.value)
               << ",\"other_vehicle_id\":" << quote(event.other.value)
-              << ",\"resource\":" << quote(event.resource) << '}';
+              << ",\"resource\":" << quote(event.resource)
+              << ",\"x_m\":" << event.position.x_m << ",\"y_m\":" << event.position.y_m
+              << ",\"target_x_m\":" << event.target.x_m << ",\"target_y_m\":" << event.target.y_m
+              << ",\"progress_m\":" << event.progress_m << '}';
       event_message.data = payload.str();
       events_pub_->publish(event_message);
     }

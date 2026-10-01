@@ -92,7 +92,8 @@ const EstimatedState& StateEstimator2D::update(const SensorFrame& f) {
             (!f.odometry||stale(f.odometry->timestamp_s)||state_.wheel_health==WheelHealth::Degraded);
         double prediction_speed=speed_before;
         if(unobserved_stop) {
-            x[3]=std::max(0.0,speed_before-config_.unobserved_stop_deceleration_mps2*dt);
+            const double stop_sign=speed_before<0.0?-1.0:1.0;
+            x[3]=stop_sign*std::max(0.0,std::abs(speed_before)-config_.unobserved_stop_deceleration_mps2*dt);
             prediction_speed=0.5*(speed_before+x[3]);
         }
         x[0]+=prediction_speed*std::cos(yaw_before)*dt;
@@ -112,7 +113,7 @@ const EstimatedState& StateEstimator2D::update(const SensorFrame& f) {
                 const double wheel_variance=std::max(1e-12,config_.odometry_speed_sigma_mps*config_.odometry_speed_sigma_mps)*
                     (state_.wheel_health==WheelHealth::Degraded?10000.0:state_.wheel_health==WheelHealth::Suspect?9.0:1.0);
                 if(state_.wheel_health!=WheelHealth::Nominal)++state_.wheel_downweighted;
-                scalar_update(x,p,3,std::max(0.0,o.speed_mps),wheel_variance);
+                scalar_update(x,p,3,o.speed_mps,wheel_variance);
                 previous_odom_distance_m_=o.distance_m;previous_odom_heading_change_rad_=o.heading_change_rad;
                 last_odom_stamp_s_=o.timestamp_s;have_odom_=true;last_odom_heading_estimate_rad_=x[2];
             }
@@ -147,7 +148,7 @@ const EstimatedState& StateEstimator2D::update(const SensorFrame& f) {
         else if(!state_.initialized&&f.imu&&!stale(f.imu->timestamp_s)) {
             state_.position=g.position;state_.initialized=true;
             if(f.odometry&&!stale(f.odometry->timestamp_s)) {
-                state_.speed_mps=std::max(0.0,f.odometry->speed_mps);
+                state_.speed_mps=f.odometry->speed_mps;
                 last_odom_stamp_s_=f.odometry->timestamp_s;
                 previous_odom_distance_m_=f.odometry->distance_m;
                 previous_odom_heading_change_rad_=f.odometry->heading_change_rad;

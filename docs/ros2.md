@@ -51,8 +51,8 @@ The bridge imports the already-built RampLab autonomy libraries; this is an adap
 
 | Topic | Type | Contents |
 |---|---|---|
-| `/ramplab/fleet/state` | `std_msgs/msg/String` | Transient-local JSON snapshot containing simulation time, aggregate mission/deadlock/recovery counts, and a `vehicles` array keyed by `vehicle_id`; each row includes goal, pose, speed, waiting/finished state, and blocker/resource/wait duration when blocked. |
-| `/ramplab/fleet/traffic_events` | `std_msgs/msg/String` | Reliable JSON events with simulation time, typed event kind, `vehicle_id`, `other_vehicle_id`, and resource. |
+| `/ramplab/fleet/state` | `std_msgs/msg/String` | Transient-local JSON snapshot containing simulation time, mission/deadlock/recovery/retreat counts, outstanding reservations, and a `vehicles` array keyed by `vehicle_id`; each row includes goal, pose, speed, waiting/finished state, recovery state/resource/target/progress/attempts, and blocker/resource/wait duration when blocked. |
+| `/ramplab/fleet/traffic_events` | `std_msgs/msg/String` | Reliable JSON events with simulation time, typed event kind, `vehicle_id`, `other_vehicle_id`, resource, current position, retreat target, and progress distance. |
 
 Use the fleet-level node together with a scenario file:
 

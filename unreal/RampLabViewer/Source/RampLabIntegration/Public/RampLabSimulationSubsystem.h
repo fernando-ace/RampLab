@@ -79,6 +79,7 @@ private:
     TOptional<airside::autonomy::AutonomySnapshot> AutonomySnapshot;
     TOptional<airside::SimulationSnapshot> Snapshot;
     TArray<FString> RecentEvents;
+    TArray<bool> RecentEventIsRecoveryLifecycle;
     TSharedPtr<SWidget> ControlPanel;
     FString ScenarioName;
     FString SelectedScenarioKey{TEXT("baseline")};

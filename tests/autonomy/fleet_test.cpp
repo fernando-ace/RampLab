@@ -57,6 +57,7 @@ TEST(FleetScenarioTest, SharedSegmentMergeWaitsThenCompletesWithoutCollision){
     EXPECT_EQ(result.vehicle_count,3U);EXPECT_EQ(result.missions_completed,3U);EXPECT_EQ(result.safe_timeouts,0U);
     EXPECT_GT(result.reservation_contentions,0U);EXPECT_GT(result.traffic_waiting_time_s,0.0);EXPECT_EQ(result.collisions,0U);
     EXPECT_GT(result.near_conflict_events,0U);EXPECT_GT(result.forced_safety_stops,0U);EXPECT_EQ(result.deadlock_count,0U);
+    EXPECT_EQ(result.retreat_count,0U);
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::Waiting&&event.resource.starts_with("edge/");}));
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::EnteredConflict&&event.resource.starts_with("edge/");}));
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::ForcedSafetyStop&&event.resource.starts_with("edge/");}));
@@ -69,6 +70,7 @@ TEST(FleetScenarioTest, OpposingVehiclesReserveNarrowEdgeBeforeLeavingHoldingBay
     ASSERT_EQ(result.vehicle_count,3U);EXPECT_EQ(result.missions_completed,3U);EXPECT_EQ(result.safe_timeouts,0U);
     EXPECT_EQ(result.collisions,0U);EXPECT_GT(result.minimum_separation_m,2.0);
     EXPECT_GT(result.traffic_waiting_time_s,30.0);EXPECT_EQ(result.reservation_contentions,1U);
+    EXPECT_EQ(result.retreat_count,0U);
     const auto deferred=std::ranges::find_if(result.events,[](const auto& event){
         return event.kind==TrafficEventKind::Deferred&&event.vehicle.value=="tug_02";
     });
@@ -94,6 +96,7 @@ TEST(FleetScenarioTest, DynamicClosureReplansBeforeVehicleCanEnterClosedEdge){
     while(fleet.advance()){}
     const auto result=fleet.result();
     EXPECT_EQ(result.missions_completed,2U);EXPECT_EQ(result.safe_timeouts,0U);EXPECT_EQ(result.collisions,0U);EXPECT_GT(result.total_distance_m,300.0);
+    EXPECT_EQ(result.retreat_count,0U);
     EXPECT_EQ(result.road_closure_replans,1U);EXPECT_GE(result.reroutes,1U);
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::RoadClosed;}));
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::RoadReopened;}));
@@ -123,6 +126,7 @@ TEST(FleetScenarioTest, EightVehicleOpposingCorridorsCompleteWithoutCollisions){
     EXPECT_EQ(result.safe_timeouts,0U);EXPECT_EQ(result.collisions,0U);EXPECT_GT(result.minimum_separation_m,2.0);
     EXPECT_GT(result.reservation_contentions,0U);EXPECT_GT(result.forced_safety_stops,0U);
     EXPECT_GT(result.traffic_waiting_time_s,0.0);
+    EXPECT_EQ(result.retreat_count,0U);
 }
 TEST(FleetScenarioTest, ThreeVehicleWaitForCycleTriggersPersistentRecovery){
     const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_deadlock.yaml");
@@ -131,15 +135,69 @@ TEST(FleetScenarioTest, ThreeVehicleWaitForCycleTriggersPersistentRecovery){
     while(fleet.advance()) if(fleet.deadlocked_vehicles().size()>=3) observed_cycle=true;
     const auto result=fleet.result();
     EXPECT_TRUE(observed_cycle);EXPECT_EQ(result.deadlock_count,1U);EXPECT_EQ(result.deadlocks_resolved,1U);
-    EXPECT_EQ(result.recovery_attempts,1U);EXPECT_EQ(result.reroutes,1U);EXPECT_EQ(result.collisions,0U);
+    EXPECT_EQ(result.missions_completed,3U);EXPECT_EQ(result.safe_timeouts,0U);
+    EXPECT_EQ(result.recovery_attempts,1U);EXPECT_EQ(result.retreat_count,1U);EXPECT_GE(result.reroutes,1U);
+    EXPECT_EQ(result.collisions,0U);EXPECT_GT(result.minimum_separation_m,2.0);
+    EXPECT_TRUE(result.wait_dependencies.empty());EXPECT_TRUE(result.deadlocked_vehicles.empty());
+    EXPECT_EQ(result.outstanding_reservations,0U);
     const auto detected=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::DeadlockDetected;});
     const auto recovery=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::DeadlockRecovery;});
-    const auto reroute=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::Reroute;});
+    const auto selected=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatSelected;});
+    const auto started=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatStarted;});
+    const auto completed=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatCompleted;});
+    const auto released=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatResourceReleased;});
+    const auto resumed=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::MissionResumed;});
     const auto resolved=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RecoveryResolved;});
-    ASSERT_NE(detected,result.events.end());ASSERT_NE(recovery,result.events.end());ASSERT_NE(reroute,result.events.end());ASSERT_NE(resolved,result.events.end());
+    ASSERT_NE(detected,result.events.end());ASSERT_NE(recovery,result.events.end());ASSERT_NE(selected,result.events.end());
+    ASSERT_NE(started,result.events.end());ASSERT_NE(completed,result.events.end());ASSERT_NE(released,result.events.end());
+    ASSERT_NE(resumed,result.events.end());ASSERT_NE(resolved,result.events.end());
+    EXPECT_EQ(selected->vehicle.value,"tug_01");
+    EXPECT_EQ(selected->resource,"intersection/2");
+    const auto opposing_wait=std::ranges::find_if(result.events,[&](const auto& event){
+        return event.kind==TrafficEventKind::Deferred&&event.vehicle==selected->vehicle&&event.resource==selected->resource;
+    });
+    ASSERT_NE(opposing_wait,result.events.end());EXPECT_EQ(opposing_wait->other.value,"tug_02");
+    const auto contested_owner_clear=std::ranges::find_if(result.events,[&](const auto& event){
+        return event.kind==TrafficEventKind::ReleasedConflict&&event.vehicle==opposing_wait->other&&event.resource==selected->resource;
+    });
+    ASSERT_NE(contested_owner_clear,result.events.end());
+    EXPECT_LT(std::distance(result.events.begin(),contested_owner_clear),std::distance(result.events.begin(),released));
+    const auto yielding_mission=std::ranges::find(result.vehicles,VehicleId{"tug_01"},&FleetVehicleResult::id);
+    const auto opposing_mission=std::ranges::find(result.vehicles,VehicleId{"tug_02"},&FleetVehicleResult::id);
+    ASSERT_NE(yielding_mission,result.vehicles.end());ASSERT_NE(opposing_mission,result.vehicles.end());
+    EXPECT_EQ(yielding_mission->metrics.result,MissionResult::Success);
+    EXPECT_EQ(opposing_mission->metrics.result,MissionResult::Success);
     EXPECT_LT(std::distance(result.events.begin(),detected),std::distance(result.events.begin(),recovery));
-    EXPECT_LT(std::distance(result.events.begin(),recovery),std::distance(result.events.begin(),reroute));
-    EXPECT_LT(std::distance(result.events.begin(),reroute),std::distance(result.events.begin(),resolved));
+    EXPECT_LT(std::distance(result.events.begin(),recovery),std::distance(result.events.begin(),selected));
+    EXPECT_LT(std::distance(result.events.begin(),selected),std::distance(result.events.begin(),started));
+    EXPECT_LT(std::distance(result.events.begin(),started),std::distance(result.events.begin(),completed));
+    EXPECT_LT(std::distance(result.events.begin(),completed),std::distance(result.events.begin(),released));
+    EXPECT_LT(std::distance(result.events.begin(),released),std::distance(result.events.begin(),resumed));
+    EXPECT_LT(std::distance(result.events.begin(),resumed),std::distance(result.events.begin(),resolved));
+    const double reverse_x=completed->position.x_m-started->position.x_m;
+    const double reverse_y=completed->position.y_m-started->position.y_m;
+    const double forward_x=started->position.x_m-started->target.x_m;
+    const double forward_y=started->position.y_m-started->target.y_m;
+    EXPECT_GT(std::hypot(reverse_x,reverse_y),5.0);
+    EXPECT_LT(reverse_x*forward_x+reverse_y*forward_y,0.0);
+}
+TEST(FleetScenarioTest, UnrecoverableCycleFailsSafelyWithoutRetryLoop){
+    auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_deadlock.yaml");
+    scenario.deadlock_persistence_s=0.1;
+    scenario.vehicle_scenario.limits.maximum_speed_mps=0.1;
+    scenario.vehicle_scenario.limits.maximum_acceleration_mps2=0.01;
+    scenario.missions[0].start_node="Cycle A";
+    scenario.missions[1].start_node="Cycle B";
+    scenario.missions[2].start_node="Cycle C";
+    FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42,scenario.road_events,
+                          scenario.deadlock_persistence_s,scenario.resource_specific_tie_breaks};
+    std::size_t steps=0;
+    while(fleet.advance()&&++steps<15001){}
+    const auto result=fleet.result();
+    EXPECT_LT(steps,15001U);EXPECT_EQ(result.deadlock_count,1U);EXPECT_EQ(result.recovery_attempts,1U);
+    EXPECT_EQ(result.retreat_count,0U);EXPECT_EQ(result.safe_timeouts,3U);EXPECT_EQ(result.collisions,0U);
+    EXPECT_EQ(std::ranges::count_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatFailed;}),1);
+    EXPECT_FALSE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatStarted;}));
 }
 TEST(FleetExperimentTest, ThreeVehicleDeadlockRecoveryIsIdenticalAcrossSerialAndParallelWorkers){
     const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_deadlock.yaml");
@@ -149,7 +207,8 @@ TEST(FleetExperimentTest, ThreeVehicleDeadlockRecoveryIsIdenticalAcrossSerialAnd
     for(std::size_t i=0;i<serial.runs.size();++i){
         EXPECT_EQ(serial.runs[i].metrics,parallel.runs[i].metrics);
         EXPECT_EQ(serial.runs[i].metrics.deadlock_count,1U);EXPECT_EQ(serial.runs[i].metrics.deadlocks_resolved,1U);
-        EXPECT_EQ(serial.runs[i].metrics.recovery_attempts,1U);EXPECT_EQ(serial.runs[i].metrics.collisions,0U);
+        EXPECT_EQ(serial.runs[i].metrics.recovery_attempts,1U);EXPECT_EQ(serial.runs[i].metrics.retreat_count,1U);
+        EXPECT_EQ(serial.runs[i].metrics.missions_completed,3U);EXPECT_EQ(serial.runs[i].metrics.collisions,0U);
     }
 }
 TEST(FleetExperimentTest, EightVehicleCongestionIsIdenticalAcrossSerialAndParallelWorkers){

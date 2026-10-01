@@ -58,7 +58,7 @@ struct AutonomySimulation::Impl {
     std::normal_distribution<double> fault_normal{0.0, 1.0};
     MissionState mission;
     VehicleState state;
-    double time{0.0}, previous_accel{0.0}, initial_heading{0.0};
+    double time{0.0}, previous_accel{0.0}, initial_heading{0.0}, wheel_distance_m{};
     SensorFrame frame;
     std::optional<SensorClock> gnss_clock, imu_clock, odometry_clock, lidar_clock, camera_clock;
     bool complete{false}, safety_was_active{false};
@@ -140,15 +140,15 @@ struct AutonomySimulation::Impl {
     void produce_sensors() {
         frame.timestamp_s=time; const auto& c=scenario.sensors;
         double desired_odom_scale=1.0;for(const auto& fault:scenario.faults)if(fault.sensor==SensorKind::Odometry&&fault.kind==SensorFaultKind::Scale&&time+1e-9>=fault.start_s&&time<fault.start_s+fault.duration_s-1e-9)desired_odom_scale*=1.0-fault.magnitude;
-        if(std::abs(desired_odom_scale-odometry_scale)>1e-12){odometry_anchor_reported=odometry_anchor_reported+(state.distance_m-odometry_anchor_truth)*odometry_scale;odometry_anchor_truth=state.distance_m;odometry_scale=desired_odom_scale;}
-        const double reported_distance=odometry_anchor_reported+(state.distance_m-odometry_anchor_truth)*odometry_scale;
+        if(std::abs(desired_odom_scale-odometry_scale)>1e-12){odometry_anchor_reported=odometry_anchor_reported+(wheel_distance_m-odometry_anchor_truth)*odometry_scale;odometry_anchor_truth=wheel_distance_m;odometry_scale=desired_odom_scale;}
+        const double reported_distance=odometry_anchor_reported+(wheel_distance_m-odometry_anchor_truth)*odometry_scale;
         if(imu_clock->due(time)){
             frame.imu=ImuMeasurement{time,wrap_angle(state.heading_rad+noise(c.imu_heading_sigma_rad)),state.yaw_rate_radps+noise(c.imu_yaw_rate_sigma_radps),previous_accel+noise(c.imu_accel_sigma_mps2)};
             frame.imu->metadata=imu_clock->metadata(time,"imu"); ++metrics.imu_samples;
             if(!imu_clock->packet_delivered()||frame.imu->metadata.health==SensorHealth::Stale){frame.imu.reset();++metrics.imu_dropped;++metrics.messages_dropped;}
         }
         if(odometry_clock->due(time)){
-            frame.odometry=OdometryMeasurement{time,reported_distance+noise(c.odometry_sigma_m),std::max(0.0,state.speed_mps*odometry_scale+noise(c.odometry_sigma_mps)),wrap_angle(state.heading_rad-initial_heading)};
+            frame.odometry=OdometryMeasurement{time,reported_distance+noise(c.odometry_sigma_m),state.speed_mps*odometry_scale+noise(c.odometry_sigma_mps),wrap_angle(state.heading_rad-initial_heading)};
             frame.odometry->metadata=odometry_clock->metadata(time,"wheel_odom"); ++metrics.odometry_samples;
             if(!odometry_clock->packet_delivered()||frame.odometry->metadata.health==SensorHealth::Stale){frame.odometry.reset();++metrics.odometry_dropped;++metrics.messages_dropped;}
         }
@@ -272,17 +272,20 @@ struct AutonomySimulation::Impl {
         if(any_unavailable){if(unavailable_since<0.0){unavailable_since=time;metrics.fault_events.push_back({std::numeric_limits<std::size_t>::max(),time,"sensor_unavailable"});}}else if(unavailable_since>=0.0){metrics.unavailable_duration_s+=time-unavailable_since;metrics.fault_events.push_back({std::numeric_limits<std::size_t>::max(),time,"sensor_recovered"});unavailable_since=-1.0;}
     }
     bool collided(std::string& id)const{for(const auto&o:scenario.obstacles)if(distance(state.position,o.center)<=scenario.limits.radius_m+o.radius_m){id=o.id;return true;}return false;}
-    void step(VehicleCommand command){
+    void step(VehicleCommand command, bool allow_reverse = false){
         const double dt=scenario.timestep_s;
-        command.target_speed_mps=std::clamp(command.target_speed_mps,0.0,scenario.limits.maximum_speed_mps);
+        command.target_speed_mps=std::clamp(command.target_speed_mps,allow_reverse?-scenario.limits.maximum_speed_mps:0.0,scenario.limits.maximum_speed_mps);
         command.target_yaw_rate_radps=std::clamp(command.target_yaw_rate_radps,-scenario.limits.maximum_yaw_rate_radps,scenario.limits.maximum_yaw_rate_radps);
         const double old=state.speed_mps, delta=command.target_speed_mps-state.speed_mps;
-        const double limit=delta>=0?scenario.limits.maximum_acceleration_mps2:scenario.limits.maximum_deceleration_mps2;
-        state.speed_mps=std::clamp(state.speed_mps+std::clamp(delta,-limit*dt,limit*dt),0.0,scenario.limits.maximum_speed_mps);
+        const bool accelerating=std::abs(command.target_speed_mps)>std::abs(state.speed_mps) &&
+            (std::abs(state.speed_mps)<1e-12 || std::signbit(command.target_speed_mps)==std::signbit(state.speed_mps));
+        const double limit=accelerating?scenario.limits.maximum_acceleration_mps2:scenario.limits.maximum_deceleration_mps2;
+        const double minimum_speed=allow_reverse?-scenario.limits.maximum_speed_mps:0.0;
+        state.speed_mps=std::clamp(state.speed_mps+std::clamp(delta,-limit*dt,limit*dt),minimum_speed,scenario.limits.maximum_speed_mps);
         previous_accel=(state.speed_mps-old)/dt;state.yaw_rate_radps=command.target_yaw_rate_radps;
         const double middle=state.heading_rad+state.yaw_rate_radps*dt*0.5;
         state.position.x_m+=state.speed_mps*std::cos(middle)*dt;state.position.y_m+=state.speed_mps*std::sin(middle)*dt;
-        state.heading_rad=wrap_angle(state.heading_rad+state.yaw_rate_radps*dt);state.distance_m+=state.speed_mps*dt;time+=dt;
+        state.heading_rad=wrap_angle(state.heading_rad+state.yaw_rate_radps*dt);state.distance_m+=std::abs(state.speed_mps)*dt;wheel_distance_m+=state.speed_mps*dt;time+=dt;
         for(const auto&o:scenario.obstacles)metrics.minimum_obstacle_clearance_m=std::min(metrics.minimum_obstacle_clearance_m,distance(state.position,o.center)-scenario.limits.radius_m-o.radius_m);
         const double error=route_error(state.position,mission.waypoints);route_error_sum+=error;++route_error_count;metrics.maximum_route_error_m=std::max(metrics.maximum_route_error_m,error);
         hash_value(digest,state.position.x_m);hash_value(digest,state.position.y_m);hash_value(digest,state.heading_rad);hash_value(digest,state.speed_mps);hash_value(digest,command.target_speed_mps);hash_value(digest,command.target_yaw_rate_radps);
@@ -385,6 +388,14 @@ bool AutonomySimulation::advance_with_command(VehicleCommand command,const Refer
     impl_->step(command);
     impl_->metrics.emergency_stops=ref.emergency_stops();impl_->metrics.degraded_mode_entries=ref.degraded_mode_entries();impl_->metrics.safety_stop_entries=ref.safety_stop_entries();impl_->metrics.time_stopped_degraded_s=ref.degraded_stop_time_s();
     if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&impl_->state.speed_mps<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
+    if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
+    return !impl_->complete;
+}
+bool AutonomySimulation::advance_with_reverse_command(VehicleCommand command,const ReferenceController& ref){
+    if(impl_->complete)return false;
+    impl_->step(command,true);
+    impl_->metrics.emergency_stops=ref.emergency_stops();impl_->metrics.degraded_mode_entries=ref.degraded_mode_entries();impl_->metrics.safety_stop_entries=ref.safety_stop_entries();impl_->metrics.time_stopped_degraded_s=ref.degraded_stop_time_s();
+    if(!impl_->complete&&distance(impl_->state.position,impl_->mission.goal)<=impl_->scenario.goal_tolerance_m&&std::abs(impl_->state.speed_mps)<=impl_->scenario.stopped_speed_mps){impl_->metrics.result=MissionResult::Success;impl_->complete=true;}
     if(!impl_->complete&&impl_->time+1e-9>=impl_->scenario.timeout_s){impl_->metrics.result=MissionResult::Timeout;impl_->complete=true;}
     return !impl_->complete;
 }

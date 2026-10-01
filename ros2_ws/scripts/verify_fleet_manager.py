@@ -30,6 +30,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--scenario", default="scenarios/autonomy_fleet.yaml")
     parser.add_argument("--seconds", type=float, default=20.0)
+    parser.add_argument("--require-retreat", action="store_true")
     args = parser.parse_args()
     executable = Path(__file__).resolve().parents[1] / "install/lib/ramplab_ros2_bridge/ramplab_ros2_fleet_bridge.exe"
     if not executable.exists():
@@ -56,6 +57,25 @@ def main():
             raise RuntimeError(f"fleet simulation clock did not advance: {stamps[0]}..{stamps[-1]}")
         if not probe.events:
             raise RuntimeError("coordinated traffic event topic published no events")
+        if args.require_retreat:
+            kinds = [event["kind"] for event in probe.events]
+            required = ("retreat_selected", "retreat_started", "retreat_completed",
+                        "retreat_resource_released", "mission_resumed")
+            missing = [kind for kind in required if kind not in kinds]
+            if missing:
+                raise RuntimeError(f"retreat lifecycle events missing: {missing}")
+            started = next(event for event in probe.events if event["kind"] == "retreat_started")
+            completed = next(event for event in probe.events
+                             if event["kind"] == "retreat_completed" and event["vehicle_id"] == started["vehicle_id"])
+            distance = ((completed["x_m"] - started["x_m"]) ** 2 +
+                        (completed["y_m"] - started["y_m"]) ** 2) ** 0.5
+            if distance < 1.0:
+                raise RuntimeError(f"retreat did not physically clear the resource: {distance:.3f} m")
+            if not all("recovery_state" in vehicle and "retreat_progress_m" in vehicle for vehicle in vehicles):
+                raise RuntimeError("fleet state omitted retreat state fields")
+            print(f"ROS retreat probe PASS: vehicle={started['vehicle_id']}, "
+                  f"resource={started['resource']}, physical_retreat={distance:.2f} m, "
+                  f"lifecycle={' -> '.join(required)}")
         print(f"ROS fleet probe PASS: {len(probe.states)} state samples, ids={sorted(identities)}, "
               f"simulation={stamps[0]:.2f}..{stamps[-1]:.2f} s, traffic_events={len(probe.events)}")
     finally:
