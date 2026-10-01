@@ -40,6 +40,41 @@ std::vector<std::string> route_resources(const AutonomyScenario& scenario,const 
     return keys;
 }
 
+struct DirectedRouteEdge { std::string resource; NodeId from; NodeId to; };
+
+std::vector<DirectedRouteEdge> directed_route_edges(
+    const AutonomyScenario& scenario, const FleetMission& mission) {
+    std::optional<NodeId> start, goal;
+    for (const auto& node : scenario.airport.graph.nodes()) {
+        if (node.name == mission.start_node) start = node.id;
+        if (node.name == mission.goal_node) goal = node.id;
+    }
+    if (!start || !goal) throw std::invalid_argument("fleet mission references an unknown road node");
+    const auto route = airside::find_route(scenario.airport.graph, *start, *goal);
+    if (!route) throw std::invalid_argument("fleet mission has no route through the airport road graph");
+    std::vector<DirectedRouteEdge> traversals;
+    traversals.reserve(route->edges.size());
+    for (std::size_t i = 0; i < route->edges.size(); ++i)
+        traversals.push_back({"edge/" + std::to_string(route->edges[i].value()), route->nodes[i], route->nodes[i + 1]});
+    return traversals;
+}
+
+std::vector<std::string> opposing_shared_edges(
+    const AutonomyScenario& scenario, const FleetMission& a, const FleetMission& b) {
+    const auto a_route = directed_route_edges(scenario, a);
+    const auto b_route = directed_route_edges(scenario, b);
+    std::vector<std::string> shared;
+    for (const auto& a_edge : a_route) {
+        for (const auto& b_edge : b_route) {
+            if (a_edge.resource == b_edge.resource && a_edge.from == b_edge.to && a_edge.to == b_edge.from)
+                shared.push_back(a_edge.resource);
+        }
+    }
+    std::ranges::sort(shared);
+    shared.erase(std::unique(shared.begin(), shared.end()), shared.end());
+    return shared;
+}
+
 std::string shared_route_resource(const std::vector<std::string>& a,const std::vector<std::string>& b,
                                  const VehicleId& a_id,const VehicleId& b_id) {
     for(const auto& key:a)if(key.starts_with("edge/")&&std::ranges::find(b,key)!=b.end())return key;
@@ -169,6 +204,7 @@ std::vector<VehicleId> find_deadlocked_vehicles(
 }
 
 struct FleetSimulation::Impl {
+    struct OpposingEdgeUse { std::size_t member_index{}; Vec2 entry{}; Vec2 exit{}; double length_m{}; };
     struct Member {
         FleetMission mission;
         std::vector<std::string> route_resources;
@@ -183,6 +219,8 @@ struct FleetSimulation::Impl {
               controller(simulation.scenario().safety_stop_range_m,simulation.scenario().perception_timeout_s,simulation.scenario().localization_timeout_s) {}
     };
     std::vector<Member> members;
+    std::map<std::string, std::vector<std::size_t>> opposing_edge_users;
+    std::map<std::string, std::vector<OpposingEdgeUse>> opposing_edge_uses;
     std::vector<TrafficEvent> events;
     std::vector<bool> was_conflicting;
     TrafficReservationTable reservations;
@@ -190,6 +228,7 @@ struct FleetSimulation::Impl {
     double minimum_separation{std::numeric_limits<double>::infinity()};
     std::size_t collisions{}, requests{}, contentions{};
     std::size_t deadlock_count{}, near_conflict_events{}, forced_safety_stops{};
+    bool opposing_reservations_initialized{};
 
     Impl(AutonomyScenario base, std::vector<FleetMission> missions, std::uint64_t seed) {
         if (missions.empty()) throw std::invalid_argument("fleet requires at least one mission");
@@ -199,6 +238,32 @@ struct FleetSimulation::Impl {
             auto member_scenario=mission_scenario(base,missions[i]);
             auto resources=route_resources(base,missions[i]);
             members.emplace_back(missions[i],std::move(member_scenario),std::move(resources),seed+static_cast<std::uint64_t>(i)*0x9e3779b97f4a7c15ULL);
+        }
+        for (std::size_t i = 0; i < missions.size(); ++i) {
+            for (std::size_t j = i + 1; j < missions.size(); ++j) {
+                for (const auto& resource : opposing_shared_edges(base, missions[i], missions[j])) {
+                    auto& users = opposing_edge_users[resource];
+                    users.push_back(i);
+                    users.push_back(j);
+                    for (const auto member_index : {i, j}) {
+                        for (const auto& traversal : directed_route_edges(base, missions[member_index])) {
+                            if (traversal.resource != resource) continue;
+                            const auto entry = base.airport.graph.node(traversal.from).position;
+                            const auto exit = base.airport.graph.node(traversal.to).position;
+                            auto& uses = opposing_edge_uses[resource];
+                            const bool already_added = std::ranges::any_of(uses, [&](const OpposingEdgeUse& use) {
+                                return use.member_index == member_index;
+                            });
+                            if (!already_added) uses.push_back({member_index, entry, exit, separation(entry, exit)});
+                        }
+                    }
+                }
+            }
+        }
+        for (auto& [resource, users] : opposing_edge_users) {
+            (void)resource;
+            std::ranges::sort(users);
+            users.erase(std::unique(users.begin(), users.end()), users.end());
         }
         was_conflicting.resize(members.size()*members.size());
     }
@@ -214,6 +279,29 @@ bool FleetSimulation::advance(){
     auto& x=*impl_; if(finished())return false;
     const double dt=x.members.front().simulation.scenario().timestep_s;
     for(auto& m:x.members) if(!m.simulation.finished()) m.command=m.controller.update(m.simulation.observe(),m.simulation.mission());
+    if (!x.opposing_reservations_initialized) {
+        for (const auto& [resource, users] : x.opposing_edge_users) {
+            std::vector<ReservationRequest> requests;
+            requests.reserve(users.size());
+            for (const auto index : users) {
+                const auto& member = x.members[index];
+                requests.push_back({member.mission.id, x.now, member.mission.priority});
+            }
+            std::ranges::sort(requests, request_before);
+            for (const auto& request : requests)
+                x.events.push_back({x.now, TrafficEventKind::Request, request.vehicle, {}, resource});
+            x.requests += requests.size();
+            const auto owner = x.reservations.request_batch(resource, requests);
+            if (owner) {
+                x.events.push_back({x.now, TrafficEventKind::Granted, *owner, {}, resource});
+                for (const auto& request : requests) if (request.vehicle != *owner) {
+                    ++x.contentions;
+                    x.events.push_back({x.now, TrafficEventKind::Deferred, request.vehicle, *owner, resource});
+                }
+            }
+        }
+        x.opposing_reservations_initialized = true;
+    }
     struct PairState { std::size_t i{},j{},index{}; bool conflict{},newly_conflicting{}; std::string resource; };
     std::vector<PairState> pairs;
     std::map<std::string,std::vector<ReservationRequest>> requests_by_resource;
@@ -257,6 +345,7 @@ bool FleetSimulation::advance(){
         }
     }
     for(auto& [resource,batch]:requests_by_resource){
+        if (x.opposing_edge_users.contains(resource)) continue;
         std::vector<VehicleId> active_vehicles;
         active_vehicles.reserve(batch.size());
         for (const auto& request : batch) active_vehicles.push_back(request.vehicle);
@@ -296,6 +385,52 @@ bool FleetSimulation::advance(){
         }
         x.was_conflicting[pair.index]=pair.conflict;
     }
+    for (const auto& [resource, users] : x.opposing_edge_users) {
+        (void)users;
+        auto owner = x.reservations.owner(resource);
+        if (owner) {
+            const auto owner_member = std::ranges::find(
+                x.members, *owner, [](const auto& member) { return member.mission.id; });
+            bool cleared_edge = false;
+            bool owner_finished = false;
+            if (owner_member != x.members.end()) {
+                owner_finished = owner_member->simulation.finished();
+                const auto member_index = static_cast<std::size_t>(std::distance(x.members.begin(), owner_member));
+                const auto uses = x.opposing_edge_uses.find(resource);
+                if (uses != x.opposing_edge_uses.end()) {
+                    const auto use = std::ranges::find(uses->second, member_index, &Impl::OpposingEdgeUse::member_index);
+                    if (use != uses->second.end()) {
+                        const auto position = owner_member->simulation.state().position;
+                        const double dx = use->exit.x_m - use->entry.x_m;
+                        const double dy = use->exit.y_m - use->entry.y_m;
+                        const double progress = ((position.x_m - use->entry.x_m) * dx +
+                                                 (position.y_m - use->entry.y_m) * dy) / use->length_m;
+                        const double clearance = use->length_m +
+                            owner_member->simulation.scenario().limits.radius_m + 1.0;
+                        cleared_edge = progress >= clearance;
+                    }
+                }
+            }
+            if (cleared_edge && (owner_finished || !active_resources.contains(resource))) {
+                (void)x.reservations.release(resource, *owner);
+                x.events.push_back({x.now, TrafficEventKind::ReleasedConflict, *owner, {}, resource});
+                owner = x.reservations.owner(resource);
+                if (owner) x.events.push_back({x.now, TrafficEventKind::Granted, *owner, {}, resource});
+            }
+        }
+        if (!owner) continue;
+        for (const auto index : users) {
+            auto& member = x.members[index];
+            if (member.simulation.finished() || member.mission.id == *owner) continue;
+            yielding[index] = true;
+            waits_for[member.mission.id].push_back(*owner);
+            if (!member.waiting) {
+                ++x.forced_safety_stops;
+                x.events.push_back({x.now, TrafficEventKind::Waiting, member.mission.id, *owner, resource});
+                x.events.push_back({x.now, TrafficEventKind::ForcedSafetyStop, member.mission.id, *owner, resource});
+            }
+        }
+    }
     const auto deadlocked=find_deadlocked_vehicles(waits_for);
     if(!deadlocked.empty()){
         std::vector<std::size_t> newly_deadlocked;
@@ -315,6 +450,7 @@ bool FleetSimulation::advance(){
     std::ranges::sort(release_candidates);
     release_candidates.erase(std::unique(release_candidates.begin(),release_candidates.end()),release_candidates.end());
     for(const auto& resource:release_candidates)if(!active_resources.contains(resource)){
+        if (x.opposing_edge_users.contains(resource)) continue;
         x.reservations.retain_waiters(resource, {});
         const auto owner=x.reservations.owner(resource);
         if(owner){(void)x.reservations.release(resource,*owner);x.events.push_back({x.now,TrafficEventKind::ReleasedConflict,*owner,{},resource});}

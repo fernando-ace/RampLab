@@ -61,6 +61,32 @@ TEST(FleetScenarioTest, SharedSegmentMergeWaitsThenCompletesWithoutCollision){
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::EnteredConflict&&event.resource.starts_with("edge/");}));
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::ForcedSafetyStop&&event.resource.starts_with("edge/");}));
 }
+TEST(FleetScenarioTest, OpposingVehiclesReserveNarrowEdgeBeforeLeavingHoldingBays){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_opposing.yaml");
+    FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42};
+    while(fleet.advance()){}
+    const auto result=fleet.result();
+    ASSERT_EQ(result.vehicle_count,3U);EXPECT_EQ(result.missions_completed,3U);EXPECT_EQ(result.safe_timeouts,0U);
+    EXPECT_EQ(result.collisions,0U);EXPECT_GT(result.minimum_separation_m,2.0);
+    EXPECT_GT(result.traffic_waiting_time_s,30.0);EXPECT_EQ(result.reservation_contentions,1U);
+    const auto deferred=std::ranges::find_if(result.events,[](const auto& event){
+        return event.kind==TrafficEventKind::Deferred&&event.vehicle.value=="tug_02";
+    });
+    ASSERT_NE(deferred,result.events.end());EXPECT_DOUBLE_EQ(deferred->time_s,0.0);
+    EXPECT_EQ(deferred->other.value,"tug_01");
+    const auto entered=std::ranges::find_if(result.events,[](const auto& event){
+        return event.kind==TrafficEventKind::EnteredConflict&&event.resource.starts_with("edge/");
+    });
+    ASSERT_NE(entered,result.events.end());EXPECT_EQ(entered->vehicle.value,"tug_01");
+    const auto released=std::ranges::find_if(result.events,[](const auto& event){
+        return event.kind==TrafficEventKind::ReleasedConflict&&event.vehicle.value=="tug_01";
+    });
+    ASSERT_NE(released,result.events.end());
+    const auto granted=std::ranges::find_if(released,result.events.end(),[](const auto& event){
+        return event.kind==TrafficEventKind::Granted&&event.vehicle.value=="tug_02";
+    });
+    ASSERT_NE(granted,result.events.end());EXPECT_GE(granted->time_s,released->time_s);
+}
 TEST(FleetTest, DifferentSeedsChangeStochasticVehicleTrajectories){
     auto a=competing_missions();auto b=competing_missions();
     FleetSimulation first{base_scenario(),std::move(a),42},second{base_scenario(),std::move(b),43};
@@ -151,6 +177,19 @@ TEST(FleetExperimentTest, SerialAndParallelFleetResultsAreIdentical){
         const auto& a=serial.runs[i];const auto& b=parallel.runs[i];
         EXPECT_EQ(a.ordinal,b.ordinal);EXPECT_EQ(a.metrics,b.metrics);
         EXPECT_EQ(a.metrics.missions_completed,3U);EXPECT_EQ(a.metrics.collisions,0U);
+    }
+}
+TEST(FleetExperimentTest, OpposingEdgeFleetResultsMatchSerialAndParallelExactly){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_opposing.yaml");
+    std::vector<FleetRunRequest> requests;
+    for(std::size_t i=0;i<10;++i)requests.push_back({scenario,42+i,i});
+    const auto serial=execute_fleet_runs(requests,1),parallel=execute_fleet_runs(std::move(requests),4);
+    ASSERT_EQ(serial.runs.size(),parallel.runs.size());
+    for(std::size_t i=0;i<serial.runs.size();++i){
+        EXPECT_EQ(serial.runs[i].ordinal,parallel.runs[i].ordinal);
+        EXPECT_EQ(serial.runs[i].metrics,parallel.runs[i].metrics);
+        EXPECT_EQ(serial.runs[i].metrics.missions_completed,3U);
+        EXPECT_EQ(serial.runs[i].metrics.collisions,0U);
     }
 }
 }
