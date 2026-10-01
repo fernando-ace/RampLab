@@ -34,7 +34,7 @@ struct FleetScenario {
 
 [[nodiscard]] FleetScenario load_fleet_scenario(const std::filesystem::path& path);
 
-enum class TrafficEventKind { Request, Granted, Deferred, Waiting, EnteredConflict, ReleasedConflict, Collision, DeadlockDetected, DeadlockRecovery };
+enum class TrafficEventKind { Request, Granted, Deferred, Waiting, EnteredConflict, ReleasedConflict, Collision, DeadlockDetected, DeadlockRecovery, NearConflict, ForcedSafetyStop };
 struct ReservationRequest {
     VehicleId vehicle;
     double time_s{};
@@ -97,6 +97,8 @@ struct FleetMetrics {
     std::size_t reservation_requests{};
     std::size_t reservation_contentions{};
     std::size_t deadlock_count{};
+    std::size_t near_conflict_events{};
+    std::size_t forced_safety_stops{};
     double throughput_per_simulated_hour{};
     std::vector<FleetVehicleResult> vehicles;
     std::vector<TrafficEvent> events;

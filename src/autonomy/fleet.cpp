@@ -159,7 +159,7 @@ struct FleetSimulation::Impl {
     double now{};
     double minimum_separation{std::numeric_limits<double>::infinity()};
     std::size_t collisions{}, requests{}, contentions{};
-    std::size_t deadlock_count{};
+    std::size_t deadlock_count{}, near_conflict_events{}, forced_safety_stops{};
 
     Impl(AutonomyScenario base, std::vector<FleetMission> missions, std::uint64_t seed) {
         if (missions.empty()) throw std::invalid_argument("fleet requires at least one mission");
@@ -184,7 +184,7 @@ bool FleetSimulation::advance(){
     auto& x=*impl_; if(finished())return false;
     const double dt=x.members.front().simulation.scenario().timestep_s;
     for(auto& m:x.members) if(!m.simulation.finished()) m.command=m.controller.update(m.simulation.observe(),m.simulation.mission());
-    struct PairState { std::size_t i{},j{},index{}; bool conflict{}; std::string resource; };
+    struct PairState { std::size_t i{},j{},index{}; bool conflict{},newly_conflicting{}; std::string resource; };
     std::vector<PairState> pairs;
     std::map<std::string,std::vector<ReservationRequest>> requests_by_resource;
     std::set<std::string> newly_conflicting_resources;
@@ -203,16 +203,17 @@ bool FleetSimulation::advance(){
         const double horizon=std::clamp((-(rx*vx+ry*vy))/(vx*vx+vy*vy+1e-9),0.0,4.0);
         const double closest=std::hypot(rx+vx*horizon,ry+vy*horizon);
         const double hard=a.simulation.scenario().limits.radius_m+b.simulation.scenario().limits.radius_m+1.25;
-        const double activation=x.was_conflicting[index]?45.0:35.0;
+        const bool was_conflicting=x.was_conflicting[index];
+        const double activation=was_conflicting?45.0:35.0;
         const bool conflict=current<activation || closest<hard;
         const auto resource=shared_route_resource(a.route_resources,b.route_resources,a.mission.id,b.mission.id);
-        pairs.push_back({i,j,index,conflict,resource});
+        pairs.push_back({i,j,index,conflict,conflict&&!was_conflicting,resource});
         if(conflict) {
             active_resources.insert(resource);
             auto& candidates=requests_by_resource[resource];
             for(const auto member_index:{i,j}){
                 const auto& member=x.members[member_index];
-                if(!x.was_conflicting[index])newly_conflicting_resources.insert(resource);
+                if(!was_conflicting)newly_conflicting_resources.insert(resource);
                 const int blocked_priority=std::numeric_limits<int>::min();
                 const ReservationRequest request{member.mission.id,x.now,
                     member.simulation.finished()?blocked_priority:member.mission.priority};
@@ -241,11 +242,13 @@ bool FleetSimulation::advance(){
     for(const auto& pair:pairs){
         const auto& a=x.members[pair.i];const auto& b=x.members[pair.j];
         if(pair.conflict){
+            if(pair.newly_conflicting){++x.near_conflict_events;x.events.push_back({x.now,TrafficEventKind::NearConflict,a.mission.id,b.mission.id,pair.resource});}
             const auto owner=x.reservations.owner(pair.resource);
+            if(owner&&pair.newly_conflicting)x.events.push_back({x.now,TrafficEventKind::EnteredConflict,*owner,*owner==a.mission.id?b.mission.id:a.mission.id,pair.resource});
             if(owner&&*owner==a.mission.id){
-                if(!b.simulation.finished()){yielding[pair.j]=true;waits_for[b.mission.id].push_back(a.mission.id);if(!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,pair.resource});}
+                if(!b.simulation.finished()){yielding[pair.j]=true;waits_for[b.mission.id].push_back(a.mission.id);if(!b.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,b.mission.id,a.mission.id,pair.resource});}}
             }else if(owner&&*owner==b.mission.id){
-                if(!a.simulation.finished()){yielding[pair.i]=true;waits_for[a.mission.id].push_back(b.mission.id);if(!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,pair.resource});}
+                if(!a.simulation.finished()){yielding[pair.i]=true;waits_for[a.mission.id].push_back(b.mission.id);if(!a.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,a.mission.id,b.mission.id,pair.resource});}}
             }else{
                 if(!a.simulation.finished())yielding[pair.i]=true;
                 if(!b.simulation.finished())yielding[pair.j]=true;
@@ -253,8 +256,8 @@ bool FleetSimulation::advance(){
                     if(!a.simulation.finished())waits_for[a.mission.id].push_back(*owner);
                     if(!b.simulation.finished())waits_for[b.mission.id].push_back(*owner);
                 }
-                if(!a.simulation.finished()&&!a.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,owner.value_or(VehicleId{}),pair.resource});
-                if(!b.simulation.finished()&&!b.waiting)x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,owner.value_or(VehicleId{}),pair.resource});
+                if(!a.simulation.finished()&&!a.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,owner.value_or(VehicleId{}),pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,a.mission.id,owner.value_or(VehicleId{}),pair.resource});}
+                if(!b.simulation.finished()&&!b.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,owner.value_or(VehicleId{}),pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,b.mission.id,owner.value_or(VehicleId{}),pair.resource});}
             }
         }
         x.was_conflicting[pair.index]=pair.conflict;
@@ -296,12 +299,12 @@ bool FleetSimulation::advance(){
     return !finished();
 }
 FleetMetrics FleetSimulation::result()const{
-    const auto&x=*impl_;FleetMetrics r;r.vehicle_count=x.members.size();r.collisions=x.collisions;r.minimum_separation_m=std::isfinite(x.minimum_separation)?x.minimum_separation:0.0;r.reservation_requests=x.requests;r.reservation_contentions=x.contentions;r.deadlock_count=x.deadlock_count;r.events=x.events;r.deterministic_digest=14695981039346656037ULL;
+    const auto&x=*impl_;FleetMetrics r;r.vehicle_count=x.members.size();r.collisions=x.collisions;r.minimum_separation_m=std::isfinite(x.minimum_separation)?x.minimum_separation:0.0;r.reservation_requests=x.requests;r.reservation_contentions=x.contentions;r.deadlock_count=x.deadlock_count;r.near_conflict_events=x.near_conflict_events;r.forced_safety_stops=x.forced_safety_stops;r.events=x.events;r.deterministic_digest=14695981039346656037ULL;
     for(const auto&m:x.members){const auto run=m.simulation.result();r.vehicles.push_back({m.mission.id,m.mission.start_node,m.mission.goal_node,run.metrics,run.final_state});++r.missions_attempted;if(run.metrics.result==MissionResult::Success)++r.missions_completed;else if(run.metrics.result==MissionResult::Timeout)++r.safe_timeouts;r.total_distance_m+=run.metrics.distance_traveled_m;r.total_mission_time_s=std::max(r.total_mission_time_s,run.metrics.completion_time_s);r.cumulative_waiting_time_s+=m.wait_s;r.traffic_waiting_time_s+=m.wait_s;r.safety_stop_time_s+=run.metrics.time_stopped_degraded_s;}
     r.throughput_per_simulated_hour=x.now>0.0?static_cast<double>(r.missions_completed)*3600.0/x.now:0.0;
     for(const auto&e:x.events){for(const auto c:e.vehicle.value) {r.deterministic_digest^=static_cast<unsigned char>(c);r.deterministic_digest*=1099511628211ULL;}r.deterministic_digest^=static_cast<std::uint64_t>(e.kind);r.deterministic_digest*=1099511628211ULL;}
     return r;
 }
 std::vector<FleetVehicleSnapshot> FleetSimulation::snapshots()const{std::vector<FleetVehicleSnapshot> out;out.reserve(impl_->members.size());for(const auto&m:impl_->members)out.push_back({m.mission.id,m.mission.goal_node,m.waiting,m.simulation.snapshot()});return out;}
-std::string to_string(TrafficEventKind k){switch(k){case TrafficEventKind::Request:return"request";case TrafficEventKind::Granted:return"granted";case TrafficEventKind::Deferred:return"deferred";case TrafficEventKind::Waiting:return"waiting";case TrafficEventKind::EnteredConflict:return"entered_conflict";case TrafficEventKind::ReleasedConflict:return"released_conflict";case TrafficEventKind::Collision:return"collision";case TrafficEventKind::DeadlockDetected:return"deadlock_detected";case TrafficEventKind::DeadlockRecovery:return"deadlock_recovery";}return"unknown";}
+std::string to_string(TrafficEventKind k){switch(k){case TrafficEventKind::Request:return"request";case TrafficEventKind::Granted:return"granted";case TrafficEventKind::Deferred:return"deferred";case TrafficEventKind::Waiting:return"waiting";case TrafficEventKind::EnteredConflict:return"entered_conflict";case TrafficEventKind::ReleasedConflict:return"released_conflict";case TrafficEventKind::Collision:return"collision";case TrafficEventKind::DeadlockDetected:return"deadlock_detected";case TrafficEventKind::DeadlockRecovery:return"deadlock_recovery";case TrafficEventKind::NearConflict:return"near_conflict";case TrafficEventKind::ForcedSafetyStop:return"forced_safety_stop";}return"unknown";}
 } // namespace airside::autonomy

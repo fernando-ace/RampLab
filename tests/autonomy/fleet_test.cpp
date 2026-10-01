@@ -56,7 +56,10 @@ TEST(FleetScenarioTest, SharedSegmentMergeWaitsThenCompletesWithoutCollision){
     FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42};while(fleet.advance()){}const auto result=fleet.result();
     EXPECT_EQ(result.vehicle_count,3U);EXPECT_EQ(result.missions_completed,3U);EXPECT_EQ(result.safe_timeouts,0U);
     EXPECT_GT(result.reservation_contentions,0U);EXPECT_GT(result.traffic_waiting_time_s,0.0);EXPECT_EQ(result.collisions,0U);
+    EXPECT_GT(result.near_conflict_events,0U);EXPECT_GT(result.forced_safety_stops,0U);
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::Waiting&&event.resource.starts_with("edge/");}));
+    EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::EnteredConflict&&event.resource.starts_with("edge/");}));
+    EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::ForcedSafetyStop&&event.resource.starts_with("edge/");}));
 }
 TEST(FleetTest, DifferentSeedsChangeStochasticVehicleTrajectories){
     auto a=competing_missions();auto b=competing_missions();
