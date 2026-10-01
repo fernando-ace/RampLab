@@ -47,6 +47,7 @@ public:
     [[nodiscard]] bool request(std::string resource, ReservationRequest request);
     [[nodiscard]] std::optional<VehicleId> request_batch(
         std::string resource, std::vector<ReservationRequest> requests);
+    void retain_waiters(const std::string& resource, const std::vector<VehicleId>& active_vehicles);
     [[nodiscard]] bool release(const std::string& resource, const VehicleId& vehicle);
     [[nodiscard]] std::optional<VehicleId> owner(const std::string& resource) const;
 

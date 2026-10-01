@@ -105,6 +105,24 @@ TEST(FleetReservationTest, RequestsQueueAndReleaseTransfersExclusiveOwnership){
     EXPECT_TRUE(table.release("intersection_a2",VehicleId{"tug_a"}));
     ASSERT_TRUE(table.owner("intersection_a2"));EXPECT_EQ(table.owner("intersection_a2")->value,"tug_b");
 }
+TEST(FleetReservationTest, CancelledStaleWaiterDoesNotReceiveReleasedResource){
+    TrafficReservationTable table;
+    ASSERT_TRUE(table.request("edge_shared",{VehicleId{"tug_a"},1.0,0}));
+    EXPECT_FALSE(table.request("edge_shared",{VehicleId{"tug_b"},2.0,0}));
+    table.retain_waiters("edge_shared",{});
+    ASSERT_TRUE(table.release("edge_shared",VehicleId{"tug_a"}));
+    EXPECT_FALSE(table.owner("edge_shared"));
+}
+TEST(FleetReservationTest, PruningStaleWaiterPreservesActiveWaiterOrdering){
+    TrafficReservationTable table;
+    ASSERT_TRUE(table.request("edge_shared",{VehicleId{"tug_a"},1.0,0}));
+    EXPECT_FALSE(table.request("edge_shared",{VehicleId{"tug_b"},2.0,0}));
+    EXPECT_FALSE(table.request("edge_shared",{VehicleId{"tug_c"},3.0,0}));
+    table.retain_waiters("edge_shared",{VehicleId{"tug_c"}});
+    ASSERT_TRUE(table.release("edge_shared",VehicleId{"tug_a"}));
+    ASSERT_TRUE(table.owner("edge_shared"));
+    EXPECT_EQ(table.owner("edge_shared")->value,"tug_c");
+}
 TEST(FleetDeadlockTest, DetectsEveryVehicleInCycleButNotVehiclesMerelyBlockedByIt){
     const auto cycle=find_deadlocked_vehicles({
         {VehicleId{"tug_a"},{VehicleId{"tug_b"}}},

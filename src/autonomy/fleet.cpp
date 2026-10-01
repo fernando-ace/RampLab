@@ -83,6 +83,16 @@ bool TrafficReservationTable::request(std::string resource, ReservationRequest r
     return request_batch(std::move(resource), {std::move(request)}) == vehicle;
 }
 
+void TrafficReservationTable::retain_waiters(
+    const std::string& resource, const std::vector<VehicleId>& active_vehicles) {
+    const auto queue = waiting_.find(resource);
+    if (queue == waiting_.end()) return;
+    std::erase_if(queue->second, [&](const ReservationRequest& request) {
+        return std::ranges::find(active_vehicles, request.vehicle) == active_vehicles.end();
+    });
+    if (queue->second.empty()) waiting_.erase(queue);
+}
+
 bool TrafficReservationTable::release(const std::string& resource, const VehicleId& vehicle) {
     const auto held = held_.find(resource);
     if (held == held_.end() || held->second.owner != vehicle) return false;
@@ -227,6 +237,10 @@ bool FleetSimulation::advance(){
         }
     }
     for(auto& [resource,batch]:requests_by_resource){
+        std::vector<VehicleId> active_vehicles;
+        active_vehicles.reserve(batch.size());
+        for (const auto& request : batch) active_vehicles.push_back(request.vehicle);
+        x.reservations.retain_waiters(resource, active_vehicles);
         if(!newly_conflicting_resources.contains(resource)&&x.reservations.owner(resource))continue;
         std::ranges::sort(batch,request_before);
         for(const auto& request:batch)x.events.push_back({x.now,TrafficEventKind::Request,request.vehicle,{},resource});
@@ -281,6 +295,7 @@ bool FleetSimulation::advance(){
     std::ranges::sort(release_candidates);
     release_candidates.erase(std::unique(release_candidates.begin(),release_candidates.end()),release_candidates.end());
     for(const auto& resource:release_candidates)if(!active_resources.contains(resource)){
+        x.reservations.retain_waiters(resource, {});
         const auto owner=x.reservations.owner(resource);
         if(owner){(void)x.reservations.release(resource,*owner);x.events.push_back({x.now,TrafficEventKind::ReleasedConflict,*owner,{},resource});}
     }
