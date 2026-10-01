@@ -2,6 +2,7 @@
 #include "airside/routing/astar.hpp"
 
 #include <algorithm>
+#include <bit>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -53,6 +54,25 @@ bool request_before(const ReservationRequest& a, const ReservationRequest& b) {
     if (a.time_s != b.time_s) return a.time_s < b.time_s;
     if (a.priority != b.priority) return a.priority < b.priority;
     return a.vehicle < b.vehicle;
+}
+
+void hash_byte(std::uint64_t& digest, std::uint8_t value) {
+    digest ^= value;
+    digest *= 1099511628211ULL;
+}
+
+void hash_u64(std::uint64_t& digest, std::uint64_t value) {
+    for (unsigned shift = 0; shift < 64; shift += 8)
+        hash_byte(digest, static_cast<std::uint8_t>(value >> shift));
+}
+
+void hash_double(std::uint64_t& digest, double value) {
+    hash_u64(digest, std::bit_cast<std::uint64_t>(value));
+}
+
+void hash_string(std::uint64_t& digest, const std::string& value) {
+    hash_u64(digest, value.size());
+    for (const unsigned char byte : value) hash_byte(digest, byte);
 }
 }
 
@@ -317,7 +337,32 @@ FleetMetrics FleetSimulation::result()const{
     const auto&x=*impl_;FleetMetrics r;r.vehicle_count=x.members.size();r.collisions=x.collisions;r.minimum_separation_m=std::isfinite(x.minimum_separation)?x.minimum_separation:0.0;r.reservation_requests=x.requests;r.reservation_contentions=x.contentions;r.deadlock_count=x.deadlock_count;r.near_conflict_events=x.near_conflict_events;r.forced_safety_stops=x.forced_safety_stops;r.events=x.events;r.deterministic_digest=14695981039346656037ULL;
     for(const auto&m:x.members){const auto run=m.simulation.result();r.vehicles.push_back({m.mission.id,m.mission.start_node,m.mission.goal_node,run.metrics,run.final_state});++r.missions_attempted;if(run.metrics.result==MissionResult::Success)++r.missions_completed;else if(run.metrics.result==MissionResult::Timeout)++r.safe_timeouts;r.total_distance_m+=run.metrics.distance_traveled_m;r.total_mission_time_s=std::max(r.total_mission_time_s,run.metrics.completion_time_s);r.cumulative_waiting_time_s+=m.wait_s;r.traffic_waiting_time_s+=m.wait_s;r.safety_stop_time_s+=run.metrics.time_stopped_degraded_s;}
     r.throughput_per_simulated_hour=x.now>0.0?static_cast<double>(r.missions_completed)*3600.0/x.now:0.0;
-    for(const auto&e:x.events){for(const auto c:e.vehicle.value) {r.deterministic_digest^=static_cast<unsigned char>(c);r.deterministic_digest*=1099511628211ULL;}r.deterministic_digest^=static_cast<std::uint64_t>(e.kind);r.deterministic_digest*=1099511628211ULL;}
+    auto& digest = r.deterministic_digest;
+    hash_u64(digest, r.vehicle_count); hash_u64(digest, r.missions_attempted);
+    hash_u64(digest, r.missions_completed); hash_u64(digest, r.safe_timeouts);
+    hash_u64(digest, r.collisions); hash_double(digest, r.minimum_separation_m);
+    hash_double(digest, r.total_distance_m); hash_double(digest, r.total_mission_time_s);
+    hash_double(digest, r.cumulative_waiting_time_s); hash_double(digest, r.traffic_waiting_time_s);
+    hash_double(digest, r.safety_stop_time_s); hash_u64(digest, r.reservation_requests);
+    hash_u64(digest, r.reservation_contentions); hash_u64(digest, r.deadlock_count);
+    hash_u64(digest, r.near_conflict_events); hash_u64(digest, r.forced_safety_stops);
+    hash_double(digest, r.throughput_per_simulated_hour);
+    for (const auto& vehicle : r.vehicles) {
+        hash_string(digest, vehicle.id.value); hash_string(digest, vehicle.start_node);
+        hash_string(digest, vehicle.goal_node);
+        hash_u64(digest, vehicle.metrics.trajectory_digest);
+        hash_u64(digest, vehicle.metrics.sensor_stream_digest);
+        hash_double(digest, vehicle.final_state.position.x_m);
+        hash_double(digest, vehicle.final_state.position.y_m);
+        hash_double(digest, vehicle.final_state.heading_rad);
+        hash_double(digest, vehicle.final_state.speed_mps);
+        hash_double(digest, vehicle.final_state.distance_m);
+    }
+    for (const auto& event : x.events) {
+        hash_double(digest, event.time_s); hash_u64(digest, static_cast<std::uint64_t>(event.kind));
+        hash_string(digest, event.vehicle.value); hash_string(digest, event.other.value);
+        hash_string(digest, event.resource);
+    }
     return r;
 }
 std::vector<FleetVehicleSnapshot> FleetSimulation::snapshots()const{std::vector<FleetVehicleSnapshot> out;out.reserve(impl_->members.size());for(const auto&m:impl_->members)out.push_back({m.mission.id,m.mission.goal_node,m.waiting,m.simulation.snapshot()});return out;}

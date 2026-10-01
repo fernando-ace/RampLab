@@ -67,6 +67,7 @@ struct TrafficEvent {
     VehicleId vehicle;
     VehicleId other;
     std::string resource;
+    bool operator==(const TrafficEvent&) const = default;
 };
 
 struct FleetVehicleResult {
@@ -75,6 +76,7 @@ struct FleetVehicleResult {
     std::string goal_node;
     MissionMetrics metrics;
     VehicleState final_state;
+    bool operator==(const FleetVehicleResult&) const = default;
 };
 struct FleetVehicleSnapshot {
     VehicleId id;
@@ -104,6 +106,7 @@ struct FleetMetrics {
     std::vector<FleetVehicleResult> vehicles;
     std::vector<TrafficEvent> events;
     std::uint64_t deterministic_digest{};
+    bool operator==(const FleetMetrics&) const = default;
 };
 
 class FleetSimulation {

@@ -149,9 +149,7 @@ TEST(FleetExperimentTest, SerialAndParallelFleetResultsAreIdentical){
     ASSERT_EQ(serial.runs.size(),parallel.runs.size());
     for(std::size_t i=0;i<serial.runs.size();++i){
         const auto& a=serial.runs[i];const auto& b=parallel.runs[i];
-        EXPECT_EQ(a.ordinal,b.ordinal);EXPECT_EQ(a.metrics.deterministic_digest,b.metrics.deterministic_digest);
-        EXPECT_EQ(a.metrics.collisions,b.metrics.collisions);EXPECT_DOUBLE_EQ(a.metrics.traffic_waiting_time_s,b.metrics.traffic_waiting_time_s);
-        EXPECT_DOUBLE_EQ(a.metrics.total_distance_m,b.metrics.total_distance_m);
+        EXPECT_EQ(a.ordinal,b.ordinal);EXPECT_EQ(a.metrics,b.metrics);
         EXPECT_EQ(a.metrics.missions_completed,3U);EXPECT_EQ(a.metrics.collisions,0U);
     }
 }

@@ -20,6 +20,7 @@ struct VehicleState {
     double speed_mps{0.0};
     double yaw_rate_radps{0.0};
     double distance_m{0.0};
+    bool operator==(const VehicleState&) const = default;
 };
 
 struct VehicleLimits {
@@ -113,8 +114,8 @@ struct EstimatedState {
 
 enum class SensorKind { Gnss, Imu, Odometry, Lidar };
 enum class SensorFaultKind { Dropout, Noise, Bias, RangeLimit, Obstruction, Scale, Drift, Delay, PacketLoss, BurstLoss };
-struct FaultEventRecord { std::size_t fault_index{}; double time_s{}; std::string event; };
-struct EstimatorEventRecord { double time_s{}; std::string event; };
+struct FaultEventRecord { std::size_t fault_index{}; double time_s{}; std::string event; bool operator==(const FaultEventRecord&) const = default; };
+struct EstimatorEventRecord { double time_s{}; std::string event; bool operator==(const EstimatorEventRecord&) const = default; };
 struct SensorFault {
     SensorKind sensor{SensorKind::Gnss};
     SensorFaultKind kind{SensorFaultKind::Dropout};
@@ -264,6 +265,7 @@ struct MissionMetrics {
     std::uint64_t trajectory_digest{};
     std::uint64_t sensor_stream_digest{};
     std::uint64_t sensor_stream_records{};
+    bool operator==(const MissionMetrics&) const = default;
 };
 struct AutonomyRun {
     VehicleState final_state{};
