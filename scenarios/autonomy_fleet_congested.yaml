@@ -1,0 +1,13 @@
+name: autonomy_fleet_congested_eight
+default_seed: 42
+vehicle_scenario: autonomy_tug_congested.yaml
+deadlock_persistence_s: 1.0
+missions:
+  - { id: tug_01, start_node: Link A West Holding, goal_node: Link A East Exit, priority: 0 }
+  - { id: tug_02, start_node: Link A East Holding, goal_node: Link A West Exit, priority: 1 }
+  - { id: tug_03, start_node: Link B West Holding, goal_node: Link B East Exit, priority: 0 }
+  - { id: tug_04, start_node: Link B East Holding, goal_node: Link B West Exit, priority: 1 }
+  - { id: tug_05, start_node: Link C West Holding, goal_node: Link C East Exit, priority: 0 }
+  - { id: tug_06, start_node: Link C East Holding, goal_node: Link C West Exit, priority: 1 }
+  - { id: tug_07, start_node: Link D West Holding, goal_node: Link D East Exit, priority: 0 }
+  - { id: tug_08, start_node: Link D East Holding, goal_node: Link D West Exit, priority: 1 }

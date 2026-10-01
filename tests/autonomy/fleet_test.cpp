@@ -56,7 +56,7 @@ TEST(FleetScenarioTest, SharedSegmentMergeWaitsThenCompletesWithoutCollision){
     FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42};while(fleet.advance()){}const auto result=fleet.result();
     EXPECT_EQ(result.vehicle_count,3U);EXPECT_EQ(result.missions_completed,3U);EXPECT_EQ(result.safe_timeouts,0U);
     EXPECT_GT(result.reservation_contentions,0U);EXPECT_GT(result.traffic_waiting_time_s,0.0);EXPECT_EQ(result.collisions,0U);
-    EXPECT_GT(result.near_conflict_events,0U);EXPECT_GT(result.forced_safety_stops,0U);
+    EXPECT_GT(result.near_conflict_events,0U);EXPECT_GT(result.forced_safety_stops,0U);EXPECT_EQ(result.deadlock_count,0U);
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::Waiting&&event.resource.starts_with("edge/");}));
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::EnteredConflict&&event.resource.starts_with("edge/");}));
     EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::ForcedSafetyStop&&event.resource.starts_with("edge/");}));
@@ -86,6 +86,97 @@ TEST(FleetScenarioTest, OpposingVehiclesReserveNarrowEdgeBeforeLeavingHoldingBay
         return event.kind==TrafficEventKind::Granted&&event.vehicle.value=="tug_02";
     });
     ASSERT_NE(granted,result.events.end());EXPECT_GE(granted->time_s,released->time_s);
+}
+TEST(FleetScenarioTest, DynamicClosureReplansBeforeVehicleCanEnterClosedEdge){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_dynamic_closure.yaml");
+    ASSERT_EQ(scenario.road_events.size(),2U);
+    FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42,scenario.road_events,scenario.deadlock_persistence_s,scenario.resource_specific_tie_breaks};
+    while(fleet.advance()){}
+    const auto result=fleet.result();
+    EXPECT_EQ(result.missions_completed,2U);EXPECT_EQ(result.safe_timeouts,0U);EXPECT_EQ(result.collisions,0U);EXPECT_GT(result.total_distance_m,300.0);
+    EXPECT_EQ(result.road_closure_replans,1U);EXPECT_GE(result.reroutes,1U);
+    EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::RoadClosed;}));
+    EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::RoadReopened;}));
+    EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::Reroute&&event.vehicle.value=="tug_01";}));
+    const auto unaffected=std::ranges::find(result.vehicles,VehicleId{"tug_02"},&FleetVehicleResult::id);
+    ASSERT_NE(unaffected,result.vehicles.end());EXPECT_EQ(unaffected->metrics.result,MissionResult::Success);
+}
+TEST(FleetExperimentTest, DynamicRoadChangesAreIdenticalAcrossSerialAndParallelWorkers){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_dynamic_closure.yaml");
+    std::vector<FleetRunRequest> requests;
+    for(std::size_t i=0;i<8;++i)requests.push_back({scenario,42,i});
+    const auto serial=execute_fleet_runs(requests,1),parallel=execute_fleet_runs(std::move(requests),4);
+    ASSERT_EQ(serial.runs.size(),parallel.runs.size());
+    for(std::size_t i=0;i<serial.runs.size();++i){
+        EXPECT_EQ(serial.runs[i].metrics,parallel.runs[i].metrics);
+        EXPECT_EQ(serial.runs[i].metrics.missions_completed,2U);
+        EXPECT_EQ(serial.runs[i].metrics.collisions,0U);
+        EXPECT_EQ(serial.runs[i].metrics.road_closure_replans,1U);
+    }
+}
+TEST(FleetScenarioTest, EightVehicleOpposingCorridorsCompleteWithoutCollisions){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_congested.yaml");
+    FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42,scenario.road_events,scenario.deadlock_persistence_s,scenario.resource_specific_tie_breaks};
+    while(fleet.advance()){}
+    const auto result=fleet.result();
+    EXPECT_EQ(result.vehicle_count,8U);EXPECT_EQ(result.missions_attempted,8U);EXPECT_EQ(result.missions_completed,8U);
+    EXPECT_EQ(result.safe_timeouts,0U);EXPECT_EQ(result.collisions,0U);EXPECT_GT(result.minimum_separation_m,2.0);
+    EXPECT_GT(result.reservation_contentions,0U);EXPECT_GT(result.forced_safety_stops,0U);
+    EXPECT_GT(result.traffic_waiting_time_s,0.0);
+}
+TEST(FleetScenarioTest, ThreeVehicleWaitForCycleTriggersPersistentRecovery){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_deadlock.yaml");
+    FleetSimulation fleet{scenario.vehicle_scenario,scenario.missions,42,scenario.road_events,scenario.deadlock_persistence_s,scenario.resource_specific_tie_breaks};
+    bool observed_cycle=false;
+    while(fleet.advance()) if(fleet.deadlocked_vehicles().size()>=3) observed_cycle=true;
+    const auto result=fleet.result();
+    EXPECT_TRUE(observed_cycle);EXPECT_EQ(result.deadlock_count,1U);EXPECT_EQ(result.deadlocks_resolved,1U);
+    EXPECT_EQ(result.recovery_attempts,1U);EXPECT_EQ(result.reroutes,1U);EXPECT_EQ(result.collisions,0U);
+    const auto detected=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::DeadlockDetected;});
+    const auto recovery=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::DeadlockRecovery;});
+    const auto reroute=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::Reroute;});
+    const auto resolved=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RecoveryResolved;});
+    ASSERT_NE(detected,result.events.end());ASSERT_NE(recovery,result.events.end());ASSERT_NE(reroute,result.events.end());ASSERT_NE(resolved,result.events.end());
+    EXPECT_LT(std::distance(result.events.begin(),detected),std::distance(result.events.begin(),recovery));
+    EXPECT_LT(std::distance(result.events.begin(),recovery),std::distance(result.events.begin(),reroute));
+    EXPECT_LT(std::distance(result.events.begin(),reroute),std::distance(result.events.begin(),resolved));
+}
+TEST(FleetExperimentTest, ThreeVehicleDeadlockRecoveryIsIdenticalAcrossSerialAndParallelWorkers){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_deadlock.yaml");
+    std::vector<FleetRunRequest> requests;for(std::size_t i=0;i<4;++i)requests.push_back({scenario,42,i});
+    const auto serial=execute_fleet_runs(requests,1),parallel=execute_fleet_runs(std::move(requests),4);
+    ASSERT_EQ(serial.runs.size(),parallel.runs.size());
+    for(std::size_t i=0;i<serial.runs.size();++i){
+        EXPECT_EQ(serial.runs[i].metrics,parallel.runs[i].metrics);
+        EXPECT_EQ(serial.runs[i].metrics.deadlock_count,1U);EXPECT_EQ(serial.runs[i].metrics.deadlocks_resolved,1U);
+        EXPECT_EQ(serial.runs[i].metrics.recovery_attempts,1U);EXPECT_EQ(serial.runs[i].metrics.collisions,0U);
+    }
+}
+TEST(FleetExperimentTest, EightVehicleCongestionIsIdenticalAcrossSerialAndParallelWorkers){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_congested.yaml");
+    std::vector<FleetRunRequest> requests;for(std::size_t i=0;i<8;++i)requests.push_back({scenario,42,i});
+    const auto serial=execute_fleet_runs(requests,1),parallel=execute_fleet_runs(std::move(requests),4);
+    ASSERT_EQ(serial.runs.size(),parallel.runs.size());
+    for(std::size_t i=0;i<serial.runs.size();++i){
+        EXPECT_EQ(serial.runs[i].ordinal,parallel.runs[i].ordinal);
+        EXPECT_EQ(serial.runs[i].metrics,parallel.runs[i].metrics);
+        EXPECT_EQ(serial.runs[i].metrics.missions_completed,8U);
+        EXPECT_EQ(serial.runs[i].metrics.collisions,0U);
+    }
+}
+TEST(FleetTest, WaitForDependenciesExposeBlockerResourceAndSimulationDuration){
+    FleetSimulation fleet{base_scenario(),competing_missions(),42};
+    bool observed=false;
+    while(fleet.advance()){
+        const auto dependencies=fleet.wait_dependencies();
+        if(!dependencies.empty()&&dependencies.front().wait_duration_s>0.05){
+            observed=true;EXPECT_FALSE(dependencies.front().waiting_vehicle.value.empty());
+            EXPECT_FALSE(dependencies.front().blocking_vehicle.value.empty());
+            EXPECT_FALSE(dependencies.front().resource.empty());EXPECT_GT(dependencies.front().wait_duration_s,0.05);
+            break;
+        }
+    }
+    EXPECT_TRUE(observed);
 }
 TEST(FleetTest, DifferentSeedsChangeStochasticVehicleTrajectories){
     auto a=competing_missions();auto b=competing_missions();
@@ -149,6 +240,15 @@ TEST(FleetReservationTest, PruningStaleWaiterPreservesActiveWaiterOrdering){
     ASSERT_TRUE(table.owner("edge_shared"));
     EXPECT_EQ(table.owner("edge_shared")->value,"tug_c");
 }
+TEST(FleetReservationTest, OlderWaiterCannotBeStarvedByLaterHighPriorityRequest){
+    TrafficReservationTable table;
+    ASSERT_TRUE(table.request("edge_fair",{VehicleId{"tug_owner"},0.0,0}));
+    EXPECT_FALSE(table.request("edge_fair",{VehicleId{"tug_older"},1.0,8}));
+    EXPECT_FALSE(table.request("edge_fair",{VehicleId{"tug_priority"},2.0,-10}));
+    ASSERT_TRUE(table.release("edge_fair",VehicleId{"tug_owner"}));
+    ASSERT_TRUE(table.owner("edge_fair"));EXPECT_EQ(table.owner("edge_fair")->value,"tug_older");
+    EXPECT_EQ(table.starvation_preventions(),1U);
+}
 TEST(FleetDeadlockTest, DetectsEveryVehicleInCycleButNotVehiclesMerelyBlockedByIt){
     const auto cycle=find_deadlocked_vehicles({
         {VehicleId{"tug_a"},{VehicleId{"tug_b"}}},
@@ -161,6 +261,13 @@ TEST(FleetDeadlockTest, DetectsEveryVehicleInCycleButNotVehiclesMerelyBlockedByI
         {VehicleId{"tug_a"},{VehicleId{"tug_b"}}},
         {VehicleId{"tug_b"},{VehicleId{"tug_c"}}},
         {VehicleId{"tug_c"},{}}}).empty());
+}
+TEST(FleetDeadlockTest, SelectsYieldVehicleByPriorityWaitThenStableId){
+    const auto selected=choose_recovery_vehicle({
+        {VehicleId{"tug_c"},3,100.0},{VehicleId{"tug_b"},5,4.0},
+        {VehicleId{"tug_a"},5,4.0},{VehicleId{"tug_d"},5,3.0}});
+    EXPECT_EQ(selected.value,"tug_a");
+    EXPECT_THROW((void)choose_recovery_vehicle({}),std::invalid_argument);
 }
 TEST(FleetTest, ScenarioLoadsThreeMissionsAndConfiguredFault){
     const auto path=std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_fault.yaml";

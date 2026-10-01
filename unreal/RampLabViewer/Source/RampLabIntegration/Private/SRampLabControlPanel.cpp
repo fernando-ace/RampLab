@@ -81,6 +81,8 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                     [ SNew(SButton).Text(FText::FromString(TEXT("Three Vehicle Fleet"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_fleet"))) ]
                     + SHorizontalBox::Slot().AutoWidth()
                     [ SNew(SButton).Text(FText::FromString(TEXT("Faulted Fleet"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_fleet_fault"))) ]
+                    + SHorizontalBox::Slot().AutoWidth().Padding(6,0,0,0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Road Closure"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_fleet_dynamic_closure"))) ]
                 ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(SSeparator) ]
@@ -147,10 +149,15 @@ FText SRampLabControlPanel::SummaryText() const
             if(Vehicle.waiting)++Waiting;else if(Vehicle.autonomy.finished)++Completed;else if(Vehicle.autonomy.ground_truth.speed_mps<0.15)++Stopped;else ++Moving;
             VehicleLines+=FString::Printf(TEXT("\n%s -> %s  /  %s"),UTF8_TO_TCHAR(Vehicle.id.value.c_str()),UTF8_TO_TCHAR(Vehicle.goal_node.c_str()),State);
         }
-        return FText::FromString(FString::Printf(TEXT("FLEET  %llu vehicles  /  seed %llu\nSimulation  %.2f s  /  %s\nMissions  %llu / %llu\nMoving %d   Waiting %d   Stopped %d   Complete %d\nTraffic wait %.2f s   Reservations %llu   Contention %llu\nNear conflicts %llu   Forced stops %llu   Deadlocks %llu\nCollisions %llu   Minimum separation %.2f m%s"),
+        FString DependencyLine;
+        if(!Metrics.wait_dependencies.empty()){
+            const auto& Dependency=Metrics.wait_dependencies.front();
+            DependencyLine=FString::Printf(TEXT("\nWaiting %s on %s via %s for %.2f s"),UTF8_TO_TCHAR(Dependency.waiting_vehicle.value.c_str()),UTF8_TO_TCHAR(Dependency.blocking_vehicle.value.c_str()),UTF8_TO_TCHAR(Dependency.resource.c_str()),Dependency.wait_duration_s);
+        }
+        return FText::FromString(FString::Printf(TEXT("FLEET  %llu vehicles  /  seed %llu\nSimulation  %.2f s  /  %s\nMissions  %llu / %llu\nMoving %d   Waiting %d   Stopped %d   Complete %d\nTraffic wait %.2f s   Reservations %llu   Contention %llu\nNear conflicts %llu   Forced stops %llu   Deadlocks %llu  /  resolved %llu\nRecoveries %llu   Reroutes %llu   Closure replans %llu\nCollisions %llu   Minimum separation %.2f m%s%s"),
             static_cast<unsigned long long>(Metrics.vehicle_count),Subsystem->GetSeed(),static_cast<double>(Subsystem->GetPlaybackTime().count()),Subsystem->IsFinished()?TEXT("Finished"):Subsystem->IsPlaying()?TEXT("Running"):TEXT("Paused"),
             static_cast<unsigned long long>(Metrics.missions_completed),static_cast<unsigned long long>(Metrics.missions_attempted),Moving,Waiting,Stopped,Completed,Metrics.traffic_waiting_time_s,
-            static_cast<unsigned long long>(Metrics.reservation_requests),static_cast<unsigned long long>(Metrics.reservation_contentions),static_cast<unsigned long long>(Metrics.near_conflict_events),static_cast<unsigned long long>(Metrics.forced_safety_stops),static_cast<unsigned long long>(Metrics.deadlock_count),static_cast<unsigned long long>(Metrics.collisions),Metrics.minimum_separation_m,*VehicleLines));
+            static_cast<unsigned long long>(Metrics.reservation_requests),static_cast<unsigned long long>(Metrics.reservation_contentions),static_cast<unsigned long long>(Metrics.near_conflict_events),static_cast<unsigned long long>(Metrics.forced_safety_stops),static_cast<unsigned long long>(Metrics.deadlock_count),static_cast<unsigned long long>(Metrics.deadlocks_resolved),static_cast<unsigned long long>(Metrics.recovery_attempts),static_cast<unsigned long long>(Metrics.reroutes),static_cast<unsigned long long>(Metrics.road_closure_replans),static_cast<unsigned long long>(Metrics.collisions),Metrics.minimum_separation_m,*DependencyLine,*VehicleLines));
     }
 
     if (Subsystem->IsAutonomyMode()) {

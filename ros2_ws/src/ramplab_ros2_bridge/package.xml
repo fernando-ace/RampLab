@@ -2,7 +2,7 @@
 <package format="3">
   <name>ramplab_ros2_bridge</name>
   <version>0.1.0</version>
-  <description>Native ROS 2 bridge for the RampLab tug autonomy simulation.</description>
+  <description>Native ROS 2 bridge and coordinated fleet-state adapter for RampLab autonomy.</description>
   <maintainer email="ramplab@example.invalid">RampLab</maintainer>
   <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>

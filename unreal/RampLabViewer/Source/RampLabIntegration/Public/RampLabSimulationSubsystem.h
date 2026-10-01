@@ -100,6 +100,8 @@ private:
     bool bControlCheck{false};
     bool bCaptureQA{false};
     bool bFleetValidation{false};
+    bool bGoal12ClosureValidation{false};
+    bool bGoal12RecoveryValidation{false};
     bool bDemoMode{false};
     bool bDemoAdvancedToHighCapacity{false};
     bool bDemoAdvancedToAutonomy{false};

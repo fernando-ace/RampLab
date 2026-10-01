@@ -360,6 +360,15 @@ bool AutonomySimulation::finished()const noexcept{return impl_->complete;}
 SensorFrame AutonomySimulation::observe()const{return impl_->frame;}
 AutonomySnapshot AutonomySimulation::snapshot()const{return{impl_->time,impl_->state,impl_->frame,impl_->mission,impl_->scenario.obstacles,impl_->metrics,impl_->complete};}
 const AutonomyScenario& AutonomySimulation::scenario()const noexcept{return impl_->scenario;}
+void AutonomySimulation::set_edge_available(EdgeId edge, bool available) {
+    impl_->scenario.airport.graph.set_edge_available(edge, available);
+}
+void AutonomySimulation::set_route(std::vector<Vec2> waypoints) {
+    if (waypoints.empty() || waypoints.back() != impl_->mission.goal)
+        throw std::invalid_argument("replacement autonomy route must end at the existing goal");
+    impl_->mission.waypoints = std::move(waypoints);
+    impl_->mission.limits = impl_->scenario.limits;
+}
 bool AutonomySimulation::advance(IAutonomyController& controller){
     if(impl_->complete)return false;
     VehicleCommand command;

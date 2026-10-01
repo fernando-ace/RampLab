@@ -41,11 +41,27 @@ The tests can also be run in one activated Pixi invocation using the setup seque
 ```text
 ros2_ws/src/
 ├── ramplab_ros2_common/       # WGS84/local ENU conversion
-├── ramplab_ros2_bridge/       # ROS messages <-> existing autonomy simulation
+├── ramplab_ros2_bridge/       # per-vehicle bridge plus coordinated fleet-state adapter
 └── ramplab_ros2_controller/   # independent rclcpp executable
 ```
 
 The bridge imports the already-built RampLab autonomy libraries; this is an adapter, not a new simulation implementation. The external controller links ROS packages only. It does not include or link RampLab simulation, ground-truth, obstacle-state, estimator, or controller internals. It consumes the route, fused odometry, estimator health, and LiDAR messages and publishes `cmd_vel`.
+
+`ramplab_ros2_fleet_bridge` runs one deterministic `FleetSimulation` in one process and publishes identity-keyed fleet state and traffic decisions. The C++ simulation remains the only source of route, reservation, wait-for, deadlock, closure, and recovery decisions. The fleet adapter does not accept low-level vehicle commands; the per-vehicle bridges and external controllers remain available for isolated closed-loop tests.
+
+| Topic | Type | Contents |
+|---|---|---|
+| `/ramplab/fleet/state` | `std_msgs/msg/String` | Transient-local JSON snapshot containing simulation time, aggregate mission/deadlock/recovery counts, and a `vehicles` array keyed by `vehicle_id`; each row includes goal, pose, speed, waiting/finished state, and blocker/resource/wait duration when blocked. |
+| `/ramplab/fleet/traffic_events` | `std_msgs/msg/String` | Reliable JSON events with simulation time, typed event kind, `vehicle_id`, `other_vehicle_id`, and resource. |
+
+Use the fleet-level node together with a scenario file:
+
+```powershell
+ros2 run ramplab_ros2_bridge ramplab_ros2_fleet_bridge --scenario scenarios\autonomy_fleet.yaml --seed 42
+python .\ros2_ws\scripts\verify_fleet_manager.py --seconds 4
+```
+
+The verifier checks that all three IDs appear exactly once, per-vehicle kinematics are present, simulation time advances, and coordinated traffic events reach the ROS topic. Validation received 999 state snapshots and 8 traffic events over 20 wall seconds; the reported simulation clock advanced from 0.20 to 20.16 s. The older `verify_multi_vehicle_isolation.py` still validates command/sensor namespacing across three independent bridge processes.
 
 ## Topics and QoS
 

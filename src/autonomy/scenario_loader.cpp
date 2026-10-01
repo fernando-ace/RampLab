@@ -134,9 +134,22 @@ FleetScenario load_fleet_scenario(const std::filesystem::path& path){
         const auto root=YAML::LoadFile(path.string());FleetScenario out;
         out.name=value<std::string>(root,"name","autonomy_fleet");out.default_seed=value<std::uint64_t>(root,"default_seed",42);
         out.vehicle_scenario=load_scenario(path.parent_path()/root["vehicle_scenario"].as<std::string>());
-        const auto list=root["missions"];if(!list||!list.IsSequence()||list.size()<2)throw std::invalid_argument("fleet scenario requires at least two missions");
+        out.deadlock_persistence_s=value<double>(root,"deadlock_persistence_s",2.0);
+        if(!std::isfinite(out.deadlock_persistence_s)||out.deadlock_persistence_s<0.0)throw std::invalid_argument("deadlock_persistence_s must be finite and nonnegative");
+        out.resource_specific_tie_breaks=value<bool>(root,"resource_specific_tie_breaks",false);
+        const auto list=root["missions"];if(!list||!list.IsSequence()||list.size()==0)throw std::invalid_argument("fleet scenario requires at least one mission");
         for(const auto& item:list){FleetMission m;m.id.value=item["id"].as<std::string>();m.start_node=item["start_node"].as<std::string>();m.goal_node=item["goal_node"].as<std::string>();m.priority=value<int>(item,"priority",0);if(const auto faults=item["faults"])for(const auto& f:faults){SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);x.offset={value<double>(f,"x_m",0.0),value<double>(f,"y_m",0.0)};if(x.start_s<0||x.duration_s<=0||x.probability<0||x.probability>1)throw std::invalid_argument("invalid fleet sensor fault window");m.faults.push_back(x);}out.missions.push_back(std::move(m));}
         std::ranges::sort(out.missions,{},&FleetMission::id);for(std::size_t i=0;i<out.missions.size();++i){if(out.missions[i].id.value.empty()||(i&&out.missions[i-1].id==out.missions[i].id))throw std::invalid_argument("fleet vehicle IDs must be nonempty and unique");}
+        if(const auto changes=root["road_events"])for(const auto& item:changes){
+            const double time=value<double>(item,"time_seconds",-1.0);
+            const auto edge_value=item["edge_id"].as<std::uint32_t>();
+            const bool available=item["available"].as<bool>();
+            if(!std::isfinite(time)||time<0.0||std::trunc(time)!=time)throw std::invalid_argument("fleet road event time_seconds must be a nonnegative whole second");
+            const EdgeId edge{edge_value};
+            (void)out.vehicle_scenario.airport.graph.edge(edge);
+            out.road_events.push_back({std::chrono::seconds{static_cast<std::int64_t>(time)},edge,available});
+        }
+        std::ranges::stable_sort(out.road_events,{},[](const auto& event){return event.time;});
         return out;
     }catch(const std::exception&e){throw std::runtime_error("fleet scenario '"+path.string()+"': "+e.what());}
 }

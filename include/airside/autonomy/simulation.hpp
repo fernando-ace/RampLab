@@ -299,6 +299,8 @@ public:
     [[nodiscard]] SensorFrame observe() const;
     [[nodiscard]] AutonomySnapshot snapshot() const;
     [[nodiscard]] const AutonomyScenario& scenario() const noexcept;
+    void set_edge_available(EdgeId edge, bool available);
+    void set_route(std::vector<Vec2> waypoints);
     [[nodiscard]] bool advance(IAutonomyController& controller);
     [[nodiscard]] bool advance_with_command(VehicleCommand command, const ReferenceController& controller);
     [[nodiscard]] AutonomyRun result() const;

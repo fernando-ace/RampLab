@@ -25,9 +25,13 @@ std::string json_quote(std::string_view value) {
 }
 void write_csv(const std::filesystem::path& path,std::string_view scenario,std::uint64_t seed,const airside::autonomy::FleetMetrics& r,double sim_time_s){
     std::ofstream out(path);if(!out)throw std::runtime_error("cannot open fleet CSV output: "+path.string());
-    out<<"record_type,scenario,seed,vehicle_id,start_node,goal_node,result,vehicle_count,missions_attempted,missions_completed,safe_timeouts,collisions,minimum_separation_m,total_distance_m,total_mission_time_s,cumulative_waiting_time_s,traffic_waiting_time_s,safety_stop_time_s,reservation_requests,reservation_contentions,deadlocks,near_conflict_events,forced_safety_stops,throughput_per_simulated_hour,completion_time_s,distance_m\n";
-    out<<std::setprecision(17)<<"fleet,"<<csv_quote(scenario)<<','<<seed<<",,,,,"<<r.vehicle_count<<','<<r.missions_attempted<<','<<r.missions_completed<<','<<r.safe_timeouts<<','<<r.collisions<<','<<r.minimum_separation_m<<','<<r.total_distance_m<<','<<r.total_mission_time_s<<','<<r.cumulative_waiting_time_s<<','<<r.traffic_waiting_time_s<<','<<r.safety_stop_time_s<<','<<r.reservation_requests<<','<<r.reservation_contentions<<','<<r.deadlock_count<<','<<r.near_conflict_events<<','<<r.forced_safety_stops<<','<<(sim_time_s>0.0?static_cast<double>(r.missions_completed)*3600.0/sim_time_s:0.0)<<",,\n";
-    for(const auto& v:r.vehicles)out<<"vehicle,"<<csv_quote(scenario)<<','<<seed<<','<<csv_quote(v.id.value)<<','<<csv_quote(v.start_node)<<','<<csv_quote(v.goal_node)<<','<<airside::autonomy::to_string(v.metrics.result)<<",,,,,,,,,,,,,,,,,,"<<v.metrics.completion_time_s<<','<<v.metrics.distance_traveled_m<<'\n';
+    out<<"record_type,scenario,seed,vehicle_id,start_node,goal_node,result,vehicle_count,missions_attempted,missions_completed,safe_timeouts,collisions,minimum_separation_m,total_distance_m,total_mission_time_s,cumulative_waiting_time_s,traffic_waiting_time_s,safety_stop_time_s,reservation_requests,reservation_contentions,deadlocks,deadlocks_resolved,recovery_attempts,retreats,reroutes,road_closure_replans,maximum_resource_wait_s,mean_resource_wait_s,near_conflict_events,forced_safety_stops,throughput_per_simulated_hour,completion_time_s,distance_m,final_x_m,final_y_m,final_speed_mps,reservation_denials,starvation_preventions\n";
+    out<<std::setprecision(17)<<"fleet,"<<csv_quote(scenario)<<','<<seed<<",,,,,"<<r.vehicle_count<<','<<r.missions_attempted<<','<<r.missions_completed<<','<<r.safe_timeouts<<','<<r.collisions<<','<<r.minimum_separation_m<<','<<r.total_distance_m<<','<<r.total_mission_time_s<<','<<r.cumulative_waiting_time_s<<','<<r.traffic_waiting_time_s<<','<<r.safety_stop_time_s<<','<<r.reservation_requests<<','<<r.reservation_contentions<<','<<r.deadlock_count<<','<<r.deadlocks_resolved<<','<<r.recovery_attempts<<','<<r.retreat_count<<','<<r.reroutes<<','<<r.road_closure_replans<<','<<r.maximum_resource_wait_s<<','<<r.mean_resource_wait_s<<','<<r.near_conflict_events<<','<<r.forced_safety_stops<<','<<(sim_time_s>0.0?static_cast<double>(r.missions_completed)*3600.0/sim_time_s:0.0)<<",,,,,,,,\n";
+    for(const auto& v:r.vehicles){
+        out<<"vehicle,"<<csv_quote(scenario)<<','<<seed<<','<<csv_quote(v.id.value)<<','<<csv_quote(v.start_node)<<','<<csv_quote(v.goal_node)<<','<<airside::autonomy::to_string(v.metrics.result);
+        for(std::size_t column=8;column<=31;++column)out<<',';
+        out<<v.metrics.completion_time_s<<','<<v.metrics.distance_traveled_m<<','<<v.final_state.position.x_m<<','<<v.final_state.position.y_m<<','<<v.final_state.speed_mps<<",,\n";
+    }
     if(!out)throw std::runtime_error("failed writing fleet CSV output: "+path.string());
 }
 void write_json(const std::filesystem::path& path,std::string_view scenario,std::uint64_t seed,const airside::autonomy::FleetMetrics& r,double sim_time_s){
@@ -37,12 +41,13 @@ void write_json(const std::filesystem::path& path,std::string_view scenario,std:
        <<",\"collisions\":"<<r.collisions<<",\"minimum_separation_m\":"<<r.minimum_separation_m<<",\"total_distance_m\":"<<r.total_distance_m
        <<",\"total_mission_time_s\":"<<r.total_mission_time_s<<",\"cumulative_waiting_time_s\":"<<r.cumulative_waiting_time_s
        <<",\"traffic_waiting_time_s\":"<<r.traffic_waiting_time_s<<",\"safety_stop_time_s\":"<<r.safety_stop_time_s
-       <<",\"reservation_requests\":"<<r.reservation_requests<<",\"reservation_contentions\":"<<r.reservation_contentions<<",\"deadlock_count\":"<<r.deadlock_count<<",\"near_conflict_events\":"<<r.near_conflict_events<<",\"forced_safety_stops\":"<<r.forced_safety_stops
+       <<",\"reservation_requests\":"<<r.reservation_requests<<",\"reservation_contentions\":"<<r.reservation_contentions<<",\"reservation_denials\":"<<r.reservation_denials<<",\"starvation_preventions\":"<<r.starvation_preventions<<",\"deadlock_count\":"<<r.deadlock_count<<",\"deadlocks_resolved\":"<<r.deadlocks_resolved<<",\"recovery_attempts\":"<<r.recovery_attempts<<",\"retreats\":"<<r.retreat_count<<",\"reroutes\":"<<r.reroutes<<",\"road_closure_replans\":"<<r.road_closure_replans<<",\"maximum_resource_wait_s\":"<<r.maximum_resource_wait_s<<",\"mean_resource_wait_s\":"<<r.mean_resource_wait_s<<",\"near_conflict_events\":"<<r.near_conflict_events<<",\"forced_safety_stops\":"<<r.forced_safety_stops
        <<",\"throughput_per_simulated_hour\":"<<(sim_time_s>0.0?static_cast<double>(r.missions_completed)*3600.0/sim_time_s:0.0)<<",\"deterministic_digest\":"<<r.deterministic_digest<<"},\"vehicles\":[";
     for(std::size_t i=0;i<r.vehicles.size();++i){const auto& v=r.vehicles[i];if(i)out<<',';
         out<<"{\"id\":"<<json_quote(v.id.value)<<",\"start_node\":"<<json_quote(v.start_node)<<",\"goal_node\":"<<json_quote(v.goal_node)
            <<",\"result\":"<<json_quote(airside::autonomy::to_string(v.metrics.result))<<",\"completion_time_s\":"<<v.metrics.completion_time_s
-           <<",\"distance_m\":"<<v.metrics.distance_traveled_m<<",\"degraded_mode_entries\":"<<v.metrics.degraded_mode_entries<<'}';}
+           <<",\"distance_m\":"<<v.metrics.distance_traveled_m<<",\"degraded_mode_entries\":"<<v.metrics.degraded_mode_entries
+           <<",\"final_state\":{\"x_m\":"<<v.final_state.position.x_m<<",\"y_m\":"<<v.final_state.position.y_m<<",\"heading_rad\":"<<v.final_state.heading_rad<<",\"speed_mps\":"<<v.final_state.speed_mps<<"}}";}
     out<<"],\"events\":[";
     for(std::size_t i=0;i<r.events.size();++i){const auto& e=r.events[i];if(i)out<<',';
         out<<"{\"time_s\":"<<e.time_s<<",\"kind\":"<<json_quote(airside::autonomy::to_string(e.kind))<<",\"vehicle\":"<<json_quote(e.vehicle.value)
@@ -56,7 +61,7 @@ int main(int argc,char** argv){
         std::filesystem::path path="scenarios/autonomy_fleet.yaml",csv_path,json_path;std::uint64_t seed=0;
         for(int i=1;i<argc;++i){const std::string_view arg=argv[i];if(arg=="--scenario"&&i+1<argc)path=argv[++i];else if(arg=="--seed"&&i+1<argc)seed=std::stoull(argv[++i]);else if(arg=="--csv"&&i+1<argc)csv_path=argv[++i];else if(arg=="--json"&&i+1<argc)json_path=argv[++i];else if(arg=="--help"){std::cout<<"airside_fleet --scenario FILE [--seed N] [--csv FILE] [--json FILE]\n";return 0;}else throw std::runtime_error("unknown or incomplete option");}
         auto s=airside::autonomy::load_fleet_scenario(path);if(!seed)seed=s.default_seed;
-        airside::autonomy::FleetSimulation fleet{s.vehicle_scenario,s.missions,seed};
+        airside::autonomy::FleetSimulation fleet{s.vehicle_scenario,s.missions,seed,s.road_events,s.deadlock_persistence_s,s.resource_specific_tie_breaks};
         const auto begin=std::chrono::steady_clock::now();std::size_t steps=0;
         while(fleet.advance())++steps;
         const auto wall=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();const auto r=fleet.result();

@@ -142,6 +142,8 @@ Each completed experiment writes `runs.csv`, `summary.csv`, and `experiment.json
 .\build\Release\airside_autonomy.exe --scenario scenarios\autonomy_tug.yaml --seed 42 --record-trajectory results\tug.csv
 .\build\Release\airside_autonomy.exe --scenario scenarios\autonomy_safety_stop.yaml --seed 42
 .\build\Release\airside_autonomy_experiment.exe --experiment experiments\autonomy_noise_validation.yaml --workers 4
+.\build\Release\airside_fleet.exe --scenario scenarios\autonomy_fleet.yaml --seed 42 --csv results\fleet.csv --json results\fleet.json
+.\build\Release\airside_fleet.exe --scenario scenarios\autonomy_fleet_dynamic_closure.yaml --seed 42
 ```
 
 The optional autonomy library and headless tools build without Unreal or ROS 2. The autonomy architecture, equations, and sensor assumptions are documented in [autonomy.md](docs/autonomy.md). The native ROS 2 workspace, activation sequence, topics, external mission, and timeout behavior are documented in [ros2.md](docs/ros2.md).

@@ -58,6 +58,14 @@ target_link_libraries(ramplab_ros2_bridge PRIVATE
 
 install(TARGETS ramplab_ros2_bridge DESTINATION lib/${PROJECT_NAME})
 
+add_executable(ramplab_ros2_fleet_bridge src/fleet_bridge_main.cpp)
+target_compile_features(ramplab_ros2_fleet_bridge PRIVATE cxx_std_20)
+target_link_libraries(ramplab_ros2_fleet_bridge PRIVATE
+  rclcpp::rclcpp std_msgs::std_msgs
+  ramplab_airside_autonomy_scenario ramplab_airside_autonomy
+  ramplab_airside_scenario ramplab_airside_sim ramplab_yaml_cpp)
+install(TARGETS ramplab_ros2_fleet_bridge DESTINATION lib/${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_ros2_conversions test/test_conversions.cpp)
