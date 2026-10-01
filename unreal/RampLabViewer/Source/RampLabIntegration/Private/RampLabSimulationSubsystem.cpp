@@ -114,7 +114,18 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
         const double FrameBudget=static_cast<double>(DeltaTime)*PlaybackSpeed*CaptureMultiplier;AutonomyAccumulator+=FrameBudget;constexpr double FixedStep=0.02;
         while(AutonomyAccumulator+1e-9>=FixedStep&&!FleetSimulation->finished()){(void)FleetSimulation->advance();AutonomyAccumulator-=FixedStep;FleetSnapshots=FleetSimulation->snapshots();}
         if(!FleetSnapshots.empty())PlaybackSeconds=FleetSnapshots.front().autonomy.timestamp_s;
-        if(FleetSimulation->finished()){bPlaying=false;const auto M=FleetSimulation->result();FinalResultText=FString::Printf(TEXT("FLEET %llu vehicles\nMissions %llu / %llu\nWaiting %.1f s\nCollisions %llu\nMinimum separation %.2f m"),static_cast<unsigned long long>(M.vehicle_count),static_cast<unsigned long long>(M.missions_completed),static_cast<unsigned long long>(M.missions_attempted),M.traffic_waiting_time_s,static_cast<unsigned long long>(M.collisions),M.minimum_separation_m);StatusText=TEXT("Fleet scenario finished");UE_LOG(LogRampLab,Display,TEXT("Fleet runtime validation: vehicles=%llu completed=%llu/%llu timeouts=%llu waiting_s=%.2f reservations=%llu contentions=%llu collisions=%llu minimum_separation_m=%.3f digest=%llu"),static_cast<unsigned long long>(M.vehicle_count),static_cast<unsigned long long>(M.missions_completed),static_cast<unsigned long long>(M.missions_attempted),static_cast<unsigned long long>(M.safe_timeouts),M.traffic_waiting_time_s,static_cast<unsigned long long>(M.reservation_requests),static_cast<unsigned long long>(M.reservation_contentions),static_cast<unsigned long long>(M.collisions),M.minimum_separation_m,static_cast<unsigned long long>(M.deterministic_digest));if(bFleetValidation)FPlatformMisc::RequestExit(false);}
+        FleetMetricsSnapshot=FleetSimulation->result();
+        while(FleetEventCount<FleetMetricsSnapshot.events.size()){
+            const auto& Event=FleetMetricsSnapshot.events[FleetEventCount++];
+            const FString Message=FString::Printf(TEXT("%6.2f  %s  %s%s%s"),Event.time_s,
+                UTF8_TO_TCHAR(airside::autonomy::to_string(Event.kind).c_str()),
+                UTF8_TO_TCHAR(Event.vehicle.value.c_str()),
+                Event.other.value.empty()?TEXT(""):TEXT(" -> "),
+                Event.other.value.empty()?TEXT(""):UTF8_TO_TCHAR(Event.other.value.c_str()));
+            RecentEvents.Add(Message+TEXT("  ")+UTF8_TO_TCHAR(Event.resource.c_str()));
+            if(RecentEvents.Num()>8)RecentEvents.RemoveAt(0,RecentEvents.Num()-8);
+        }
+        if(FleetSimulation->finished()){bPlaying=false;const auto& M=FleetMetricsSnapshot;FinalResultText=FString::Printf(TEXT("FLEET %llu vehicles\nMissions %llu / %llu\nWaiting %.1f s\nReservations %llu  /  contention %llu\nCollisions %llu\nMinimum separation %.2f m"),static_cast<unsigned long long>(M.vehicle_count),static_cast<unsigned long long>(M.missions_completed),static_cast<unsigned long long>(M.missions_attempted),M.traffic_waiting_time_s,static_cast<unsigned long long>(M.reservation_requests),static_cast<unsigned long long>(M.reservation_contentions),static_cast<unsigned long long>(M.collisions),M.minimum_separation_m);StatusText=TEXT("Fleet scenario finished");UE_LOG(LogRampLab,Display,TEXT("Fleet runtime validation: vehicles=%llu completed=%llu/%llu timeouts=%llu waiting_s=%.2f reservations=%llu contentions=%llu collisions=%llu minimum_separation_m=%.3f digest=%llu"),static_cast<unsigned long long>(M.vehicle_count),static_cast<unsigned long long>(M.missions_completed),static_cast<unsigned long long>(M.missions_attempted),static_cast<unsigned long long>(M.safe_timeouts),M.traffic_waiting_time_s,static_cast<unsigned long long>(M.reservation_requests),static_cast<unsigned long long>(M.reservation_contentions),static_cast<unsigned long long>(M.collisions),M.minimum_separation_m,static_cast<unsigned long long>(M.deterministic_digest));if(bFleetValidation)FPlatformMisc::RequestExit(false);}
         return;
     }
     if (AutonomySimulation != nullptr) {
@@ -322,6 +333,7 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
     try {
         AutonomySimulation.Reset();
         FleetSimulation.Reset(); FleetSnapshots.clear();
+        FleetMetricsSnapshot={};FleetEventCount=0;
         AutonomyController.Reset();
         AutonomySnapshot.Reset();
         AutonomyAccumulator = 0.0;
@@ -349,7 +361,7 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
             return true;
         }
         if(SelectedScenarioKey==TEXT("autonomy_fleet")||SelectedScenarioKey==TEXT("autonomy_fleet_fault")){
-            auto Fleet=airside::autonomy::load_fleet_scenario(std::filesystem::path{*Path});ScenarioName=UTF8_TO_TCHAR(Fleet.name.c_str());Seed=Fleet.default_seed;auto Airport=Fleet.vehicle_scenario.airport;Simulation=MakeUnique<airside::Simulation>(std::move(Airport),Seed);ReconcileSnapshot();FleetSimulation=MakeUnique<airside::autonomy::FleetSimulation>(std::move(Fleet.vehicle_scenario),std::move(Fleet.missions),Seed);FleetSnapshots=FleetSimulation->snapshots();RecentEvents.Reset();PlaybackSeconds=0.0;bPlaying=true;bCompletionReported=false;FinalResultText.Reset();StatusText=FString::Printf(TEXT("Loaded %llu-vehicle deterministic fleet seed %llu"),static_cast<unsigned long long>(FleetSnapshots.size()),Seed);UE_LOG(LogRampLab,Display,TEXT("%s"),*StatusText);return true;
+            auto Fleet=airside::autonomy::load_fleet_scenario(std::filesystem::path{*Path});ScenarioName=UTF8_TO_TCHAR(Fleet.name.c_str());Seed=Fleet.default_seed;auto Airport=Fleet.vehicle_scenario.airport;Simulation=MakeUnique<airside::Simulation>(std::move(Airport),Seed);ReconcileSnapshot();FleetSimulation=MakeUnique<airside::autonomy::FleetSimulation>(std::move(Fleet.vehicle_scenario),std::move(Fleet.missions),Seed);FleetSnapshots=FleetSimulation->snapshots();FleetMetricsSnapshot=FleetSimulation->result();RecentEvents.Reset();PlaybackSeconds=0.0;bPlaying=true;bCompletionReported=false;FinalResultText.Reset();StatusText=FString::Printf(TEXT("Loaded %llu-vehicle deterministic fleet seed %llu"),static_cast<unsigned long long>(FleetSnapshots.size()),Seed);UE_LOG(LogRampLab,Display,TEXT("%s"),*StatusText);return true;
         }
         auto Scenario = airside::load_scenario(std::filesystem::path{*Path});
         ScenarioName = UTF8_TO_TCHAR(Scenario.name.c_str());

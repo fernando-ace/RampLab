@@ -138,6 +138,21 @@ FText SRampLabControlPanel::SummaryText() const
         return FText::FromString(Subsystem == nullptr ? TEXT("Simulation unavailable") : Subsystem->GetStatusText());
     }
 
+    if (Subsystem->IsFleetMode()) {
+        const auto& Metrics=Subsystem->GetFleetMetrics();
+        int32 Waiting=0,Stopped=0,Moving=0,Completed=0;
+        FString VehicleLines;
+        for(const auto& Vehicle:Subsystem->GetFleetSnapshots()){
+            const TCHAR* State=Vehicle.waiting?TEXT("WAITING"):Vehicle.autonomy.finished?TEXT("COMPLETE"):Vehicle.autonomy.ground_truth.speed_mps<0.15?TEXT("STOPPED"):TEXT("MOVING");
+            if(Vehicle.waiting)++Waiting;else if(Vehicle.autonomy.finished)++Completed;else if(Vehicle.autonomy.ground_truth.speed_mps<0.15)++Stopped;else ++Moving;
+            VehicleLines+=FString::Printf(TEXT("\n%s -> %s  /  %s"),UTF8_TO_TCHAR(Vehicle.id.value.c_str()),UTF8_TO_TCHAR(Vehicle.goal_node.c_str()),State);
+        }
+        return FText::FromString(FString::Printf(TEXT("FLEET  %llu vehicles  /  seed %llu\nSimulation  %.2f s  /  %s\nMissions  %llu / %llu\nMoving %d   Waiting %d   Stopped %d   Complete %d\nTraffic wait %.2f s   Reservations %llu   Contention %llu\nNear conflicts %llu   Forced stops %llu   Deadlocks %llu\nCollisions %llu   Minimum separation %.2f m%s"),
+            static_cast<unsigned long long>(Metrics.vehicle_count),Subsystem->GetSeed(),static_cast<double>(Subsystem->GetPlaybackTime().count()),Subsystem->IsFinished()?TEXT("Finished"):Subsystem->IsPlaying()?TEXT("Running"):TEXT("Paused"),
+            static_cast<unsigned long long>(Metrics.missions_completed),static_cast<unsigned long long>(Metrics.missions_attempted),Moving,Waiting,Stopped,Completed,Metrics.traffic_waiting_time_s,
+            static_cast<unsigned long long>(Metrics.reservation_requests),static_cast<unsigned long long>(Metrics.reservation_contentions),static_cast<unsigned long long>(Metrics.near_conflict_events),static_cast<unsigned long long>(Metrics.forced_safety_stops),static_cast<unsigned long long>(Metrics.deadlock_count),static_cast<unsigned long long>(Metrics.collisions),Metrics.minimum_separation_m,*VehicleLines));
+    }
+
     if (Subsystem->IsAutonomyMode()) {
         const auto* State = Subsystem->GetAutonomySnapshot();
         if (State == nullptr) return FText::FromString(Subsystem->GetStatusText());
@@ -198,6 +213,7 @@ FText SRampLabControlPanel::EventsText() const
 FText SRampLabControlPanel::SelectedEntityText() const
 {
     const auto* Subsystem = SimulationSubsystem.Get();
+    if (Subsystem != nullptr && Subsystem->IsFleetMode()) return FText::FromString(TEXT("Fleet labels show vehicle ID, goal, and live movement state. Recent Events lists reservation, wait, release, and safety decisions."));
     if (Subsystem != nullptr && Subsystem->IsAutonomyMode()) return FText::FromString(TEXT("Tug-1 / ground truth body\nGNSS marker / sensor estimate\nBlue line / A* route\nYellow rays / Unreal geometry LiDAR"));
     return FText::FromString(Subsystem == nullptr ? TEXT("Unavailable") : Subsystem->GetSelectedEntityText());
 }
@@ -206,6 +222,7 @@ FText SRampLabControlPanel::ResultsText() const
 {
     const auto* Subsystem = SimulationSubsystem.Get();
     if (Subsystem != nullptr && Subsystem->IsAutonomyMode()) {
+        if(Subsystem->IsFleetMode())return FText::FromString(Subsystem->IsFinished()?Subsystem->GetFinalResultText():TEXT("Fleet traffic metrics update during simulation. Recent Events shows typed coordination decisions."));
         const auto* State=Subsystem->GetAutonomySnapshot();
         return FText::FromString(State!=nullptr&&State->finished?Subsystem->GetFinalResultText():TEXT("Closed-loop mission is running from SensorFrame observations."));
     }

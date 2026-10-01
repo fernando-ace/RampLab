@@ -49,6 +49,7 @@ public:
     [[nodiscard]] bool IsAutonomyMode() const noexcept { return AutonomySimulation != nullptr || FleetSimulation != nullptr; }
     [[nodiscard]] bool IsFleetMode() const noexcept { return FleetSimulation != nullptr; }
     [[nodiscard]] const std::vector<airside::autonomy::FleetVehicleSnapshot>& GetFleetSnapshots() const noexcept { return FleetSnapshots; }
+    [[nodiscard]] const airside::autonomy::FleetMetrics& GetFleetMetrics() const noexcept { return FleetMetricsSnapshot; }
     [[nodiscard]] const TArray<FString>& GetRecentEvents() const noexcept { return RecentEvents; }
     [[nodiscard]] uint64 GetSeed() const noexcept { return Seed; }
     [[nodiscard]] FString GetScenarioName() const { return ScenarioName; }
@@ -72,6 +73,8 @@ private:
     TUniquePtr<airside::autonomy::AutonomySimulation> AutonomySimulation;
     TUniquePtr<airside::autonomy::FleetSimulation> FleetSimulation;
     std::vector<airside::autonomy::FleetVehicleSnapshot> FleetSnapshots;
+    airside::autonomy::FleetMetrics FleetMetricsSnapshot;
+    std::size_t FleetEventCount{0};
     TUniquePtr<airside::autonomy::ReferenceController> AutonomyController;
     TOptional<airside::autonomy::AutonomySnapshot> AutonomySnapshot;
     TOptional<airside::SimulationSnapshot> Snapshot;
