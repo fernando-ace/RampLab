@@ -70,7 +70,8 @@ add_executable(ramplab_ros2_turnaround_bridge src/turnaround_bridge_main.cpp)
 target_compile_features(ramplab_ros2_turnaround_bridge PRIVATE cxx_std_20)
 target_include_directories(ramplab_ros2_turnaround_bridge PRIVATE include)
 target_link_libraries(ramplab_ros2_turnaround_bridge PRIVATE
-  rclcpp::rclcpp std_msgs::std_msgs ramplab_airside_scenario ramplab_airside_sim ramplab_yaml_cpp)
+  rclcpp::rclcpp std_msgs::std_msgs ramplab_airside_scenario ramplab_airside_sim
+  ramplab_airside_autonomy ramplab_yaml_cpp)
 install(TARGETS ramplab_ros2_turnaround_bridge DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

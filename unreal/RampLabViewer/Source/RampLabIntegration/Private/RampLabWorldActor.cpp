@@ -535,7 +535,12 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
         airside::Vec2 PositionMeters{};
         bool bFound = false;
         TOptional<float> TargetYaw;
-        if (Vehicle.journey) {
+        if (Vehicle.observed_position_m) {
+            PositionMeters = *Vehicle.observed_position_m;
+            if (Vehicle.observed_heading_rad)
+                TargetYaw = FMath::RadiansToDegrees(static_cast<float>(*Vehicle.observed_heading_rad));
+            bFound = true;
+        } else if (Vehicle.journey) {
             if (const auto Sample = airside::visualization::sample_journey(*Vehicle.journey, Snapshot.road_nodes, PlaybackTime)) {
                 PositionMeters = {Sample->position_m.x, Sample->position_m.y};
                 const FVector Here = ToWorld(PositionMeters);
@@ -564,7 +569,8 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
         }
         Label->SetWorldLocation(Position + FVector(0.0f, 0.0f, 240.0f));
         Label->SetText(FText::FromString(FString::Printf(
-            TEXT("%s - %s"), UTF8_TO_TCHAR(Vehicle.name.c_str()), *VehicleStateText(Vehicle.state))));
+            TEXT("%s - %s"), UTF8_TO_TCHAR(Vehicle.name.c_str()),
+            Vehicle.fleet_status.empty() ? *VehicleStateText(Vehicle.state) : UTF8_TO_TCHAR(Vehicle.fleet_status.c_str()))));
     }
 
     const FVector CameraLocation = CameraComponent->GetComponentLocation();

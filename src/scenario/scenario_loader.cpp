@@ -47,6 +47,8 @@ struct ScenarioDocument {
     std::vector<RoadEventDocument> road_events;
     struct Disruption { std::int64_t time; std::string aircraft; std::string task; std::int64_t duration; };
     std::vector<Disruption> disruptions;
+    struct VehicleOutage { std::int64_t time; std::string vehicle; };
+    std::vector<VehicleOutage> vehicle_outages;
 };
 
 YAML::Node required(const YAML::Node& parent, const char* key, std::string_view context) {
@@ -188,6 +190,15 @@ ScenarioDocument parse_document(const YAML::Node& root) {
             document.disruptions.push_back({scalar<std::int64_t>(item, "time_seconds", context),
                 scalar<std::string>(item, "aircraft", context), scalar<std::string>(item, "task", context),
                 scalar<std::int64_t>(item, "duration_seconds", context)});
+        }
+    }
+    if (const auto outages = root["vehicle_outages"]) {
+        if (!outages.IsSequence()) throw ScenarioLoadError("vehicle_outages must be a sequence");
+        for (std::size_t index = 0; index < outages.size(); ++index) {
+            const auto item = outages[index];
+            const auto context = std::format("vehicle_outages[{}]", index);
+            document.vehicle_outages.push_back({scalar<std::int64_t>(item, "time_seconds", context),
+                scalar<std::string>(item, "vehicle", context)});
         }
     }
     return document;
@@ -413,6 +424,14 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         const auto task_found = aircraft_task_ids[value.aircraft].find(value.task);
         if (task_found == aircraft_task_ids[value.aircraft].end()) throw ScenarioLoadError(std::format("disruption references missing task '{}.{}'", value.aircraft, value.task));
         scenario.task_duration_disruptions.push_back({SimTime{value.time}, task_found->second, SimTime{value.duration}});
+    }
+    for (const auto& value : document.vehicle_outages) {
+        if (value.time < 0) throw ScenarioLoadError("vehicle outage timestamp cannot be negative");
+        const auto vehicle_found = std::ranges::find(document.vehicles, value.vehicle, &VehicleDocument::id);
+        if (vehicle_found == document.vehicles.end())
+            throw ScenarioLoadError(std::format("vehicle outage references missing vehicle '{}'", value.vehicle));
+        const auto index = static_cast<std::size_t>(vehicle_found - document.vehicles.begin());
+        scenario.vehicle_outages.push_back({SimTime{value.time}, VehicleId{static_cast<std::uint32_t>(index + 1)}});
     }
 
     for (const auto& flight : scenario.aircraft) {

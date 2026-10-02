@@ -98,7 +98,7 @@ target_link_libraries(airside_experiment_yaml PUBLIC airside::experiment PRIVATE
 airside_enable_warnings(airside_experiment_yaml)
 
 add_executable(airside_cli apps/airside_cli/main.cpp)
-target_link_libraries(airside_cli PRIVATE airside::sim airside::scenario)
+target_link_libraries(airside_cli PRIVATE airside::sim airside::scenario airside::autonomy)
 
 airside_enable_warnings(airside_cli)
 
@@ -120,7 +120,7 @@ airside_enable_warnings(airside_fleet_cli)
 add_executable(airside_experiment_cli apps/airside_experiment/main.cpp)
 set_target_properties(airside_experiment_cli PROPERTIES OUTPUT_NAME airside_experiment)
 target_compile_definitions(airside_experiment_cli PRIVATE AIRSIDE_PROJECT_VERSION="${PROJECT_VERSION}")
-target_link_libraries(airside_experiment_cli PRIVATE airside::experiment airside::experiment_yaml airside::scenario)
+target_link_libraries(airside_experiment_cli PRIVATE airside::experiment airside::experiment_yaml airside::scenario airside::autonomy)
 airside_enable_warnings(airside_experiment_cli)
 
 if(BUILD_TESTING)

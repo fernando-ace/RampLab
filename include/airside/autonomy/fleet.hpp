@@ -177,6 +177,12 @@ public:
     [[nodiscard]] bool finished() const noexcept;
     [[nodiscard]] double time_s() const noexcept;
     [[nodiscard]] bool advance();
+    void add_service_request(ServiceRequest request);
+    void update_service_duration(const ServiceRequestId& request, double duration_s);
+    void add_road_event(RoadAvailabilityEvent event);
+    void mark_vehicle_unavailable(const VehicleId& vehicle);
+    [[nodiscard]] std::vector<ServiceTaskSnapshot> service_requests() const;
+    [[nodiscard]] FleetDispatchMetrics dispatch_metrics() const;
     [[nodiscard]] FleetMetrics result() const;
     [[nodiscard]] std::vector<FleetVehicleSnapshot> snapshots() const;
     [[nodiscard]] std::vector<FleetWaitDependency> wait_dependencies() const;

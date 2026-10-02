@@ -37,6 +37,7 @@ struct ServiceTask {
     std::string required_resource;
     std::optional<VehicleId> assigned_vehicle;
     std::string assigned_resource;
+    std::size_t reassignments{};
     bool eligibility_scheduled{false};
 
     constexpr ServiceTask(TaskId task_id, ServiceType service_type) noexcept
@@ -72,6 +73,7 @@ public:
     [[nodiscard]] SimTime target_off_block() const noexcept;
     [[nodiscard]] TurnaroundState turnaround_state() const noexcept;
     [[nodiscard]] std::optional<SimTime> departure_delay() const noexcept;
+    [[nodiscard]] const std::string& failure_reason() const noexcept;
 
     void transition_to(AircraftState next);
     void arrive(SimTime now);
@@ -79,12 +81,15 @@ public:
     void mark_task_waiting(TaskId id, SimTime now);
     void make_task_ready(TaskId id);
     void assign_task(ServiceType type);
-    void assign_task(TaskId id, std::string resource = {});
+    void assign_task(TaskId id, std::string resource = {}, std::optional<VehicleId> vehicle = std::nullopt);
+    void requeue_task(TaskId id, SimTime now);
     void start_task(ServiceType type, SimTime now);
     void start_task(TaskId id, SimTime now);
     void complete_task(ServiceType type, SimTime now);
     void complete_task(TaskId id, SimTime now);
     void set_task_duration(TaskId id, SimTime duration);
+    void fail_task(TaskId id, std::string reason);
+    void fail_turnaround(std::string reason);
     void depart(SimTime now);
 
     [[nodiscard]] bool services_complete() const noexcept;
@@ -109,6 +114,8 @@ private:
     std::optional<SimTime> actual_departure_;
     std::string turnaround_id_;
     SimTime target_off_block_{};
+    bool failed_{};
+    std::string failure_reason_;
 };
 
 [[nodiscard]] std::string_view to_string(TurnaroundState state) noexcept;

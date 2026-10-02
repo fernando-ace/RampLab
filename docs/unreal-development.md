@@ -71,6 +71,20 @@ Capture the deterministic visual milestones at accelerated developer speed:
 
 The capture multiplier is a debug-only wall-clock accelerator applied on top of the visible operator playback setting. It is accepted only with `-RampLabCapture`; the UI continues to show one of the supported operator speeds and labels the QA acceleration explicitly.
 
+## Turnaround operator panel validation
+
+Launch a visible, accelerated turnaround scenario and inspect `Saved/Logs/RampLabGoal14Turnaround.log` for task transitions and the fleet summary:
+
+```powershell
+& 'C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe' `
+  "$PWD\unreal\RampLabViewer\RampLabViewer.uproject" `
+  -game -windowed -ResX=1280 -ResY=720 -NoSplash `
+  -RampLabTurnaroundValidation `
+  -abslog="$PWD\unreal\RampLabViewer\Saved\Logs\RampLabGoal14Turnaround.log"
+```
+
+The validation mode selects `turnaround_normal` at 20x playback. At completion the log reports completed/failed turnarounds, task and fleet reassignments, fleet collisions and minimum separation, reservation/contention counts, outstanding reservations, unresolved requests, and the Recent Events panel contents. The visible run passed with 1/1 completed, zero failures/collisions, 8.0 m minimum separation, and zero unresolved requests; the event panel recorded departure.
+
 The capture sequence now includes the Auburn overview, five operational milestones, and three autonomy frames (depot/route, obstacle sensing, Gate A2 result) under `unreal/RampLabViewer/Saved/Screenshots/RampLab`. The Autonomy scenario uses the same fixed-step autonomy library and controller as the headless CLI; the renderer displays its snapshot, GNSS estimate, route, obstacle circles, LiDAR returns, and trajectory. `Saved`, `Intermediate`, `Binaries`, `DerivedDataCache`, solution files, and all CMake build trees remain ignored by Git.
 
 For the deterministic two-scenario presentation flow, launch with:

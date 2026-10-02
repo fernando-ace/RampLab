@@ -43,10 +43,11 @@ inline std::string turnaround_state_json(const airside::SimulationSnapshot& snap
     output += std::format(
         "{{\"turnaround_id\":\"{}\",\"aircraft_id\":{},\"gate_id\":{},\"state\":\"{}\","
         "\"scheduled_departure_seconds\":{},\"estimated_ready_time_seconds\":{},\"delay_seconds\":{},"
-        "\"schedule_slack_seconds\":{},\"active_task_count\":{},\"completed_task_count\":{},\"critical_path_task_ids\":[",
+        "\"schedule_slack_seconds\":{},\"failure_reason\":\"{}\",\"active_task_count\":{},\"completed_task_count\":{},\"critical_path_task_ids\":[",
         json_escape(turnaround.turnaround_id), turnaround.aircraft.value(), turnaround.gate.value(),
         airside::to_string(turnaround.state), turnaround.scheduled_departure.count(),
-        turnaround.estimated_ready_time.count(), delay, turnaround.schedule_slack.count(), active, completed);
+        turnaround.estimated_ready_time.count(), delay, turnaround.schedule_slack.count(),
+        json_escape(turnaround.failure_reason), active, completed);
     for (std::size_t task_index = 0; task_index < turnaround.critical_path_tasks.size(); ++task_index) {
       if (task_index != 0) output += ',';
       output += std::to_string(turnaround.critical_path_tasks[task_index].value());
@@ -56,10 +57,15 @@ inline std::string turnaround_state_json(const airside::SimulationSnapshot& snap
       const auto& task = turnaround.tasks[task_index];
       if (task_index != 0) output += ',';
       output += std::format(
-          "{{\"task_id\":{},\"service_type\":\"{}\",\"state\":\"{}\",\"required_resource\":\"{}\",\"assigned_resource\":\"{}\",\"assigned_vehicle_id\":{}}}",
+          "{{\"task_id\":{},\"service_type\":\"{}\",\"state\":\"{}\",\"required_resource\":\"{}\",\"assigned_resource\":\"{}\",\"assigned_vehicle_id\":{},\"requested_at_seconds\":{},\"started_at_seconds\":{},\"completed_at_seconds\":{},\"latest_desirable_completion_seconds\":{},\"reassignments\":{}}}",
           task.id.value(), airside::to_string(task.type), airside::to_string(task.status),
           json_escape(task.required_resource), json_escape(task.assigned_resource),
-          task.assigned_vehicle ? std::to_string(task.assigned_vehicle->value()) : "null");
+          task.assigned_vehicle ? std::to_string(task.assigned_vehicle->value()) : "null",
+          task.requested_at ? std::to_string(task.requested_at->count()) : "null",
+          task.started_at ? std::to_string(task.started_at->count()) : "null",
+          task.completed_at ? std::to_string(task.completed_at->count()) : "null",
+          task.latest_desirable_completion ? std::to_string(task.latest_desirable_completion->count()) : "null",
+          task.reassignments);
     }
     output += "]}";
   }
@@ -70,12 +76,12 @@ inline std::string turnaround_state_json(const airside::SimulationSnapshot& snap
 inline std::string turnaround_event_json(const airside::SimulationEventRecord& event) {
   return std::format(
       "{{\"sequence\":{},\"time_seconds\":{},\"type\":\"{}\",\"turnaround_id\":\"{}\","
-      "\"aircraft_id\":{},\"task_id\":{},\"service_type\":\"{}\",\"vehicle_id\":{}}}",
+      "\"aircraft_id\":{},\"task_id\":{},\"service_type\":\"{}\",\"vehicle_id\":{},\"detail\":\"{}\"}}",
       event.sequence, event.timestamp.count(), airside::to_string(event.type),
       json_escape(event.turnaround_id), event.aircraft ? std::to_string(event.aircraft->value()) : "null",
       event.task ? std::to_string(event.task->value()) : "null",
       event.service ? airside::to_string(*event.service) : std::string_view{},
-      event.vehicle ? std::to_string(event.vehicle->value()) : "null");
+      event.vehicle ? std::to_string(event.vehicle->value()) : "null", json_escape(event.detail));
 }
 
 }  // namespace ramplab_ros2_bridge

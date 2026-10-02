@@ -70,8 +70,10 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     bGoal12RecoveryValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal12RecoveryValidation"));
     bGoal13DispatchValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13DispatchValidation"));
     bGoal13ReassignmentValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13ReassignmentValidation"));
+    bTurnaroundValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabTurnaroundValidation"));
     if(bGoal13ReassignmentValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_reassignment");PlaybackSpeed=60.0;}
     else if(bGoal13DispatchValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_dynamic");PlaybackSpeed=60.0;}
+    else if(bTurnaroundValidation){SelectedScenarioKey=TEXT("turnaround_normal");PlaybackSpeed=20.0;}
     else if(bGoal12RecoveryValidation){SelectedScenarioKey=TEXT("autonomy_fleet_deadlock");PlaybackSpeed=10.0;}
     else if(bGoal12ClosureValidation){SelectedScenarioKey=TEXT("autonomy_fleet_dynamic_closure");PlaybackSpeed=10.0;}
     else if(bFleetValidation){SelectedScenarioKey=TEXT("autonomy_fleet");PlaybackSpeed=10.0;}
@@ -271,6 +273,24 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
                     Aircraft.turnaround.count() / 60.0,
                     Aircraft.departure_delay.count() / 60.0,
                     Aircraft.service_waiting.count() / 60.0);
+            }
+            if (bTurnaroundValidation) {
+                UE_LOG(LogRampLab, Display,
+                    TEXT("Turnaround runtime validation: completed=%llu/%llu failed=%llu task_reassignments=%llu fleet_reassignments=%llu service_requests=%llu/%llu/%llu collisions=%llu minimum_separation_m=%.3f reservation_requests=%llu contentions=%llu outstanding=%llu unresolved=%llu"),
+                    static_cast<unsigned long long>(Result.metrics.completed_turnarounds),
+                    static_cast<unsigned long long>(Result.metrics.total_turnarounds),
+                    static_cast<unsigned long long>(Result.metrics.failed_or_timed_out_turnarounds),
+                    static_cast<unsigned long long>(Result.metrics.task_reassignments),
+                    static_cast<unsigned long long>(Result.metrics.fleet_reassignments),
+                    static_cast<unsigned long long>(Result.metrics.fleet_requests_created),
+                    static_cast<unsigned long long>(Result.metrics.fleet_requests_completed),
+                    static_cast<unsigned long long>(Result.metrics.fleet_requests_failed),
+                    static_cast<unsigned long long>(Result.metrics.fleet_collisions), Result.metrics.fleet_minimum_separation_m,
+                    static_cast<unsigned long long>(Result.metrics.fleet_reservation_requests),
+                    static_cast<unsigned long long>(Result.metrics.fleet_reservation_contentions),
+                    static_cast<unsigned long long>(Result.metrics.fleet_outstanding_reservations),
+                    static_cast<unsigned long long>(Result.metrics.unresolved_service_requests));
+                UE_LOG(LogRampLab, Display, TEXT("Turnaround Recent Events panel: %s"), *FString::Join(RecentEvents, TEXT(" | ")));
             }
             bCompletionReported = true;
             FinalResultText = FormatResult(ScenarioName.ToUpper(), Result);
@@ -540,7 +560,8 @@ FString URampLabSimulationSubsystem::GetSelectedEntityText() const
                     Route += Node == Value.road_nodes.end() ? TEXT("?") : UTF8_TO_TCHAR(Node->name.c_str());
                 }
             } else {
-                Route += TEXT("At depot");
+                Route += Match->fleet_status.empty()
+                    ? TEXT("At depot") : UTF8_TO_TCHAR(Match->fleet_status.c_str());
             }
             FString Assignment(TEXT("Unassigned"));
             if (Match->assigned_aircraft) {
@@ -550,7 +571,8 @@ FString URampLabSimulationSubsystem::GetSelectedEntityText() const
             return FString::Printf(TEXT("%s\n%s vehicle\n%s\nAssigned: %s\n%s"),
                 UTF8_TO_TCHAR(Match->name.c_str()),
                 Match->type == airside::ServiceType::Fueling ? TEXT("Fuel") : TEXT("Baggage"),
-                *VehicleStateText(Match->state), *Assignment, *Route);
+                Match->fleet_status.empty() ? *VehicleStateText(Match->state) : UTF8_TO_TCHAR(Match->fleet_status.c_str()),
+                *Assignment, *Route);
         }
     } else if (SelectedEntityKind == TEXT("gate")) {
         const auto Match = std::ranges::find(Value.gates, SelectedEntityId, [](const auto& Item) { return Item.id.value(); });

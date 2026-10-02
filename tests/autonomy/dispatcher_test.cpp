@@ -136,4 +136,21 @@ TEST(FleetDispatcherTest, ClosedRoadMakesCandidateRouteUnavailableAndTerminalSta
     EXPECT_EQ(dispatcher.metrics().requests_failed, 1U);
 }
 
+TEST(FleetDispatcherTest, AcceptsDependencyUnlockedRequestsAndOnlyReplansQueuedWork) {
+    FleetDispatcher dispatcher{{task("first", 10)}};
+    dispatcher.add_request(task("dependent", 4, 0.0));
+    EXPECT_EQ(dispatcher.snapshot().size(), 2U);
+    EXPECT_EQ(dispatcher.dispatch(0.0, {vehicle("tug", "Junction")}, graph()).size(), 1U);
+    dispatcher.update_service_duration(ServiceRequestId{"dependent"}, 25.0, 0.0);
+    const auto snapshots = dispatcher.snapshot();
+    const auto dependent = std::ranges::find(snapshots, ServiceRequestId{"dependent"},
+        [](const auto& value) { return value.request.id; });
+    ASSERT_NE(dependent, snapshots.end());
+    EXPECT_DOUBLE_EQ(dependent->request.service_duration_s, 25.0);
+    dispatcher.set_state(ServiceRequestId{"first"}, ServiceTaskState::EnRoute, 1.0);
+    dispatcher.set_state(ServiceRequestId{"first"}, ServiceTaskState::Servicing, 2.0);
+    EXPECT_THROW(dispatcher.add_request(task("dependent")), std::invalid_argument);
+    EXPECT_THROW(dispatcher.update_service_duration(ServiceRequestId{"first"}, 30.0, 2.0), std::logic_error);
+}
+
 } // namespace airside::autonomy

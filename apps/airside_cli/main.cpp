@@ -21,6 +21,8 @@ struct Options {
     std::filesystem::path scenario{"scenarios/baseline.yaml"};
     std::optional<std::uint64_t> seed;
     std::optional<std::filesystem::path> event_recording;
+    std::optional<std::filesystem::path> metrics_json;
+    std::optional<std::filesystem::path> metrics_csv;
     bool verbose{true};
     bool dump_snapshots{false};
 };
@@ -28,7 +30,8 @@ struct Options {
 void print_usage() {
     std::cout
         << "Usage: airside_cli [--scenario FILE] [--seed NUMBER] [--quiet]\n"
-        << "                   [--dump-snapshots] [--record-events FILE] [--help]\n";
+        << "                   [--dump-snapshots] [--record-events FILE]\n"
+        << "                   [--metrics-json FILE] [--metrics-csv FILE] [--help]\n";
 }
 
 Options parse_options(int argc, char* argv[]) {
@@ -38,11 +41,14 @@ Options parse_options(int argc, char* argv[]) {
         if (argument == "--help") { print_usage(); std::exit(0); }
         if (argument == "--quiet") { result.verbose = false; continue; }
         if (argument == "--dump-snapshots") { result.dump_snapshots = true; continue; }
-        if (argument == "--scenario" || argument == "--record-events" || argument == "--seed") {
+        if (argument == "--scenario" || argument == "--record-events" || argument == "--seed" ||
+            argument == "--metrics-json" || argument == "--metrics-csv") {
             if (++index >= argc) throw std::invalid_argument(std::format("{} requires a value", argument));
             const std::string value{argv[index]};
             if (argument == "--scenario") result.scenario = value;
             else if (argument == "--record-events") result.event_recording = value;
+            else if (argument == "--metrics-json") result.metrics_json = value;
+            else if (argument == "--metrics-csv") result.metrics_csv = value;
             else {
                 std::size_t consumed = 0;
                 result.seed = std::stoull(value, &consumed);
@@ -53,6 +59,119 @@ Options parse_options(int argc, char* argv[]) {
         throw std::invalid_argument(std::format("unknown argument: {}", argument));
     }
     return result;
+}
+
+std::string csv_escape(std::string_view value) {
+    if (value.find_first_of(",\"\r\n") == std::string_view::npos) return std::string{value};
+    std::string output{"\""};
+    for (const auto character : value) {
+        if (character == '"') output += "\"\"";
+        else output += character;
+    }
+    output += '"';
+    return output;
+}
+
+std::string json_escape(std::string_view text);
+
+void write_metrics(const std::filesystem::path& json_path, const std::filesystem::path& csv_path,
+                   const airside::SimulationResult& result, const airside::SimulationSnapshot& snapshot) {
+    if (!json_path.empty()) {
+        if (!json_path.parent_path().empty()) std::filesystem::create_directories(json_path.parent_path());
+        std::ofstream output{json_path};
+        if (!output) throw std::runtime_error("cannot create metrics JSON: " + json_path.string());
+        const auto& metrics = result.metrics;
+        output << std::fixed << std::setprecision(6)
+            << "{\"seed\":" << result.seed << ",\"simulated_duration_seconds\":" << result.simulated_duration.count()
+            << ",\"total_turnarounds\":" << metrics.total_turnarounds
+            << ",\"completed_turnarounds\":" << metrics.completed_turnarounds
+            << ",\"delayed_turnarounds\":" << metrics.delayed_turnarounds
+            << ",\"failed_or_timed_out_turnarounds\":" << metrics.failed_or_timed_out_turnarounds
+            << ",\"task_reassignments\":" << metrics.task_reassignments
+            << ",\"disruption_triggered_replans\":" << metrics.disruption_triggered_replans
+            << ",\"unresolved_service_requests\":" << metrics.unresolved_service_requests
+            << ",\"fleet\":{\"collisions\":" << metrics.fleet_collisions
+            << ",\"minimum_separation_m\":" << metrics.fleet_minimum_separation_m
+            << ",\"reservation_requests\":" << metrics.fleet_reservation_requests
+            << ",\"reservation_contentions\":" << metrics.fleet_reservation_contentions
+            << ",\"outstanding_reservations\":" << metrics.fleet_outstanding_reservations
+            << ",\"unfinished_requests\":" << metrics.fleet_unfinished_requests
+            << ",\"reassignments\":" << metrics.fleet_reassignments
+            << ",\"requests_created\":" << metrics.fleet_requests_created
+            << ",\"requests_completed\":" << metrics.fleet_requests_completed
+            << ",\"requests_failed\":" << metrics.fleet_requests_failed << "},\"turnarounds\":[";
+        for (std::size_t index = 0; index < snapshot.turnarounds.size(); ++index) {
+            const auto& turnaround = snapshot.turnarounds[index];
+            if (index != 0) output << ',';
+            output << "{\"turnaround_id\":\"" << json_escape(turnaround.turnaround_id)
+                << "\",\"state\":\"" << airside::to_string(turnaround.state)
+                << "\",\"failure_reason\":\"" << json_escape(turnaround.failure_reason)
+                << "\",\"estimated_ready_time_seconds\":" << turnaround.estimated_ready_time.count()
+                << ",\"schedule_slack_seconds\":" << turnaround.schedule_slack.count()
+                << ",\"predicted_late\":" << (turnaround.predicted_late ? "true" : "false")
+                << ",\"critical_path_task_ids\":[";
+            for (std::size_t path_index = 0; path_index < turnaround.critical_path_tasks.size(); ++path_index) {
+                if (path_index != 0) output << ',';
+                output << turnaround.critical_path_tasks[path_index].value();
+            }
+            output << "],\"tasks\":[";
+            for (std::size_t task_index = 0; task_index < turnaround.tasks.size(); ++task_index) {
+                const auto& task = turnaround.tasks[task_index];
+                if (task_index != 0) output << ',';
+                output << "{\"task_id\":" << task.id.value() << ",\"service_type\":\""
+                    << airside::to_string(task.type) << "\",\"state\":\"" << airside::to_string(task.status)
+                    << "\",\"requested_at_seconds\":" << (task.requested_at ? std::to_string(task.requested_at->count()) : "null")
+                    << ",\"started_at_seconds\":" << (task.started_at ? std::to_string(task.started_at->count()) : "null")
+                    << ",\"completed_at_seconds\":" << (task.completed_at ? std::to_string(task.completed_at->count()) : "null")
+                    << ",\"latest_desirable_completion_seconds\":" << (task.latest_desirable_completion ? std::to_string(task.latest_desirable_completion->count()) : "null")
+                    << ",\"reassignments\":" << task.reassignments << ",\"assigned_resource\":\""
+                    << json_escape(task.assigned_resource) << "\"}";
+            }
+            output << "]}";
+        }
+        output << "]}\n";
+        if (!output) throw std::runtime_error("failed writing metrics JSON: " + json_path.string());
+    }
+    if (!csv_path.empty()) {
+        if (!csv_path.parent_path().empty()) std::filesystem::create_directories(csv_path.parent_path());
+        std::ofstream output{csv_path};
+        if (!output) throw std::runtime_error("cannot create metrics CSV: " + csv_path.string());
+        output << "seed,simulated_duration_seconds,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,turnaround_id,task_id,service_type,state,requested_at_seconds,started_at_seconds,completed_at_seconds,latest_desirable_completion_seconds,reassignments,assigned_resource\n";
+        output << result.seed << ',' << result.simulated_duration.count() << ',' << result.metrics.total_turnarounds << ','
+            << result.metrics.completed_turnarounds << ',' << result.metrics.delayed_turnarounds << ','
+            << result.metrics.failed_or_timed_out_turnarounds << ',' << result.metrics.task_reassignments << ','
+            << result.metrics.disruption_triggered_replans << ',' << result.metrics.unresolved_service_requests << ','
+            << result.metrics.fleet_collisions << ',' << result.metrics.fleet_minimum_separation_m << ','
+            << result.metrics.fleet_reservation_requests << ',' << result.metrics.fleet_reservation_contentions << ','
+            << result.metrics.fleet_outstanding_reservations << ',' << result.metrics.fleet_unfinished_requests << ','
+            << result.metrics.fleet_reassignments << ',' << result.metrics.fleet_requests_created << ','
+            << result.metrics.fleet_requests_completed << ',' << result.metrics.fleet_requests_failed << ',';
+        bool first = true;
+        for (const auto& turnaround : snapshot.turnarounds) {
+            for (const auto& task : turnaround.tasks) {
+                if (!first) output << "\n" << result.seed << ',' << result.simulated_duration.count() << ','
+                    << result.metrics.total_turnarounds << ',' << result.metrics.completed_turnarounds << ','
+                    << result.metrics.delayed_turnarounds << ',' << result.metrics.failed_or_timed_out_turnarounds << ','
+                    << result.metrics.task_reassignments << ',' << result.metrics.disruption_triggered_replans << ','
+                    << result.metrics.unresolved_service_requests << ',' << result.metrics.fleet_collisions << ','
+                    << result.metrics.fleet_minimum_separation_m << ',' << result.metrics.fleet_reservation_requests << ','
+                    << result.metrics.fleet_reservation_contentions << ',' << result.metrics.fleet_outstanding_reservations << ','
+                    << result.metrics.fleet_unfinished_requests << ',' << result.metrics.fleet_reassignments << ','
+                    << result.metrics.fleet_requests_created << ',' << result.metrics.fleet_requests_completed << ','
+                    << result.metrics.fleet_requests_failed << ',';
+                first = false;
+                output << csv_escape(turnaround.turnaround_id) << ',' << task.id.value() << ','
+                    << airside::to_string(task.type) << ',' << airside::to_string(task.status) << ','
+                    << (task.requested_at ? std::to_string(task.requested_at->count()) : "") << ','
+                    << (task.started_at ? std::to_string(task.started_at->count()) : "") << ','
+                    << (task.completed_at ? std::to_string(task.completed_at->count()) : "") << ','
+                    << (task.latest_desirable_completion ? std::to_string(task.latest_desirable_completion->count()) : "") << ','
+                    << task.reassignments << ',' << csv_escape(task.assigned_resource);
+            }
+        }
+        output << '\n';
+        if (!output) throw std::runtime_error("failed writing metrics CSV: " + csv_path.string());
+    }
 }
 
 class ConsoleEventSink final : public airside::ISimulationEventSink {
@@ -221,6 +340,14 @@ void print_report(
                   << result.metrics.disruption_triggered_replans << "  Reassignments: "
                   << result.metrics.task_reassignments << "  Unresolved service requests: "
                   << result.metrics.unresolved_service_requests << '\n'
+                  << "Fleet safety: collisions=" << result.metrics.fleet_collisions
+                  << " minimum_separation_m=" << result.metrics.fleet_minimum_separation_m
+                  << " reservations=" << result.metrics.fleet_reservation_requests
+                  << " contentions=" << result.metrics.fleet_reservation_contentions
+                  << " outstanding_reservations=" << result.metrics.fleet_outstanding_reservations
+                  << " service_requests=" << result.metrics.fleet_requests_created << '/'
+                  << result.metrics.fleet_requests_completed << '/' << result.metrics.fleet_requests_failed
+                  << " unfinished_requests=" << result.metrics.fleet_unfinished_requests << '\n'
                   << "Deterministic event digest: " << turnaround_event_digest(result.events) << '\n';
         for (const auto& [type, utilization] : result.metrics.resource_utilization) {
             std::cout << "Resource utilization " << airside::to_string(type) << ": "
@@ -275,6 +402,10 @@ int main(int argc, char* argv[]) {
             if (options.dump_snapshots) print_snapshot(simulation.snapshot());
         }
         const auto result = simulation.result();
+        if (options.metrics_json || options.metrics_csv) {
+            write_metrics(options.metrics_json.value_or(std::filesystem::path{}),
+                options.metrics_csv.value_or(std::filesystem::path{}), result, simulation.snapshot());
+        }
         const auto elapsed = std::chrono::duration<double>(
             std::chrono::steady_clock::now() - started).count();
         if (console_sink.failed() || (recording_sink && recording_sink->failed())) {

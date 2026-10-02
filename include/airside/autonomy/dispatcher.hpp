@@ -16,6 +16,8 @@ class FleetDispatcher {
 public:
     explicit FleetDispatcher(std::vector<ServiceRequest> requests, double aging_interval_s = 30.0);
 
+    void add_request(ServiceRequest request);
+    void update_service_duration(const ServiceRequestId& request, double duration_s, double simulation_time_s);
     [[nodiscard]] std::vector<ServiceTaskSnapshot> snapshot() const;
     [[nodiscard]] const std::vector<DispatchEvent>& events() const noexcept { return events_; }
     [[nodiscard]] bool all_terminal() const noexcept;

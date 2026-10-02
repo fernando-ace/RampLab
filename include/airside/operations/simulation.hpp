@@ -11,6 +11,8 @@
 #include "airside/world/gate.hpp"
 
 #include <cstdint>
+#include <map>
+#include <memory>
 #include <optional>
 #include <random>
 #include <string>
@@ -18,6 +20,8 @@
 #include <vector>
 
 namespace airside {
+
+namespace autonomy { class FleetSimulation; }
 
 struct RoadAvailabilityEvent {
     SimTime time;
@@ -29,6 +33,11 @@ struct TaskDurationDisruption {
     SimTime time;
     TaskId task;
     SimTime duration;
+};
+
+struct VehicleOutageEvent {
+    SimTime time;
+    VehicleId vehicle;
 };
 
 struct Scenario {
@@ -43,6 +52,7 @@ struct Scenario {
     bool turnaround_orchestration{false};
     std::vector<RoadAvailabilityEvent> road_events;
     std::vector<TaskDurationDisruption> task_duration_disruptions;
+    std::vector<VehicleOutageEvent> vehicle_outages;
 };
 
 struct SimulationResult {
@@ -64,6 +74,9 @@ public:
         Scenario scenario,
         std::uint64_t seed,
         SimulationHistoryPolicy history_policy = SimulationHistoryPolicy::Retain);
+    ~Simulation();
+    Simulation(const Simulation&) = delete;
+    Simulation& operator=(const Simulation&) = delete;
     void add_event_sink(ISimulationEventSink& sink);
     [[nodiscard]] bool finished() const noexcept;
     [[nodiscard]] std::optional<SimTime> next_event_time() const noexcept;
@@ -85,9 +98,14 @@ private:
     void handle_abstract_service_completed(AircraftId id, TaskId task);
     void handle_task_eligibility(AircraftId id, TaskId task);
     void handle_task_duration_change(TaskId task, SimTime duration);
+    void handle_vehicle_outage(VehicleId vehicle);
+    void handle_fleet_tick();
     void schedule_turnaround_tasks(Aircraft& aircraft);
     void complete_turnaround_task(Aircraft& aircraft, TaskId task);
     void update_turnaround_estimate(const Aircraft& aircraft);
+    void queue_mobile_task(Aircraft& aircraft, ServiceTask& task, std::int64_t priority);
+    void synchronize_fleet_state();
+    void schedule_fleet_tick();
     void request_service(Aircraft& aircraft, ServiceType type);
     void dispatch(VehicleId vehicle_id, AircraftId aircraft_id);
     void emit(SimulationEventRecord event);
@@ -113,6 +131,9 @@ private:
     std::vector<ISimulationEventSink*> event_sinks_;
     std::uint64_t next_event_record_sequence_{0};
     SimulationHistoryPolicy history_policy_{SimulationHistoryPolicy::Retain};
+    std::unique_ptr<autonomy::FleetSimulation> autonomy_fleet_;
+    std::map<std::string, std::pair<AircraftId, TaskId>> fleet_task_requests_;
+    bool fleet_tick_scheduled_{false};
     std::unordered_map<ServiceType, std::size_t> abstract_resources_in_use_;
     std::unordered_map<ServiceType, std::uint64_t> task_replan_counts_;
     std::unordered_map<AircraftId, std::vector<TaskId>> critical_paths_;

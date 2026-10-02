@@ -31,6 +31,8 @@ struct ServiceTaskSnapshot {
     std::string required_resource;
     std::optional<VehicleId> assigned_vehicle;
     std::string assigned_resource;
+    std::optional<SimTime> latest_desirable_completion;
+    std::size_t reassignments{};
     auto operator<=>(const ServiceTaskSnapshot&) const = default;
 };
 
@@ -45,6 +47,7 @@ struct TurnaroundSnapshot {
     SimTime target_off_block{};
     std::optional<SimTime> completion_time;
     std::optional<SimTime> departure_delay;
+    std::string failure_reason;
     SimTime estimated_ready_time{};
     SimTime schedule_slack{};
     bool predicted_late{false};
@@ -97,6 +100,9 @@ struct ServiceVehicleSnapshot {
     NodeId destination_node;
     std::optional<AircraftId> assigned_aircraft;
     std::optional<VehicleJourneySnapshot> journey;
+    std::optional<Vec2> observed_position_m;
+    std::optional<double> observed_heading_rad;
+    std::string fleet_status;
     auto operator<=>(const ServiceVehicleSnapshot&) const = default;
 };
 

@@ -18,11 +18,15 @@ public class RampLabIntegration : ModuleRules
         string CoreBuild = Path.Combine(RepositoryRoot, "build-unreal-core-v143");
         PublicIncludePaths.Add(Path.Combine(RepositoryRoot, "include"));
 
-        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_sim.lib"));
-        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_autonomy.lib"));
-        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_autonomy_scenario.lib"));
-        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "Release", "airside_scenario.lib"));
-        PublicAdditionalLibraries.Add(Path.Combine(CoreBuild, "_deps", "yaml-cpp-build", "Release", "yaml-cpp.lib"));
+        string[] CoreLibraries = {
+            Path.Combine(CoreBuild, "Release", "airside_sim.lib"),
+            Path.Combine(CoreBuild, "Release", "airside_autonomy.lib"),
+            Path.Combine(CoreBuild, "Release", "airside_autonomy_scenario.lib"),
+            Path.Combine(CoreBuild, "Release", "airside_scenario.lib"),
+            Path.Combine(CoreBuild, "_deps", "yaml-cpp-build", "Release", "yaml-cpp.lib")
+        };
+        PublicAdditionalLibraries.AddRange(CoreLibraries);
+        ExternalDependencies.AddRange(CoreLibraries);
 
         RuntimeDependencies.Add(
             "$(TargetOutputDir)/Scenarios/baseline.yaml",

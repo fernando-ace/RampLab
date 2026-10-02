@@ -51,6 +51,16 @@ RunResult execute_one(const Scenario& base, const RunRequest& request) {
     result.task_reassignments = simulation_result.metrics.task_reassignments;
     result.disruption_triggered_replans = simulation_result.metrics.disruption_triggered_replans;
     result.unresolved_service_requests = simulation_result.metrics.unresolved_service_requests;
+    result.fleet_collisions = simulation_result.metrics.fleet_collisions;
+    result.fleet_minimum_separation_m = simulation_result.metrics.fleet_minimum_separation_m;
+    result.fleet_reservation_requests = simulation_result.metrics.fleet_reservation_requests;
+    result.fleet_reservation_contentions = simulation_result.metrics.fleet_reservation_contentions;
+    result.fleet_outstanding_reservations = simulation_result.metrics.fleet_outstanding_reservations;
+    result.fleet_unfinished_requests = simulation_result.metrics.fleet_unfinished_requests;
+    result.fleet_reassignments = simulation_result.metrics.fleet_reassignments;
+    result.fleet_requests_created = simulation_result.metrics.fleet_requests_created;
+    result.fleet_requests_completed = simulation_result.metrics.fleet_requests_completed;
+    result.fleet_requests_failed = simulation_result.metrics.fleet_requests_failed;
     for (const auto& [type, utilization] : simulation_result.metrics.resource_utilization) {
         result.resource_utilization.emplace_back(std::string{to_string(type)}, utilization);
     }

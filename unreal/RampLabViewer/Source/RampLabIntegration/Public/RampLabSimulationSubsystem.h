@@ -106,6 +106,7 @@ private:
     bool bGoal12RecoveryValidation{false};
     bool bGoal13DispatchValidation{false};
     bool bGoal13ReassignmentValidation{false};
+    bool bTurnaroundValidation{false};
     bool bDemoMode{false};
     bool bDemoAdvancedToHighCapacity{false};
     bool bDemoAdvancedToAutonomy{false};

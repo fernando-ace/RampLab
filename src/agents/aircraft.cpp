@@ -1,6 +1,7 @@
 #include "airside/agents/aircraft.hpp"
 
 #include <algorithm>
+#include <format>
 #include <stdexcept>
 #include <utility>
 
@@ -45,13 +46,15 @@ std::vector<ServiceTask>& Aircraft::mutable_tasks() noexcept { return tasks_; }
 const std::string& Aircraft::turnaround_id() const noexcept { return turnaround_id_; }
 SimTime Aircraft::target_off_block() const noexcept { return target_off_block_; }
 TurnaroundState Aircraft::turnaround_state() const noexcept {
+    if (failed_) return TurnaroundState::Failed;
     switch (state_) {
     case AircraftState::Scheduled: return TurnaroundState::Scheduled;
     case AircraftState::ReadyForPushback: return TurnaroundState::ReadyForDeparture;
     case AircraftState::Departed: return TurnaroundState::Departed;
     default:
         return std::ranges::any_of(tasks_, [](const auto& value) {
-            return value.status == TaskStatus::InProgress || value.status == TaskStatus::Assigned;
+            return value.status == TaskStatus::InProgress || value.status == TaskStatus::Assigned ||
+                   value.status == TaskStatus::Waiting;
         }) ? TurnaroundState::Servicing : TurnaroundState::Arrived;
     }
 }
@@ -59,6 +62,7 @@ std::optional<SimTime> Aircraft::departure_delay() const noexcept {
     if (!actual_departure_) return std::nullopt;
     return std::max(SimTime::zero(), *actual_departure_ - target_off_block_);
 }
+const std::string& Aircraft::failure_reason() const noexcept { return failure_reason_; }
 
 bool Aircraft::can_transition(AircraftState from, AircraftState to) noexcept {
     switch (from) {
@@ -112,13 +116,24 @@ void Aircraft::assign_task(ServiceType type) {
     assign_task(mutable_task(type).id);
 }
 
-void Aircraft::assign_task(TaskId id, std::string resource) {
+void Aircraft::assign_task(TaskId id, std::string resource, std::optional<VehicleId> vehicle) {
     auto& value = mutable_task(id);
     if (value.status != TaskStatus::Pending && value.status != TaskStatus::Waiting) {
         throw std::logic_error("service task cannot be assigned in its current state");
     }
     value.status = TaskStatus::Assigned;
     value.assigned_resource = std::move(resource);
+    value.assigned_vehicle = vehicle;
+}
+
+void Aircraft::requeue_task(TaskId id, SimTime now) {
+    auto& value = mutable_task(id);
+    if (value.status != TaskStatus::Assigned) throw std::logic_error("only a dispatched task may be reassigned");
+    if (value.assigned_vehicle) ++value.reassignments;
+    value.assigned_vehicle.reset();
+    value.assigned_resource.clear();
+    value.status = TaskStatus::Waiting;
+    if (!value.requested_at) value.requested_at = now;
 }
 
 void Aircraft::start_task(ServiceType type, SimTime now) {
@@ -146,7 +161,8 @@ void Aircraft::complete_task(ServiceType type, SimTime now) {
 void Aircraft::complete_task(TaskId id, SimTime now) {
     auto& value = mutable_task(id);
     if (value.status != TaskStatus::InProgress || !value.started_at || now < *value.started_at) {
-        throw std::logic_error("service task cannot complete before it starts");
+        throw std::logic_error(std::format("service task {} cannot complete before it starts (state={}, started={}, now={})",
+            id.value(), static_cast<int>(value.status), value.started_at ? value.started_at->count() : -1, now.count()));
     }
     value.status = TaskStatus::Completed;
     value.completed_at = now;
@@ -163,6 +179,23 @@ void Aircraft::set_task_duration(TaskId id, SimTime duration) {
         throw std::logic_error("cannot change a task duration after service starts");
     }
     value.duration = duration;
+}
+
+void Aircraft::fail_task(TaskId id, std::string reason) {
+    auto& value = mutable_task(id);
+    if (value.status == TaskStatus::Completed || value.status == TaskStatus::Failed)
+        throw std::logic_error("terminal service task cannot fail again");
+    value.status = TaskStatus::Failed;
+    failed_ = true;
+    if (failure_reason_.empty()) failure_reason_ = std::move(reason);
+}
+
+void Aircraft::fail_turnaround(std::string reason) {
+    failed_ = true;
+    if (failure_reason_.empty()) failure_reason_ = std::move(reason);
+    for (auto& value : tasks_) {
+        if (value.status != TaskStatus::Completed) value.status = TaskStatus::Failed;
+    }
 }
 
 void Aircraft::depart(SimTime now) {

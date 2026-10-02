@@ -18,7 +18,8 @@ enum class SimulationEventType {
     ResourceWaitStarted, ResourceAssigned, TurnaroundCreated, TurnaroundTaskReady,
     TurnaroundTaskDispatched, TurnaroundTaskStarted, TurnaroundTaskCompleted,
     TurnaroundTaskReassigned, TurnaroundCriticalPathChanged, TurnaroundPredictedLate,
-    TurnaroundReadyForDeparture, TurnaroundDisruptionDetected,
+    TurnaroundReadyForDeparture, TurnaroundDisruptionDetected, TurnaroundTaskFailed, TurnaroundFailed,
+    TurnaroundVehicleUnavailable,
 };
 
 struct SimulationEventRecord {
@@ -42,6 +43,7 @@ struct SimulationEventRecord {
     std::optional<Route> route;
     std::string aircraft_name;
     std::string vehicle_name;
+    std::string detail;
 
     SimulationEventRecord() = default;
     explicit SimulationEventRecord(SimulationEventType event_type) noexcept : type(event_type) {}

@@ -30,6 +30,9 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::TurnaroundPredictedLate: return "TurnaroundPredictedLate";
     case SimulationEventType::TurnaroundReadyForDeparture: return "TurnaroundReadyForDeparture";
     case SimulationEventType::TurnaroundDisruptionDetected: return "TurnaroundDisruptionDetected";
+    case SimulationEventType::TurnaroundTaskFailed: return "TurnaroundTaskFailed";
+    case SimulationEventType::TurnaroundFailed: return "TurnaroundFailed";
+    case SimulationEventType::TurnaroundVehicleUnavailable: return "TurnaroundVehicleUnavailable";
     }
     return "Unknown";
 }
@@ -163,6 +166,13 @@ std::string format_event(const SimulationEventRecord& event) {
     case SimulationEventType::TurnaroundDisruptionDetected:
         return std::format("turnaround {} task {} duration changed to {} sec", event.turnaround_id,
             event.task ? event.task->value() : 0U, event.task_duration ? event.task_duration->count() : 0);
+    case SimulationEventType::TurnaroundTaskFailed:
+        return std::format("turnaround {} task {} failed: {}", event.turnaround_id,
+            event.task ? event.task->value() : 0U, event.detail);
+    case SimulationEventType::TurnaroundFailed:
+        return std::format("turnaround {} failed: {}", event.turnaround_id, event.detail);
+    case SimulationEventType::TurnaroundVehicleUnavailable:
+        return std::format("turnaround {} vehicle {} unavailable", event.turnaround_id, vehicle);
     }
     return "unknown simulation event";
 }

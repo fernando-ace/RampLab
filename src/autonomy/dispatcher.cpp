@@ -60,6 +60,37 @@ const FleetDispatcher::TaskRecord& FleetDispatcher::find(const ServiceRequestId&
     return *it;
 }
 
+void FleetDispatcher::add_request(ServiceRequest request) {
+    if (request.id.value.empty() || std::ranges::any_of(tasks_, [&](const auto& task) {
+            return task.request.id == request.id;
+        })) {
+        throw std::invalid_argument("service request IDs must be nonempty and unique");
+    }
+    if (request.required_capability.empty() || request.origin.empty() || request.destination.empty() ||
+        !std::isfinite(request.release_time_s) || request.release_time_s < last_time_s_ ||
+        !std::isfinite(request.service_duration_s) || request.service_duration_s < 0.0 ||
+        (request.deadline_s && (!std::isfinite(*request.deadline_s) || *request.deadline_s < request.release_time_s))) {
+        throw std::invalid_argument("service request has invalid capability, route, release, deadline, or duration");
+    }
+    tasks_.push_back({std::move(request)});
+}
+
+void FleetDispatcher::update_service_duration(
+    const ServiceRequestId& request, double duration_s, double simulation_time_s) {
+    if (!std::isfinite(simulation_time_s) || simulation_time_s < last_time_s_ ||
+        !std::isfinite(duration_s) || duration_s < 0.0) {
+        throw std::invalid_argument("service duration update has invalid time or duration");
+    }
+    auto& task = find(request);
+    if (task.state == ServiceTaskState::Servicing || terminal(task.state)) {
+        throw std::logic_error("service duration cannot change after work starts or terminates");
+    }
+    task.request.service_duration_s = duration_s;
+    emit(simulation_time_s, DispatchEventKind::StateChanged, task,
+         task.assigned_vehicle.value_or(VehicleId{}), "service_duration_updated");
+    last_time_s_ = simulation_time_s;
+}
+
 void FleetDispatcher::emit(double time_s, DispatchEventKind kind, const TaskRecord& task,
                            VehicleId vehicle, std::string detail, double route_distance_m) {
     events_.push_back({time_s, kind, task.request.id, std::move(vehicle), std::move(detail),

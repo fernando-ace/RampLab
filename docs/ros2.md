@@ -53,8 +53,8 @@ The bridge imports the already-built RampLab autonomy libraries; this is an adap
 
 | Topic | Type | Contents |
 |---|---|---|
-| `/ramplab/turnaround/state` | `std_msgs/msg/String` | Transient-local JSON with simulation time; turnaround and aircraft IDs; gate; state; scheduled departure; estimated ready time; delay and slack; active/completed task counts; critical-path IDs; and per-task state, service type, assigned resource, and vehicle ID. |
-| `/ramplab/turnaround/events` | `std_msgs/msg/String` | Reliable ordered JSON events with sequence, simulation timestamp, type, turnaround, aircraft, task, service, and vehicle IDs. |
+| `/ramplab/turnaround/state` | `std_msgs/msg/String` | Transient-local JSON with simulation time; turnaround and aircraft IDs; gate; state and failure reason; scheduled departure; estimated ready time; delay and slack; active/completed task counts; critical-path IDs; and per-task state, service type, assigned resource/vehicle, latest desirable completion, and reassignment count. |
+| `/ramplab/turnaround/events` | `std_msgs/msg/String` | Reliable ordered JSON events with sequence, simulation timestamp, type, detail, turnaround, aircraft, task, service, and vehicle IDs. |
 
 Build the ROS overlay after the normal Release core build, then launch the observer and probe from the activated ROS environment:
 
@@ -63,7 +63,7 @@ ros2 run ramplab_ros2_bridge ramplab_ros2_turnaround_bridge --scenario scenarios
 python .\ros2_ws\scripts\verify_turnaround_topics.py --duration 20
 ```
 
-The probe checks structured state, ordered events, a mobile-resource task, all task completions, and the final ready/departed state. The state schema reports simulator estimates only; service durations and operating policies remain synthetic assumptions.
+The probe checks structured state, ordered events, a mobile-resource task, all task completions, and the final ready/departed state. In the Goal 14 run, the package suite passed 19/19 tests and the probe observed departure with 7/7 tasks complete and 21 ordered events. The state schema reports simulator estimates only; service durations and operating policies remain synthetic assumptions.
 
 `ramplab_ros2_fleet_bridge` runs one deterministic `FleetSimulation` in one process and publishes identity-keyed fleet state and traffic decisions. The C++ simulation remains the only source of route, reservation, wait-for, deadlock, closure, and recovery decisions. The fleet adapter does not accept low-level vehicle commands; the per-vehicle bridges and external controllers remain available for isolated closed-loop tests.
 

@@ -403,6 +403,27 @@ TEST(FleetDispatcherIntegrationTest, UnavailableVehicleReassignsTaskAndBackupCom
     EXPECT_EQ(result.collisions,0U);EXPECT_EQ(result.outstanding_reservations,0U);EXPECT_TRUE(result.deadlocked_vehicles.empty());
     EXPECT_TRUE(std::ranges::any_of(result.dispatch.events,[](const auto& e){return e.kind==DispatchEventKind::Reassigned&&e.vehicle.value=="baggage_backup";}));
 }
+TEST(FleetDispatcherIntegrationTest, DependencyUnlockedRequestUsesLiveReservationsAndCollisionChecks){
+    auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_dynamic.yaml");
+    scenario.service_requests.clear();
+    FleetSimulation simulation{scenario,42};
+    EXPECT_TRUE(simulation.finished());
+    ServiceRequest request{ServiceRequestId{"turnaround_mobile"},ServiceKind::BaggageDelivery,"baggage_delivery",
+        "Service Depot","Gate A1",0.0,20,1500.0,30.0};
+    simulation.add_service_request(request);
+    const auto original=simulation.service_requests();
+    ASSERT_EQ(original.size(),1U);
+    std::size_t steps=0;
+    while(simulation.advance()&&++steps<15000){}
+    const auto result=simulation.result();
+    ASSERT_EQ(result.dispatch.requests.size(),1U);
+    EXPECT_EQ(result.dispatch.requests.front().state,ServiceTaskState::Completed);
+    EXPECT_EQ(result.dispatch.requests_completed,1U);
+    EXPECT_EQ(result.dispatch.requests_failed,0U);
+    EXPECT_EQ(result.collisions,0U);
+    EXPECT_EQ(result.outstanding_reservations,0U);
+    EXPECT_FALSE(result.dispatch.events.empty());
+}
 TEST(FleetExperimentTest, DynamicDispatchMatchesSerialParallelAndIndependentRuns){
     const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_dynamic.yaml");
     std::vector<FleetRunRequest> requests;for(std::size_t i=0;i<4;++i)requests.push_back({scenario,42,i});

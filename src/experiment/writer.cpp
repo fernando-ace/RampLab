@@ -65,7 +65,7 @@ void write_experiment_outputs(
     std::ofstream runs{runs_path};
     runs << "run_ordinal,case_id,seed,replication,scenario";
     for (const auto& axis : definition.parameters) runs << ',' << parameter_name(axis.key);
-    runs << ",simulated_duration_seconds,avg_turnaround_minutes,avg_departure_delay_minutes,avg_service_waiting_minutes,delayed_aircraft,aircraft_count,fuel_utilization,baggage_utilization,execution_ms,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,maximum_turnaround_seconds,maximum_departure_delay_seconds,on_time_departures,on_time_departure_rate,total_service_task_wait_seconds,maximum_service_task_wait_seconds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,service_resource_utilization,turnaround_task_timings\n";
+    runs << ",simulated_duration_seconds,avg_turnaround_minutes,avg_departure_delay_minutes,avg_service_waiting_minutes,delayed_aircraft,aircraft_count,fuel_utilization,baggage_utilization,execution_ms,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,maximum_turnaround_seconds,maximum_departure_delay_seconds,on_time_departures,on_time_departure_rate,total_service_task_wait_seconds,maximum_service_task_wait_seconds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,service_resource_utilization,turnaround_task_timings\n";
     runs << std::fixed << std::setprecision(6);
     for (const auto& run : execution.runs) {
         runs << run.ordinal + 1 << ',' << csv_escape(run.case_id) << ',' << run.seed << ','
@@ -83,7 +83,12 @@ void write_experiment_outputs(
              << ',' << run.on_time_departures << ',' << run.on_time_departure_rate
              << ',' << run.total_service_task_wait_seconds << ',' << run.maximum_service_task_wait_seconds
              << ',' << run.task_reassignments << ',' << run.disruption_triggered_replans
-             << ',' << run.unresolved_service_requests << ',';
+             << ',' << run.unresolved_service_requests << ',' << run.fleet_collisions
+             << ',' << run.fleet_minimum_separation_m << ',' << run.fleet_reservation_requests
+             << ',' << run.fleet_reservation_contentions << ',' << run.fleet_outstanding_reservations
+             << ',' << run.fleet_unfinished_requests << ',' << run.fleet_reassignments
+             << ',' << run.fleet_requests_created << ',' << run.fleet_requests_completed
+             << ',' << run.fleet_requests_failed << ',';
         std::string resource_utilization;
         for (const auto& [type, value] : run.resource_utilization) {
             if (!resource_utilization.empty()) resource_utilization += ';';
@@ -184,6 +189,16 @@ void write_experiment_outputs(
                  << ", \"task_reassignments\": " << run.task_reassignments
                  << ", \"disruption_triggered_replans\": " << run.disruption_triggered_replans
                  << ", \"unresolved_service_requests\": " << run.unresolved_service_requests
+                 << ", \"fleet_collisions\": " << run.fleet_collisions
+                 << ", \"fleet_minimum_separation_m\": " << run.fleet_minimum_separation_m
+                 << ", \"fleet_reservation_requests\": " << run.fleet_reservation_requests
+                 << ", \"fleet_reservation_contentions\": " << run.fleet_reservation_contentions
+                 << ", \"fleet_outstanding_reservations\": " << run.fleet_outstanding_reservations
+                 << ", \"fleet_unfinished_requests\": " << run.fleet_unfinished_requests
+                 << ", \"fleet_reassignments\": " << run.fleet_reassignments
+                 << ", \"fleet_requests_created\": " << run.fleet_requests_created
+                 << ", \"fleet_requests_completed\": " << run.fleet_requests_completed
+                 << ", \"fleet_requests_failed\": " << run.fleet_requests_failed
                  << ", \"resource_utilization\": {";
         for (std::size_t resource_index = 0; resource_index < run.resource_utilization.size(); ++resource_index) {
             if (resource_index != 0) metadata << ',';

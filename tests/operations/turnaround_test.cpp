@@ -33,17 +33,19 @@ TEST(TurnaroundTest, IndependentTasksOverlapAndDependenciesWaitForPrerequisites)
         return *found;
     };
     const auto& deboarding_started = event_for(SimulationEventType::TurnaroundTaskStarted, TaskId{1});
-    const auto& fuel_started = event_for(SimulationEventType::TurnaroundTaskStarted, TaskId{2});
+    const auto& fuel_dispatched = event_for(SimulationEventType::TurnaroundTaskDispatched, TaskId{2});
     const auto& deboarding_completed = event_for(SimulationEventType::TurnaroundTaskCompleted, TaskId{1});
     const auto& baggage_started = event_for(SimulationEventType::TurnaroundTaskStarted, TaskId{4});
-    EXPECT_LT(deboarding_started.timestamp, fuel_started.timestamp);
-    EXPECT_LT(fuel_started.timestamp, deboarding_completed.timestamp);
+    EXPECT_LT(deboarding_started.timestamp, fuel_dispatched.timestamp);
+    EXPECT_LT(fuel_dispatched.timestamp, deboarding_completed.timestamp);
     EXPECT_LE(deboarding_completed.timestamp, baggage_started.timestamp);
     EXPECT_EQ(result.metrics.total_turnarounds, 1U);
     EXPECT_EQ(result.metrics.completed_turnarounds, 1U);
     EXPECT_EQ(result.metrics.aircraft.front().departure_delay, std::chrono::seconds{0});
     EXPECT_EQ(result.metrics.disruption_triggered_replans, 0U);
     EXPECT_EQ(result.metrics.unresolved_service_requests, 0U);
+    EXPECT_GT(result.metrics.fuel_utilization, 0.0);
+    EXPECT_GT(result.metrics.baggage_utilization, 0.0);
     EXPECT_FALSE(result.metrics.aircraft.front().critical_path_tasks.empty());
     const auto& timings = result.metrics.aircraft.front().task_timings;
     const auto baggage_load = std::ranges::find(timings, TaskId{6}, &AircraftMetrics::TaskTiming::task);
@@ -85,6 +87,47 @@ TEST(TurnaroundTest, DisruptionReplansAndChangesEstimatedReadyTimeWithoutReset) 
     EXPECT_EQ(result.metrics.completed_turnarounds, 1U);
     EXPECT_TRUE(std::ranges::any_of(result.events, [](const auto& event) {
         return event.type == SimulationEventType::TurnaroundDisruptionDetected && event.timestamp == SimTime{200};
+    }));
+    EXPECT_EQ(result.metrics.fleet_reassignments, 1U);
+    EXPECT_EQ(result.metrics.fleet_collisions, 0U);
+    EXPECT_EQ(result.metrics.fleet_outstanding_reservations, 0U);
+    EXPECT_TRUE(std::ranges::any_of(result.events, [](const auto& event) {
+        return event.type == SimulationEventType::TurnaroundVehicleUnavailable;
+    }));
+    EXPECT_TRUE(std::ranges::any_of(result.events, [](const auto& event) {
+        return event.type == SimulationEventType::TurnaroundTaskReassigned;
+    }));
+}
+
+TEST(TurnaroundTest, UnrecoverableFleetOutageFailsSafelyWithoutDeparting) {
+    std::ifstream input{scenario_path("turnaround_disrupted.yaml")};
+    ASSERT_TRUE(input);
+    std::string yaml{std::istreambuf_iterator<char>{input}, std::istreambuf_iterator<char>{}};
+    const auto outage = yaml.find("vehicle_outages:\n  - { time_seconds: 130, vehicle: baggage_1 }");
+    ASSERT_NE(outage, std::string::npos);
+    yaml.insert(outage + std::string{"vehicle_outages:\n  - { time_seconds: 130, vehicle: baggage_1 }"}.size(),
+        "\n  - { time_seconds: 130, vehicle: baggage_backup }");
+    const auto path = std::filesystem::temp_directory_path() / "ramplab_turnaround_no_backup_test.yaml";
+    {
+        std::ofstream output{path};
+        ASSERT_TRUE(output);
+        output << yaml;
+    }
+    const auto scenario = load_scenario(path);
+    std::filesystem::remove(path);
+
+    Simulation simulation{scenario, 42};
+    const auto result = simulation.run();
+    EXPECT_EQ(result.metrics.total_turnarounds, 1U);
+    EXPECT_EQ(result.metrics.completed_turnarounds, 0U);
+    EXPECT_EQ(result.metrics.failed_or_timed_out_turnarounds, 1U);
+    EXPECT_EQ(result.metrics.fleet_requests_failed, 1U);
+    EXPECT_EQ(result.metrics.fleet_unfinished_requests, 0U);
+    EXPECT_EQ(result.metrics.unresolved_service_requests, 0U);
+    EXPECT_EQ(result.metrics.fleet_collisions, 0U);
+    EXPECT_EQ(simulation.snapshot().turnarounds.front().state, TurnaroundState::Failed);
+    EXPECT_FALSE(std::ranges::any_of(result.events, [](const auto& event) {
+        return event.type == SimulationEventType::AircraftDeparted;
     }));
 }
 

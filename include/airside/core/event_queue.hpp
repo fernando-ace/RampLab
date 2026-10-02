@@ -19,6 +19,8 @@ enum class EventType {
     AbstractServiceCompleted,
     TurnaroundTaskEligible,
     TaskDurationChanged,
+    FleetTick,
+    VehicleOutage,
 };
 
 enum class EntityKind { None, Aircraft, Vehicle, Edge, Task };

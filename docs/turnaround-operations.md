@@ -1,50 +1,31 @@
 # Aircraft turnaround operations
 
-## Authority and model
+## Task orchestration
 
-Turnaround orchestration is an opt-in extension to the existing discrete-event simulation. YAML task definitions are validated by `airside_scenario`; the core owns task state, dependency unlocking, resources, timing, readiness, estimates, metrics, and events. Existing scenarios without `service_tasks` preserve their Goal 1–13 behavior.
+Turnaround orchestration is an opt-in, deterministic extension to the discrete-event simulation. Each aircraft has a scenario-stable turnaround ID, target off-block time, and service-task DAG. Supported tasks are deboarding, fueling, catering, cabin cleaning, baggage unload, baggage load, and pushback preparation. The scheduler starts every eligible independent task whose required resource is available; prerequisites, earliest-start times, service capacity, task state, and timestamps remain part of the core simulation. Existing scenarios without `service_tasks` keep their previous behavior.
 
-Each configured aircraft has a turnaround ID, gate, scheduled times, target off-block time, operational state, and service tasks. Task IDs are scenario-stable values. A task records service type, deterministic duration, prerequisite IDs, earliest start, optional latest desirable completion, state, resource assignment, and request/start/completion timestamps. Loader validation rejects duplicate service types within one turnaround, missing/self prerequisites, cyclic graphs, negative times, and nonpositive durations.
+The critical-path estimate walks the validated DAG using remaining service durations, prerequisite completion estimates, earliest-start bounds, and dispatched mobile vehicles' expected arrival. It reports estimated ready time, target-off-block slack, critical-path task IDs, and late prediction. Mobile dispatch priority reflects critical-path membership, aircraft/task slack, and deadline urgency; the Goal 13 dispatcher applies queue aging and deterministic route-cost and vehicle-ID tie breaks.
 
-The supported task kinds are deboarding, fueling, catering, cabin cleaning, baggage unload, baggage load, and pushback preparation. Prerequisite lists define the DAG. The scheduler scans aircraft and each task list in scenario order, emits readiness in that order, and starts every eligible task whose resource is available. It does not impose a single turnaround-wide lock.
+## Shared fleet movement and disruption handling
 
-## Resource and movement model
+Fueling, baggage unload, and baggage load are submitted as live `autonomy::FleetSimulation` service requests. The Goal 13 dispatcher assigns capable vehicles, and each request follows the shared airport graph, fixed-step controller, route reservations, collision checks, road availability, and safe-stop behavior. Core task state follows queued, assigned, en-route, servicing, completed, reassigned, and failed transitions. Vehicle snapshots include live fleet pose and dispatch status.
 
-Fueling and baggage unload use the existing mobile `ServiceVehicle`, graph router, vehicle lifecycle, and resource pools. They travel from the depot to the occupied aircraft gate, service for the task duration, then return to the depot. No mobile vehicle is teleported. Abstract deboarding, catering, cleaning, baggage-load, and pushback tasks use deterministic finite-capacity crews; each abstract type defaults to one crew. Abstract crew IDs use the lowest available numeric slot.
+Scenarios may define baggage staging roads by naming a destination `<Gate Name> Baggage Stand`; baggage tasks route to that stand so the cart does not occupy the aircraft's fueling point. `turnaround_disrupted.yaml` changes baggage-load duration while the task is queued, then safely takes BaggageCart-1 out of service during baggage unload. The dispatcher requeues that request to BaggageCart-Backup. The duration change updates the readiness estimate without resetting state; work already in service remains non-preemptible. Unavailable vehicles and failed requests are reflected in task/turnaround state and structured events.
 
-This operational layer uses the discrete-event engine's existing `ResourcePool`. It does not adapt `autonomy::FleetSimulation`'s intersection reservations or collision-avoidance simulation. A mobile task's gate is represented by the aircraft's existing gate occupancy; there is no separate apron service-stand reservation in this version.
+## Scenarios and exported evidence
 
-Queued mobile requests use this deterministic priority policy:
+- `turnaround_normal.yaml` runs one full DAG with independent crew and vehicle work in parallel.
+- `turnaround_contention.yaml` runs two aircraft against one fuel truck, one baggage cart, and finite-capacity crews.
+- `turnaround_disrupted.yaml` combines a queued-task duration increase with a live vehicle outage and backup reassignment.
 
-1. Add 10 points when the request's task is on the current estimated critical path.
-2. Add 20 points at zero or negative schedule slack, 10 points at up to five minutes of slack, or 5 points at up to ten minutes of slack.
-3. Add one aging point for every 60 seconds of simulation-time waiting.
-4. Break ties by earlier request time, then stable request insertion sequence.
+The CLI prints turnaround/task state, critical path, slack, wait, replan, reassignment, collision, minimum-separation, reservation, created/completed/failed fleet-request, and unresolved-request metrics. Mobile fleet utilization is busy time, including route travel and servicing, divided by elapsed simulation time and available vehicles. `--record-events FILE` writes ordered event JSONL; `--metrics-json FILE` and `--metrics-csv FILE` write fleet safety/request and per-task timing data. Experiment CSV/JSON outputs also carry turnaround and fleet metrics. Sample outputs are regenerated under the ignored `results/turnaround_validation/` directory.
 
-Immediate assignments remain immediate. Existing non-turnaround requests pass priority zero and retain FIFO ordering. Priority affects allocation only; it never bypasses routing or vehicle state checks.
+Snapshots and ordered structured events feed `/ramplab/turnaround/state` and `/ramplab/turnaround/events` in ROS and the Unreal operations panel. The panel shows turnaround/task progress, deadlines and slack, critical-path tasks, vehicle assignment, fleet position/status, and failure/reassignment information.
 
-## Estimate and disruption
+## Validation and boundaries
 
-The critical-path estimate walks the validated DAG in stable task order. It uses remaining task durations, prerequisite finish estimates, earliest-start bounds, and a dispatched mobile vehicle's expected gate-arrival time. It reports estimated ready time, target-off-block slack, a task-ID path, and a predicted-late event. It is a scheduling estimate, not an airline performance model.
+Release C++ validation passed 160/160 tests; the five turnaround tests include dependency overlap, deterministic contention, duration replan, successful outage reassignment, and an unrecoverable outage that fails safely without departure. Seed 42 scenario runs completed 1/1 normal, 2/2 contention, and 1/1 disrupted turnarounds. They reported zero collisions, minimum separations of 8.0 m, 2.1 m, and 2.6 m respectively, no outstanding reservations or unfinished requests, and exactly one reassignment in the backup scenario. Their JSON parsed and CSV exports contained 7, 12, and 7 task rows.
 
-`turnaround_disrupted.yaml` deterministically increases the duration of a blocked baggage-load task while its turnaround is active. The coordinator updates its estimate without resetting simulation state. A duration change aimed at an in-progress or completed service is rejected: service work is non-preemptible. Vehicle-unavailability injection and recovery through Goal 13's autonomy fleet dispatcher are not implemented in this version.
+The ROS bridge built in the configured Pixi/colcon environment; its suite passed 19/19 tests. The live topic probe observed the normal turnaround depart with all 7/7 tasks complete and 21 ordered events. The Unreal Editor target built successfully, and a visible windowed Goal 14 validation run reported 1/1 complete, no failures or reassignments, zero collisions, 8.0 m minimum separation, six reservation requests, three contentions, and zero outstanding/unresolved requests. Its Recent Events panel log ended with ready-for-departure and aircraft departure.
 
-## Scenarios and outputs
-
-- `turnaround_normal.yaml` runs one complete DAG and overlaps independent work.
-- `turnaround_contention.yaml` runs two turnarounds against one fuel truck, baggage cart, and one crew per abstract service type.
-- `turnaround_disrupted.yaml` demonstrates a duration disruption and replan.
-
-The snapshots expose turnaround and task state. Structured events include creation, readiness, dispatch, start, completion, disruption, critical-path changes, late prediction, and ready-for-departure. The CLI prints per-turnaround task timing, critical path, slack, wait, replan, and priority metrics and writes the same event schema to JSON Lines. Experiment `runs.csv` appends turnaround aggregates; `experiment.json` stores the individual turnaround completion, delay, estimate, slack, and critical-path IDs.
-
-The ROS observer publishes `/ramplab/turnaround/state` and `/ramplab/turnaround/events`; Unreal reads the same core snapshot and events and shows status, estimates, active services, resource assignments, and critical-path tasks.
-
-Service times, abstract resource capacities, deadlines, and disruption values in the sample files are synthetic simulator assumptions. RampLab does not claim to reproduce real airport performance.
-
-## Current limitations
-
-- Failure and timeout states are represented in the integration schema, but the discrete-event turnaround scenarios currently complete or throw validation/runtime errors; there is no safe-timeout policy.
-- Task reassignments are counted but not exercised; vehicle outage/reassignment is pending integration with the Goal 13 fleet dispatcher.
-- Road and gate reservation safety remains limited to the existing operational core; the Goal 13 autonomy traffic reservation system is not yet shared with these vehicles.
-- Latest-desirable completion timestamps are retained as task metadata but do not currently change allocation priority.
-- Critical-path calculations ignore downstream route congestion and use current journey arrival for dispatched mobile tasks.
+These are deterministic software-simulation results using synthetic airport geometry, service durations, and resource policies. They do not establish real-airport performance, ROS-controlled dispatch, physical-vehicle safety, or production acceptance.

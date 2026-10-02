@@ -67,6 +67,16 @@ struct RunResult {
     std::size_t task_reassignments{0};
     std::size_t disruption_triggered_replans{0};
     std::size_t unresolved_service_requests{0};
+    std::size_t fleet_collisions{0};
+    double fleet_minimum_separation_m{0.0};
+    std::size_t fleet_reservation_requests{0};
+    std::size_t fleet_reservation_contentions{0};
+    std::size_t fleet_outstanding_reservations{0};
+    std::size_t fleet_unfinished_requests{0};
+    std::size_t fleet_reassignments{0};
+    std::size_t fleet_requests_created{0};
+    std::size_t fleet_requests_completed{0};
+    std::size_t fleet_requests_failed{0};
     std::vector<std::pair<std::string, double>> resource_utilization;
     std::vector<AircraftRunMetrics> aircraft;
 };
