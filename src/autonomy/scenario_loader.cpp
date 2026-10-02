@@ -1,5 +1,6 @@
 #include "airside/autonomy/scenario_loader.hpp"
 #include "airside/autonomy/fleet.hpp"
+#include "airside/autonomy/dispatcher.hpp"
 
 #include "airside/scenario/scenario_loader.hpp"
 
@@ -13,6 +14,7 @@ namespace {
 template<class T> T value(const YAML::Node& n,const char* key,T fallback){return n[key]?n[key].as<T>():fallback;}
 SensorKind sensor_kind(const std::string& v){if(v=="gnss")return SensorKind::Gnss;if(v=="imu")return SensorKind::Imu;if(v=="odometry")return SensorKind::Odometry;if(v=="lidar")return SensorKind::Lidar;throw std::invalid_argument("unknown fault sensor '"+v+"'");}
 SensorFaultKind fault_kind(const std::string& v){if(v=="dropout")return SensorFaultKind::Dropout;if(v=="noise")return SensorFaultKind::Noise;if(v=="bias")return SensorFaultKind::Bias;if(v=="range_limit")return SensorFaultKind::RangeLimit;if(v=="obstruction")return SensorFaultKind::Obstruction;if(v=="scale")return SensorFaultKind::Scale;if(v=="drift")return SensorFaultKind::Drift;if(v=="delay")return SensorFaultKind::Delay;if(v=="packet_loss")return SensorFaultKind::PacketLoss;if(v=="burst_loss")return SensorFaultKind::BurstLoss;throw std::invalid_argument("unknown sensor fault type '"+v+"'");}
+ServiceKind service_kind(const std::string& v){if(v=="baggage_delivery")return ServiceKind::BaggageDelivery;if(v=="fuel_service")return ServiceKind::FuelService;if(v=="aircraft_turnaround")return ServiceKind::AircraftTurnaround;if(v=="tug_cart_movement")return ServiceKind::TugCartMovement;throw std::invalid_argument("unknown service request type '"+v+"'");}
 }
 AutonomyScenario load_scenario(const std::filesystem::path& path){
     try {
@@ -137,9 +139,41 @@ FleetScenario load_fleet_scenario(const std::filesystem::path& path){
         out.deadlock_persistence_s=value<double>(root,"deadlock_persistence_s",2.0);
         if(!std::isfinite(out.deadlock_persistence_s)||out.deadlock_persistence_s<0.0)throw std::invalid_argument("deadlock_persistence_s must be finite and nonnegative");
         out.resource_specific_tie_breaks=value<bool>(root,"resource_specific_tie_breaks",false);
-        const auto list=root["missions"];if(!list||!list.IsSequence()||list.size()==0)throw std::invalid_argument("fleet scenario requires at least one mission");
-        for(const auto& item:list){FleetMission m;m.id.value=item["id"].as<std::string>();m.start_node=item["start_node"].as<std::string>();m.goal_node=item["goal_node"].as<std::string>();m.priority=value<int>(item,"priority",0);if(const auto faults=item["faults"])for(const auto& f:faults){SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);x.offset={value<double>(f,"x_m",0.0),value<double>(f,"y_m",0.0)};if(x.start_s<0||x.duration_s<=0||x.probability<0||x.probability>1)throw std::invalid_argument("invalid fleet sensor fault window");m.faults.push_back(x);}out.missions.push_back(std::move(m));}
-        std::ranges::sort(out.missions,{},&FleetMission::id);for(std::size_t i=0;i<out.missions.size();++i){if(out.missions[i].id.value.empty()||(i&&out.missions[i-1].id==out.missions[i].id))throw std::invalid_argument("fleet vehicle IDs must be nonempty and unique");}
+        const auto list=root["missions"];
+        if(list){
+            if(!list.IsSequence()||list.size()==0)throw std::invalid_argument("fleet missions must be a nonempty sequence");
+            for(const auto& item:list){FleetMission m;m.id.value=item["id"].as<std::string>();m.start_node=item["start_node"].as<std::string>();m.goal_node=item["goal_node"].as<std::string>();m.priority=value<int>(item,"priority",0);if(const auto faults=item["faults"])for(const auto& f:faults){SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);x.offset={value<double>(f,"x_m",0.0),value<double>(f,"y_m",0.0)};if(x.start_s<0||x.duration_s<=0||x.probability<0||x.probability>1)throw std::invalid_argument("invalid fleet sensor fault window");m.faults.push_back(x);}out.missions.push_back(std::move(m));}
+            std::ranges::sort(out.missions,{},&FleetMission::id);for(std::size_t i=0;i<out.missions.size();++i){if(out.missions[i].id.value.empty()||(i&&out.missions[i-1].id==out.missions[i].id))throw std::invalid_argument("fleet vehicle IDs must be nonempty and unique");}
+        }
+        if(const auto dispatch=root["dispatch"]){
+            out.dispatch_aging_interval_s=value<double>(dispatch,"aging_interval_s",30.0);
+            if(!std::isfinite(out.dispatch_aging_interval_s)||out.dispatch_aging_interval_s<=0.0)throw std::invalid_argument("dispatch aging_interval_s must be finite and positive");
+            const auto fleet=dispatch["vehicles"],requests=dispatch["service_requests"];
+            if(!fleet||!fleet.IsSequence()||fleet.size()==0||!requests||!requests.IsSequence()||requests.size()==0)throw std::invalid_argument("dispatch scenario requires vehicles and service_requests sequences");
+            for(const auto& item:fleet){DispatchVehicle vehicle;vehicle.id.value=item["id"].as<std::string>();vehicle.current_node=item["start_node"].as<std::string>();const auto capabilities=item["capabilities"];if(capabilities&&capabilities.IsSequence())for(const auto& capability:capabilities)vehicle.capabilities.push_back(capability.as<std::string>());if(const auto faults=item["faults"])for(const auto& f:faults){SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);if(!std::isfinite(x.start_s)||!std::isfinite(x.duration_s)||x.start_s<0.0||x.duration_s<=0.0||x.probability<0.0||x.probability>1.0)throw std::invalid_argument("invalid dispatch vehicle fault window");vehicle.faults.push_back(x);}if(vehicle.id.value.empty()||vehicle.current_node.empty()||vehicle.capabilities.empty())throw std::invalid_argument("dispatch vehicles require ID, start_node, and capabilities");if(std::ranges::none_of(out.vehicle_scenario.airport.graph.nodes(),[&](const auto& node){return node.name==vehicle.current_node;}))throw std::invalid_argument("dispatch vehicle references an unknown start node");std::ranges::sort(vehicle.capabilities);vehicle.capabilities.erase(std::unique(vehicle.capabilities.begin(),vehicle.capabilities.end()),vehicle.capabilities.end());out.dispatch_fleet.push_back(std::move(vehicle));}
+            std::ranges::sort(out.dispatch_fleet,{},[](const auto& vehicle){return vehicle.id;});for(std::size_t i=0;i<out.dispatch_fleet.size();++i)if(i&&out.dispatch_fleet[i-1].id==out.dispatch_fleet[i].id)throw std::invalid_argument("dispatch vehicle IDs must be unique");
+            for(const auto& item:requests){
+                ServiceRequest request;request.id.value=item["id"].as<std::string>();request.kind=service_kind(item["type"].as<std::string>());
+                request.required_capability=value<std::string>(item,"required_capability",to_string(request.kind));
+                request.origin=item["origin"].as<std::string>();request.destination=item["destination"].as<std::string>();
+                request.release_time_s=value<double>(item,"release_time_s",0.0);request.priority=value<int>(item,"priority",0);
+                request.service_duration_s=value<double>(item,"service_duration_s",0.0);if(item["deadline_s"])request.deadline_s=item["deadline_s"].as<double>();
+                if(const auto faults=item["faults"])for(const auto& f:faults){
+                    SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());
+                    x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();
+                    x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);
+                    x.offset={value<double>(f,"x_m",0.0),value<double>(f,"y_m",0.0)};
+                    if(!std::isfinite(x.start_s)||!std::isfinite(x.duration_s)||!std::isfinite(x.magnitude)||
+                       !std::isfinite(x.probability)||!std::isfinite(x.offset.x_m)||!std::isfinite(x.offset.y_m)||
+                       x.start_s<0.0||x.duration_s<=0.0||x.magnitude<0.0||x.probability<0.0||x.probability>1.0)
+                        throw std::invalid_argument("invalid service request fault window");
+                    request.faults.push_back(x);
+                }
+                out.service_requests.push_back(std::move(request));
+            }
+            (void)FleetDispatcher(out.service_requests,out.dispatch_aging_interval_s);
+        }
+        if(out.missions.empty()&&(out.dispatch_fleet.empty()||out.service_requests.empty()))throw std::invalid_argument("fleet scenario requires legacy missions or a dispatch fleet with service requests");
         if(const auto changes=root["road_events"])for(const auto& item:changes){
             const double time=value<double>(item,"time_seconds",-1.0);
             const auto edge_value=item["edge_id"].as<std::uint32_t>();

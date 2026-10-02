@@ -1,0 +1,50 @@
+name: autonomy_dispatch_dynamic
+default_seed: 42
+vehicle_scenario: autonomy_tug.yaml
+dispatch:
+  aging_interval_s: 60.0
+  vehicles:
+    - id: fuel_01
+      start_node: Gate A2
+      capabilities: [fuel_service]
+    - id: baggage_01
+      start_node: North Junction
+      capabilities: [baggage_delivery, tug_cart_movement]
+    - id: tug_01
+      start_node: South Junction
+      capabilities: [tug_cart_movement]
+  service_requests:
+    - id: turn_a1
+      type: aircraft_turnaround
+      required_capability: baggage_delivery
+      origin: Gate A1
+      destination: Service Depot
+      release_time_s: 0.0
+      priority: 2
+      deadline_s: 900.0
+      service_duration_s: 120.0
+    - id: fuel_a2
+      type: fuel_service
+      required_capability: fuel_service
+      origin: Gate A2
+      destination: Gate A2
+      release_time_s: 400.0
+      priority: 3
+      deadline_s: 1200.0
+      service_duration_s: 240.0
+    - id: cart_a3
+      type: tug_cart_movement
+      required_capability: tug_cart_movement
+      origin: South Junction
+      destination: Gate A3
+      release_time_s: 800.0
+      priority: 0
+      service_duration_s: 30.0
+    - id: baggage_a1
+      type: baggage_delivery
+      required_capability: baggage_delivery
+      origin: Service Depot
+      destination: Gate A1
+      release_time_s: 1200.0
+      priority: 1
+      service_duration_s: 90.0

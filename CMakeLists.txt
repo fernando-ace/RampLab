@@ -45,7 +45,7 @@ add_library(airside_sim STATIC
 add_library(airside::sim ALIAS airside_sim)
 target_include_directories(airside_sim PUBLIC include)
 
-add_library(airside_autonomy STATIC src/autonomy/simulation.cpp src/autonomy/state_estimator.cpp src/autonomy/sensor_model.cpp src/autonomy/fleet.cpp)
+add_library(airside_autonomy STATIC src/autonomy/simulation.cpp src/autonomy/state_estimator.cpp src/autonomy/sensor_model.cpp src/autonomy/fleet.cpp src/autonomy/dispatcher.cpp)
 add_library(airside::autonomy ALIAS airside_autonomy)
 target_include_directories(airside_autonomy PUBLIC include)
 target_link_libraries(airside_autonomy PUBLIC airside::sim)
@@ -149,6 +149,7 @@ if(BUILD_TESTING)
         tests/experiment/statistics_test.cpp
         tests/autonomy/simulation_test.cpp
         tests/autonomy/fleet_test.cpp
+        tests/autonomy/dispatcher_test.cpp
         tests/autonomy/sensor_model_test.cpp
     )
     target_include_directories(airside_tests PRIVATE tests)

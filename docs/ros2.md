@@ -51,8 +51,9 @@ The bridge imports the already-built RampLab autonomy libraries; this is an adap
 
 | Topic | Type | Contents |
 |---|---|---|
-| `/ramplab/fleet/state` | `std_msgs/msg/String` | Transient-local JSON snapshot containing simulation time, mission/deadlock/recovery/retreat counts, outstanding reservations, and a `vehicles` array keyed by `vehicle_id`; each row includes goal, pose, speed, waiting/finished state, recovery state/resource/target/progress/attempts, and blocker/resource/wait duration when blocked. |
+| `/ramplab/fleet/state` | `std_msgs/msg/String` | Transient-local JSON snapshot containing simulation time, mission/deadlock/recovery/retreat counts, outstanding reservations, and a `vehicles` array keyed by `vehicle_id`; each row includes goal, pose, speed, waiting/finished state, recovery state/resource/target/progress/attempts, dispatch state, current request, task count, busy/idle time and utilization, and blocker/resource/wait duration when blocked. A `dispatch` object contains aggregate counts/waits and a `requests` array with request kind, required capability, origin/destination, priority, release time, lifecycle, assignment, queue wait, and reassignments. |
 | `/ramplab/fleet/traffic_events` | `std_msgs/msg/String` | Reliable JSON events with simulation time, typed event kind, `vehicle_id`, `other_vehicle_id`, resource, current position, retreat target, and progress distance. |
+| `/ramplab/fleet/dispatch_events` | `std_msgs/msg/String` | Reliable read-only JSON stream for request release, candidate evaluation, assignment, lifecycle transition, requeue/reassignment, aging, completion, and failure. Records include request/vehicle IDs, effective priority, route-distance estimate, and the decision/rejection reason. |
 
 Use the fleet-level node together with a scenario file:
 
@@ -62,6 +63,8 @@ python .\ros2_ws\scripts\verify_fleet_manager.py --seconds 4
 ```
 
 The verifier checks that all three IDs appear exactly once, per-vehicle kinematics are present, simulation time advances, and coordinated traffic events reach the ROS topic. Validation received 999 state snapshots and 8 traffic events over 20 wall seconds; the reported simulation clock advanced from 0.20 to 20.16 s. The older `verify_multi_vehicle_isolation.py` still validates command/sensor namespacing across three independent bridge processes.
+
+Goal 13 dispatch snapshots and events are observation-only; the fleet adapter still does not accept low-level vehicle commands or let an external ROS process change task state. The Goal 13 dynamic probe received 737 fleet-state samples and 17 dispatch events over 15 wall seconds, observed 4/4 requests complete with 4 assignments, and found zero unfinished requests. It asserted request release, candidate evaluation, assignment, completion, and at least one capability rejection. The package suite passed all 16 tests. The state stream continues to expose only the fields already used by the simulator's fleet validation surface; the dispatch addition contributes task/capability/lifecycle/metric data and does not expose new sensor ground truth.
 
 ## Topics and QoS
 

@@ -126,6 +126,7 @@ struct SensorFault {
     double angle_min_rad{};
     double angle_max_rad{};
     double probability{};
+    bool operator==(const SensorFault&) const = default;
 };
 
 struct AutonomyScenario {

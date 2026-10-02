@@ -334,6 +334,17 @@ TEST(FleetTest, ScenarioLoadsThreeMissionsAndConfiguredFault){
     EXPECT_EQ(scenario.missions[1].id.value,"tug_02");ASSERT_EQ(scenario.missions[1].faults.size(),1U);
     EXPECT_EQ(scenario.missions[1].faults.front().sensor,SensorKind::Gnss);
 }
+TEST(FleetDispatcherScenarioTest, LoadsVehicleCapabilitiesAndDynamicallyReleasedServiceRequests){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_dynamic.yaml");
+    EXPECT_TRUE(scenario.missions.empty());
+    ASSERT_EQ(scenario.dispatch_fleet.size(),3U);
+    ASSERT_EQ(scenario.service_requests.size(),4U);
+    EXPECT_EQ(scenario.dispatch_fleet.front().id.value,"baggage_01");
+    EXPECT_EQ(scenario.service_requests[0].id.value,"turn_a1");
+    EXPECT_EQ(scenario.service_requests[1].release_time_s,400.0);
+    EXPECT_EQ(scenario.service_requests[1].kind,ServiceKind::FuelService);
+    EXPECT_DOUBLE_EQ(scenario.dispatch_aging_interval_s,60.0);
+}
 TEST(FleetExperimentTest, SerialAndParallelFleetResultsAreIdentical){
     const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_fleet_fault.yaml");
     std::vector<FleetRunRequest> requests;for(std::size_t i=0;i<24;++i)requests.push_back({scenario,42+i,100-i});
@@ -357,5 +368,53 @@ TEST(FleetExperimentTest, OpposingEdgeFleetResultsMatchSerialAndParallelExactly)
         EXPECT_EQ(serial.runs[i].metrics.missions_completed,3U);
         EXPECT_EQ(serial.runs[i].metrics.collisions,0U);
     }
+}
+TEST(FleetDispatcherIntegrationTest, DynamicScenarioCompletesWithoutCollisionOrLeakedReservations){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_dynamic.yaml");
+    FleetSimulation simulation{scenario,42};
+    while(simulation.advance()){}
+    const auto result=simulation.result();
+    EXPECT_EQ(result.dispatch.requests_created,4U);
+    EXPECT_EQ(result.dispatch.requests_completed,4U);
+    EXPECT_EQ(result.dispatch.requests_failed,0U);
+    EXPECT_EQ(result.dispatch.assignments,4U);
+    EXPECT_EQ(result.dispatch.unfinished_requests,0U);
+    EXPECT_EQ(result.collisions,0U);
+    EXPECT_EQ(result.outstanding_reservations,0U);
+    EXPECT_EQ(result.deadlocked_vehicles.size(),0U);
+}
+TEST(FleetDispatcherIntegrationTest, AgingScenarioServesHighPriorityFirstAndPromotesOldWork){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_fairness.yaml");
+    FleetSimulation simulation{scenario,42};while(simulation.advance()){}const auto result=simulation.result();
+    ASSERT_EQ(result.dispatch.requests_completed,7U);EXPECT_EQ(result.dispatch.requests_failed,0U);
+    EXPECT_GT(result.dispatch.aging_activations,0U);EXPECT_EQ(result.collisions,0U);EXPECT_EQ(result.outstanding_reservations,0U);
+    const auto high=std::ranges::find_if(result.dispatch.events,[](const auto& e){return e.kind==DispatchEventKind::Assigned;});
+    ASSERT_NE(high,result.dispatch.events.end());EXPECT_EQ(high->request.value,"high_00");
+    const auto low=std::ranges::find_if(result.dispatch.events,[](const auto& e){return e.request.value=="low_waiting"&&e.kind==DispatchEventKind::Assigned;});
+    const auto last_high=std::ranges::find_if(result.dispatch.events,[](const auto& e){return e.request.value=="high_10"&&e.kind==DispatchEventKind::Assigned;});
+    ASSERT_NE(low,result.dispatch.events.end());ASSERT_NE(last_high,result.dispatch.events.end());EXPECT_LT(low->time_s,last_high->time_s);
+}
+TEST(FleetDispatcherIntegrationTest, UnavailableVehicleReassignsTaskAndBackupCompletesSafely){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_reassignment.yaml");
+    FleetSimulation simulation{scenario,42};while(simulation.advance()){}const auto result=simulation.result();
+    ASSERT_EQ(result.dispatch.requests.size(),1U);const auto& task=result.dispatch.requests.front();
+    EXPECT_EQ(task.state,ServiceTaskState::Completed);ASSERT_TRUE(task.assigned_vehicle);EXPECT_EQ(task.assigned_vehicle->value,"baggage_backup");
+    EXPECT_EQ(task.reassignments,1U);EXPECT_EQ(result.dispatch.reassignments,1U);EXPECT_EQ(result.dispatch.requests_failed,0U);
+    EXPECT_EQ(result.collisions,0U);EXPECT_EQ(result.outstanding_reservations,0U);EXPECT_TRUE(result.deadlocked_vehicles.empty());
+    EXPECT_TRUE(std::ranges::any_of(result.dispatch.events,[](const auto& e){return e.kind==DispatchEventKind::Reassigned&&e.vehicle.value=="baggage_backup";}));
+}
+TEST(FleetExperimentTest, DynamicDispatchMatchesSerialParallelAndIndependentRuns){
+    const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_dynamic.yaml");
+    std::vector<FleetRunRequest> requests;for(std::size_t i=0;i<4;++i)requests.push_back({scenario,42,i});
+    const auto serial=execute_fleet_runs(requests,1),parallel=execute_fleet_runs(std::move(requests),4);
+    ASSERT_EQ(serial.runs.size(),parallel.runs.size());
+    for(std::size_t i=0;i<serial.runs.size();++i){
+        EXPECT_EQ(serial.runs[i].ordinal,parallel.runs[i].ordinal);
+        EXPECT_EQ(serial.runs[i].metrics,parallel.runs[i].metrics);
+        EXPECT_EQ(serial.runs[i].metrics.deterministic_digest,parallel.runs[i].metrics.deterministic_digest);
+        EXPECT_EQ(serial.runs[i].metrics.dispatch.requests_completed,4U);
+        EXPECT_EQ(serial.runs[i].metrics.collisions,0U);
+    }
+    EXPECT_EQ(serial.runs.front().metrics,serial.runs.back().metrics);
 }
 }

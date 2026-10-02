@@ -75,6 +75,7 @@ private:
     std::vector<airside::autonomy::FleetVehicleSnapshot> FleetSnapshots;
     airside::autonomy::FleetMetrics FleetMetricsSnapshot;
     std::size_t FleetEventCount{0};
+    std::size_t FleetDispatchEventCount{0};
     TUniquePtr<airside::autonomy::ReferenceController> AutonomyController;
     TOptional<airside::autonomy::AutonomySnapshot> AutonomySnapshot;
     TOptional<airside::SimulationSnapshot> Snapshot;
@@ -103,6 +104,8 @@ private:
     bool bFleetValidation{false};
     bool bGoal12ClosureValidation{false};
     bool bGoal12RecoveryValidation{false};
+    bool bGoal13DispatchValidation{false};
+    bool bGoal13ReassignmentValidation{false};
     bool bDemoMode{false};
     bool bDemoAdvancedToHighCapacity{false};
     bool bDemoAdvancedToAutonomy{false};

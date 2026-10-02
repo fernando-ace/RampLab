@@ -68,7 +68,11 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     bFleetValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabFleetValidation"));
     bGoal12ClosureValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal12ClosureValidation"));
     bGoal12RecoveryValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal12RecoveryValidation"));
-    if(bGoal12RecoveryValidation){SelectedScenarioKey=TEXT("autonomy_fleet_deadlock");PlaybackSpeed=10.0;}
+    bGoal13DispatchValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13DispatchValidation"));
+    bGoal13ReassignmentValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13ReassignmentValidation"));
+    if(bGoal13ReassignmentValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_reassignment");PlaybackSpeed=60.0;}
+    else if(bGoal13DispatchValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_dynamic");PlaybackSpeed=60.0;}
+    else if(bGoal12RecoveryValidation){SelectedScenarioKey=TEXT("autonomy_fleet_deadlock");PlaybackSpeed=10.0;}
     else if(bGoal12ClosureValidation){SelectedScenarioKey=TEXT("autonomy_fleet_dynamic_closure");PlaybackSpeed=10.0;}
     else if(bFleetValidation){SelectedScenarioKey=TEXT("autonomy_fleet");PlaybackSpeed=10.0;}
     if (bCaptureQA) {
@@ -145,6 +149,22 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
                 RecentEvents.RemoveAt(EvictIndex);RecentEventIsRecoveryLifecycle.RemoveAt(EvictIndex);
             }
         }
+        while(FleetDispatchEventCount<FleetMetricsSnapshot.dispatch.events.size()){
+            const auto& Event=FleetMetricsSnapshot.dispatch.events[FleetDispatchEventCount++];
+            if(Event.kind!=airside::autonomy::DispatchEventKind::RequestReleased&&
+               Event.kind!=airside::autonomy::DispatchEventKind::Assigned&&
+               Event.kind!=airside::autonomy::DispatchEventKind::Reassigned&&
+               Event.kind!=airside::autonomy::DispatchEventKind::Completed&&
+               Event.kind!=airside::autonomy::DispatchEventKind::AgingApplied&&
+               Event.kind!=airside::autonomy::DispatchEventKind::Failed)continue;
+            const FString Message=FString::Printf(TEXT("%6.2f  %s  %s%s%s  priority %lld  %s"),Event.time_s,
+                UTF8_TO_TCHAR(airside::autonomy::to_string(Event.kind).c_str()),
+                UTF8_TO_TCHAR(Event.request.value.c_str()),Event.vehicle.value.empty()?TEXT(""):TEXT(" -> "),
+                UTF8_TO_TCHAR(Event.vehicle.value.c_str()),static_cast<long long>(Event.effective_priority),
+                UTF8_TO_TCHAR(Event.detail.c_str()));
+            RecentEvents.Add(Message);RecentEventIsRecoveryLifecycle.Add(true);
+            if(RecentEvents.Num()>8){int32 EvictIndex=RecentEventIsRecoveryLifecycle.IndexOfByKey(false);if(EvictIndex==INDEX_NONE)EvictIndex=0;RecentEvents.RemoveAt(EvictIndex);RecentEventIsRecoveryLifecycle.RemoveAt(EvictIndex);}
+        }
         if(FleetSimulation->finished()){
             bPlaying=false;
             const auto& M=FleetMetricsSnapshot;
@@ -167,8 +187,13 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
                 static_cast<unsigned long long>(M.recovery_attempts),static_cast<unsigned long long>(M.retreat_count),
                 static_cast<unsigned long long>(M.reroutes),static_cast<unsigned long long>(M.collisions),M.minimum_separation_m,
                 static_cast<unsigned long long>(M.deterministic_digest));
-            if(bGoal12RecoveryValidation)UE_LOG(LogRampLab,Display,TEXT("Recent Events panel: %s"),*FString::Join(RecentEvents,TEXT(" | ")));
-            if(bFleetValidation||bGoal12ClosureValidation||bGoal12RecoveryValidation)FPlatformMisc::RequestExit(false);
+            if(bGoal12RecoveryValidation||bGoal13DispatchValidation||bGoal13ReassignmentValidation)UE_LOG(LogRampLab,Display,TEXT("Recent Events panel: %s"),*FString::Join(RecentEvents,TEXT(" | ")));
+            if(bGoal13DispatchValidation||bGoal13ReassignmentValidation)UE_LOG(LogRampLab,Display,TEXT("Dispatch runtime: requests=%llu completed=%llu failed=%llu assignments=%llu reassignments=%llu aging=%llu unfinished=%llu queue_wait_avg_s=%.3f queue_wait_max_s=%.3f"),
+                static_cast<unsigned long long>(M.dispatch.requests_created),static_cast<unsigned long long>(M.dispatch.requests_completed),
+                static_cast<unsigned long long>(M.dispatch.requests_failed),static_cast<unsigned long long>(M.dispatch.assignments),
+                static_cast<unsigned long long>(M.dispatch.reassignments),static_cast<unsigned long long>(M.dispatch.aging_activations),
+                static_cast<unsigned long long>(M.dispatch.unfinished_requests),M.dispatch.average_queue_wait_s,M.dispatch.maximum_queue_wait_s);
+            if(bFleetValidation||bGoal12ClosureValidation||bGoal12RecoveryValidation||bGoal13DispatchValidation||bGoal13ReassignmentValidation)FPlatformMisc::RequestExit(false);
         }
         return;
     }
@@ -381,7 +406,7 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
     try {
         AutonomySimulation.Reset();
         FleetSimulation.Reset(); FleetSnapshots.clear();
-        FleetMetricsSnapshot={};FleetEventCount=0;
+        FleetMetricsSnapshot={};FleetEventCount=0;FleetDispatchEventCount=0;
         RecentEventIsRecoveryLifecycle.Reset();
         AutonomyController.Reset();
         AutonomySnapshot.Reset();
@@ -409,8 +434,8 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
             UE_LOG(LogRampLab, Display, TEXT("%s"), *StatusText);
             return true;
         }
-        if(SelectedScenarioKey==TEXT("autonomy_fleet")||SelectedScenarioKey==TEXT("autonomy_fleet_fault")||SelectedScenarioKey==TEXT("autonomy_fleet_dynamic_closure")||SelectedScenarioKey==TEXT("autonomy_fleet_deadlock")){
-            auto Fleet=airside::autonomy::load_fleet_scenario(std::filesystem::path{*Path});ScenarioName=UTF8_TO_TCHAR(Fleet.name.c_str());Seed=Fleet.default_seed;auto Airport=Fleet.vehicle_scenario.airport;Simulation=MakeUnique<airside::Simulation>(std::move(Airport),Seed);ReconcileSnapshot();FleetSimulation=MakeUnique<airside::autonomy::FleetSimulation>(std::move(Fleet.vehicle_scenario),std::move(Fleet.missions),Seed,std::move(Fleet.road_events),Fleet.deadlock_persistence_s,Fleet.resource_specific_tie_breaks);FleetSnapshots=FleetSimulation->snapshots();FleetMetricsSnapshot=FleetSimulation->result();RecentEvents.Reset();RecentEventIsRecoveryLifecycle.Reset();PlaybackSeconds=0.0;bPlaying=true;bCompletionReported=false;FinalResultText.Reset();StatusText=FString::Printf(TEXT("Loaded %llu-vehicle deterministic fleet seed %llu"),static_cast<unsigned long long>(FleetSnapshots.size()),Seed);UE_LOG(LogRampLab,Display,TEXT("%s"),*StatusText);return true;
+        if(SelectedScenarioKey==TEXT("autonomy_fleet")||SelectedScenarioKey==TEXT("autonomy_fleet_fault")||SelectedScenarioKey==TEXT("autonomy_fleet_dynamic_closure")||SelectedScenarioKey==TEXT("autonomy_fleet_deadlock")||SelectedScenarioKey==TEXT("autonomy_dispatch_dynamic")||SelectedScenarioKey==TEXT("autonomy_dispatch_fairness")||SelectedScenarioKey==TEXT("autonomy_dispatch_reassignment")){
+            auto Fleet=airside::autonomy::load_fleet_scenario(std::filesystem::path{*Path});ScenarioName=UTF8_TO_TCHAR(Fleet.name.c_str());Seed=Fleet.default_seed;auto Airport=Fleet.vehicle_scenario.airport;Simulation=MakeUnique<airside::Simulation>(std::move(Airport),Seed);ReconcileSnapshot();FleetSimulation=MakeUnique<airside::autonomy::FleetSimulation>(std::move(Fleet),Seed);FleetSnapshots=FleetSimulation->snapshots();FleetMetricsSnapshot=FleetSimulation->result();FleetEventCount=0;FleetDispatchEventCount=0;RecentEvents.Reset();RecentEventIsRecoveryLifecycle.Reset();PlaybackSeconds=0.0;bPlaying=true;bCompletionReported=false;FinalResultText.Reset();StatusText=FString::Printf(TEXT("Loaded %llu-vehicle deterministic fleet seed %llu"),static_cast<unsigned long long>(FleetSnapshots.size()),Seed);UE_LOG(LogRampLab,Display,TEXT("%s"),*StatusText);return true;
         }
         auto Scenario = airside::load_scenario(std::filesystem::path{*Path});
         ScenarioName = UTF8_TO_TCHAR(Scenario.name.c_str());

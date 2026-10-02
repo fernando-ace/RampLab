@@ -1,6 +1,7 @@
 #pragma once
 
 #include "airside/autonomy/simulation.hpp"
+#include "airside/autonomy/service_request.hpp"
 
 #include <cstdint>
 #include <filesystem>
@@ -11,11 +12,6 @@
 #include <vector>
 
 namespace airside::autonomy {
-
-struct VehicleId {
-    std::string value;
-    auto operator<=>(const VehicleId&) const = default;
-};
 
 struct FleetMission {
     VehicleId id;
@@ -30,6 +26,9 @@ struct FleetScenario {
     std::uint64_t default_seed{42};
     AutonomyScenario vehicle_scenario;
     std::vector<FleetMission> missions;
+    std::vector<DispatchVehicle> dispatch_fleet;
+    std::vector<ServiceRequest> service_requests;
+    double dispatch_aging_interval_s{30.0};
     std::vector<RoadAvailabilityEvent> road_events;
     double deadlock_persistence_s{2.0};
     bool resource_specific_tie_breaks{false};
@@ -102,11 +101,19 @@ struct FleetVehicleResult {
     std::string goal_node;
     MissionMetrics metrics;
     VehicleState final_state;
+    std::size_t tasks_completed{};
+    double total_distance_m{};
+    double busy_time_s{};
+    double idle_time_s{};
+    double utilization{};
     bool operator==(const FleetVehicleResult&) const = default;
 };
 struct FleetVehicleSnapshot {
     VehicleId id;
     std::string goal_node;
+    std::optional<ServiceRequestId> current_request;
+    DispatchVehicleState dispatch_state{DispatchVehicleState::Idle};
+    std::vector<std::string> capabilities;
     bool waiting{};
     AutonomySnapshot autonomy;
     std::string recovery_state;
@@ -114,6 +121,8 @@ struct FleetVehicleSnapshot {
     Vec2 retreat_target{};
     double retreat_progress_m{};
     std::size_t recovery_attempts{};
+    std::size_t tasks_completed{};
+    double total_distance_m{};
 };
 
 struct FleetMetrics {
@@ -148,6 +157,7 @@ struct FleetMetrics {
     double throughput_per_simulated_hour{};
     std::vector<FleetVehicleResult> vehicles;
     std::vector<TrafficEvent> events;
+    FleetDispatchMetrics dispatch;
     std::uint64_t deterministic_digest{};
     bool operator==(const FleetMetrics&) const = default;
 };
@@ -157,6 +167,7 @@ public:
     FleetSimulation(AutonomyScenario base, std::vector<FleetMission> missions, std::uint64_t seed,
                     std::vector<RoadAvailabilityEvent> road_events = {}, double deadlock_persistence_s = 2.0,
                     bool resource_specific_tie_breaks = false);
+    FleetSimulation(FleetScenario scenario, std::uint64_t seed);
     ~FleetSimulation();
     FleetSimulation(FleetSimulation&&) noexcept;
     FleetSimulation& operator=(FleetSimulation&&) noexcept;

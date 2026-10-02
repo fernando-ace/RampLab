@@ -143,24 +143,36 @@ FText SRampLabControlPanel::SummaryText() const
     if (Subsystem->IsFleetMode()) {
         const auto& Metrics=Subsystem->GetFleetMetrics();
         int32 Waiting=0,Stopped=0,Moving=0,Completed=0;
-        FString VehicleLines;
+        FString VehicleLines,TaskLines;
         for(const auto& Vehicle:Subsystem->GetFleetSnapshots()){
             const TCHAR* State=Vehicle.waiting?TEXT("WAITING"):Vehicle.autonomy.finished?TEXT("COMPLETE"):Vehicle.autonomy.ground_truth.speed_mps<0.15?TEXT("STOPPED"):TEXT("MOVING");
             if(Vehicle.waiting)++Waiting;else if(Vehicle.autonomy.finished)++Completed;else if(Vehicle.autonomy.ground_truth.speed_mps<0.15)++Stopped;else ++Moving;
-            VehicleLines+=FString::Printf(TEXT("\n%s -> %s  /  %s  / recovery %s  %s  %.1f m  attempts %d"),
+            VehicleLines+=FString::Printf(TEXT("\n%s -> %s  /  %s  / task %s  / recovery %s  %s  %.1f m  attempts %d"),
                 UTF8_TO_TCHAR(Vehicle.id.value.c_str()),UTF8_TO_TCHAR(Vehicle.goal_node.c_str()),State,
+                Vehicle.current_request?UTF8_TO_TCHAR(Vehicle.current_request->value.c_str()):TEXT("idle"),
                 UTF8_TO_TCHAR(Vehicle.recovery_state.c_str()),UTF8_TO_TCHAR(Vehicle.recovery_resource.c_str()),
                 Vehicle.retreat_progress_m,static_cast<int32>(Vehicle.recovery_attempts));
+        }
+        for(const auto& Task:Metrics.dispatch.requests){
+            if(Task.state==airside::autonomy::ServiceTaskState::Completed)continue;
+            TaskLines+=FString::Printf(TEXT("\n%s  %s  priority %lld  wait %.1f s  assigned %s"),
+                UTF8_TO_TCHAR(Task.request.id.value.c_str()),UTF8_TO_TCHAR(airside::autonomy::to_string(Task.state).c_str()),
+                static_cast<long long>(Task.effective_priority),Task.queue_wait_s,
+                Task.assigned_vehicle?UTF8_TO_TCHAR(Task.assigned_vehicle->value.c_str()):TEXT("none"));
         }
         FString DependencyLine;
         if(!Metrics.wait_dependencies.empty()){
             const auto& Dependency=Metrics.wait_dependencies.front();
             DependencyLine=FString::Printf(TEXT("\nWaiting %s on %s via %s for %.2f s"),UTF8_TO_TCHAR(Dependency.waiting_vehicle.value.c_str()),UTF8_TO_TCHAR(Dependency.blocking_vehicle.value.c_str()),UTF8_TO_TCHAR(Dependency.resource.c_str()),Dependency.wait_duration_s);
         }
-        return FText::FromString(FString::Printf(TEXT("FLEET  %llu vehicles  /  seed %llu\nSimulation  %.2f s  /  %s\nMissions  %llu / %llu\nMoving %d   Waiting %d   Stopped %d   Complete %d\nTraffic wait %.2f s   Reservations %llu   Contention %llu\nNear conflicts %llu   Forced stops %llu   Deadlocks %llu  /  resolved %llu\nRecoveries %llu   Retreats %llu   Reroutes %llu   Closure replans %llu\nCollisions %llu   Minimum separation %.2f m%s%s"),
+        const FString DispatchSummary=Metrics.dispatch.requests_created?FString::Printf(TEXT("\nDispatch %llu/%llu complete  /  %llu assigned  /  %llu reassigned  /  %llu aging  /  queue %.1f s avg, %.1f s max"),
+            static_cast<unsigned long long>(Metrics.dispatch.requests_completed),static_cast<unsigned long long>(Metrics.dispatch.requests_created),
+            static_cast<unsigned long long>(Metrics.dispatch.assignments),static_cast<unsigned long long>(Metrics.dispatch.reassignments),
+            static_cast<unsigned long long>(Metrics.dispatch.aging_activations),Metrics.dispatch.average_queue_wait_s,Metrics.dispatch.maximum_queue_wait_s):FString();
+        return FText::FromString(FString::Printf(TEXT("FLEET  %llu vehicles  /  seed %llu\nSimulation  %.2f s  /  %s\nMissions  %llu / %llu\nMoving %d   Waiting %d   Stopped %d   Complete %d\nTraffic wait %.2f s   Reservations %llu   Contention %llu\nNear conflicts %llu   Forced stops %llu   Deadlocks %llu  /  resolved %llu\nRecoveries %llu   Retreats %llu   Reroutes %llu   Closure replans %llu\nCollisions %llu   Minimum separation %.2f m%s%s%s%s"),
             static_cast<unsigned long long>(Metrics.vehicle_count),Subsystem->GetSeed(),static_cast<double>(Subsystem->GetPlaybackTime().count()),Subsystem->IsFinished()?TEXT("Finished"):Subsystem->IsPlaying()?TEXT("Running"):TEXT("Paused"),
             static_cast<unsigned long long>(Metrics.missions_completed),static_cast<unsigned long long>(Metrics.missions_attempted),Moving,Waiting,Stopped,Completed,Metrics.traffic_waiting_time_s,
-            static_cast<unsigned long long>(Metrics.reservation_requests),static_cast<unsigned long long>(Metrics.reservation_contentions),static_cast<unsigned long long>(Metrics.near_conflict_events),static_cast<unsigned long long>(Metrics.forced_safety_stops),static_cast<unsigned long long>(Metrics.deadlock_count),static_cast<unsigned long long>(Metrics.deadlocks_resolved),static_cast<unsigned long long>(Metrics.recovery_attempts),static_cast<unsigned long long>(Metrics.retreat_count),static_cast<unsigned long long>(Metrics.reroutes),static_cast<unsigned long long>(Metrics.road_closure_replans),static_cast<unsigned long long>(Metrics.collisions),Metrics.minimum_separation_m,*DependencyLine,*VehicleLines));
+            static_cast<unsigned long long>(Metrics.reservation_requests),static_cast<unsigned long long>(Metrics.reservation_contentions),static_cast<unsigned long long>(Metrics.near_conflict_events),static_cast<unsigned long long>(Metrics.forced_safety_stops),static_cast<unsigned long long>(Metrics.deadlock_count),static_cast<unsigned long long>(Metrics.deadlocks_resolved),static_cast<unsigned long long>(Metrics.recovery_attempts),static_cast<unsigned long long>(Metrics.retreat_count),static_cast<unsigned long long>(Metrics.reroutes),static_cast<unsigned long long>(Metrics.road_closure_replans),static_cast<unsigned long long>(Metrics.collisions),Metrics.minimum_separation_m,*DispatchSummary,*DependencyLine,*TaskLines,*VehicleLines));
     }
 
     if (Subsystem->IsAutonomyMode()) {

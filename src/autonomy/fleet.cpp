@@ -1,4 +1,5 @@
 #include "airside/autonomy/fleet.hpp"
+#include "airside/autonomy/dispatcher.hpp"
 #include "airside/routing/astar.hpp"
 
 #include <algorithm>
@@ -24,6 +25,16 @@ AutonomyScenario mission_scenario(AutonomyScenario s,const FleetMission& m) {
     s.initial_state.heading_rad=std::atan2(goal->position.y_m-start->position.y_m,goal->position.x_m-start->position.x_m);
     s.faults.insert(s.faults.end(),m.faults.begin(),m.faults.end());
     return s;
+}
+
+std::vector<FleetMission> idle_missions(const std::vector<DispatchVehicle>& vehicles) {
+    std::vector<DispatchVehicle> sorted = vehicles;
+    std::ranges::sort(sorted, {}, [](const auto& vehicle) { return vehicle.id; });
+    std::vector<FleetMission> missions;
+    missions.reserve(sorted.size());
+    for (const auto& vehicle : sorted)
+        missions.push_back({vehicle.id, vehicle.current_node, vehicle.current_node, 0, {}});
+    return missions;
 }
 
 std::vector<std::string> route_resources(const AutonomyScenario& scenario,const FleetMission& mission) {
@@ -267,6 +278,20 @@ struct FleetSimulation::Impl {
     enum class RecoveryState { None, Selected, Retreating, Holding, Resumed, Failed };
     struct Member {
         FleetMission mission;
+        std::vector<std::string> capabilities;
+        std::string current_node;
+        std::optional<ServiceRequestId> current_request;
+        std::string service_origin_node;
+        std::string service_destination_node;
+        std::size_t tasks_completed{};
+        double total_distance_m{};
+        double busy_time_s{};
+        double idle_time_s{};
+        double dispatch_state_since_s{};
+        bool active{true};
+        bool unavailable{};
+        bool servicing{};
+        double service_complete_at_s{};
         std::vector<std::string> route_resources;
         std::vector<DirectedRouteEdge> route_edges;
         AutonomySimulation simulation;
@@ -321,10 +346,17 @@ struct FleetSimulation::Impl {
     std::size_t reservation_denials{};
     double resource_wait_total_s{}, resource_wait_max_s{};
     std::size_t resource_wait_samples{};
+    AutonomyScenario base_scenario;
+    std::unique_ptr<FleetDispatcher> dispatcher;
+    bool dispatch_mode{};
+    std::uint64_t base_seed{};
 
     Impl(AutonomyScenario base, std::vector<FleetMission> missions, std::uint64_t seed,
-         std::vector<RoadAvailabilityEvent> changes, double persistence, bool resource_tie_breaks)
+         std::vector<RoadAvailabilityEvent> changes, double persistence, bool resource_tie_breaks,
+         std::vector<DispatchVehicle> dispatch_fleet = {}, std::vector<ServiceRequest> service_requests = {},
+         double aging_interval_s = 30.0)
         : resource_specific_tie_breaks(resource_tie_breaks), reservations(resource_tie_breaks),
+          base_scenario(base), base_seed(seed),
           road_events(std::move(changes)), deadlock_persistence_s(persistence) {
         if (!std::isfinite(deadlock_persistence_s) || deadlock_persistence_s < 0.0)
             throw std::invalid_argument("deadlock persistence threshold must be finite and nonnegative");
@@ -337,6 +369,34 @@ struct FleetSimulation::Impl {
             auto resources=route_resources(base,missions[i]);
             auto edges=directed_route_edges(base,missions[i]);
             members.emplace_back(missions[i],std::move(member_scenario),std::move(resources),std::move(edges),seed+static_cast<std::uint64_t>(i)*0x9e3779b97f4a7c15ULL);
+        }
+        if (!dispatch_fleet.empty() || !service_requests.empty()) {
+            if (dispatch_fleet.empty() || service_requests.empty() || dispatch_fleet.size() != members.size())
+                throw std::invalid_argument("dispatch fleet requires vehicles and service requests");
+            std::ranges::sort(dispatch_fleet, {}, [](const auto& vehicle) { return vehicle.id; });
+            if (dispatch_fleet.size() != members.size()) throw std::invalid_argument("dispatch vehicle and mission counts differ");
+            dispatcher = std::make_unique<FleetDispatcher>(std::move(service_requests), aging_interval_s);
+            dispatch_mode = true;
+            double latest_release = 0.0, maximum_service = 0.0;
+            for (const auto& request : dispatcher->snapshot()) {
+                latest_release = std::max(latest_release, request.request.release_time_s);
+                maximum_service = std::max(maximum_service, request.request.service_duration_s);
+            }
+            dispatch_horizon_s = latest_release +
+                static_cast<double>(dispatcher->snapshot().size() + members.size() + 1) *
+                (base_scenario.timeout_s + maximum_service + base_scenario.timestep_s);
+            for (std::size_t i = 0; i < members.size(); ++i) {
+                auto& member = members[i];
+                const auto& vehicle = dispatch_fleet[i];
+                if (member.mission.id != vehicle.id) throw std::invalid_argument("dispatch vehicle IDs do not match initialized fleet members");
+                if (vehicle.capabilities.empty() || vehicle.current_node != member.mission.start_node)
+                    throw std::invalid_argument("dispatch vehicle capabilities or initial node are invalid");
+                member.capabilities = vehicle.capabilities;
+                member.mission.faults = vehicle.faults;
+                member.current_node = vehicle.current_node;
+                member.active = false;
+                member.mission.goal_node = vehicle.current_node;
+            }
         }
         for (std::size_t i = 0; i < missions.size(); ++i) {
             for (std::size_t j = i + 1; j < missions.size(); ++j) {
@@ -365,6 +425,217 @@ struct FleetSimulation::Impl {
             users.erase(std::unique(users.begin(), users.end()), users.end());
         }
         was_conflicting.resize(members.size()*members.size());
+    }
+
+    double dispatch_horizon_s{};
+
+    [[nodiscard]] std::string nearest_node_name(const Member& member) const {
+        const auto graph = member.simulation.graph();
+        const auto position = member.simulation.state().position;
+        const auto nearest = std::ranges::min_element(graph.nodes(), [&](const auto& a, const auto& b) {
+            const double da = separation(position, a.position), db = separation(position, b.position);
+            return da == db ? a.id < b.id : da < db;
+        });
+        if (nearest == graph.nodes().end()) throw std::logic_error("dispatch fleet has no road nodes");
+        return nearest->name;
+    }
+
+    [[nodiscard]] std::vector<DispatchVehicle> dispatch_vehicle_states() const {
+        std::vector<DispatchVehicle> vehicles;
+        vehicles.reserve(members.size());
+        for (const auto& member : members) {
+            DispatchVehicleState state = DispatchVehicleState::Idle;
+            if (member.unavailable) state = DispatchVehicleState::Unavailable;
+            else if (member.recovery_active || member.recovery_state == RecoveryState::Retreating ||
+                     member.recovery_state == RecoveryState::Holding) state = DispatchVehicleState::Recovering;
+            else if (member.active) state = DispatchVehicleState::Busy;
+            vehicles.push_back({member.mission.id, member.capabilities,
+                                member.active ? nearest_node_name(member) : member.current_node,
+                                state, member.current_request});
+        }
+        return vehicles;
+    }
+
+    void start_request(Member& member, const ServiceTaskSnapshot& task) {
+        member.idle_time_s += std::max(0.0, now - member.dispatch_state_since_s);
+        member.dispatch_state_since_s = now;
+        const auto graph = member.simulation.graph();
+        const auto find_node = [&](const std::string& name) -> std::optional<NodeId> {
+            for (const auto& node : graph.nodes()) if (node.name == name) return node.id;
+            return std::nullopt;
+        };
+        const auto from = find_node(member.current_node);
+        const auto origin = find_node(task.request.origin);
+        const auto destination = find_node(task.request.destination);
+        if (!from || !origin || !destination) throw std::invalid_argument("dispatch request references an unknown road node");
+        const auto approach = airside::find_route(graph, *from, *origin);
+        const auto service_route = airside::find_route(graph, *origin, *destination);
+        if (!approach || !service_route) throw std::logic_error("dispatcher assigned a request without an available route");
+
+        auto scenario = member.simulation.scenario();
+        scenario.name += "_" + task.request.id.value;
+        scenario.start_node = member.current_node;
+        scenario.goal_node = task.request.destination;
+        scenario.initial_state = member.simulation.state();
+        scenario.faults = member.mission.faults;
+        scenario.faults.insert(scenario.faults.end(), task.request.faults.begin(), task.request.faults.end());
+        member.mission.start_node = member.current_node;
+        member.mission.goal_node = task.request.destination;
+        member.mission.priority = task.request.priority;
+        std::uint64_t task_hash = 14695981039346656037ULL;
+        hash_string(task_hash, member.mission.id.value);
+        hash_string(task_hash, task.request.id.value);
+        member.simulation = AutonomySimulation(std::move(scenario), base_seed ^ task_hash);
+        member.controller = ReferenceController(member.simulation.scenario().safety_stop_range_m,
+            member.simulation.scenario().perception_timeout_s, member.simulation.scenario().localization_timeout_s);
+
+        std::vector<Vec2> waypoints{member.simulation.state().position};
+        const auto append_node = [&](NodeId id) {
+            const auto position = graph.node(id).position;
+            if (separation(waypoints.back(), position) > 0.05) waypoints.push_back(position);
+        };
+        for (const auto id : approach->nodes) append_node(id);
+        for (std::size_t i = 1; i < service_route->nodes.size(); ++i) append_node(service_route->nodes[i]);
+        append_node(*destination);
+        member.simulation.set_route(std::move(waypoints));
+
+        member.route_resources.clear();
+        member.route_edges.clear();
+        const auto append_route = [&](const Route& route) {
+            for (std::size_t i = 0; i < route.edges.size(); ++i) {
+                const auto edge = route.edges[i];
+                const auto resource = "edge/" + std::to_string(edge.value());
+                member.route_resources.push_back(resource);
+                member.route_edges.push_back({resource, route.nodes[i], route.nodes[i + 1]});
+            }
+            for (const auto id : route.nodes) member.route_resources.push_back("intersection/" + std::to_string(id.value()));
+        };
+        append_route(*approach);
+        append_route(*service_route);
+        std::ranges::sort(member.route_resources);
+        member.route_resources.erase(std::unique(member.route_resources.begin(), member.route_resources.end()), member.route_resources.end());
+        member.service_origin_node = task.request.origin;
+        member.service_destination_node = task.request.destination;
+        member.current_request = task.request.id;
+        member.active = true;
+        member.servicing = false;
+        member.service_complete_at_s = 0.0;
+        member.waiting = false;
+        member.route_blocked = false;
+        member.recovery_active = false;
+        member.recovery_state = RecoveryState::None;
+        member.traversal_history.clear();
+        member.traversal_history.push_back(member.simulation.state().position);
+        member.retreat_path.clear();
+        member.retreat_cursor = 1;
+        member.retreat_progress_m = 0.0;
+        member.retreat_last_event_progress_m = 0.0;
+        member.command = member.controller.update(member.simulation.observe(), member.simulation.mission());
+        dispatcher->set_state(task.request.id, ServiceTaskState::EnRoute, now);
+    }
+
+    void dispatch_ready_requests() {
+        if (!dispatch_mode) return;
+        dispatcher->release_due(now);
+        const auto graph = members.front().simulation.graph();
+        auto vehicles = dispatch_vehicle_states();
+        const auto assignments = dispatcher->dispatch(now, vehicles, graph);
+        const auto tasks = dispatcher->snapshot();
+        for (const auto& [request_id, vehicle_id] : assignments) {
+            const auto member = std::ranges::find(members, vehicle_id,
+                [](const auto& candidate) { return candidate.mission.id; });
+            const auto task = std::ranges::find(tasks, request_id,
+                [](const auto& candidate) { return candidate.request.id; });
+            if (member == members.end() || task == tasks.end())
+                throw std::logic_error("dispatcher assignment references missing fleet state");
+            start_request(*member, *task);
+        }
+        if (!assignments.empty()) rebuild_opposing_route_usage();
+    }
+
+    void rebuild_opposing_route_usage() {
+        opposing_edge_users.clear();
+        opposing_edge_uses.clear();
+        for (std::size_t i = 0; i < members.size(); ++i) {
+            if (!members[i].active) continue;
+            for (std::size_t j = i + 1; j < members.size(); ++j) {
+                if (!members[j].active) continue;
+                for (const auto& a : members[i].route_edges) {
+                    const auto b = std::ranges::find_if(members[j].route_edges, [&](const auto& edge) {
+                        return edge.resource == a.resource && edge.from == a.to && edge.to == a.from;
+                    });
+                    if (b == members[j].route_edges.end()) continue;
+                    auto& users = opposing_edge_users[a.resource];
+                    users.push_back(i);
+                    users.push_back(j);
+                    for (const auto index : {i, j}) {
+                        const auto& traversal = index == i ? a : *b;
+                        const auto graph = members[index].simulation.graph();
+                        const auto entry = graph.node(traversal.from).position;
+                        const auto exit = graph.node(traversal.to).position;
+                        auto& uses = opposing_edge_uses[a.resource];
+                        if (std::ranges::none_of(uses, [&](const auto& use) { return use.member_index == index; }))
+                            uses.push_back({index, entry, exit, separation(entry, exit)});
+                    }
+                }
+            }
+        }
+        for (auto& [resource, users] : opposing_edge_users) {
+            (void)resource;
+            std::ranges::sort(users);
+            users.erase(std::unique(users.begin(), users.end()), users.end());
+        }
+        opposing_reservations_initialized = false;
+    }
+
+    void complete_service(Member& member, double completed_at_s) {
+        if (!member.current_request) return;
+        dispatcher->set_state(*member.current_request, ServiceTaskState::Completed, completed_at_s);
+        member.busy_time_s += std::max(0.0, completed_at_s - member.dispatch_state_since_s);
+        member.dispatch_state_since_s = completed_at_s;
+        ++member.tasks_completed;
+        member.current_node = member.service_destination_node;
+        member.current_request.reset();
+        member.active = false;
+        member.servicing = false;
+        member.service_complete_at_s = 0.0;
+        rebuild_opposing_route_usage();
+    }
+
+    void update_dispatch_lifecycle() {
+        if (!dispatch_mode) return;
+        for (auto& member : members) {
+            if (!member.current_request || !member.active) continue;
+            if (member.servicing) {
+                if (now + 1e-9 >= member.service_complete_at_s)
+                    complete_service(member, now);
+                continue;
+            }
+            if (!member.simulation.finished()) continue;
+            const auto run = member.simulation.result();
+            member.total_distance_m += run.metrics.distance_traveled_m;
+            if (run.metrics.result == MissionResult::Success) {
+                const auto task_snapshots = dispatcher->snapshot();
+                const auto task = std::ranges::find(task_snapshots, *member.current_request,
+                    [](const auto& candidate) { return candidate.request.id; });
+                if (task == task_snapshots.end()) throw std::logic_error("completed task disappeared from dispatcher");
+                dispatcher->set_state(*member.current_request, ServiceTaskState::Servicing, now);
+                member.servicing = true;
+                member.service_complete_at_s = now + task->request.service_duration_s;
+                if (task->request.service_duration_s <= 0.0) complete_service(member, now);
+            } else {
+                dispatcher->mark_vehicle_unavailable(member.mission.id, now);
+                member.busy_time_s += std::max(0.0, now - member.dispatch_state_since_s);
+                member.dispatch_state_since_s = now;
+                member.unavailable = true;
+                member.active = false;
+                member.current_request.reset();
+                member.servicing = false;
+                member.route_blocked = false;
+                member.waiting = false;
+                rebuild_opposing_route_usage();
+            }
+        }
     }
 
     bool replan(Member& member, std::optional<EdgeId> forbidden_edge = std::nullopt) {
@@ -539,14 +810,29 @@ struct FleetSimulation::Impl {
 FleetSimulation::FleetSimulation(AutonomyScenario b,std::vector<FleetMission> m,std::uint64_t seed,
     std::vector<RoadAvailabilityEvent> road_events,double deadlock_persistence_s,bool resource_tie_breaks)
     :impl_(std::make_unique<Impl>(std::move(b),std::move(m),seed,std::move(road_events),deadlock_persistence_s,resource_tie_breaks)){}
+FleetSimulation::FleetSimulation(FleetScenario scenario, std::uint64_t seed)
+    : impl_(std::make_unique<Impl>(scenario.vehicle_scenario,
+          scenario.service_requests.empty() ? scenario.missions : idle_missions(scenario.dispatch_fleet),
+          seed, scenario.road_events, scenario.deadlock_persistence_s, scenario.resource_specific_tie_breaks,
+          scenario.dispatch_fleet, scenario.service_requests, scenario.dispatch_aging_interval_s)) {}
 FleetSimulation::~FleetSimulation()=default;
 FleetSimulation::FleetSimulation(FleetSimulation&&) noexcept=default;
 FleetSimulation& FleetSimulation::operator=(FleetSimulation&&) noexcept=default;
-bool FleetSimulation::finished()const noexcept{return std::ranges::all_of(impl_->members,[](const auto&m){return m.simulation.finished();});}
+bool FleetSimulation::finished()const noexcept{
+    if (impl_->dispatch_mode) return impl_->dispatcher->all_terminal() &&
+        std::ranges::none_of(impl_->members, [](const auto& member) { return member.active; });
+    return std::ranges::all_of(impl_->members,[](const auto&m){return m.simulation.finished();});
+}
 double FleetSimulation::time_s()const noexcept{return impl_->now;}
 bool FleetSimulation::advance(){
-    auto& x=*impl_; if(finished())return false;
-    const double dt=x.members.front().simulation.scenario().timestep_s;
+    auto& x=*impl_;
+    if (x.dispatch_mode) {
+        x.update_dispatch_lifecycle();
+        if (x.now + 1e-9 >= x.dispatch_horizon_s && !x.dispatcher->all_terminal())
+            x.dispatcher->fail_unfinished(x.now, "dispatch_horizon_exceeded");
+    }
+    if(finished())return false;
+    const double dt=x.base_scenario.timestep_s;
     while (x.next_road_event < x.road_events.size() &&
            static_cast<double>(x.road_events[x.next_road_event].time.count()) <= x.now + 1e-9) {
         const auto change = x.road_events[x.next_road_event++];
@@ -554,7 +840,7 @@ bool FleetSimulation::advance(){
         for (auto& member : x.members) member.simulation.set_edge_available(change.edge, change.available);
         x.events.push_back({x.now, change.available ? TrafficEventKind::RoadReopened : TrafficEventKind::RoadClosed, {}, {}, resource});
         for (auto& member : x.members) {
-            if (member.simulation.finished()) continue;
+            if (!member.active || member.simulation.finished()) continue;
             const bool route_uses_edge = std::ranges::find(member.route_resources, resource) != member.route_resources.end();
             if ((!change.available && route_uses_edge) || (change.available && member.route_blocked)) {
                 if (x.replan(member)) {
@@ -568,7 +854,8 @@ bool FleetSimulation::advance(){
             }
         }
     }
-    for(auto& m:x.members) if(!m.simulation.finished()) m.command=m.controller.update(m.simulation.observe(),m.simulation.mission());
+    if (x.dispatch_mode) x.dispatch_ready_requests();
+    for(auto& m:x.members) if(m.active&&!m.simulation.finished()) m.command=m.controller.update(m.simulation.observe(),m.simulation.mission());
     if (!x.opposing_reservations_initialized) {
         for (const auto& [resource, users] : x.opposing_edge_users) {
             std::vector<ReservationRequest> requests;
@@ -650,7 +937,7 @@ bool FleetSimulation::advance(){
                 if(!was_conflicting)newly_conflicting_resources.insert(resource);
                 const int blocked_priority=std::numeric_limits<int>::min();
                 const ReservationRequest request{member.mission.id,x.now,
-                    member.simulation.finished()?blocked_priority:member.mission.priority};
+                    (!member.active || member.simulation.finished())?blocked_priority:member.mission.priority};
                 const auto existing=std::ranges::find(candidates,request.vehicle,&ReservationRequest::vehicle);
                 if(existing==candidates.end())candidates.push_back(request);
                 else if(request_before(resource,request,*existing,x.resource_specific_tie_breaks))*existing=request;
@@ -681,7 +968,7 @@ bool FleetSimulation::advance(){
     for (const auto& [resource, owner] : x.reservations.held_resources()) {
         const auto member = std::ranges::find(x.members, owner, [](const auto& candidate) { return candidate.mission.id; });
         if (member == x.members.end() ||
-            (!member->simulation.finished() && member->recovery_state != Impl::RecoveryState::Retreating &&
+            (member->active && !member->simulation.finished() && member->recovery_state != Impl::RecoveryState::Retreating &&
              member->recovery_state != Impl::RecoveryState::Holding) ||
             !x.physically_clear(*member, resource)) continue;
         if (x.reservations.release(resource, owner)) {
@@ -699,18 +986,18 @@ bool FleetSimulation::advance(){
             const bool recovery_escape_b=has_safe_recovery_departure(b,a);
             if(owner&&pair.newly_conflicting)x.events.push_back({x.now,TrafficEventKind::EnteredConflict,*owner,*owner==a.mission.id?b.mission.id:a.mission.id,pair.resource});
             if(owner&&*owner==a.mission.id){
-                if(!b.simulation.finished()&&!recovery_escape_b){yielding[pair.j]=true;add_dependency(b.mission.id,a.mission.id,pair.resource);if(!b.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,b.mission.id,a.mission.id,pair.resource});}}
+                if(b.active&&!b.simulation.finished()&&!recovery_escape_b){yielding[pair.j]=true;add_dependency(b.mission.id,a.mission.id,pair.resource);if(!b.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,a.mission.id,pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,b.mission.id,a.mission.id,pair.resource});}}
             }else if(owner&&*owner==b.mission.id){
-                if(!a.simulation.finished()&&!recovery_escape_a){yielding[pair.i]=true;add_dependency(a.mission.id,b.mission.id,pair.resource);if(!a.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,a.mission.id,b.mission.id,pair.resource});}}
+                if(a.active&&!a.simulation.finished()&&!recovery_escape_a){yielding[pair.i]=true;add_dependency(a.mission.id,b.mission.id,pair.resource);if(!a.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,b.mission.id,pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,a.mission.id,b.mission.id,pair.resource});}}
             }else{
-                if(!a.simulation.finished()&&!recovery_escape_a)yielding[pair.i]=true;
-                if(!b.simulation.finished()&&!recovery_escape_b)yielding[pair.j]=true;
+                if(a.active&&!a.simulation.finished()&&!recovery_escape_a)yielding[pair.i]=true;
+                if(b.active&&!b.simulation.finished()&&!recovery_escape_b)yielding[pair.j]=true;
                 if(owner){
-                    if(!a.simulation.finished()&&!recovery_escape_a)add_dependency(a.mission.id,*owner,pair.resource);
-                    if(!b.simulation.finished()&&!recovery_escape_b)add_dependency(b.mission.id,*owner,pair.resource);
+                    if(a.active&&!a.simulation.finished()&&!recovery_escape_a)add_dependency(a.mission.id,*owner,pair.resource);
+                    if(b.active&&!b.simulation.finished()&&!recovery_escape_b)add_dependency(b.mission.id,*owner,pair.resource);
                 }
-                if(!a.simulation.finished()&&!recovery_escape_a&&!a.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,owner.value_or(VehicleId{}),pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,a.mission.id,owner.value_or(VehicleId{}),pair.resource});}
-                if(!b.simulation.finished()&&!recovery_escape_b&&!b.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,owner.value_or(VehicleId{}),pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,b.mission.id,owner.value_or(VehicleId{}),pair.resource});}
+                if(a.active&&!a.simulation.finished()&&!recovery_escape_a&&!a.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,a.mission.id,owner.value_or(VehicleId{}),pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,a.mission.id,owner.value_or(VehicleId{}),pair.resource});}
+                if(b.active&&!b.simulation.finished()&&!recovery_escape_b&&!b.waiting){++x.forced_safety_stops;x.events.push_back({x.now,TrafficEventKind::Waiting,b.mission.id,owner.value_or(VehicleId{}),pair.resource});x.events.push_back({x.now,TrafficEventKind::ForcedSafetyStop,b.mission.id,owner.value_or(VehicleId{}),pair.resource});}
             }
         }
         x.was_conflicting[pair.index]=pair.conflict;
@@ -732,7 +1019,7 @@ bool FleetSimulation::advance(){
             bool cleared_edge = false;
             bool owner_finished = false;
             if (owner_member != x.members.end()) {
-                owner_finished = owner_member->simulation.finished();
+                owner_finished = !owner_member->active || owner_member->simulation.finished();
                 const auto member_index = static_cast<std::size_t>(std::distance(x.members.begin(), owner_member));
                 const auto uses = x.opposing_edge_uses.find(resource);
                 if (uses != x.opposing_edge_uses.end()) {
@@ -759,7 +1046,7 @@ bool FleetSimulation::advance(){
         if (!owner) continue;
         for (const auto index : users) {
             auto& member = x.members[index];
-            if (member.simulation.finished() || member.mission.id == *owner) continue;
+            if (!member.active || member.simulation.finished() || member.mission.id == *owner) continue;
             yielding[index] = true;
             add_dependency(member.mission.id,*owner,resource);
             if (!member.waiting) {
@@ -929,7 +1216,7 @@ bool FleetSimulation::advance(){
         if(owner){(void)x.reservations.release(resource,*owner);x.events.push_back({x.now,TrafficEventKind::ReleasedConflict,*owner,{},resource});}
     }
     for(std::size_t i=0;i<x.members.size();++i) {
-        auto& m=x.members[i]; if(m.simulation.finished())continue;
+        auto& m=x.members[i]; if(!m.active||m.simulation.finished())continue;
         const bool retreating = m.recovery_state == Impl::RecoveryState::Retreating;
         const bool holding = m.recovery_state == Impl::RecoveryState::Holding;
         if (retreating) m.command = x.retreat_command(m);
@@ -943,6 +1230,7 @@ bool FleetSimulation::advance(){
         }
     }
     x.now+=dt;
+    if (x.dispatch_mode) x.update_dispatch_lifecycle();
     for(std::size_t i=0;i<x.members.size();++i)for(std::size_t j=i+1;j<x.members.size();++j){
         const auto&a=x.members[i].simulation.state();const auto&b=x.members[j].simulation.state();
         const double d=separation(a.position,b.position);x.minimum_separation=std::min(x.minimum_separation,d);
@@ -952,7 +1240,29 @@ bool FleetSimulation::advance(){
 }
 FleetMetrics FleetSimulation::result()const{
     const auto&x=*impl_;FleetMetrics r;r.vehicle_count=x.members.size();r.collisions=x.collisions;r.minimum_separation_m=std::isfinite(x.minimum_separation)?x.minimum_separation:0.0;r.reservation_requests=x.requests;r.reservation_contentions=x.contentions;r.deadlock_count=x.deadlock_count;r.deadlocks_resolved=x.recoveries_resolved;r.recovery_attempts=x.recovery_attempts;r.reroutes=x.reroutes;r.road_closure_replans=x.closure_replans;r.retreat_count=x.retreats;r.reservation_denials=x.reservation_denials;r.outstanding_reservations=x.reservations.held_resources().size();r.starvation_preventions=x.reservations.starvation_preventions();r.maximum_resource_wait_s=x.resource_wait_max_s;r.mean_resource_wait_s=x.resource_wait_samples?x.resource_wait_total_s/static_cast<double>(x.resource_wait_samples):0.0;r.wait_dependencies=x.current_dependencies;r.deadlocked_vehicles=x.current_deadlocked;r.near_conflict_events=x.near_conflict_events;r.forced_safety_stops=x.forced_safety_stops;r.events=x.events;r.deterministic_digest=14695981039346656037ULL;
-    for(const auto&m:x.members){const auto run=m.simulation.result();r.vehicles.push_back({m.mission.id,m.mission.start_node,m.mission.goal_node,run.metrics,run.final_state});++r.missions_attempted;if(run.metrics.result==MissionResult::Success)++r.missions_completed;else if(run.metrics.result==MissionResult::Timeout)++r.safe_timeouts;r.total_distance_m+=run.metrics.distance_traveled_m;r.total_mission_time_s=std::max(r.total_mission_time_s,run.metrics.completion_time_s);r.cumulative_waiting_time_s+=m.wait_s;r.traffic_waiting_time_s+=m.wait_s;r.safety_stop_time_s+=run.metrics.time_stopped_degraded_s;}
+    if (x.dispatch_mode) {
+        r.dispatch = x.dispatcher->metrics();
+        r.missions_attempted = r.dispatch.requests_created;
+        r.missions_completed = r.dispatch.requests_completed;
+        r.safe_timeouts = r.dispatch.requests_failed;
+        r.cumulative_waiting_time_s = r.dispatch.total_queue_wait_s;
+        r.total_mission_time_s = r.dispatch.maximum_completion_time_s;
+        for (const auto& member : x.members) {
+            auto run = member.simulation.result();
+            const auto distance_m = member.total_distance_m +
+                (member.active && !member.servicing ? run.metrics.distance_traveled_m : 0.0);
+            r.vehicles.push_back({member.mission.id, member.mission.start_node, member.mission.goal_node,
+                                  run.metrics, run.final_state, member.tasks_completed, distance_m,
+                                  member.busy_time_s + (member.active ? std::max(0.0, x.now - member.dispatch_state_since_s) : 0.0),
+                                  member.idle_time_s + (!member.active && !member.unavailable ? std::max(0.0, x.now - member.dispatch_state_since_s) : 0.0),
+                                  x.now > 0.0 ? (member.busy_time_s + (member.active ? std::max(0.0, x.now - member.dispatch_state_since_s) : 0.0)) / x.now : 0.0});
+            r.total_distance_m += distance_m;
+            r.traffic_waiting_time_s += member.wait_s;
+            r.safety_stop_time_s += run.metrics.time_stopped_degraded_s;
+        }
+    } else {
+        for(const auto&m:x.members){const auto run=m.simulation.result();r.vehicles.push_back({m.mission.id,m.mission.start_node,m.mission.goal_node,run.metrics,run.final_state,0,run.metrics.distance_traveled_m});++r.missions_attempted;if(run.metrics.result==MissionResult::Success)++r.missions_completed;else if(run.metrics.result==MissionResult::Timeout)++r.safe_timeouts;r.total_distance_m+=run.metrics.distance_traveled_m;r.total_mission_time_s=std::max(r.total_mission_time_s,run.metrics.completion_time_s);r.cumulative_waiting_time_s+=m.wait_s;r.traffic_waiting_time_s+=m.wait_s;r.safety_stop_time_s+=run.metrics.time_stopped_degraded_s;}
+    }
     r.throughput_per_simulated_hour=x.now>0.0?static_cast<double>(r.missions_completed)*3600.0/x.now:0.0;
     auto& digest = r.deterministic_digest;
     hash_u64(digest, r.vehicle_count); hash_u64(digest, r.missions_attempted);
@@ -980,6 +1290,8 @@ FleetMetrics FleetSimulation::result()const{
         hash_double(digest, vehicle.final_state.heading_rad);
         hash_double(digest, vehicle.final_state.speed_mps);
         hash_double(digest, vehicle.final_state.distance_m);
+        hash_double(digest, vehicle.busy_time_s); hash_double(digest, vehicle.idle_time_s);
+        hash_double(digest, vehicle.utilization);
     }
     for (const auto& event : x.events) {
         hash_double(digest, event.time_s); hash_u64(digest, static_cast<std::uint64_t>(event.kind));
@@ -988,6 +1300,27 @@ FleetMetrics FleetSimulation::result()const{
         hash_double(digest, event.position.x_m); hash_double(digest, event.position.y_m);
         hash_double(digest, event.target.x_m); hash_double(digest, event.target.y_m);
         hash_double(digest, event.progress_m);
+    }
+    if (x.dispatch_mode) {
+        for (const auto& request : r.dispatch.requests) {
+            hash_string(digest, request.request.id.value);
+            hash_u64(digest, static_cast<std::uint64_t>(request.state));
+            hash_string(digest, request.assigned_vehicle ? request.assigned_vehicle->value : std::string{});
+            hash_double(digest, request.released_at_s);
+            hash_double(digest, request.assigned_at_s);
+            hash_double(digest, request.completed_at_s);
+            hash_double(digest, request.queue_wait_s);
+            hash_u64(digest, request.reassignments);
+        }
+        for (const auto& event : r.dispatch.events) {
+            hash_double(digest, event.time_s);
+            hash_u64(digest, static_cast<std::uint64_t>(event.kind));
+            hash_string(digest, event.request.value);
+            hash_string(digest, event.vehicle.value);
+            hash_string(digest, event.detail);
+            hash_u64(digest, static_cast<std::uint64_t>(event.effective_priority));
+            hash_double(digest, event.route_distance_m);
+        }
     }
     return r;
 }
@@ -1003,8 +1336,14 @@ std::vector<FleetVehicleSnapshot> FleetSimulation::snapshots()const{
         case Impl::RecoveryState::Resumed: state="resumed";break;
         case Impl::RecoveryState::Failed: state="failed";break;
         }
-        out.push_back({m.mission.id,m.mission.goal_node,m.waiting,m.simulation.snapshot(),std::move(state),
-                       m.recovery_resource,m.retreat_target,m.retreat_progress_m,m.recovery_attempts});
+        auto autonomy = m.simulation.snapshot();
+        if (impl_->dispatch_mode && !m.active) autonomy.finished = true;
+        const auto dispatch_state = m.unavailable ? DispatchVehicleState::Unavailable :
+            m.recovery_active ? DispatchVehicleState::Recovering :
+            m.active ? DispatchVehicleState::Busy : DispatchVehicleState::Idle;
+        out.push_back({m.mission.id,m.mission.goal_node,m.current_request,dispatch_state,m.capabilities,m.waiting,
+                       std::move(autonomy),std::move(state),m.recovery_resource,m.retreat_target,
+                       m.retreat_progress_m,m.recovery_attempts,m.tasks_completed,m.total_distance_m});
     }
     return out;
 }

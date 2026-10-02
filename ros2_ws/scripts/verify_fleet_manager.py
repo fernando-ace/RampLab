@@ -16,8 +16,10 @@ class Probe(Node):
         super().__init__("ramplab_fleet_manager_probe")
         self.states = []
         self.events = []
+        self.dispatch_events = []
         self.create_subscription(String, "/ramplab/fleet/state", self.on_state, 10)
         self.create_subscription(String, "/ramplab/fleet/traffic_events", self.on_event, 100)
+        self.create_subscription(String, "/ramplab/fleet/dispatch_events", self.on_dispatch_event, 100)
 
     def on_state(self, message):
         self.states.append(json.loads(message.data))
@@ -25,17 +27,24 @@ class Probe(Node):
     def on_event(self, message):
         self.events.append(json.loads(message.data))
 
+    def on_dispatch_event(self, message):
+        self.dispatch_events.append(json.loads(message.data))
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--scenario", default="scenarios/autonomy_fleet.yaml")
     parser.add_argument("--seconds", type=float, default=20.0)
     parser.add_argument("--require-retreat", action="store_true")
+    parser.add_argument("--require-dispatch", action="store_true")
     args = parser.parse_args()
     executable = Path(__file__).resolve().parents[1] / "install/lib/ramplab_ros2_bridge/ramplab_ros2_fleet_bridge.exe"
     if not executable.exists():
         raise RuntimeError(f"fleet bridge executable not found: {executable}")
-    process = subprocess.Popen([str(executable), "--scenario", args.scenario], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    command = [str(executable), "--scenario", args.scenario]
+    if args.require_dispatch:
+        command.extend(["--steps-per-tick", "2000"])
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     rclpy.init()
     probe = Probe()
     try:
@@ -47,7 +56,8 @@ def main():
         latest = probe.states[-1]
         vehicles = latest["vehicles"]
         identities = [vehicle["vehicle_id"] for vehicle in vehicles]
-        expected = {"tug_01", "tug_02", "tug_03"}
+        expected = ({"baggage_01", "fuel_01", "tug_01"} if args.require_dispatch
+                    else {"tug_01", "tug_02", "tug_03"})
         if set(identities) != expected or len(set(identities)) != len(identities):
             raise RuntimeError(f"vehicle identity mismatch: {identities}")
         if not all("x_m" in vehicle and "y_m" in vehicle and "speed_mps" in vehicle for vehicle in vehicles):
@@ -55,7 +65,7 @@ def main():
         stamps = [sample["simulation_time_s"] for sample in probe.states]
         if stamps[-1] <= stamps[0]:
             raise RuntimeError(f"fleet simulation clock did not advance: {stamps[0]}..{stamps[-1]}")
-        if not probe.events:
+        if not probe.events and not args.require_dispatch:
             raise RuntimeError("coordinated traffic event topic published no events")
         if args.require_retreat:
             kinds = [event["kind"] for event in probe.events]
@@ -76,6 +86,22 @@ def main():
             print(f"ROS retreat probe PASS: vehicle={started['vehicle_id']}, "
                   f"resource={started['resource']}, physical_retreat={distance:.2f} m, "
                   f"lifecycle={' -> '.join(required)}")
+        if args.require_dispatch:
+            kinds = [event["kind"] for event in probe.dispatch_events]
+            for required in ("service_request_released", "dispatch_candidate_evaluated", "task_assigned", "task_completed"):
+                if required not in kinds:
+                    raise RuntimeError(f"dispatch lifecycle event missing from ROS: {required}")
+            if not any(event["detail"].startswith("incompatible:") for event in probe.dispatch_events
+                       if event["kind"] == "dispatch_candidate_evaluated"):
+                raise RuntimeError("dispatch candidate stream did not expose capability filtering")
+            dispatch = latest.get("dispatch", {})
+            if dispatch.get("requests_completed") != 4 or dispatch.get("unfinished_requests") != 0:
+                raise RuntimeError(f"dispatch requests did not finish cleanly: {dispatch}")
+            if any(task.get("state") != "completed" for task in dispatch.get("requests", [])):
+                raise RuntimeError("ROS dispatch snapshot left a request incomplete")
+            print(f"ROS dispatch probe PASS: events={len(probe.dispatch_events)}, "
+                  f"requests={dispatch['requests_completed']}/{dispatch['requests_created']}, "
+                  f"assignments={dispatch['assignments']}, reassignments={dispatch['reassignments']}")
         print(f"ROS fleet probe PASS: {len(probe.states)} state samples, ids={sorted(identities)}, "
               f"simulation={stamps[0]:.2f}..{stamps[-1]:.2f} s, traffic_events={len(probe.events)}")
     finally:
