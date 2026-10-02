@@ -44,6 +44,7 @@ struct DispatchVehicle {
     DispatchVehicleState state{DispatchVehicleState::Idle};
     std::optional<ServiceRequestId> current_request;
     std::vector<SensorFault> faults;
+    std::optional<std::string> outage_safe_node;
 };
 
 struct ServiceTaskSnapshot {

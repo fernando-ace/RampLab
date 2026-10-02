@@ -1,4 +1,4 @@
-name: turnaround_contention
+name: turnaround_flight_bank_outage
 default_seed: 42
 airport:
   nodes:
@@ -11,6 +11,8 @@ airport:
     - { id: baggage_stand_a1, name: Gate A1 Baggage Stand, x_m: 220.0, y_m: 100.0 }
     - { id: baggage_stand_a2, name: Gate A2 Baggage Stand, x_m: 220.0, y_m: -100.0 }
     - { id: baggage_stand_a3, name: Gate A3 Baggage Stand, x_m: 340.0, y_m: 20.0 }
+    - { id: baggage_safe_bay, name: Baggage Cart Safe Bay, x_m: 70.0, y_m: 120.0 }
+    - { id: baggage_backup_depot, name: Baggage Backup Depot, x_m: -30.0, y_m: 40.0 }
   edges:
     - { id: depot_north, from: depot, to: north, distance_m: 128.0, traversal_time_seconds: 60 }
     - { id: depot_south, from: depot, to: south, distance_m: 128.0, traversal_time_seconds: 60 }
@@ -24,6 +26,10 @@ airport:
     - { id: south_baggage_a2, from: south, to: baggage_stand_a2, distance_m: 121.7, traversal_time_seconds: 60 }
     - { id: north_a3, from: north, to: gate_a3, distance_m: 272.0, traversal_time_seconds: 120 }
     - { id: a3_north, from: gate_a3, to: north, distance_m: 272.0, traversal_time_seconds: 120 }
+    - { id: depot_baggage_backup, from: depot, to: baggage_backup_depot, distance_m: 50.0, traversal_time_seconds: 30 }
+    - { id: baggage_backup_depot_depot, from: baggage_backup_depot, to: depot, distance_m: 50.0, traversal_time_seconds: 30 }
+    - { id: baggage_safe_bay_north, from: baggage_safe_bay, to: north, distance_m: 50.0, traversal_time_seconds: 30 }
+    - { id: north_baggage_safe_bay, from: north, to: baggage_safe_bay, distance_m: 50.0, traversal_time_seconds: 30 }
     - { id: north_baggage_a3, from: north, to: baggage_stand_a3, distance_m: 241.7, traversal_time_seconds: 120 }
 gates:
   - { id: A1, node: gate_a1 }
@@ -32,14 +38,15 @@ gates:
 fleet:
   vehicles:
     - { id: fuel_1, name: FuelTruck-1, type: fueling, depot_node: depot, speed_mps: 10.0 }
-    - { id: baggage_1, name: BaggageCart-1, type: baggage, depot_node: north, speed_mps: 8.0 }
+    - { id: baggage_1, name: BaggageCart-1, type: baggage, depot_node: north, speed_mps: 8.0, outage_safe_node: baggage_safe_bay }
+    - { id: baggage_backup, name: BaggageCart-Backup, type: baggage, depot_node: baggage_backup_depot, speed_mps: 8.0 }
 aircraft:
   - id: AX101
     turnaround_id: TO-AX101
     gate: A1
     scheduled_arrival_seconds: 0
-    scheduled_departure_seconds: 1800
-    target_off_block_seconds: 1500
+    scheduled_departure_seconds: 900
+    target_off_block_seconds: 800
     service_tasks:
       - { id: deboard, type: deboarding, duration_seconds: 120 }
       - { id: fuel, type: fueling, duration_seconds: 300 }
@@ -50,9 +57,9 @@ aircraft:
   - id: AX202
     turnaround_id: TO-AX202
     gate: A2
-    scheduled_arrival_seconds: 60
-    scheduled_departure_seconds: 2100
-    target_off_block_seconds: 1800
+    scheduled_arrival_seconds: 600
+    scheduled_departure_seconds: 1500
+    target_off_block_seconds: 1400
     service_tasks:
       - { id: deboard, type: deboarding, duration_seconds: 120 }
       - { id: fuel, type: fueling, duration_seconds: 300 }
@@ -63,9 +70,9 @@ aircraft:
   - id: AX303
     turnaround_id: TO-AX303
     gate: A3
-    scheduled_arrival_seconds: 120
-    scheduled_departure_seconds: 2400
-    target_off_block_seconds: 2100
+    scheduled_arrival_seconds: 1200
+    scheduled_departure_seconds: 2100
+    target_off_block_seconds: 2000
     service_tasks:
       - { id: deboard, type: deboarding, duration_seconds: 120 }
       - { id: fuel, type: fueling, duration_seconds: 300 }
@@ -73,6 +80,10 @@ aircraft:
       - { id: clean, type: cabin_cleaning, duration_seconds: 180, prerequisites: [deboard] }
       - { id: baggage_load, type: baggage_load, duration_seconds: 240, prerequisites: [baggage_unload, clean] }
       - { id: pushback, type: pushback_preparation, duration_seconds: 120, prerequisites: [fuel, baggage_load] }
+turnaround_disruptions:
+  - { time_seconds: 200, aircraft: AX101, task: baggage_load, duration_seconds: 480 }
+vehicle_outages:
+  - { time_seconds: 130, vehicle: baggage_1 }
 service_durations_seconds:
   fueling: 300
   baggage: 240

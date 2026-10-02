@@ -7,6 +7,7 @@
 #include "std_msgs/msg/string.hpp"
 
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <filesystem>
@@ -28,7 +29,7 @@ class TurnaroundBridge final : public rclcpp::Node, public airside::ISimulationE
     state_pub_ = create_publisher<std_msgs::msg::String>(
         "/ramplab/turnaround/state", rclcpp::QoS(1).reliable().transient_local());
     events_pub_ = create_publisher<std_msgs::msg::String>(
-        "/ramplab/turnaround/events", rclcpp::QoS(100).reliable());
+        "/ramplab/turnaround/events", rclcpp::QoS(1000).reliable().transient_local());
     std_msgs::msg::String initial_state;
     initial_state.data = ramplab_ros2_bridge::turnaround_state_json(simulation_->snapshot());
     state_pub_->publish(initial_state);
@@ -51,15 +52,25 @@ class TurnaroundBridge final : public rclcpp::Node, public airside::ISimulationE
 
  private:
   void advance_one_event() {
-    if (!simulation_ || simulation_->finished()) {
-      timer_->cancel();
+    if (!simulation_) return;
+    if (simulation_->finished()) {
+      publish_state();
       return;
     }
-    (void)simulation_->advance();
+    // Fleet movement contributes many fixed-step events. Advance a bounded
+    // batch per observer tick so multi-aircraft scenarios remain observable
+    // in wall time while every transition still comes from the core queue.
+    constexpr std::size_t kEventsPerTick = 1000;
+    for (std::size_t index = 0; index < kEventsPerTick && simulation_->advance(); ++index) {
+      if (simulation_->finished()) break;
+    }
+    publish_state();
+  }
+
+  void publish_state() {
     std_msgs::msg::String state;
     state.data = ramplab_ros2_bridge::turnaround_state_json(simulation_->snapshot());
     state_pub_->publish(state);
-    if (simulation_->finished()) timer_->cancel();
   }
 
   std::unique_ptr<airside::Simulation> simulation_;

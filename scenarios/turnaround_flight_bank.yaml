@@ -1,4 +1,4 @@
-name: turnaround_contention
+name: turnaround_flight_bank
 default_seed: 42
 airport:
   nodes:
@@ -50,9 +50,9 @@ aircraft:
   - id: AX202
     turnaround_id: TO-AX202
     gate: A2
-    scheduled_arrival_seconds: 60
-    scheduled_departure_seconds: 2100
-    target_off_block_seconds: 1800
+    scheduled_arrival_seconds: 600
+    scheduled_departure_seconds: 3000
+    target_off_block_seconds: 2700
     service_tasks:
       - { id: deboard, type: deboarding, duration_seconds: 120 }
       - { id: fuel, type: fueling, duration_seconds: 300 }
@@ -63,9 +63,9 @@ aircraft:
   - id: AX303
     turnaround_id: TO-AX303
     gate: A3
-    scheduled_arrival_seconds: 120
-    scheduled_departure_seconds: 2400
-    target_off_block_seconds: 2100
+    scheduled_arrival_seconds: 1200
+    scheduled_departure_seconds: 4200
+    target_off_block_seconds: 3900
     service_tasks:
       - { id: deboard, type: deboarding, duration_seconds: 120 }
       - { id: fuel, type: fueling, duration_seconds: 300 }

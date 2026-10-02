@@ -26,6 +26,10 @@ TEST(TurnaroundJsonTest, PublishesTaskStatePriorityScheduleAndAssignments) {
 
   const auto json = ramplab_ros2_bridge::turnaround_state_json(snapshot);
   EXPECT_NE(json.find("\"turnaround_id\":\"TO-AX101\""), std::string::npos);
+  EXPECT_NE(json.find("\"aircraft_id\":7"), std::string::npos);
+  EXPECT_NE(json.find("\"gate_id\":2"), std::string::npos);
+  EXPECT_NE(json.find("\"scheduled_arrival_seconds\":0"), std::string::npos);
+  EXPECT_NE(json.find("\"pending_task_count\":0"), std::string::npos);
   EXPECT_NE(json.find("\"schedule_slack_seconds\":-30"), std::string::npos);
   EXPECT_NE(json.find("\"critical_path_task_ids\":[3]"), std::string::npos);
   EXPECT_NE(json.find("\"assigned_vehicle_id\":9"), std::string::npos);
@@ -41,9 +45,11 @@ TEST(TurnaroundJsonTest, SerializesStructuredTurnaroundEventsAndEscapesIdentifie
   event.task = airside::TaskId{2};
   event.service = airside::ServiceType::Catering;
   event.vehicle = airside::VehicleId{3};
+  event.gate = airside::GateId{4};
 
   const auto json = ramplab_ros2_bridge::turnaround_event_json(event);
   EXPECT_NE(json.find("\"type\":\"TurnaroundTaskStarted\""), std::string::npos);
   EXPECT_NE(json.find("TO-\\\"7"), std::string::npos);
   EXPECT_NE(json.find("\"task_id\":2"), std::string::npos);
+  EXPECT_NE(json.find("\"gate_id\":4"), std::string::npos);
 }

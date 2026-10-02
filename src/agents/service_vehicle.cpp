@@ -10,11 +10,12 @@ ServiceVehicle::ServiceVehicle(
     std::string name,
     ServiceType capability,
     NodeId depot_node,
-    double speed_mps)
+    double speed_mps,
+    std::optional<NodeId> outage_safe_node)
     : id_(id),
       name_(std::move(name)),
       capability_(capability),
-      depot_node_(depot_node),
+      depot_node_(depot_node), outage_safe_node_(outage_safe_node),
       current_node_(depot_node),
       speed_mps_(speed_mps) {
     if (name_.empty() || speed_mps_ <= 0.0) {
@@ -28,6 +29,7 @@ ServiceType ServiceVehicle::capability() const noexcept { return capability_; }
 VehicleState ServiceVehicle::state() const noexcept { return state_; }
 NodeId ServiceVehicle::current_node() const noexcept { return current_node_; }
 NodeId ServiceVehicle::depot_node() const noexcept { return depot_node_; }
+std::optional<NodeId> ServiceVehicle::outage_safe_node() const noexcept { return outage_safe_node_; }
 double ServiceVehicle::speed_mps() const noexcept { return speed_mps_; }
 std::optional<AircraftId> ServiceVehicle::assigned_aircraft() const noexcept { return assigned_aircraft_; }
 const std::optional<Route>& ServiceVehicle::active_route() const noexcept { return active_route_; }

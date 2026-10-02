@@ -94,8 +94,11 @@ Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryP
             const auto id = autonomy::VehicleId{std::to_string(service_vehicle.id().value())};
             const auto capability = service_vehicle.capability() == ServiceType::Fueling
                 ? "fuel_truck" : "baggage_vehicle";
+            std::optional<std::string> outage_safe_node;
+            if (const auto refuge = service_vehicle.outage_safe_node())
+                outage_safe_node = scenario_.graph.node(*refuge).name;
             fleet_scenario.dispatch_fleet.push_back({id, {capability}, depot.name,
-                autonomy::DispatchVehicleState::Idle, std::nullopt, {}});
+                autonomy::DispatchVehicleState::Idle, std::nullopt, {}, std::move(outage_safe_node)});
         }
         autonomy_fleet_ = std::make_unique<autonomy::FleetSimulation>(std::move(fleet_scenario), seed_);
     }
@@ -294,8 +297,8 @@ SimulationResult Simulation::result() const {
             if (const auto path = critical_paths_.find(flight.id()); path != critical_paths_.end()) {
                 found->critical_path_tasks = path->second;
             }
-            if (flight.ready_at()) {
-                const auto delay = std::max(SimTime::zero(), *flight.ready_at() - flight.target_off_block());
+            if (flight.actual_departure()) {
+                const auto delay = std::max(SimTime::zero(), *flight.actual_departure() - flight.scheduled_departure());
                 found->departure_delay = delay;
                 total_delay += delay.count();
                 metrics.maximum_departure_delay_seconds = std::max(metrics.maximum_departure_delay_seconds, delay.count());

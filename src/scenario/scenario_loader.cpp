@@ -24,6 +24,7 @@ struct EdgeDocument {
 struct GateDocument { std::string id; std::string name; std::string node; bool enabled; };
 struct VehicleDocument {
     std::string id; std::string name; std::string type; std::string depot; double speed;
+    std::optional<std::string> outage_safe_node;
 };
 struct AircraftDocument {
     std::string id; std::string gate; std::int64_t arrival;
@@ -123,7 +124,8 @@ ScenarioDocument parse_document(const YAML::Node& root) {
         const auto context = std::format("fleet.vehicles[{}]", index);
         document.vehicles.push_back({scalar<std::string>(item, "id", context),
             scalar<std::string>(item, "name", context), scalar<std::string>(item, "type", context),
-            scalar<std::string>(item, "depot_node", context), scalar<double>(item, "speed_mps", context)});
+            scalar<std::string>(item, "depot_node", context), scalar<double>(item, "speed_mps", context),
+            item["outage_safe_node"] ? std::optional<std::string>{scalar<std::string>(item, "outage_safe_node", context)} : std::nullopt});
     }
 
     const auto aircraft = required(root, "aircraft", "scenario");
@@ -302,7 +304,9 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         has_fuel = has_fuel || type == ServiceType::Fueling;
         has_baggage = has_baggage || type == ServiceType::Baggage;
         scenario.vehicles.emplace_back(VehicleId{static_cast<std::uint32_t>(index + 1)}, value.name,
-            type, lookup(nodes, value.depot, std::format("vehicle '{}'.depot_node", value.id)), value.speed);
+            type, lookup(nodes, value.depot, std::format("vehicle '{}'.depot_node", value.id)), value.speed,
+            value.outage_safe_node ? std::optional<NodeId>{lookup(nodes, *value.outage_safe_node,
+                std::format("vehicle '{}'.outage_safe_node", value.id))} : std::nullopt);
     }
     if (!has_fuel || !has_baggage) {
         throw ScenarioLoadError("fleet requires at least one fueling and one baggage vehicle");

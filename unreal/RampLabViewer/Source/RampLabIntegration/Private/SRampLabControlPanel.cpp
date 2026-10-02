@@ -195,26 +195,64 @@ FText SRampLabControlPanel::SummaryText() const
     const auto Time = Subsystem->GetPlaybackTime().count();
     const auto* Snapshot = Subsystem->GetSnapshot();
     int32 ActiveAircraft = 0;
+    int32 CompletedAircraft = 0;
     int32 DelayedAircraft = 0;
     int32 FuelTrucks = 0;
     int32 BaggageCarts = 0;
+    int32 BusyVehicles = 0;
+    int32 Reassignments = 0;
+    int32 FailedTasks = 0;
+    int32 CurrentVehicleConflicts = 0;
+    double MinimumVehicleSeparation = TNumericLimits<double>::Max();
     bool bRoadClosure = false;
-    FString TurnaroundOperations;
+    FString TurnaroundOperations, TurnaroundVehicleLines;
     if (Snapshot != nullptr) {
         for (const auto& Aircraft : Snapshot->aircraft) {
             if (Aircraft.state != airside::AircraftState::Scheduled && Aircraft.state != airside::AircraftState::Departed) ++ActiveAircraft;
+            if (Aircraft.state == airside::AircraftState::Departed) ++CompletedAircraft;
             if (Aircraft.state != airside::AircraftState::Departed && Time > Aircraft.scheduled_departure.count()) ++DelayedAircraft;
         }
         for (const auto& Vehicle : Snapshot->vehicles) {
             Vehicle.type == airside::ServiceType::Fueling ? ++FuelTrucks : ++BaggageCarts;
+            if (Vehicle.state != airside::VehicleState::Idle) ++BusyVehicles;
+            const FString AssignedAircraft = Vehicle.assigned_aircraft
+                ? FString::Printf(TEXT("AX%03u"), Vehicle.assigned_aircraft->value()) : TEXT("none");
+            const FString Position = Vehicle.observed_position_m
+                ? FString::Printf(TEXT("%.1f, %.1f m"), Vehicle.observed_position_m->x_m,
+                    Vehicle.observed_position_m->y_m) : TEXT("unknown");
+            TurnaroundVehicleLines += FString::Printf(TEXT("\n%s  %s  / %s  / aircraft %s  / %s"),
+                UTF8_TO_TCHAR(Vehicle.name.c_str()), UTF8_TO_TCHAR(Vehicle.fleet_status.c_str()),
+                Vehicle.type == airside::ServiceType::Fueling ? TEXT("fuel") : TEXT("baggage"),
+                *AssignedAircraft, *Position);
+        }
+        for (std::size_t First = 0; First < Snapshot->vehicles.size(); ++First) {
+            const auto& A = Snapshot->vehicles[First].observed_position_m;
+            if (!A) continue;
+            for (std::size_t Second = First + 1; Second < Snapshot->vehicles.size(); ++Second) {
+                const auto& B = Snapshot->vehicles[Second].observed_position_m;
+                if (!B) continue;
+                const double Distance = std::hypot(A->x_m - B->x_m, A->y_m - B->y_m);
+                MinimumVehicleSeparation = FMath::Min(MinimumVehicleSeparation, Distance);
+                if (Distance < 1.5) ++CurrentVehicleConflicts;
+            }
         }
         bRoadClosure = std::ranges::any_of(Snapshot->roads, [](const auto& Road) { return !Road.enabled; });
         for (const auto& Turnaround : Snapshot->turnarounds) {
+            const auto AircraftIt = std::ranges::find(Snapshot->aircraft, Turnaround.aircraft, &airside::AircraftSnapshot::id);
+            const FString FlightNumber = AircraftIt != Snapshot->aircraft.end()
+                ? UTF8_TO_TCHAR(AircraftIt->flight_number.c_str()) : TEXT("unknown");
+            const FString ActualDeparture = AircraftIt != Snapshot->aircraft.end() && AircraftIt->actual_departure
+                ? FString::Printf(TEXT("%lld s"), AircraftIt->actual_departure->count()) : TEXT("pending");
+            const auto CurrentDelay = Turnaround.departure_delay.value_or(
+                Time > Turnaround.scheduled_departure.count() && Turnaround.state != airside::TurnaroundState::Departed
+                    ? airside::SimTime{Time - Turnaround.scheduled_departure.count()} : airside::SimTime::zero());
             int32 CompletedTasks = 0;
             FString ActiveTasks;
             FString CriticalPath;
             for (const auto& Task : Turnaround.tasks) {
                 if (Task.status == airside::TaskStatus::Completed) ++CompletedTasks;
+                Reassignments += static_cast<int32>(Task.reassignments);
+                if (Task.status == airside::TaskStatus::Failed) ++FailedTasks;
                 if (Task.status == airside::TaskStatus::InProgress || Task.status == airside::TaskStatus::Assigned) {
                     ActiveTasks += FString::Printf(TEXT("\n  %s  %s  / %s"),
                         UTF8_TO_TCHAR(airside::to_string(Task.type).data()),
@@ -227,18 +265,18 @@ FText SRampLabControlPanel::SummaryText() const
                 CriticalPath += FString::FromInt(static_cast<int32>(TaskId.value()));
             }
             TurnaroundOperations += FString::Printf(
-                TEXT("\n%s / %s  Gate %u  /  %s\nScheduled dep %lld  /  est ready %lld  /  slack %lld s\nTasks %d / %d  / critical %s%s"),
+                TEXT("\n%s / %s  Gate %u  /  %s\nScheduled dep %lld s  /  actual %s  /  delay %lld s\nEst ready %lld  /  slack %lld s\nTasks %d / %d  / critical %s%s"),
                 UTF8_TO_TCHAR(Turnaround.turnaround_id.c_str()),
-                UTF8_TO_TCHAR(std::ranges::find(Snapshot->aircraft, Turnaround.aircraft, &airside::AircraftSnapshot::id)->flight_number.c_str()),
+                *FlightNumber,
                 Turnaround.gate.value(), UTF8_TO_TCHAR(airside::to_string(Turnaround.state).data()),
-                Turnaround.scheduled_departure.count(), Turnaround.estimated_ready_time.count(),
+                Turnaround.scheduled_departure.count(), *ActualDeparture, CurrentDelay.count(), Turnaround.estimated_ready_time.count(),
                 Turnaround.schedule_slack.count(), CompletedTasks, static_cast<int32>(Turnaround.tasks.size()),
                 *CriticalPath, *ActiveTasks);
         }
     }
 
     return FText::FromString(FString::Printf(
-        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Delayed  %d\nFuel Trucks  %d    Baggage Carts  %d\nTURNAROUND OPERATIONS%s"),
+        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Complete  %d    Delayed  %d\nFuel Trucks  %d    Baggage Carts  %d    Busy vehicles  %d\nReassignments  %d    Failed tasks  %d\nCurrent vehicle conflicts  %d    Minimum separation  %.1f m\nGROUND VEHICLE AVAILABILITY%s\nTURNAROUND OPERATIONS%s"),
         *Subsystem->GetScenarioName(),
         Time / 3600, (Time / 60) % 60, Time % 60,
         Subsystem->GetPlaybackSpeed(),
@@ -246,7 +284,10 @@ FText SRampLabControlPanel::SummaryText() const
         Subsystem->IsCaptureAccelerationActive() ? TEXT("   [QA capture acceleration]") : TEXT(""),
         *Subsystem->GetGeospatialStatus(),
         bRoadClosure ? TEXT("\nROAD CLOSURE  /  North to Gate A2 unavailable") : TEXT(""),
-        ActiveAircraft, DelayedAircraft, FuelTrucks, BaggageCarts, *TurnaroundOperations));
+        ActiveAircraft, CompletedAircraft, DelayedAircraft, FuelTrucks, BaggageCarts, BusyVehicles,
+        Reassignments, FailedTasks, CurrentVehicleConflicts,
+        MinimumVehicleSeparation == TNumericLimits<double>::Max() ? 0.0 : MinimumVehicleSeparation,
+        *TurnaroundVehicleLines, *TurnaroundOperations));
 }
 
 FText SRampLabControlPanel::EventsText() const

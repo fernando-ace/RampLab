@@ -60,7 +60,7 @@ TurnaroundState Aircraft::turnaround_state() const noexcept {
 }
 std::optional<SimTime> Aircraft::departure_delay() const noexcept {
     if (!actual_departure_) return std::nullopt;
-    return std::max(SimTime::zero(), *actual_departure_ - target_off_block_);
+    return std::max(SimTime::zero(), *actual_departure_ - scheduled_departure_);
 }
 const std::string& Aircraft::failure_reason() const noexcept { return failure_reason_; }
 

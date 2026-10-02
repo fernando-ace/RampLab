@@ -80,10 +80,12 @@ Launch a visible, accelerated turnaround scenario and inspect `Saved/Logs/RampLa
   "$PWD\unreal\RampLabViewer\RampLabViewer.uproject" `
   -game -windowed -ResX=1280 -ResY=720 -NoSplash `
   -RampLabTurnaroundValidation `
-  -abslog="$PWD\unreal\RampLabViewer\Saved\Logs\RampLabGoal14Turnaround.log"
+  -abslog="$PWD\unreal\RampLabViewer\Saved\Logs\RampLabGoal15Turnaround.log"
 ```
 
 The validation mode selects `turnaround_normal` at 20x playback. At completion the log reports completed/failed turnarounds, task and fleet reassignments, fleet collisions and minimum separation, reservation/contention counts, outstanding reservations, unresolved requests, and the Recent Events panel contents. The visible run passed with 1/1 completed, zero failures/collisions, 8.0 m minimum separation, and zero unresolved requests; the event panel recorded departure.
+
+For Goal 15, the same `-RampLabTurnaroundValidation` mode selects `turnaround_flight_bank_outage`. The operations panel shows each ground vehicle's availability, assignment, and position alongside aircraft departure delays, task progress, reassignment count, collision metrics, and recent events. The completion log reports outage/reassignment IDs and times, task-completion and departure totals, and fleet safety counters. The validated windowed run reported 3/3 completed, 18 task completions, 3 departures, outage vehicle 2/task 3 at 130 s, reassignment to vehicle 3, 9/9 service requests completed, zero collisions, and 2.111 m minimum separation. The run validates simulation execution and panel-fed state; it does not establish real-airport performance.
 
 The capture sequence now includes the Auburn overview, five operational milestones, and three autonomy frames (depot/route, obstacle sensing, Gate A2 result) under `unreal/RampLabViewer/Saved/Screenshots/RampLab`. The Autonomy scenario uses the same fixed-step autonomy library and controller as the headless CLI; the renderer displays its snapshot, GNSS estimate, route, obstacle circles, LiDAR returns, and trajectory. `Saved`, `Intermediate`, `Binaries`, `DerivedDataCache`, solution files, and all CMake build trees remain ignored by Git.
 

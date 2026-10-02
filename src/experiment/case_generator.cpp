@@ -89,9 +89,11 @@ std::vector<ServiceVehicle> rebuild_fleet(const Scenario& base, const ScenarioOv
         for (std::size_t index = 0; index < count; ++index) {
             const auto& source = *templates[index % templates.size()];
             const auto label = type == ServiceType::Fueling ? "FuelTruck" : "BaggageCart";
+            const auto name = index < templates.size() ? templates[index]->name() :
+                std::format("{}-{}", label, index + 1);
             result.emplace_back(VehicleId{static_cast<std::uint32_t>(result.size() + 1)},
-                std::format("{}-{}", label, index + 1), type, source.depot_node(),
-                requested_speed.value_or(source.speed_mps()));
+                name, type, source.depot_node(), requested_speed.value_or(source.speed_mps()),
+                source.outage_safe_node());
         }
     };
     add_type(ServiceType::Fueling, overrides.fuel_truck_count, overrides.fuel_vehicle_speed_mps);

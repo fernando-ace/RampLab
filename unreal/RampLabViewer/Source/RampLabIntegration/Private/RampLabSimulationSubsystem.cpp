@@ -73,7 +73,7 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     bTurnaroundValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabTurnaroundValidation"));
     if(bGoal13ReassignmentValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_reassignment");PlaybackSpeed=60.0;}
     else if(bGoal13DispatchValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_dynamic");PlaybackSpeed=60.0;}
-    else if(bTurnaroundValidation){SelectedScenarioKey=TEXT("turnaround_normal");PlaybackSpeed=20.0;}
+    else if(bTurnaroundValidation){SelectedScenarioKey=TEXT("turnaround_flight_bank_outage");PlaybackSpeed=20.0;}
     else if(bGoal12RecoveryValidation){SelectedScenarioKey=TEXT("autonomy_fleet_deadlock");PlaybackSpeed=10.0;}
     else if(bGoal12ClosureValidation){SelectedScenarioKey=TEXT("autonomy_fleet_dynamic_closure");PlaybackSpeed=10.0;}
     else if(bFleetValidation){SelectedScenarioKey=TEXT("autonomy_fleet");PlaybackSpeed=10.0;}
@@ -290,6 +290,32 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
                     static_cast<unsigned long long>(Result.metrics.fleet_reservation_contentions),
                     static_cast<unsigned long long>(Result.metrics.fleet_outstanding_reservations),
                     static_cast<unsigned long long>(Result.metrics.unresolved_service_requests));
+                const auto OutageEvent = std::ranges::find_if(Result.events, [](const auto& Event) {
+                    return Event.type == airside::SimulationEventType::TurnaroundVehicleUnavailable;
+                });
+                const auto ReassignmentEvent = std::ranges::find_if(Result.events, [](const auto& Event) {
+                    return Event.type == airside::SimulationEventType::TurnaroundTaskReassigned;
+                });
+                if (OutageEvent != Result.events.end()) {
+                    UE_LOG(LogRampLab, Display, TEXT("Turnaround outage observed: time=%lld vehicle=%u task=%u"),
+                        OutageEvent->timestamp.count(), OutageEvent->vehicle ? OutageEvent->vehicle->value() : 0,
+                        OutageEvent->task ? OutageEvent->task->value() : 0);
+                }
+                if (ReassignmentEvent != Result.events.end()) {
+                    UE_LOG(LogRampLab, Display, TEXT("Turnaround reassignment observed: time=%lld replacement_vehicle=%u task=%u"),
+                        ReassignmentEvent->timestamp.count(), ReassignmentEvent->vehicle ? ReassignmentEvent->vehicle->value() : 0,
+                        ReassignmentEvent->task ? ReassignmentEvent->task->value() : 0);
+                }
+                const auto TaskCompletions = std::ranges::count_if(Result.events, [](const auto& Event) {
+                    return Event.type == airside::SimulationEventType::TurnaroundTaskCompleted;
+                });
+                const auto Departures = std::ranges::count_if(Result.events, [](const auto& Event) {
+                    return Event.type == airside::SimulationEventType::AircraftDeparted;
+                });
+                UE_LOG(LogRampLab, Display,
+                    TEXT("Turnaround event totals: task_completions=%llu departures=%llu outage_observed=%d reassignment_observed=%d"),
+                    static_cast<unsigned long long>(TaskCompletions), static_cast<unsigned long long>(Departures),
+                    OutageEvent != Result.events.end(), ReassignmentEvent != Result.events.end());
                 UE_LOG(LogRampLab, Display, TEXT("Turnaround Recent Events panel: %s"), *FString::Join(RecentEvents, TEXT(" | ")));
             }
             bCompletionReported = true;
@@ -342,7 +368,8 @@ void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
     if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity") &&
         ScenarioKey != TEXT("autonomy_tug") && ScenarioKey != TEXT("autonomy_sensor_validation") &&
         ScenarioKey != TEXT("turnaround_normal") && ScenarioKey != TEXT("turnaround_contention") &&
-        ScenarioKey != TEXT("turnaround_disrupted")) return;
+        ScenarioKey != TEXT("turnaround_disrupted") && ScenarioKey != TEXT("turnaround_flight_bank") &&
+        ScenarioKey != TEXT("turnaround_flight_bank_disrupted")) return;
     SelectedScenarioKey = ScenarioKey;
     LoadSelectedScenario();
 }

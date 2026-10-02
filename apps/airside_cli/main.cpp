@@ -1,6 +1,7 @@
 #include "airside/operations/simulation.hpp"
 #include "airside/scenario/scenario_loader.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -102,11 +103,26 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
             << ",\"requests_failed\":" << metrics.fleet_requests_failed << "},\"turnarounds\":[";
         for (std::size_t index = 0; index < snapshot.turnarounds.size(); ++index) {
             const auto& turnaround = snapshot.turnarounds[index];
+            const auto aircraft = std::ranges::find(snapshot.aircraft, turnaround.aircraft,
+                &airside::AircraftSnapshot::id);
+            const auto completed_tasks = std::ranges::count_if(turnaround.tasks, [](const auto& task) {
+                return task.status == airside::TaskStatus::Completed;
+            });
+            const auto unfinished_tasks = turnaround.tasks.size() - completed_tasks;
             if (index != 0) output << ',';
             output << "{\"turnaround_id\":\"" << json_escape(turnaround.turnaround_id)
-                << "\",\"state\":\"" << airside::to_string(turnaround.state)
+                << "\",\"aircraft_id\":" << turnaround.aircraft.value()
+                << ",\"gate_id\":" << turnaround.gate.value()
+                << ",\"state\":\"" << airside::to_string(turnaround.state)
                 << "\",\"failure_reason\":\"" << json_escape(turnaround.failure_reason)
-                << "\",\"estimated_ready_time_seconds\":" << turnaround.estimated_ready_time.count()
+                << "\",\"scheduled_arrival_seconds\":" << turnaround.scheduled_arrival.count()
+                << ",\"actual_arrival_seconds\":" << (turnaround.actual_arrival ? std::to_string(turnaround.actual_arrival->count()) : "null")
+                << ",\"scheduled_departure_seconds\":" << turnaround.scheduled_departure.count()
+                << ",\"actual_departure_seconds\":" << (aircraft != snapshot.aircraft.end() && aircraft->actual_departure ? std::to_string(aircraft->actual_departure->count()) : "null")
+                << ",\"departure_delay_seconds\":" << (turnaround.departure_delay ? std::to_string(turnaround.departure_delay->count()) : "null")
+                << ",\"completed_required_tasks\":" << completed_tasks
+                << ",\"unfinished_required_tasks\":" << unfinished_tasks
+                << ",\"estimated_ready_time_seconds\":" << turnaround.estimated_ready_time.count()
                 << ",\"schedule_slack_seconds\":" << turnaround.schedule_slack.count()
                 << ",\"predicted_late\":" << (turnaround.predicted_late ? "true" : "false")
                 << ",\"critical_path_task_ids\":[";
@@ -136,7 +152,7 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
         if (!csv_path.parent_path().empty()) std::filesystem::create_directories(csv_path.parent_path());
         std::ofstream output{csv_path};
         if (!output) throw std::runtime_error("cannot create metrics CSV: " + csv_path.string());
-        output << "seed,simulated_duration_seconds,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,turnaround_id,task_id,service_type,state,requested_at_seconds,started_at_seconds,completed_at_seconds,latest_desirable_completion_seconds,reassignments,assigned_resource\n";
+        output << "seed,simulated_duration_seconds,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,turnaround_id,aircraft_id,gate_id,scheduled_departure_seconds,actual_departure_seconds,departure_delay_seconds,completed_required_tasks,unfinished_required_tasks,task_id,service_type,state,requested_at_seconds,started_at_seconds,completed_at_seconds,latest_desirable_completion_seconds,reassignments,assigned_resource\n";
         output << result.seed << ',' << result.simulated_duration.count() << ',' << result.metrics.total_turnarounds << ','
             << result.metrics.completed_turnarounds << ',' << result.metrics.delayed_turnarounds << ','
             << result.metrics.failed_or_timed_out_turnarounds << ',' << result.metrics.task_reassignments << ','
@@ -160,7 +176,16 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
                     << result.metrics.fleet_requests_created << ',' << result.metrics.fleet_requests_completed << ','
                     << result.metrics.fleet_requests_failed << ',';
                 first = false;
-                output << csv_escape(turnaround.turnaround_id) << ',' << task.id.value() << ','
+                const auto aircraft = std::ranges::find(snapshot.aircraft, turnaround.aircraft,
+                    &airside::AircraftSnapshot::id);
+                const auto completed_tasks = std::ranges::count_if(turnaround.tasks, [](const auto& item) {
+                    return item.status == airside::TaskStatus::Completed;
+                });
+                output << csv_escape(turnaround.turnaround_id) << ',' << turnaround.aircraft.value() << ','
+                    << turnaround.gate.value() << ',' << turnaround.scheduled_departure.count() << ','
+                    << (aircraft != snapshot.aircraft.end() && aircraft->actual_departure ? std::to_string(aircraft->actual_departure->count()) : "") << ','
+                    << (turnaround.departure_delay ? std::to_string(turnaround.departure_delay->count()) : "") << ','
+                    << completed_tasks << ',' << (turnaround.tasks.size() - completed_tasks) << ',' << task.id.value() << ','
                     << airside::to_string(task.type) << ',' << airside::to_string(task.status) << ','
                     << (task.requested_at ? std::to_string(task.requested_at->count()) : "") << ','
                     << (task.started_at ? std::to_string(task.started_at->count()) : "") << ','
