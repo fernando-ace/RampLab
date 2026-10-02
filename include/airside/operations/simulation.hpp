@@ -25,6 +25,12 @@ struct RoadAvailabilityEvent {
     bool available;
 };
 
+struct TaskDurationDisruption {
+    SimTime time;
+    TaskId task;
+    SimTime duration;
+};
+
 struct Scenario {
     std::string name{"unnamed"};
     std::uint64_t default_seed{42};
@@ -33,7 +39,10 @@ struct Scenario {
     std::vector<Aircraft> aircraft;
     std::vector<ServiceVehicle> vehicles;
     std::unordered_map<ServiceType, SimTime> service_durations;
+    std::unordered_map<ServiceType, std::size_t> abstract_resource_capacity;
+    bool turnaround_orchestration{false};
     std::vector<RoadAvailabilityEvent> road_events;
+    std::vector<TaskDurationDisruption> task_duration_disruptions;
 };
 
 struct SimulationResult {
@@ -73,6 +82,12 @@ private:
     void handle_vehicle_return(VehicleId id);
     void handle_road_event(EdgeId id, bool available);
     void handle_departure(AircraftId id);
+    void handle_abstract_service_completed(AircraftId id, TaskId task);
+    void handle_task_eligibility(AircraftId id, TaskId task);
+    void handle_task_duration_change(TaskId task, SimTime duration);
+    void schedule_turnaround_tasks(Aircraft& aircraft);
+    void complete_turnaround_task(Aircraft& aircraft, TaskId task);
+    void update_turnaround_estimate(const Aircraft& aircraft);
     void request_service(Aircraft& aircraft, ServiceType type);
     void dispatch(VehicleId vehicle_id, AircraftId aircraft_id);
     void emit(SimulationEventRecord event);
@@ -98,6 +113,14 @@ private:
     std::vector<ISimulationEventSink*> event_sinks_;
     std::uint64_t next_event_record_sequence_{0};
     SimulationHistoryPolicy history_policy_{SimulationHistoryPolicy::Retain};
+    std::unordered_map<ServiceType, std::size_t> abstract_resources_in_use_;
+    std::unordered_map<ServiceType, std::uint64_t> task_replan_counts_;
+    std::unordered_map<AircraftId, std::vector<TaskId>> critical_paths_;
+    std::unordered_map<AircraftId, SimTime> estimated_ready_times_;
+    std::unordered_map<AircraftId, SimTime> schedule_slacks_;
+    std::unordered_map<AircraftId, bool> predicted_late_;
+    std::uint64_t task_reassignments_{0};
+    std::uint64_t disruption_replans_{0};
 };
 
 [[nodiscard]] std::string format_sim_time(SimTime time);

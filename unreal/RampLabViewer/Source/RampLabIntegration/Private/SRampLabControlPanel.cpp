@@ -73,6 +73,8 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                     [ SNew(SButton).Text(FText::FromString(TEXT("Autonomy"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("autonomy_tug"))) ]
                 ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [ SNew(SButton).Text(FText::FromString(TEXT("Turnaround Operations"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("turnaround_normal"))) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [
                     SNew(SHorizontalBox)
                     + SHorizontalBox::Slot().AutoWidth()
@@ -197,6 +199,7 @@ FText SRampLabControlPanel::SummaryText() const
     int32 FuelTrucks = 0;
     int32 BaggageCarts = 0;
     bool bRoadClosure = false;
+    FString TurnaroundOperations;
     if (Snapshot != nullptr) {
         for (const auto& Aircraft : Snapshot->aircraft) {
             if (Aircraft.state != airside::AircraftState::Scheduled && Aircraft.state != airside::AircraftState::Departed) ++ActiveAircraft;
@@ -206,10 +209,36 @@ FText SRampLabControlPanel::SummaryText() const
             Vehicle.type == airside::ServiceType::Fueling ? ++FuelTrucks : ++BaggageCarts;
         }
         bRoadClosure = std::ranges::any_of(Snapshot->roads, [](const auto& Road) { return !Road.enabled; });
+        for (const auto& Turnaround : Snapshot->turnarounds) {
+            int32 CompletedTasks = 0;
+            FString ActiveTasks;
+            FString CriticalPath;
+            for (const auto& Task : Turnaround.tasks) {
+                if (Task.status == airside::TaskStatus::Completed) ++CompletedTasks;
+                if (Task.status == airside::TaskStatus::InProgress || Task.status == airside::TaskStatus::Assigned) {
+                    ActiveTasks += FString::Printf(TEXT("\n  %s  %s  / %s"),
+                        UTF8_TO_TCHAR(airside::to_string(Task.type).data()),
+                        UTF8_TO_TCHAR(airside::to_string(Task.status).data()),
+                        UTF8_TO_TCHAR(Task.assigned_resource.c_str()));
+                }
+            }
+            for (const auto TaskId : Turnaround.critical_path_tasks) {
+                if (!CriticalPath.IsEmpty()) CriticalPath += TEXT(", ");
+                CriticalPath += FString::FromInt(static_cast<int32>(TaskId.value()));
+            }
+            TurnaroundOperations += FString::Printf(
+                TEXT("\n%s / %s  Gate %u  /  %s\nScheduled dep %lld  /  est ready %lld  /  slack %lld s\nTasks %d / %d  / critical %s%s"),
+                UTF8_TO_TCHAR(Turnaround.turnaround_id.c_str()),
+                UTF8_TO_TCHAR(std::ranges::find(Snapshot->aircraft, Turnaround.aircraft, &airside::AircraftSnapshot::id)->flight_number.c_str()),
+                Turnaround.gate.value(), UTF8_TO_TCHAR(airside::to_string(Turnaround.state).data()),
+                Turnaround.scheduled_departure.count(), Turnaround.estimated_ready_time.count(),
+                Turnaround.schedule_slack.count(), CompletedTasks, static_cast<int32>(Turnaround.tasks.size()),
+                *CriticalPath, *ActiveTasks);
+        }
     }
 
     return FText::FromString(FString::Printf(
-        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Delayed  %d\nFuel Trucks  %d    Baggage Carts  %d"),
+        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Delayed  %d\nFuel Trucks  %d    Baggage Carts  %d\nTURNAROUND OPERATIONS%s"),
         *Subsystem->GetScenarioName(),
         Time / 3600, (Time / 60) % 60, Time % 60,
         Subsystem->GetPlaybackSpeed(),
@@ -217,7 +246,7 @@ FText SRampLabControlPanel::SummaryText() const
         Subsystem->IsCaptureAccelerationActive() ? TEXT("   [QA capture acceleration]") : TEXT(""),
         *Subsystem->GetGeospatialStatus(),
         bRoadClosure ? TEXT("\nROAD CLOSURE  /  North to Gate A2 unavailable") : TEXT(""),
-        ActiveAircraft, DelayedAircraft, FuelTrucks, BaggageCarts));
+        ActiveAircraft, DelayedAircraft, FuelTrucks, BaggageCarts, *TurnaroundOperations));
 }
 
 FText SRampLabControlPanel::EventsText() const

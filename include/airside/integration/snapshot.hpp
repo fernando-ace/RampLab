@@ -25,7 +25,32 @@ struct ServiceTaskSnapshot {
     std::optional<SimTime> requested_at;
     std::optional<SimTime> started_at;
     std::optional<SimTime> completed_at;
+    std::vector<TaskId> prerequisites;
+    SimTime earliest_start{};
+    SimTime waiting_time{};
+    std::string required_resource;
+    std::optional<VehicleId> assigned_vehicle;
+    std::string assigned_resource;
     auto operator<=>(const ServiceTaskSnapshot&) const = default;
+};
+
+struct TurnaroundSnapshot {
+    std::string turnaround_id;
+    AircraftId aircraft;
+    GateId gate;
+    TurnaroundState state{TurnaroundState::Scheduled};
+    SimTime scheduled_arrival{};
+    std::optional<SimTime> actual_arrival;
+    SimTime scheduled_departure{};
+    SimTime target_off_block{};
+    std::optional<SimTime> completion_time;
+    std::optional<SimTime> departure_delay;
+    SimTime estimated_ready_time{};
+    SimTime schedule_slack{};
+    bool predicted_late{false};
+    std::vector<TaskId> critical_path_tasks;
+    std::vector<ServiceTaskSnapshot> tasks;
+    auto operator<=>(const TurnaroundSnapshot&) const = default;
 };
 
 struct AircraftSnapshot {
@@ -110,6 +135,7 @@ struct SimulationSnapshot {
     std::vector<GateSnapshot> gates;
     std::vector<RoadNodeSnapshot> road_nodes;
     std::vector<RoadEdgeSnapshot> roads;
+    std::vector<TurnaroundSnapshot> turnarounds;
     auto operator<=>(const SimulationSnapshot&) const = default;
 };
 

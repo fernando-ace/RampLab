@@ -38,19 +38,54 @@ RunResult execute_one(const Scenario& base, const RunRequest& request) {
     result.aircraft_count = simulation_result.metrics.aircraft.size();
     result.fuel_utilization = simulation_result.metrics.fuel_utilization;
     result.baggage_utilization = simulation_result.metrics.baggage_utilization;
+    result.total_turnarounds = simulation_result.metrics.total_turnarounds;
+    result.completed_turnarounds = simulation_result.metrics.completed_turnarounds;
+    result.delayed_turnarounds = simulation_result.metrics.delayed_turnarounds;
+    result.failed_or_timed_out_turnarounds = simulation_result.metrics.failed_or_timed_out_turnarounds;
+    result.maximum_turnaround_seconds = static_cast<double>(simulation_result.metrics.maximum_turnaround_seconds);
+    result.maximum_departure_delay_seconds = static_cast<double>(simulation_result.metrics.maximum_departure_delay_seconds);
+    result.on_time_departures = simulation_result.metrics.on_time_departures;
+    result.on_time_departure_rate = simulation_result.metrics.on_time_departure_rate;
+    result.total_service_task_wait_seconds = static_cast<double>(simulation_result.metrics.total_service_task_wait_seconds);
+    result.maximum_service_task_wait_seconds = static_cast<double>(simulation_result.metrics.maximum_service_task_wait_seconds);
+    result.task_reassignments = simulation_result.metrics.task_reassignments;
+    result.disruption_triggered_replans = simulation_result.metrics.disruption_triggered_replans;
+    result.unresolved_service_requests = simulation_result.metrics.unresolved_service_requests;
+    for (const auto& [type, utilization] : simulation_result.metrics.resource_utilization) {
+        result.resource_utilization.emplace_back(std::string{to_string(type)}, utilization);
+    }
     double delay_total = 0.0;
     double waiting_total = 0.0;
     result.aircraft.reserve(simulation_result.metrics.aircraft.size());
     for (const auto& aircraft : simulation_result.metrics.aircraft) {
         delay_total += static_cast<double>(aircraft.departure_delay.count());
         waiting_total += static_cast<double>(aircraft.service_waiting.count());
-        result.aircraft.push_back({aircraft.flight_number,
+        auto& output = result.aircraft.emplace_back(AircraftRunMetrics{aircraft.flight_number,
             static_cast<double>(aircraft.turnaround.count()),
             static_cast<double>(aircraft.departure_delay.count()),
             static_cast<double>(aircraft.service_waiting.count())});
+        output.turnaround_id = aircraft.turnaround_id;
+        output.estimated_ready_time_seconds = aircraft.estimated_ready_time
+            ? static_cast<double>(aircraft.estimated_ready_time->count()) : 0.0;
+        output.actual_completion_time_seconds = aircraft.actual_completion_time
+            ? static_cast<double>(aircraft.actual_completion_time->count()) : 0.0;
+        output.schedule_slack_seconds = aircraft.schedule_slack
+            ? static_cast<double>(aircraft.schedule_slack->count()) : 0.0;
+        for (std::size_t index = 0; index < aircraft.critical_path_tasks.size(); ++index) {
+            if (index != 0) output.critical_path_task_ids += ";";
+            output.critical_path_task_ids += std::to_string(aircraft.critical_path_tasks[index].value());
+        }
+        for (const auto& task : aircraft.task_timings) {
+            output.tasks.push_back({task.task.value(), std::string{to_string(task.service)},
+                std::string{to_string(task.state)}, task.requested_at ? task.requested_at->count() : -1,
+                task.started_at ? task.started_at->count() : -1, task.completed_at ? task.completed_at->count() : -1,
+                task.waiting.count(), task.required_resource, task.assigned_resource});
+        }
     }
     if (!result.aircraft.empty()) {
-        result.average_departure_delay_seconds = delay_total / static_cast<double>(result.aircraft.size());
+        result.average_departure_delay_seconds = simulation_result.metrics.total_turnarounds != 0
+            ? simulation_result.metrics.mean_departure_delay_seconds
+            : delay_total / static_cast<double>(result.aircraft.size());
         result.average_service_waiting_seconds = waiting_total / static_cast<double>(result.aircraft.size());
     }
     return result;

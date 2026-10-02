@@ -142,6 +142,7 @@ if(BUILD_TESTING)
         tests/agents/state_machine_test.cpp
         tests/operations/resource_pool_test.cpp
         tests/operations/simulation_test.cpp
+        tests/operations/turnaround_test.cpp
         tests/metrics/metrics_test.cpp
         tests/experiment/definition_test.cpp
         tests/experiment/loader_test.cpp

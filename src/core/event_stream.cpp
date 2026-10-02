@@ -20,6 +20,16 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::RoadOpened: return "RoadOpened";
     case SimulationEventType::ResourceWaitStarted: return "ResourceWaitStarted";
     case SimulationEventType::ResourceAssigned: return "ResourceAssigned";
+    case SimulationEventType::TurnaroundCreated: return "TurnaroundCreated";
+    case SimulationEventType::TurnaroundTaskReady: return "TurnaroundTaskReady";
+    case SimulationEventType::TurnaroundTaskDispatched: return "TurnaroundTaskDispatched";
+    case SimulationEventType::TurnaroundTaskStarted: return "TurnaroundTaskStarted";
+    case SimulationEventType::TurnaroundTaskCompleted: return "TurnaroundTaskCompleted";
+    case SimulationEventType::TurnaroundTaskReassigned: return "TurnaroundTaskReassigned";
+    case SimulationEventType::TurnaroundCriticalPathChanged: return "TurnaroundCriticalPathChanged";
+    case SimulationEventType::TurnaroundPredictedLate: return "TurnaroundPredictedLate";
+    case SimulationEventType::TurnaroundReadyForDeparture: return "TurnaroundReadyForDeparture";
+    case SimulationEventType::TurnaroundDisruptionDetected: return "TurnaroundDisruptionDetected";
     }
     return "Unknown";
 }
@@ -48,13 +58,50 @@ std::string_view to_string(VehicleState state) noexcept {
 }
 
 std::string_view to_string(ServiceType type) noexcept {
-    return type == ServiceType::Fueling ? "Fueling" : "Baggage";
+    switch (type) {
+    case ServiceType::Fueling: return "Fueling";
+    case ServiceType::Baggage: return "BaggageUnload";
+    case ServiceType::Deboarding: return "Deboarding";
+    case ServiceType::Catering: return "Catering";
+    case ServiceType::CabinCleaning: return "CabinCleaning";
+    case ServiceType::BaggageLoad: return "BaggageLoad";
+    case ServiceType::PushbackPreparation: return "PushbackPreparation";
+    }
+    return "Unknown";
+}
+
+std::string_view to_string(TurnaroundState state) noexcept {
+    switch (state) {
+    case TurnaroundState::Scheduled: return "Scheduled";
+    case TurnaroundState::Arrived: return "Arrived";
+    case TurnaroundState::Servicing: return "Servicing";
+    case TurnaroundState::ReadyForDeparture: return "ReadyForDeparture";
+    case TurnaroundState::Departed: return "Departed";
+    case TurnaroundState::Delayed: return "Delayed";
+    case TurnaroundState::Failed: return "Failed";
+    }
+    return "Unknown";
+}
+
+std::string_view to_string(TaskStatus state) noexcept {
+    switch (state) {
+    case TaskStatus::Blocked: return "Blocked";
+    case TaskStatus::Pending: return "Ready";
+    case TaskStatus::Waiting: return "Waiting";
+    case TaskStatus::Assigned: return "Dispatched";
+    case TaskStatus::InProgress: return "InProgress";
+    case TaskStatus::Completed: return "Completed";
+    case TaskStatus::Failed: return "Failed";
+    }
+    return "Unknown";
 }
 
 std::string format_event(const SimulationEventRecord& event) {
     const auto& aircraft = event.aircraft_name.empty() ? std::string{"aircraft"} : event.aircraft_name;
     const auto& vehicle = event.vehicle_name.empty() ? std::string{"vehicle"} : event.vehicle_name;
-    const auto service_resource = event.service == ServiceType::Fueling ? "fuel" : "baggage";
+    const auto service_resource = !event.service ? std::string_view{"service"} :
+        *event.service == ServiceType::Fueling ? std::string_view{"fuel"} :
+        *event.service == ServiceType::Baggage ? std::string_view{"baggage"} : to_string(*event.service);
     switch (event.type) {
     case SimulationEventType::AircraftArrived:
         return std::format("{} arrived at Gate A{}", aircraft, event.gate->value());
@@ -90,6 +137,32 @@ std::string format_event(const SimulationEventRecord& event) {
         return std::format("{} waiting for {} resource", aircraft, service_resource);
     case SimulationEventType::ResourceAssigned:
         return std::format("{} resource assigned to {} via {}", to_string(*event.service), aircraft, vehicle);
+    case SimulationEventType::TurnaroundCreated:
+        return std::format("turnaround {} created for {}", event.turnaround_id, aircraft);
+    case SimulationEventType::TurnaroundTaskReady:
+        return std::format("turnaround {} task {} ready ({})", event.turnaround_id,
+            event.task ? event.task->value() : 0U, to_string(*event.service));
+    case SimulationEventType::TurnaroundTaskDispatched:
+        return std::format("turnaround {} task {} dispatched to {}", event.turnaround_id,
+            event.task ? event.task->value() : 0U, vehicle);
+    case SimulationEventType::TurnaroundTaskStarted:
+        return std::format("turnaround {} task {} started ({})", event.turnaround_id,
+            event.task ? event.task->value() : 0U, to_string(*event.service));
+    case SimulationEventType::TurnaroundTaskCompleted:
+        return std::format("turnaround {} task {} completed ({})", event.turnaround_id,
+            event.task ? event.task->value() : 0U, to_string(*event.service));
+    case SimulationEventType::TurnaroundTaskReassigned:
+        return std::format("turnaround {} task {} reassigned to {}", event.turnaround_id,
+            event.task ? event.task->value() : 0U, vehicle);
+    case SimulationEventType::TurnaroundCriticalPathChanged:
+        return std::format("turnaround {} critical path updated", event.turnaround_id);
+    case SimulationEventType::TurnaroundPredictedLate:
+        return std::format("turnaround {} predicted late", event.turnaround_id);
+    case SimulationEventType::TurnaroundReadyForDeparture:
+        return std::format("turnaround {} ready for departure", event.turnaround_id);
+    case SimulationEventType::TurnaroundDisruptionDetected:
+        return std::format("turnaround {} task {} duration changed to {} sec", event.turnaround_id,
+            event.task ? event.task->value() : 0U, event.task_duration ? event.task_duration->count() : 0);
     }
     return "unknown simulation event";
 }

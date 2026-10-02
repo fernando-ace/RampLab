@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <format>
+#include <functional>
 #include <stdexcept>
 #include <utility>
 
@@ -59,6 +60,10 @@ Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryP
         [[maybe_unused]] const auto sequence = events_.schedule(
             road_event.time, EventType::EdgeAvailabilityChanged,
             {EntityKind::Edge, road_event.edge.value()}, road_event.available ? 1 : 0);
+    }
+    for (const auto& disruption : scenario_.task_duration_disruptions) {
+        [[maybe_unused]] const auto sequence = events_.schedule(disruption.time, EventType::TaskDurationChanged,
+            {EntityKind::Task, disruption.task.value()}, disruption.duration.count());
     }
 }
 
@@ -138,6 +143,35 @@ SimulationSnapshot Simulation::snapshot() const {
         result.roads.push_back({edge.id, edge.from, edge.to, edge.distance_m,
             edge.traversal_cost, edge.available});
     }
+    for (const auto& flight : scenario_.aircraft) {
+        if (!scenario_.turnaround_orchestration) break;
+        TurnaroundSnapshot turnaround;
+        turnaround.turnaround_id = flight.turnaround_id();
+        turnaround.aircraft = flight.id();
+        turnaround.gate = flight.gate();
+        turnaround.state = flight.turnaround_state();
+        turnaround.scheduled_arrival = flight.scheduled_arrival();
+        turnaround.actual_arrival = flight.actual_arrival();
+        turnaround.scheduled_departure = flight.scheduled_departure();
+        turnaround.target_off_block = flight.target_off_block();
+        turnaround.completion_time = flight.ready_at();
+        turnaround.departure_delay = flight.departure_delay();
+        if (const auto found = estimated_ready_times_.find(flight.id()); found != estimated_ready_times_.end()) {
+            turnaround.estimated_ready_time = found->second;
+        } else turnaround.estimated_ready_time = flight.actual_arrival().value_or(flight.scheduled_arrival());
+        if (const auto found = schedule_slacks_.find(flight.id()); found != schedule_slacks_.end()) turnaround.schedule_slack = found->second;
+        if (const auto found = predicted_late_.find(flight.id()); found != predicted_late_.end()) turnaround.predicted_late = found->second;
+        if (const auto found = critical_paths_.find(flight.id()); found != critical_paths_.end()) turnaround.critical_path_tasks = found->second;
+        for (const auto& task : flight.tasks()) {
+            SimTime wait{};
+            if (task.requested_at && task.started_at) wait = *task.started_at - *task.requested_at;
+            else if (task.requested_at) wait = now_ - *task.requested_at;
+            turnaround.tasks.push_back({task.id, task.type, task.status, task.requested_at, task.started_at,
+                task.completed_at, task.prerequisites, task.earliest_start, wait,
+                task.required_resource, task.assigned_vehicle, task.assigned_resource});
+        }
+        result.turnarounds.push_back(std::move(turnaround));
+    }
     return result;
 }
 
@@ -148,8 +182,89 @@ SimulationResult Simulation::run() {
 
 SimulationResult Simulation::result() const {
     if (!finished()) throw std::logic_error("simulation result requested before completion");
+    auto metrics = calculate_metrics(scenario_.aircraft, scenario_.vehicles, now_);
+    if (scenario_.turnaround_orchestration) {
+        metrics.total_turnarounds = scenario_.aircraft.size();
+        std::int64_t total_delay = 0;
+        std::int64_t total_turnaround_duration = 0;
+        std::unordered_map<ServiceType, std::int64_t> service_seconds;
+        std::unordered_map<ServiceType, std::size_t> service_counts;
+        for (const auto& flight : scenario_.aircraft) {
+            const auto found = std::ranges::find(metrics.aircraft, flight.id(), &AircraftMetrics::id);
+            if (found == metrics.aircraft.end()) continue;
+            found->turnaround_id = flight.turnaround_id();
+            found->target_off_block = flight.target_off_block();
+            if (flight.actual_arrival() && flight.ready_at()) {
+                found->turnaround = *flight.ready_at() - *flight.actual_arrival();
+                found->actual_completion_time = flight.ready_at();
+                total_turnaround_duration += found->turnaround.count();
+                metrics.maximum_turnaround_seconds = std::max(metrics.maximum_turnaround_seconds, found->turnaround.count());
+                ++metrics.completed_turnarounds;
+            }
+            if (const auto ready = estimated_ready_times_.find(flight.id()); ready != estimated_ready_times_.end()) {
+                found->estimated_ready_time = ready->second;
+            }
+            if (const auto slack = schedule_slacks_.find(flight.id()); slack != schedule_slacks_.end()) {
+                found->schedule_slack = slack->second;
+            }
+            if (const auto path = critical_paths_.find(flight.id()); path != critical_paths_.end()) {
+                found->critical_path_tasks = path->second;
+            }
+            if (flight.ready_at()) {
+                const auto delay = std::max(SimTime::zero(), *flight.ready_at() - flight.target_off_block());
+                found->departure_delay = delay;
+                total_delay += delay.count();
+                metrics.maximum_departure_delay_seconds = std::max(metrics.maximum_departure_delay_seconds, delay.count());
+                if (delay == SimTime::zero()) ++metrics.on_time_departures;
+                else ++metrics.delayed_turnarounds;
+            }
+            for (const auto& task_value : flight.tasks()) {
+                AircraftMetrics::TaskTiming timing;
+                timing.task = task_value.id;
+                timing.service = task_value.type;
+                timing.state = task_value.status;
+                timing.requested_at = task_value.requested_at;
+                timing.started_at = task_value.started_at;
+                timing.completed_at = task_value.completed_at;
+                timing.waiting = task_value.started_at && task_value.requested_at
+                    ? *task_value.started_at - *task_value.requested_at : SimTime::zero();
+                timing.required_resource = task_value.required_resource;
+                timing.assigned_resource = task_value.assigned_resource;
+                found->task_timings.push_back(std::move(timing));
+                metrics.total_service_task_wait_seconds += found->task_timings.back().waiting.count();
+                metrics.maximum_service_task_wait_seconds = std::max(metrics.maximum_service_task_wait_seconds,
+                    found->task_timings.back().waiting.count());
+                if (task_value.started_at && task_value.completed_at) {
+                    service_seconds[task_value.type] += (*task_value.completed_at - *task_value.started_at).count();
+                    ++service_counts[task_value.type];
+                }
+            }
+        }
+        if (metrics.total_turnarounds != 0) {
+            metrics.mean_turnaround_duration_seconds = static_cast<double>(total_turnaround_duration) /
+                static_cast<double>(metrics.total_turnarounds);
+            metrics.average_turnaround_seconds = metrics.mean_turnaround_duration_seconds;
+            metrics.mean_departure_delay_seconds = static_cast<double>(total_delay) /
+                static_cast<double>(metrics.total_turnarounds);
+            metrics.on_time_departure_rate = static_cast<double>(metrics.on_time_departures) /
+                static_cast<double>(metrics.total_turnarounds);
+        }
+        for (const auto& [type, count] : service_counts) {
+            std::size_t capacity = 0;
+            if (scenario_.abstract_resource_capacity.contains(type)) capacity = scenario_.abstract_resource_capacity.at(type);
+            else capacity = static_cast<std::size_t>(std::ranges::count_if(scenario_.vehicles,
+                [type](const ServiceVehicle& service_vehicle) { return service_vehicle.capability() == type; }));
+            const auto denominator = static_cast<double>(now_.count()) * static_cast<double>(capacity);
+            const auto busy = static_cast<double>(service_seconds[type]);
+            metrics.resource_utilization.emplace_back(type, denominator > 0.0 ? busy / denominator : 0.0);
+        }
+        std::ranges::sort(metrics.resource_utilization, {}, [](const auto& item) { return item.first; });
+        metrics.task_reassignments = task_reassignments_;
+        metrics.disruption_triggered_replans = disruption_replans_;
+        metrics.unresolved_service_requests = fuel_pool_.outstanding_count() + baggage_pool_.outstanding_count();
+    }
     return {seed_, now_, scenario_.aircraft, scenario_.vehicles, log_, event_history_,
-        calculate_metrics(scenario_.aircraft, scenario_.vehicles, now_)};
+        std::move(metrics)};
 }
 
 SimTime Simulation::current_time() const noexcept { return now_; }
@@ -164,6 +279,12 @@ void Simulation::process(const Event& event) {
     case EventType::EdgeAvailabilityChanged:
         handle_road_event(EdgeId{event.entity.value}, event.data != 0); break;
     case EventType::AircraftDeparture: handle_departure(AircraftId{event.entity.value}); break;
+    case EventType::AbstractServiceCompleted:
+        handle_abstract_service_completed(AircraftId{event.entity.value}, TaskId{static_cast<std::uint32_t>(event.data)}); break;
+    case EventType::TurnaroundTaskEligible:
+        handle_task_eligibility(AircraftId{event.entity.value}, TaskId{static_cast<std::uint32_t>(event.data)}); break;
+    case EventType::TaskDurationChanged:
+        handle_task_duration_change(TaskId{event.entity.value}, SimTime{event.data}); break;
     }
 }
 
@@ -178,8 +299,15 @@ void Simulation::handle_aircraft_arrival(AircraftId id) {
     flight.arrive(now_);
     emit(aircraft_event(SimulationEventType::AircraftArrived, flight));
     emit_aircraft_state(flight, previous);
-    request_service(flight, ServiceType::Fueling);
-    request_service(flight, ServiceType::Baggage);
+    if (scenario_.turnaround_orchestration) {
+        auto created = aircraft_event(SimulationEventType::TurnaroundCreated, flight);
+        created.turnaround_id = flight.turnaround_id();
+        emit(std::move(created));
+        schedule_turnaround_tasks(flight);
+    } else {
+        request_service(flight, ServiceType::Fueling);
+        request_service(flight, ServiceType::Baggage);
+    }
 }
 
 void Simulation::request_service(Aircraft& flight, ServiceType type) {
@@ -200,6 +328,9 @@ void Simulation::dispatch(VehicleId vehicle_id, AircraftId aircraft_id) {
     auto route = find_route(scenario_.graph, service_vehicle.current_node(), flight.gate_node());
     if (!route) throw std::runtime_error("no available route for assigned service vehicle");
     flight.assign_task(service_vehicle.capability());
+    auto& assigned_task = flight.mutable_task(flight.task(service_vehicle.capability()).id);
+    assigned_task.assigned_vehicle = vehicle_id;
+    assigned_task.assigned_resource = service_vehicle.name();
     const auto assigned_route = *route;
     const auto previous = service_vehicle.state();
     service_vehicle.assign(aircraft_id, std::move(*route), now_);
@@ -211,6 +342,16 @@ void Simulation::dispatch(VehicleId vehicle_id, AircraftId aircraft_id) {
     emit(vehicle_event(SimulationEventType::VehicleAssigned, service_vehicle, &flight, assigned_route));
     emit_vehicle_state(service_vehicle, previous);
     emit(vehicle_event(SimulationEventType::VehicleDeparted, service_vehicle, &flight, assigned_route));
+    if (scenario_.turnaround_orchestration) {
+        auto event = aircraft_event(SimulationEventType::TurnaroundTaskDispatched, flight);
+        event.task = assigned_task.id;
+        event.service = assigned_task.type;
+        event.vehicle = vehicle_id;
+        event.vehicle_name = service_vehicle.name();
+        event.turnaround_id = flight.turnaround_id();
+        emit(std::move(event));
+        update_turnaround_estimate(flight);
+    }
 }
 
 void Simulation::handle_vehicle_arrival(VehicleId id) {
@@ -225,10 +366,23 @@ void Simulation::handle_vehicle_arrival(VehicleId id) {
     flight.start_task(service_vehicle.capability(), now_);
     service_vehicle.start_service();
     emit_vehicle_state(service_vehicle, assigned_state);
+    const auto service_duration = scenario_.turnaround_orchestration
+        ? flight.task(service_vehicle.capability()).duration : duration(service_vehicle.capability());
     [[maybe_unused]] const auto sequence = events_.schedule(
-        now_ + duration(service_vehicle.capability()), EventType::ServiceCompleted,
+        now_ + service_duration, EventType::ServiceCompleted,
         {EntityKind::Vehicle, id.value()});
     emit(vehicle_event(SimulationEventType::ServiceStarted, service_vehicle, &flight));
+    if (scenario_.turnaround_orchestration) {
+        const auto& task = flight.task(service_vehicle.capability());
+        auto event = aircraft_event(SimulationEventType::TurnaroundTaskStarted, flight);
+        event.task = task.id;
+        event.service = task.type;
+        event.vehicle = id;
+        event.vehicle_name = service_vehicle.name();
+        event.turnaround_id = flight.turnaround_id();
+        emit(std::move(event));
+        update_turnaround_estimate(flight);
+    }
 }
 
 void Simulation::handle_service_completed(VehicleId id) {
@@ -239,9 +393,24 @@ void Simulation::handle_service_completed(VehicleId id) {
     const auto previous_aircraft = flight.state();
     flight.complete_task(type, now_);
     emit(vehicle_event(SimulationEventType::ServiceCompleted, service_vehicle, &flight));
+    if (scenario_.turnaround_orchestration) {
+        const auto& task = flight.task(type);
+        auto event = aircraft_event(SimulationEventType::TurnaroundTaskCompleted, flight);
+        event.task = task.id;
+        event.service = task.type;
+        event.vehicle = id;
+        event.vehicle_name = service_vehicle.name();
+        event.turnaround_id = flight.turnaround_id();
+        emit(std::move(event));
+    }
     if (flight.services_complete()) {
         emit_aircraft_state(flight, previous_aircraft);
         emit(aircraft_event(SimulationEventType::AircraftReadyForPushback, flight));
+        if (scenario_.turnaround_orchestration) {
+            auto ready = aircraft_event(SimulationEventType::TurnaroundReadyForDeparture, flight);
+            ready.turnaround_id = flight.turnaround_id();
+            emit(std::move(ready));
+        }
         [[maybe_unused]] const auto sequence = events_.schedule(
             std::max(now_, flight.scheduled_departure()), EventType::AircraftDeparture,
             {EntityKind::Aircraft, aircraft_id.value()});
@@ -252,12 +421,17 @@ void Simulation::handle_service_completed(VehicleId id) {
     if (!return_route) throw std::runtime_error("no available route back to vehicle depot");
     const auto route = *return_route;
     const auto previous_vehicle = service_vehicle.state();
-    service_vehicle.finish_service(std::move(*return_route), duration(type), now_);
+    const auto service_duration = scenario_.turnaround_orchestration ? flight.task(type).duration : duration(type);
+    service_vehicle.finish_service(std::move(*return_route), service_duration, now_);
     emit_vehicle_state(service_vehicle, previous_vehicle);
     [[maybe_unused]] const auto sequence = events_.schedule(
         now_ + route.travel_time, EventType::VehicleArrivalAtDepot,
         {EntityKind::Vehicle, id.value()});
     emit(vehicle_event(SimulationEventType::VehicleDeparted, service_vehicle, &flight, route));
+    if (scenario_.turnaround_orchestration) {
+        schedule_turnaround_tasks(flight);
+        update_turnaround_estimate(flight);
+    }
 }
 
 void Simulation::handle_vehicle_return(VehicleId id) {
@@ -267,7 +441,7 @@ void Simulation::handle_vehicle_return(VehicleId id) {
     service_vehicle.arrive_at_depot();
     emit(vehicle_event(SimulationEventType::VehicleArrived, service_vehicle, nullptr, arrival_route));
     emit_vehicle_state(service_vehicle, previous);
-    const auto next = pool(service_vehicle.capability()).release(id);
+    const auto next = pool(service_vehicle.capability()).release(id, now_);
     if (next) dispatch(next->vehicle, next->aircraft);
 }
 
@@ -277,6 +451,241 @@ void Simulation::handle_road_event(EdgeId id, bool available) {
         available ? SimulationEventType::RoadOpened : SimulationEventType::RoadClosed};
     event.edge = id;
     emit(std::move(event));
+}
+
+void Simulation::schedule_turnaround_tasks(Aircraft& flight) {
+    if (!scenario_.turnaround_orchestration || flight.state() == AircraftState::Scheduled ||
+        flight.state() == AircraftState::Departed) return;
+    update_turnaround_estimate(flight);
+    for (auto& task_value : flight.mutable_tasks()) {
+        if (task_value.status == TaskStatus::Blocked) {
+            const bool dependencies_complete = std::ranges::all_of(task_value.prerequisites, [&](TaskId prerequisite) {
+                return flight.task(prerequisite).status == TaskStatus::Completed;
+            });
+            if (!dependencies_complete) continue;
+            if (now_ < task_value.earliest_start) {
+                if (!task_value.eligibility_scheduled) {
+                    [[maybe_unused]] const auto sequence = events_.schedule(task_value.earliest_start,
+                        EventType::TurnaroundTaskEligible, {EntityKind::Aircraft, flight.id().value()}, task_value.id.value());
+                    task_value.eligibility_scheduled = true;
+                }
+                continue;
+            }
+            flight.make_task_ready(task_value.id);
+        }
+        if (task_value.status != TaskStatus::Pending && task_value.status != TaskStatus::Waiting) continue;
+        if (now_ < task_value.earliest_start) {
+            task_value.status = TaskStatus::Blocked;
+            if (!task_value.eligibility_scheduled) {
+                [[maybe_unused]] const auto sequence = events_.schedule(task_value.earliest_start,
+                    EventType::TurnaroundTaskEligible, {EntityKind::Aircraft, flight.id().value()}, task_value.id.value());
+                task_value.eligibility_scheduled = true;
+            }
+            continue;
+        }
+        if (!task_value.requested_at) {
+            auto ready = aircraft_event(SimulationEventType::TurnaroundTaskReady, flight);
+            ready.turnaround_id = flight.turnaround_id();
+            ready.task = task_value.id;
+            ready.service = task_value.type;
+            emit(std::move(ready));
+        }
+
+        if (task_value.type == ServiceType::Fueling || task_value.type == ServiceType::Baggage) {
+            std::int64_t priority = 0;
+            if (const auto path = critical_paths_.find(flight.id()); path != critical_paths_.end() &&
+                std::ranges::find(path->second, task_value.id) != path->second.end()) priority += 10;
+            if (const auto slack = schedule_slacks_.find(flight.id()); slack != schedule_slacks_.end()) {
+                if (slack->second <= SimTime::zero()) priority += 20;
+                else if (slack->second <= SimTime{300}) priority += 10;
+                else if (slack->second <= SimTime{600}) priority += 5;
+            }
+            const auto request = pool(task_value.type).request(flight.id(), priority, now_);
+            if (request.status == RequestStatus::Assigned) {
+                dispatch(*request.vehicle, flight.id());
+            } else if (request.status == RequestStatus::Queued && task_value.status == TaskStatus::Pending) {
+                flight.mark_task_waiting(task_value.id, now_);
+                auto waiting = aircraft_event(SimulationEventType::ResourceWaitStarted, flight);
+                waiting.service = task_value.type;
+                waiting.task = task_value.id;
+                waiting.turnaround_id = flight.turnaround_id();
+                emit(std::move(waiting));
+            }
+            continue;
+        }
+
+        const auto capacity_it = scenario_.abstract_resource_capacity.find(task_value.type);
+        const auto capacity = capacity_it == scenario_.abstract_resource_capacity.end() ? 1U : capacity_it->second;
+        std::size_t in_use = 0;
+        std::vector<std::string> occupied;
+        for (const auto& other : scenario_.aircraft) {
+            for (const auto& other_task : other.tasks()) {
+                if (other_task.type == task_value.type && other_task.status == TaskStatus::InProgress) {
+                    ++in_use;
+                    occupied.push_back(other_task.assigned_resource);
+                }
+            }
+        }
+        if (in_use >= capacity) {
+            if (task_value.status == TaskStatus::Pending) flight.mark_task_waiting(task_value.id, now_);
+            continue;
+        }
+        std::size_t slot = 1;
+        for (;; ++slot) {
+            const auto candidate = std::format("crew:{}:{}", to_string(task_value.type), slot);
+            if (std::ranges::find(occupied, candidate) == occupied.end()) {
+                task_value.assigned_resource = candidate;
+                break;
+            }
+        }
+        const auto resource_name = task_value.assigned_resource;
+        flight.assign_task(task_value.id, resource_name);
+        flight.start_task(task_value.id, now_);
+        auto started = aircraft_event(SimulationEventType::TurnaroundTaskStarted, flight);
+        started.turnaround_id = flight.turnaround_id();
+        started.task = task_value.id;
+        started.service = task_value.type;
+        started.vehicle_name = resource_name;
+        emit(std::move(started));
+        [[maybe_unused]] const auto sequence = events_.schedule(now_ + task_value.duration,
+            EventType::AbstractServiceCompleted, {EntityKind::Aircraft, flight.id().value()}, task_value.id.value());
+    }
+    update_turnaround_estimate(flight);
+}
+
+void Simulation::handle_abstract_service_completed(AircraftId id, TaskId task_id) {
+    auto& flight = aircraft(id);
+    const auto type = flight.task(task_id).type;
+    flight.complete_task(task_id, now_);
+    auto completed = aircraft_event(SimulationEventType::TurnaroundTaskCompleted, flight);
+    completed.turnaround_id = flight.turnaround_id();
+    completed.task = task_id;
+    completed.service = type;
+    completed.vehicle_name = flight.task(task_id).assigned_resource;
+    emit(std::move(completed));
+    if (flight.services_complete()) {
+        auto ready = aircraft_event(SimulationEventType::TurnaroundReadyForDeparture, flight);
+        ready.turnaround_id = flight.turnaround_id();
+        emit(std::move(ready));
+        emit(aircraft_event(SimulationEventType::AircraftReadyForPushback, flight));
+        [[maybe_unused]] const auto sequence = events_.schedule(
+            std::max(now_, flight.scheduled_departure()), EventType::AircraftDeparture,
+            {EntityKind::Aircraft, id.value()});
+    }
+    for (auto& other : scenario_.aircraft) schedule_turnaround_tasks(other);
+}
+
+void Simulation::handle_task_eligibility(AircraftId id, TaskId task_id) {
+    auto& flight = aircraft(id);
+    auto& task_value = flight.mutable_task(task_id);
+    task_value.eligibility_scheduled = false;
+    if (task_value.status != TaskStatus::Blocked) return;
+    if (!std::ranges::all_of(task_value.prerequisites, [&](TaskId prerequisite) {
+            return flight.task(prerequisite).status == TaskStatus::Completed;
+        })) return;
+    if (now_ < task_value.earliest_start) return;
+    flight.make_task_ready(task_id);
+    schedule_turnaround_tasks(flight);
+}
+
+void Simulation::handle_task_duration_change(TaskId task_id, SimTime duration_value) {
+    if (duration_value <= SimTime::zero()) throw std::logic_error("disruption duration must be positive");
+    const auto owner = std::ranges::find_if(scenario_.aircraft, [&](const Aircraft& flight) {
+        return std::ranges::any_of(flight.tasks(), [task_id](const ServiceTask& task_value) { return task_value.id == task_id; });
+    });
+    if (owner == scenario_.aircraft.end()) throw std::logic_error("disruption references unknown task");
+    auto& task_value = owner->mutable_task(task_id);
+    if (task_value.status == TaskStatus::InProgress || task_value.status == TaskStatus::Completed) {
+        throw std::logic_error("turnaround disruption targets a task after service start");
+    }
+    owner->set_task_duration(task_id, duration_value);
+    ++disruption_replans_;
+    auto event = aircraft_event(SimulationEventType::TurnaroundDisruptionDetected, *owner);
+    event.task = task_id;
+    event.service = task_value.type;
+    event.turnaround_id = owner->turnaround_id();
+    event.task_duration = duration_value;
+    emit(std::move(event));
+    update_turnaround_estimate(*owner);
+    for (auto& flight : scenario_.aircraft) schedule_turnaround_tasks(flight);
+}
+
+void Simulation::update_turnaround_estimate(const Aircraft& flight) {
+    if (!scenario_.turnaround_orchestration) return;
+    const auto& tasks = flight.tasks();
+    std::vector<SimTime> finish(tasks.size(), now_);
+    std::vector<std::optional<std::size_t>> parent(tasks.size());
+    std::vector<bool> visited(tasks.size(), false);
+    std::function<SimTime(std::size_t)> estimate = [&](std::size_t index) -> SimTime {
+        if (visited[index]) return finish[index];
+        visited[index] = true;
+        const auto& task_value = tasks[index];
+        if (task_value.status == TaskStatus::Completed && task_value.completed_at) {
+            finish[index] = *task_value.completed_at;
+            return finish[index];
+        }
+        SimTime start = std::max(now_, task_value.earliest_start);
+        for (const auto prerequisite : task_value.prerequisites) {
+            const auto found = std::ranges::find(tasks, prerequisite, &ServiceTask::id);
+            if (found == tasks.end()) continue;
+            const auto predecessor = static_cast<std::size_t>(found - tasks.begin());
+            const auto predecessor_finish = estimate(predecessor);
+            if (predecessor_finish >= start) { start = predecessor_finish; parent[index] = predecessor; }
+        }
+        SimTime remaining = task_value.duration;
+        if (task_value.status == TaskStatus::InProgress && task_value.started_at) {
+            remaining = std::max(SimTime::zero(), task_value.duration - (now_ - *task_value.started_at));
+            if (task_value.assigned_vehicle) {
+                const auto& assigned = vehicle(*task_value.assigned_vehicle);
+                if (assigned.journey_arrival_time() && *assigned.journey_arrival_time() > now_) {
+                    start = std::max(start, *assigned.journey_arrival_time());
+                }
+            }
+        } else if (task_value.status == TaskStatus::Assigned && task_value.assigned_vehicle) {
+            const auto& assigned = vehicle(*task_value.assigned_vehicle);
+            if (assigned.journey_arrival_time()) start = std::max(start, *assigned.journey_arrival_time());
+        }
+        finish[index] = start + remaining;
+        return finish[index];
+    };
+    SimTime ready = flight.actual_arrival().value_or(flight.scheduled_arrival());
+    std::optional<std::size_t> terminal;
+    for (std::size_t index = 0; index < tasks.size(); ++index) {
+        const auto value = estimate(index);
+        if (!terminal || value > ready) { ready = value; terminal = index; }
+    }
+    std::vector<TaskId> path;
+    while (terminal) {
+        path.push_back(tasks[*terminal].id);
+        terminal = parent[*terminal];
+    }
+    std::ranges::reverse(path);
+    const auto old_path = critical_paths_.find(flight.id());
+    if (flight.services_complete() && old_path != critical_paths_.end()) {
+        // Preserve the last computed dependency chain as the completion
+        // estimate collapses to the already-completed terminal task.
+        path = old_path->second;
+        ready = flight.ready_at().value_or(ready);
+    }
+    if (old_path == critical_paths_.end() || old_path->second != path) {
+        critical_paths_[flight.id()] = path;
+        auto changed = aircraft_event(SimulationEventType::TurnaroundCriticalPathChanged, flight);
+        changed.turnaround_id = flight.turnaround_id();
+        changed.estimated_ready_time = ready;
+        changed.schedule_slack = flight.target_off_block() - ready;
+        emit(std::move(changed));
+    }
+    estimated_ready_times_[flight.id()] = ready;
+    schedule_slacks_[flight.id()] = flight.target_off_block() - ready;
+    const bool late = ready > flight.target_off_block();
+    if (late && !predicted_late_[flight.id()]) {
+        auto event = aircraft_event(SimulationEventType::TurnaroundPredictedLate, flight);
+        event.turnaround_id = flight.turnaround_id();
+        event.estimated_ready_time = ready;
+        event.schedule_slack = flight.target_off_block() - ready;
+        emit(std::move(event));
+    }
+    predicted_late_[flight.id()] = late;
 }
 
 void Simulation::handle_departure(AircraftId id) {

@@ -16,9 +16,12 @@ enum class EventType {
     VehicleArrivalAtDepot,
     EdgeAvailabilityChanged,
     AircraftDeparture,
+    AbstractServiceCompleted,
+    TurnaroundTaskEligible,
+    TaskDurationChanged,
 };
 
-enum class EntityKind { None, Aircraft, Vehicle, Edge };
+enum class EntityKind { None, Aircraft, Vehicle, Edge, Task };
 
 struct EntityRef {
     EntityKind kind{EntityKind::None};

@@ -41,6 +41,7 @@ The core `airside_sim` and `airside_autonomy` libraries contain no YAML, UI, net
 ```
 
 See [architecture.md](docs/architecture.md) and [unreal-integration.md](docs/unreal-integration.md).
+The optional aircraft task-DAG and scheduler layer is described in [turnaround operations](docs/turnaround-operations.md).
 
 ## Repository layout
 

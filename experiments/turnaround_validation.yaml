@@ -1,0 +1,14 @@
+name: turnaround_validation
+scenario: ../scenarios/turnaround_disrupted.yaml
+
+seeds:
+  start: 42
+  count: 1
+
+parameters:
+  fleet.fuel_trucks: [1]
+
+workers: auto
+
+outputs:
+  directory: ../results/turnaround_validation

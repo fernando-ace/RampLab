@@ -9,11 +9,30 @@
 
 namespace airside::experiment {
 
+struct TaskRunMetrics {
+    std::uint32_t task_id{0};
+    std::string service_type;
+    std::string state;
+    std::int64_t requested_at_seconds{-1};
+    std::int64_t started_at_seconds{-1};
+    std::int64_t completed_at_seconds{-1};
+    std::int64_t waiting_seconds{0};
+    std::string required_resource;
+    std::string assigned_resource;
+    constexpr auto operator<=>(const TaskRunMetrics&) const = default;
+};
+
 struct AircraftRunMetrics {
     std::string flight_number;
     double turnaround_seconds{0.0};
     double departure_delay_seconds{0.0};
     double service_waiting_seconds{0.0};
+    std::string turnaround_id;
+    double estimated_ready_time_seconds{0.0};
+    double actual_completion_time_seconds{0.0};
+    double schedule_slack_seconds{0.0};
+    std::string critical_path_task_ids;
+    std::vector<TaskRunMetrics> tasks;
 
     constexpr auto operator<=>(const AircraftRunMetrics&) const = default;
 };
@@ -35,6 +54,20 @@ struct RunResult {
     std::size_t aircraft_count{0};
     double fuel_utilization{0.0};
     double baggage_utilization{0.0};
+    std::size_t total_turnarounds{0};
+    std::size_t completed_turnarounds{0};
+    std::size_t delayed_turnarounds{0};
+    std::size_t failed_or_timed_out_turnarounds{0};
+    double maximum_turnaround_seconds{0.0};
+    double maximum_departure_delay_seconds{0.0};
+    std::size_t on_time_departures{0};
+    double on_time_departure_rate{0.0};
+    double total_service_task_wait_seconds{0.0};
+    double maximum_service_task_wait_seconds{0.0};
+    std::size_t task_reassignments{0};
+    std::size_t disruption_triggered_replans{0};
+    std::size_t unresolved_service_requests{0};
+    std::vector<std::pair<std::string, double>> resource_utilization;
     std::vector<AircraftRunMetrics> aircraft;
 };
 

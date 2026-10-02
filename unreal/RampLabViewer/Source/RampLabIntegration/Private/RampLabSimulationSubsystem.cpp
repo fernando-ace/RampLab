@@ -320,7 +320,9 @@ void URampLabSimulationSubsystem::ResetSimulation()
 void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
 {
     if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity") &&
-        ScenarioKey != TEXT("autonomy_tug") && ScenarioKey != TEXT("autonomy_sensor_validation")) return;
+        ScenarioKey != TEXT("autonomy_tug") && ScenarioKey != TEXT("autonomy_sensor_validation") &&
+        ScenarioKey != TEXT("turnaround_normal") && ScenarioKey != TEXT("turnaround_contention") &&
+        ScenarioKey != TEXT("turnaround_disrupted")) return;
     SelectedScenarioKey = ScenarioKey;
     LoadSelectedScenario();
 }

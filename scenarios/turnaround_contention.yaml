@@ -1,0 +1,55 @@
+name: turnaround_contention
+default_seed: 42
+airport:
+  nodes:
+    - { id: depot, name: Service Depot, x_m: 0.0, y_m: 0.0 }
+    - { id: north, name: North Junction, x_m: 100.0, y_m: 80.0 }
+    - { id: south, name: South Junction, x_m: 100.0, y_m: -80.0 }
+    - { id: gate_a1, name: Gate A1, x_m: 220.0, y_m: 80.0 }
+    - { id: gate_a2, name: Gate A2, x_m: 220.0, y_m: -80.0 }
+  edges:
+    - { id: depot_north, from: depot, to: north, distance_m: 128.0, traversal_time_seconds: 60 }
+    - { id: depot_south, from: depot, to: south, distance_m: 128.0, traversal_time_seconds: 60 }
+    - { id: north_a1, from: north, to: gate_a1, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: south_a2, from: south, to: gate_a2, distance_m: 120.0, traversal_time_seconds: 60 }
+gates:
+  - { id: A1, node: gate_a1 }
+  - { id: A2, node: gate_a2 }
+fleet:
+  vehicles:
+    - { id: fuel_1, name: FuelTruck-1, type: fueling, depot_node: depot, speed_mps: 10.0 }
+    - { id: baggage_1, name: BaggageCart-1, type: baggage, depot_node: depot, speed_mps: 8.0 }
+aircraft:
+  - id: AX101
+    turnaround_id: TO-AX101
+    gate: A1
+    scheduled_arrival_seconds: 0
+    scheduled_departure_seconds: 1800
+    target_off_block_seconds: 1500
+    service_tasks:
+      - { id: deboard, type: deboarding, duration_seconds: 120 }
+      - { id: fuel, type: fueling, duration_seconds: 300 }
+      - { id: baggage_unload, type: baggage, duration_seconds: 240, prerequisites: [deboard] }
+      - { id: clean, type: cabin_cleaning, duration_seconds: 180, prerequisites: [deboard] }
+      - { id: baggage_load, type: baggage_load, duration_seconds: 240, prerequisites: [baggage_unload, clean] }
+      - { id: pushback, type: pushback_preparation, duration_seconds: 120, prerequisites: [fuel, baggage_load] }
+  - id: AX202
+    turnaround_id: TO-AX202
+    gate: A2
+    scheduled_arrival_seconds: 60
+    scheduled_departure_seconds: 2100
+    target_off_block_seconds: 1800
+    service_tasks:
+      - { id: deboard, type: deboarding, duration_seconds: 120 }
+      - { id: fuel, type: fueling, duration_seconds: 300 }
+      - { id: baggage_unload, type: baggage, duration_seconds: 240, prerequisites: [deboard] }
+      - { id: clean, type: cabin_cleaning, duration_seconds: 180, prerequisites: [deboard] }
+      - { id: baggage_load, type: baggage_load, duration_seconds: 240, prerequisites: [baggage_unload, clean] }
+      - { id: pushback, type: pushback_preparation, duration_seconds: 120, prerequisites: [fuel, baggage_load] }
+service_durations_seconds:
+  fueling: 300
+  baggage: 240
+  deboarding: 120
+  cabin_cleaning: 180
+  baggage_load: 240
+  pushback_preparation: 120

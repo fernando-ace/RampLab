@@ -110,9 +110,12 @@ std::vector<Aircraft> rebuild_aircraft(const Scenario& base, const ScenarioOverr
         }
         std::vector<ServiceTask> tasks;
         tasks.reserve(source.tasks().size());
-        for (const auto& task : source.tasks()) tasks.emplace_back(task.id, task.type);
+        // Turnaround plans are part of the scenario input. Preserve their DAG,
+        // timing windows, resource requirements, and any other task metadata
+        // when rebuilding aircraft for experiment overrides.
+        tasks = source.tasks();
         result.emplace_back(source.id(), source.flight_number(), arrival, departure,
-            source.gate(), source.gate_node(), std::move(tasks));
+            source.gate(), source.gate_node(), std::move(tasks), source.turnaround_id(), source.target_off_block());
     }
     return result;
 }

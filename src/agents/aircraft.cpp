@@ -13,14 +13,18 @@ Aircraft::Aircraft(
     SimTime scheduled_departure,
     GateId gate,
     NodeId gate_node,
-    std::vector<ServiceTask> tasks)
+    std::vector<ServiceTask> tasks,
+    std::string turnaround_id,
+    std::optional<SimTime> target_off_block)
     : id_(id),
       flight_number_(std::move(flight_number)),
       scheduled_arrival_(scheduled_arrival),
       scheduled_departure_(scheduled_departure),
       gate_(gate),
       gate_node_(gate_node),
-      tasks_(std::move(tasks)) {
+      tasks_(std::move(tasks)),
+      turnaround_id_(turnaround_id.empty() ? flight_number_ : std::move(turnaround_id)),
+      target_off_block_(target_off_block.value_or(scheduled_departure)) {
     if (flight_number_.empty() || scheduled_departure_ < scheduled_arrival_ || tasks_.empty()) {
         throw std::invalid_argument("invalid aircraft schedule or required tasks");
     }
@@ -37,6 +41,24 @@ std::optional<SimTime> Aircraft::actual_arrival() const noexcept { return actual
 std::optional<SimTime> Aircraft::ready_at() const noexcept { return ready_at_; }
 std::optional<SimTime> Aircraft::actual_departure() const noexcept { return actual_departure_; }
 const std::vector<ServiceTask>& Aircraft::tasks() const noexcept { return tasks_; }
+std::vector<ServiceTask>& Aircraft::mutable_tasks() noexcept { return tasks_; }
+const std::string& Aircraft::turnaround_id() const noexcept { return turnaround_id_; }
+SimTime Aircraft::target_off_block() const noexcept { return target_off_block_; }
+TurnaroundState Aircraft::turnaround_state() const noexcept {
+    switch (state_) {
+    case AircraftState::Scheduled: return TurnaroundState::Scheduled;
+    case AircraftState::ReadyForPushback: return TurnaroundState::ReadyForDeparture;
+    case AircraftState::Departed: return TurnaroundState::Departed;
+    default:
+        return std::ranges::any_of(tasks_, [](const auto& value) {
+            return value.status == TaskStatus::InProgress || value.status == TaskStatus::Assigned;
+        }) ? TurnaroundState::Servicing : TurnaroundState::Arrived;
+    }
+}
+std::optional<SimTime> Aircraft::departure_delay() const noexcept {
+    if (!actual_departure_) return std::nullopt;
+    return std::max(SimTime::zero(), *actual_departure_ - target_off_block_);
+}
 
 bool Aircraft::can_transition(AircraftState from, AircraftState to) noexcept {
     switch (from) {
@@ -68,7 +90,11 @@ void Aircraft::arrive(SimTime now) {
 }
 
 void Aircraft::mark_task_waiting(ServiceType type, SimTime now) {
-    auto& value = mutable_task(type);
+    mark_task_waiting(mutable_task(type).id, now);
+}
+
+void Aircraft::mark_task_waiting(TaskId id, SimTime now) {
+    auto& value = mutable_task(id);
     if (value.status != TaskStatus::Pending) {
         throw std::logic_error("only a pending service task may wait");
     }
@@ -76,28 +102,49 @@ void Aircraft::mark_task_waiting(ServiceType type, SimTime now) {
     value.requested_at = now;
 }
 
+void Aircraft::make_task_ready(TaskId id) {
+    auto& value = mutable_task(id);
+    if (value.status != TaskStatus::Blocked) return;
+    value.status = TaskStatus::Pending;
+}
+
 void Aircraft::assign_task(ServiceType type) {
-    auto& value = mutable_task(type);
+    assign_task(mutable_task(type).id);
+}
+
+void Aircraft::assign_task(TaskId id, std::string resource) {
+    auto& value = mutable_task(id);
     if (value.status != TaskStatus::Pending && value.status != TaskStatus::Waiting) {
         throw std::logic_error("service task cannot be assigned in its current state");
     }
     value.status = TaskStatus::Assigned;
+    value.assigned_resource = std::move(resource);
 }
 
 void Aircraft::start_task(ServiceType type, SimTime now) {
-    auto& value = mutable_task(type);
+    start_task(mutable_task(type).id, now);
+}
+
+void Aircraft::start_task(TaskId id, SimTime now) {
+    auto& value = mutable_task(id);
     if (value.status != TaskStatus::Assigned) {
         throw std::logic_error("service task must be assigned before it starts");
     }
     value.status = TaskStatus::InProgress;
     value.started_at = now;
     if (!value.requested_at.has_value()) {
-        value.requested_at = actual_arrival_.value_or(now);
+        // Tasks blocked on prerequisites become requests only when they become
+        // eligible; a task that can start immediately has no resource wait.
+        value.requested_at = now;
     }
 }
 
 void Aircraft::complete_task(ServiceType type, SimTime now) {
-    auto& value = mutable_task(type);
+    complete_task(mutable_task(type).id, now);
+}
+
+void Aircraft::complete_task(TaskId id, SimTime now) {
+    auto& value = mutable_task(id);
     if (value.status != TaskStatus::InProgress || !value.started_at || now < *value.started_at) {
         throw std::logic_error("service task cannot complete before it starts");
     }
@@ -107,6 +154,15 @@ void Aircraft::complete_task(ServiceType type, SimTime now) {
         transition_to(AircraftState::ReadyForPushback);
         ready_at_ = now;
     }
+}
+
+void Aircraft::set_task_duration(TaskId id, SimTime duration) {
+    if (duration <= SimTime::zero()) throw std::invalid_argument("task duration must be positive");
+    auto& value = mutable_task(id);
+    if (value.status == TaskStatus::InProgress || value.status == TaskStatus::Completed) {
+        throw std::logic_error("cannot change a task duration after service starts");
+    }
+    value.duration = duration;
 }
 
 void Aircraft::depart(SimTime now) {
@@ -128,6 +184,18 @@ bool Aircraft::services_complete() const noexcept {
 
 const ServiceTask& Aircraft::task(ServiceType type) const {
     return const_cast<Aircraft*>(this)->mutable_task(type);
+}
+
+const ServiceTask& Aircraft::task(TaskId id) const {
+    const auto found = std::ranges::find_if(tasks_, [id](const auto& value) { return value.id == id; });
+    if (found == tasks_.end()) throw std::out_of_range("aircraft does not contain this task ID");
+    return *found;
+}
+
+ServiceTask& Aircraft::mutable_task(TaskId id) {
+    const auto found = std::ranges::find_if(tasks_, [id](const auto& value) { return value.id == id; });
+    if (found == tasks_.end()) throw std::out_of_range("aircraft does not contain this task ID");
+    return *found;
 }
 
 ServiceTask& Aircraft::mutable_task(ServiceType type) {

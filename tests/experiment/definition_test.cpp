@@ -77,7 +77,14 @@ TEST(ExperimentDefinitionTest, AppliesTypedOverridesWithoutMutatingBaseScenario)
     base.vehicles.emplace_back(VehicleId{1}, "fuel", ServiceType::Fueling, NodeId{1}, 5.0);
     base.vehicles.emplace_back(VehicleId{2}, "bag", ServiceType::Baggage, NodeId{1}, 4.0);
     base.aircraft.emplace_back(AircraftId{1}, "AX1", SimTime{100}, SimTime{200}, GateId{1}, NodeId{2},
-        std::vector<ServiceTask>{{TaskId{1}, ServiceType::Fueling}, {TaskId{2}, ServiceType::Baggage}});
+        std::vector<ServiceTask>{{TaskId{1}, ServiceType::Fueling}, {TaskId{2}, ServiceType::Baggage}},
+        "TURN-AX1", SimTime{220});
+    auto& dependent_task = base.aircraft.front().mutable_tasks()[1];
+    dependent_task.prerequisites = {TaskId{1}};
+    dependent_task.earliest_start = SimTime{125};
+    dependent_task.latest_desirable_completion = SimTime{190};
+    dependent_task.duration = SimTime{45};
+    dependent_task.required_resource = "baggage_team";
     base.road_events.push_back({SimTime{50}, EdgeId{1}, false});
     ScenarioOverrides overrides;
     overrides.fuel_truck_count = 3;
@@ -96,6 +103,14 @@ TEST(ExperimentDefinitionTest, AppliesTypedOverridesWithoutMutatingBaseScenario)
     EXPECT_EQ(changed.service_durations.at(ServiceType::Fueling), SimTime{30});
     EXPECT_EQ(changed.aircraft.front().scheduled_arrival(), SimTime{105});
     EXPECT_EQ(changed.aircraft.front().scheduled_departure(), SimTime{210});
+    EXPECT_EQ(changed.aircraft.front().turnaround_id(), "TURN-AX1");
+    EXPECT_EQ(changed.aircraft.front().target_off_block(), SimTime{220});
+    const auto& copied_task = changed.aircraft.front().task(TaskId{2});
+    EXPECT_EQ(copied_task.prerequisites, (std::vector<TaskId>{TaskId{1}}));
+    EXPECT_EQ(copied_task.earliest_start, SimTime{125});
+    EXPECT_EQ(copied_task.latest_desirable_completion, SimTime{190});
+    EXPECT_EQ(copied_task.duration, SimTime{45});
+    EXPECT_EQ(copied_task.required_resource, "baggage_team");
     EXPECT_TRUE(changed.road_events.empty());
 }
 

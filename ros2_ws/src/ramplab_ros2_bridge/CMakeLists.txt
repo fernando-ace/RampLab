@@ -66,6 +66,13 @@ target_link_libraries(ramplab_ros2_fleet_bridge PRIVATE
   ramplab_airside_scenario ramplab_airside_sim ramplab_yaml_cpp)
 install(TARGETS ramplab_ros2_fleet_bridge DESTINATION lib/${PROJECT_NAME})
 
+add_executable(ramplab_ros2_turnaround_bridge src/turnaround_bridge_main.cpp)
+target_compile_features(ramplab_ros2_turnaround_bridge PRIVATE cxx_std_20)
+target_include_directories(ramplab_ros2_turnaround_bridge PRIVATE include)
+target_link_libraries(ramplab_ros2_turnaround_bridge PRIVATE
+  rclcpp::rclcpp std_msgs::std_msgs ramplab_airside_scenario ramplab_airside_sim ramplab_yaml_cpp)
+install(TARGETS ramplab_ros2_turnaround_bridge DESTINATION lib/${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_ros2_conversions test/test_conversions.cpp)
@@ -73,6 +80,12 @@ if(BUILD_TESTING)
     target_compile_features(test_ros2_conversions PRIVATE cxx_std_20)
     target_include_directories(test_ros2_conversions PRIVATE include)
     target_link_libraries(test_ros2_conversions ramplab_ros2_conversions)
+  endif()
+  ament_add_gtest(test_turnaround_json test/test_turnaround_json.cpp)
+  if(TARGET test_turnaround_json)
+    target_compile_features(test_turnaround_json PRIVATE cxx_std_20)
+    target_include_directories(test_turnaround_json PRIVATE include)
+    target_link_libraries(test_turnaround_json ramplab_airside_sim)
   endif()
 endif()
 

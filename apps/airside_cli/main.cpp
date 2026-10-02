@@ -99,8 +99,13 @@ public:
             if (!event.aircraft_name.empty()) output_ << ",\"aircraft\":\"" << json_escape(event.aircraft_name) << '"';
             if (event.vehicle) output_ << ",\"vehicle_id\":" << event.vehicle->value();
             if (!event.vehicle_name.empty()) output_ << ",\"vehicle\":\"" << json_escape(event.vehicle_name) << '"';
+            if (!event.turnaround_id.empty()) output_ << ",\"turnaround_id\":\"" << json_escape(event.turnaround_id) << '"';
+            if (event.task) output_ << ",\"task_id\":" << event.task->value();
             if (event.edge) output_ << ",\"edge_id\":" << event.edge->value();
             if (event.service) output_ << ",\"service\":\"" << airside::to_string(*event.service) << '"';
+            if (event.estimated_ready_time) output_ << ",\"estimated_ready_time_seconds\":" << event.estimated_ready_time->count();
+            if (event.schedule_slack) output_ << ",\"schedule_slack_seconds\":" << event.schedule_slack->count();
+            if (event.task_duration) output_ << ",\"task_duration_seconds\":" << event.task_duration->count();
             if (event.route) {
                 output_ << ",\"route_nodes\":[";
                 for (std::size_t index = 0; index < event.route->nodes.size(); ++index) {
@@ -141,9 +146,46 @@ void print_snapshot(const airside::SimulationSnapshot& snapshot) {
                       << " segments=" << vehicle.journey->segments.size() << '\n';
         }
     }
+    for (const auto& turnaround : snapshot.turnarounds) {
+        std::size_t completed = 0;
+        std::size_t active = 0;
+        for (const auto& task : turnaround.tasks) {
+            completed += task.status == airside::TaskStatus::Completed ? 1U : 0U;
+            active += task.status == airside::TaskStatus::InProgress || task.status == airside::TaskStatus::Assigned ? 1U : 0U;
+        }
+        std::cout << "  turnaround=" << turnaround.turnaround_id
+                  << " state=" << airside::to_string(turnaround.state)
+                  << " tasks=" << completed << '/' << turnaround.tasks.size()
+                  << " active=" << active
+                  << " estimated_ready=" << turnaround.estimated_ready_time.count()
+                  << " slack=" << turnaround.schedule_slack.count() << "s critical_path=";
+        for (std::size_t index = 0; index < turnaround.critical_path_tasks.size(); ++index) {
+            if (index != 0) std::cout << ',';
+            std::cout << turnaround.critical_path_tasks[index].value();
+        }
+        std::cout << '\n';
+    }
 }
 
 double minutes(airside::SimTime value) { return static_cast<double>(value.count()) / 60.0; }
+
+std::uint64_t turnaround_event_digest(const std::vector<airside::SimulationEventRecord>& events) {
+    std::uint64_t hash = 14695981039346656037ULL;
+    const auto append = [&](std::string_view value) {
+        for (const auto byte : value) { hash ^= static_cast<unsigned char>(byte); hash *= 1099511628211ULL; }
+    };
+    for (const auto& event : events) {
+        append(airside::to_string(event.type));
+        append(std::to_string(event.sequence));
+        append(std::to_string(event.timestamp.count()));
+        append(event.turnaround_id);
+        if (event.task) append(std::to_string(event.task->value()));
+        if (event.aircraft) append(std::to_string(event.aircraft->value()));
+        if (event.vehicle) append(std::to_string(event.vehicle->value()));
+        if (event.service) append(airside::to_string(*event.service));
+    }
+    return hash;
+}
 
 void print_report(
     const airside::SimulationResult& result,
@@ -166,7 +208,43 @@ void print_report(
               << "Summary\nAverage turnaround: "
               << result.metrics.average_turnaround_seconds / 60.0 << " min\n"
               << "Delayed aircraft: " << result.metrics.delayed_aircraft << " / "
-              << result.metrics.aircraft.size() << "\n\n";
+              << result.metrics.aircraft.size() << "\n";
+    if (result.metrics.total_turnarounds != 0) {
+        std::cout << "\nTurnaround Operations\n"
+                  << "Completed: " << result.metrics.completed_turnarounds << " / " << result.metrics.total_turnarounds
+                  << "  Delayed: " << result.metrics.delayed_turnarounds
+                  << "  Failed/timeouts: " << result.metrics.failed_or_timed_out_turnarounds << '\n'
+                  << "Mean departure delay: " << result.metrics.mean_departure_delay_seconds / 60.0
+                  << " min  On-time rate: " << result.metrics.on_time_departure_rate * 100.0 << "%\n"
+                  << "Task wait total/max: " << result.metrics.total_service_task_wait_seconds << "/"
+                  << result.metrics.maximum_service_task_wait_seconds << " sec  Replans: "
+                  << result.metrics.disruption_triggered_replans << "  Reassignments: "
+                  << result.metrics.task_reassignments << "  Unresolved service requests: "
+                  << result.metrics.unresolved_service_requests << '\n'
+                  << "Deterministic event digest: " << turnaround_event_digest(result.events) << '\n';
+        for (const auto& [type, utilization] : result.metrics.resource_utilization) {
+            std::cout << "Resource utilization " << airside::to_string(type) << ": "
+                      << utilization * 100.0 << "%\n";
+        }
+        for (const auto& aircraft : result.metrics.aircraft) {
+            std::cout << aircraft.turnaround_id << " / " << aircraft.flight_number
+                      << " ready=" << (aircraft.estimated_ready_time ? aircraft.estimated_ready_time->count() : 0)
+                      << " sec slack=" << (aircraft.schedule_slack ? aircraft.schedule_slack->count() : 0)
+                      << " sec critical_path=";
+            for (std::size_t index = 0; index < aircraft.critical_path_tasks.size(); ++index) {
+                if (index != 0) std::cout << ',';
+                std::cout << aircraft.critical_path_tasks[index].value();
+            }
+            std::cout << '\n';
+            for (const auto& task : aircraft.task_timings) {
+                std::cout << "  task=" << task.task.value() << ' ' << airside::to_string(task.service)
+                          << ' ' << airside::to_string(task.state)
+                          << " wait=" << task.waiting.count() << " sec requires=" << task.required_resource
+                          << " resource=" << task.assigned_resource << '\n';
+            }
+        }
+        std::cout << '\n';
+    } else std::cout << '\n';
     const auto simulated_seconds = static_cast<double>(result.simulated_duration.count());
     const auto speed = execution_seconds > 0.0 ? simulated_seconds / execution_seconds : 0.0;
     std::cout << std::setprecision(6)

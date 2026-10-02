@@ -15,7 +15,10 @@ enum class SimulationEventType {
     AircraftArrived, AircraftStateChanged, VehicleAssigned, VehicleDeparted,
     VehicleArrived, VehicleStateChanged, ServiceStarted, ServiceCompleted,
     AircraftReadyForPushback, AircraftDeparted, RoadClosed, RoadOpened,
-    ResourceWaitStarted, ResourceAssigned,
+    ResourceWaitStarted, ResourceAssigned, TurnaroundCreated, TurnaroundTaskReady,
+    TurnaroundTaskDispatched, TurnaroundTaskStarted, TurnaroundTaskCompleted,
+    TurnaroundTaskReassigned, TurnaroundCriticalPathChanged, TurnaroundPredictedLate,
+    TurnaroundReadyForDeparture, TurnaroundDisruptionDetected,
 };
 
 struct SimulationEventRecord {
@@ -27,6 +30,11 @@ struct SimulationEventRecord {
     std::optional<GateId> gate;
     std::optional<EdgeId> edge;
     std::optional<ServiceType> service;
+    std::optional<TaskId> task;
+    std::string turnaround_id;
+    std::optional<SimTime> estimated_ready_time;
+    std::optional<SimTime> schedule_slack;
+    std::optional<SimTime> task_duration;
     std::optional<AircraftState> previous_aircraft_state;
     std::optional<AircraftState> aircraft_state;
     std::optional<VehicleState> previous_vehicle_state;
@@ -51,6 +59,7 @@ public:
 [[nodiscard]] std::string_view to_string(AircraftState state) noexcept;
 [[nodiscard]] std::string_view to_string(VehicleState state) noexcept;
 [[nodiscard]] std::string_view to_string(ServiceType type) noexcept;
+[[nodiscard]] std::string_view to_string(TaskStatus state) noexcept;
 [[nodiscard]] std::string format_event(const SimulationEventRecord& event);
 
 }  // namespace airside

@@ -15,6 +15,25 @@ struct AircraftMetrics {
     SimTime turnaround{};
     SimTime departure_delay{};
     SimTime service_waiting{};
+    std::string turnaround_id;
+    SimTime target_off_block{};
+    std::optional<SimTime> estimated_ready_time;
+    std::optional<SimTime> schedule_slack;
+    std::optional<SimTime> actual_completion_time;
+    std::vector<TaskId> critical_path_tasks;
+    struct TaskTiming {
+        TaskId task;
+        ServiceType service;
+        TaskStatus state{TaskStatus::Pending};
+        std::optional<SimTime> requested_at;
+        std::optional<SimTime> started_at;
+        std::optional<SimTime> completed_at;
+        SimTime waiting{};
+        std::string required_resource;
+        std::string assigned_resource;
+        auto operator<=>(const TaskTiming&) const = default;
+    };
+    std::vector<TaskTiming> task_timings;
 
     constexpr auto operator<=>(const AircraftMetrics&) const = default;
 };
@@ -25,6 +44,22 @@ struct SimulationMetrics {
     double baggage_utilization{0.0};
     std::size_t delayed_aircraft{0};
     double average_turnaround_seconds{0.0};
+    std::size_t total_turnarounds{0};
+    std::size_t completed_turnarounds{0};
+    std::size_t delayed_turnarounds{0};
+    std::size_t failed_or_timed_out_turnarounds{0};
+    double mean_departure_delay_seconds{0.0};
+    double mean_turnaround_duration_seconds{0.0};
+    std::int64_t maximum_turnaround_seconds{0};
+    std::int64_t maximum_departure_delay_seconds{0};
+    std::size_t on_time_departures{0};
+    double on_time_departure_rate{0.0};
+    std::int64_t total_service_task_wait_seconds{0};
+    std::int64_t maximum_service_task_wait_seconds{0};
+    std::vector<std::pair<ServiceType, double>> resource_utilization;
+    std::size_t task_reassignments{0};
+    std::size_t disruption_triggered_replans{0};
+    std::size_t unresolved_service_requests{0};
 
     constexpr auto operator<=>(const SimulationMetrics&) const = default;
 };

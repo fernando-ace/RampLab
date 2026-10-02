@@ -25,6 +25,7 @@ RampLab is a deterministic, headless discrete-event engine. It owns simulation t
 ```
 
 - **Simulation engine:** authoritative mutable domain model.
+- **Turnaround coordinator:** optional deterministic task-DAG scheduler embedded in `Simulation`; mobile fueling/baggage uses operational vehicle routing and abstract cabin/terminal work uses finite-capacity crews.
 - **Snapshot API:** read-only current-state value, safe to retain.
 - **Event stream:** ordered immutable facts about what occurred.
 - **Renderer:** non-authoritative consumer whose frame rate cannot affect results.
@@ -162,6 +163,7 @@ Determinism depends on stable event sequences, ordered resource queues, sorted g
 - **ROS 2:** optional native Windows workspace adapts autonomy measurements and commands to messages without importing ROS clocks or dependencies into the core. A separate `rclcpp` controller consumes those messages and publishes `cmd_vel`; see [ros2.md](ros2.md).
 - **Experiment runner:** implemented standalone library and CLI build fresh `Scenario` values, execute independent simulations in a bounded pool, and aggregate final metrics without retaining batch event histories.
 - **Autonomy simulation:** a separate 20 ms fixed-step subsystem simulates tug dynamics, seeded GNSS/IMU/odometry/LiDAR, A* waypoint following, safety stops, and collision metrics. Its controller sees observations and mission data, never ground truth. Autonomy experiments retain compact mission results only.
+- **Turnaround operations:** opt-in aircraft task DAGs are scheduled on simulation time and exposed through snapshots, events, CLI/experiment outputs, ROS, and the Unreal operator panel. See [turnaround operations](turnaround-operations.md) for policies and current boundaries.
 - **Network visualization:** server layer serializes snapshots/events outside the core.
 - **Record/replay:** stable external schema can later be specified without changing event production.
 
