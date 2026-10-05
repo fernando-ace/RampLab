@@ -61,6 +61,21 @@ RunResult execute_one(const Scenario& base, const RunRequest& request) {
     result.fleet_requests_created = simulation_result.metrics.fleet_requests_created;
     result.fleet_requests_completed = simulation_result.metrics.fleet_requests_completed;
     result.fleet_requests_failed = simulation_result.metrics.fleet_requests_failed;
+    result.surface_departed_aircraft = simulation_result.metrics.surface_departed_aircraft;
+    result.surface_total_aircraft = simulation_result.metrics.surface_total_aircraft;
+    result.surface_departure_throughput_per_hour = simulation_result.metrics.surface_departure_throughput_per_hour;
+    result.surface_reroutes = simulation_result.metrics.surface_reroutes;
+    result.surface_wait_events = simulation_result.metrics.surface_wait_events;
+    result.surface_wait_seconds = static_cast<double>(simulation_result.metrics.surface_wait_seconds);
+    result.surface_taxi_distance_m = simulation_result.metrics.surface_taxi_distance_m;
+    result.surface_taxi_seconds = static_cast<double>(simulation_result.metrics.surface_taxi_seconds);
+    result.runway_queue_seconds = static_cast<double>(simulation_result.metrics.runway_queue_seconds);
+    result.surface_safe_failures = simulation_result.metrics.surface_safe_failures;
+    result.max_simultaneous_taxiing_aircraft = simulation_result.metrics.max_simultaneous_taxiing_aircraft;
+    result.surface_aircraft_aircraft_collisions = simulation_result.metrics.surface_aircraft_aircraft_collisions;
+    result.surface_aircraft_ground_collisions = simulation_result.metrics.surface_aircraft_ground_collisions;
+    result.minimum_aircraft_separation_m = simulation_result.metrics.minimum_aircraft_separation_m;
+    result.minimum_aircraft_ground_separation_m = simulation_result.metrics.minimum_aircraft_ground_separation_m;
     for (const auto& [type, utilization] : simulation_result.metrics.resource_utilization) {
         result.resource_utilization.emplace_back(std::string{to_string(type)}, utilization);
     }

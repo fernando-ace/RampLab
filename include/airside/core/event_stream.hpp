@@ -20,6 +20,11 @@ enum class SimulationEventType {
     TurnaroundTaskReassigned, TurnaroundCriticalPathChanged, TurnaroundPredictedLate,
     TurnaroundReadyForDeparture, TurnaroundDisruptionDetected, TurnaroundTaskFailed, TurnaroundFailed,
     TurnaroundVehicleUnavailable,
+    SurfacePushbackRequested, SurfacePushbackStarted, SurfacePushbackCompleted,
+    SurfaceTaxiRouteAssigned, SurfaceWaitingForTraffic, SurfaceRerouted,
+    SurfaceRunwayQueueEntered, SurfaceRunwayClearance, SurfaceSafeFailure,
+    SurfaceRouteInvalidated, SurfaceReservationAcquired, SurfaceReservationReleased,
+    SurfaceWaitingForPushback,
 };
 
 struct SimulationEventRecord {

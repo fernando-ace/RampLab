@@ -70,6 +70,21 @@ struct SimulationMetrics {
     std::size_t fleet_requests_created{0};
     std::size_t fleet_requests_completed{0};
     std::size_t fleet_requests_failed{0};
+    std::size_t surface_departed_aircraft{0};
+    std::size_t surface_total_aircraft{0};
+    double surface_departure_throughput_per_hour{0.0};
+    std::size_t surface_reroutes{0};
+    std::size_t surface_wait_events{0};
+    std::int64_t surface_wait_seconds{0};
+    double surface_taxi_distance_m{0.0};
+    std::int64_t surface_taxi_seconds{0};
+    std::int64_t runway_queue_seconds{0};
+    std::size_t surface_safe_failures{0};
+    std::size_t max_simultaneous_taxiing_aircraft{0};
+    double minimum_aircraft_separation_m{0.0};
+    std::size_t surface_aircraft_aircraft_collisions{0};
+    std::size_t surface_aircraft_ground_collisions{0};
+    double minimum_aircraft_ground_separation_m{0.0};
 
     constexpr auto operator<=>(const SimulationMetrics&) const = default;
 };

@@ -26,6 +26,7 @@ RampLab is a deterministic, headless discrete-event engine. It owns simulation t
 
 - **Simulation engine:** authoritative mutable domain model.
 - **Turnaround coordinator:** optional deterministic task-DAG scheduler embedded in `Simulation`; mobile fueling/baggage uses operational vehicle routing and abstract cabin/terminal work uses finite-capacity crews.
+- **Surface departure coordinator:** optional deterministic aircraft pushback, taxi-edge/node reservations, closure rerouting, and exclusive FIFO runway resource embedded in `Simulation`; it consumes the airport graph and remains authoritative in C++.
 - **Snapshot API:** read-only current-state value, safe to retain.
 - **Event stream:** ordered immutable facts about what occurred.
 - **Renderer:** non-authoritative consumer whose frame rate cannot affect results.

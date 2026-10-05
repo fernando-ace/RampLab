@@ -143,6 +143,7 @@ if(BUILD_TESTING)
         tests/operations/resource_pool_test.cpp
         tests/operations/simulation_test.cpp
         tests/operations/turnaround_test.cpp
+        tests/operations/surface_traffic_test.cpp
         tests/metrics/metrics_test.cpp
         tests/experiment/definition_test.cpp
         tests/experiment/loader_test.cpp
@@ -160,4 +161,10 @@ if(BUILD_TESTING)
     airside_enable_warnings(airside_tests)
     include(GoogleTest)
     gtest_discover_tests(airside_tests)
+    add_test(NAME SurfaceTrafficExportFieldsTest
+        COMMAND ${CMAKE_COMMAND}
+            -DAIRSIDE_CLI=$<TARGET_FILE:airside_cli>
+            -DAIRSIDE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+            -DAIRSIDE_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/surface-export-test
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/operations/verify_surface_exports.cmake)
 endif()

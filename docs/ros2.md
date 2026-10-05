@@ -87,6 +87,10 @@ Goal 13 dispatch snapshots and events are observation-only; the fleet adapter st
 
 ## Topics and QoS
 
+The read-only `/ramplab/turnaround/state` stream also carries aircraft surface state when the loaded scenario enables `surface_operations`: position in airport-local meters, heading, speed, route node IDs, wait reason, reroute count, taxi distance, and wait duration. `/ramplab/turnaround/events` forwards pushback, route assignment, traffic wait, reservation, closure invalidation, reroute, runway queue/clearance, safe failure, and departure events with their deterministic core sequence numbers. Run `ramplab_ros2_turnaround_bridge --scenario scenarios/surface_traffic.yaml --seed 42` and use `verify_turnaround_topics.py --min-aircraft 3 --require-surface`; add `--require-reroute` for the disrupted scenario.
+
+The live seed-42 surface probes passed after rebuilding the bridge against the Release core. Control observed 3/3 departures, 18 task completions, three pushbacks, three runway queue entries, one traffic wait, and zero reroutes. The closure probe observed 3/3 departures, 18 task completions, three pushbacks and queue entries, one traffic wait, and one reroute. The bridge suite passed 19 tests (15 conversion cases, two surface JSON cases, and two CTest harness cases).
+
 All tug topics are under `/ramplab/tug1`. Sensor rates below are configured simulation rates; measured rates came from an 8-second external `rclpy` observation during a 1× real-time run.
 
 | Topic | Type | Direction | Configured simulation rate / observed rate (simulation time unless noted) | Frame |

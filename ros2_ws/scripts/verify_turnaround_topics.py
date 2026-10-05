@@ -46,6 +46,10 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--require-outage-reassignment", action="store_true",
                         help="require the event stream to show an outage and replacement completing the affected task")
+    parser.add_argument("--require-surface", action="store_true",
+                        help="require pushback, taxi, traffic waiting, and runway events in the live feed")
+    parser.add_argument("--require-reroute", action="store_true",
+                        help="also require a surface closure reroute")
     args = parser.parse_args()
     rclpy.init()
     node = Probe()
@@ -88,6 +92,29 @@ def main():
         gate_ids = {item["gate_id"] for item in turnarounds}
         if len(aircraft_ids) != len(turnarounds) or len(gate_ids) != len(turnarounds):
             raise RuntimeError("aircraft or gate identity was duplicated in the final operation snapshot")
+        surface_summary = None
+        if args.require_surface:
+            required_types = {
+                "SurfacePushbackStarted", "SurfacePushbackCompleted", "SurfaceTaxiRouteAssigned",
+                "SurfaceWaitingForTraffic", "SurfaceRunwayQueueEntered", "SurfaceRunwayClearance",
+                "AircraftDeparted",
+            }
+            observed_types = {event["type"] for event in node.events}
+            missing = sorted(required_types - observed_types)
+            if missing:
+                raise RuntimeError(f"surface observation missed required events: {missing}")
+            if not all(item.get("surface_state") == "Departed" and item.get("surface_route_node_ids")
+                       for item in turnarounds):
+                raise RuntimeError("final ROS state did not expose completed aircraft surface routes")
+            reroutes = [event for event in node.events if event["type"] == "SurfaceRerouted"]
+            if args.require_reroute and not reroutes:
+                raise RuntimeError("surface closure reroute event was not observed")
+            surface_summary = {
+                "pushbacks": sum(event["type"] == "SurfacePushbackStarted" for event in node.events),
+                "traffic_waits": sum(event["type"] == "SurfaceWaitingForTraffic" for event in node.events),
+                "runway_queue_entries": sum(event["type"] == "SurfaceRunwayQueueEntered" for event in node.events),
+                "reroutes": len(reroutes),
+            }
         sequences = [event["sequence"] for event in node.events]
         if sequences != sorted(set(sequences)):
             raise RuntimeError("turnaround event sequence was not strictly increasing")
@@ -148,6 +175,7 @@ def main():
             "gate_count": len(gate_ids),
             "task_completion_events": len(completed),
             "outage_reassignment": outage_summary,
+            "surface_operations": surface_summary,
             "aircraft": [{
                 "turnaround_id": item["turnaround_id"],
                 "state": item["state"],

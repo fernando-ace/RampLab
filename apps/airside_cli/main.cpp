@@ -100,7 +100,18 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
             << ",\"reassignments\":" << metrics.fleet_reassignments
             << ",\"requests_created\":" << metrics.fleet_requests_created
             << ",\"requests_completed\":" << metrics.fleet_requests_completed
-            << ",\"requests_failed\":" << metrics.fleet_requests_failed << "},\"turnarounds\":[";
+            << ",\"requests_failed\":" << metrics.fleet_requests_failed << "},\"surface\":{\"departed_aircraft\":"
+            << metrics.surface_departed_aircraft << ",\"total_aircraft\":" << metrics.surface_total_aircraft
+            << ",\"departure_throughput_per_hour\":" << metrics.surface_departure_throughput_per_hour
+            << ",\"reroutes\":" << metrics.surface_reroutes << ",\"wait_events\":" << metrics.surface_wait_events
+            << ",\"wait_seconds\":" << metrics.surface_wait_seconds << ",\"taxi_distance_m\":" << metrics.surface_taxi_distance_m
+            << ",\"taxi_seconds\":" << metrics.surface_taxi_seconds << ",\"runway_queue_seconds\":" << metrics.runway_queue_seconds
+            << ",\"safe_failures\":" << metrics.surface_safe_failures << ",\"max_simultaneous_taxiing\":"
+            << metrics.max_simultaneous_taxiing_aircraft << ",\"minimum_aircraft_separation_m\":"
+            << metrics.minimum_aircraft_separation_m << ",\"minimum_aircraft_ground_separation_m\":"
+            << metrics.minimum_aircraft_ground_separation_m << ",\"aircraft_aircraft_collisions\":"
+            << metrics.surface_aircraft_aircraft_collisions << ",\"aircraft_ground_collisions\":"
+            << metrics.surface_aircraft_ground_collisions << "},\"turnarounds\":[";
         for (std::size_t index = 0; index < snapshot.turnarounds.size(); ++index) {
             const auto& turnaround = snapshot.turnarounds[index];
             const auto aircraft = std::ranges::find(snapshot.aircraft, turnaround.aircraft,
@@ -120,6 +131,15 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
                 << ",\"scheduled_departure_seconds\":" << turnaround.scheduled_departure.count()
                 << ",\"actual_departure_seconds\":" << (aircraft != snapshot.aircraft.end() && aircraft->actual_departure ? std::to_string(aircraft->actual_departure->count()) : "null")
                 << ",\"departure_delay_seconds\":" << (turnaround.departure_delay ? std::to_string(turnaround.departure_delay->count()) : "null")
+                << ",\"surface_state\":\"" << (aircraft != snapshot.aircraft.end() ? json_escape(aircraft->surface_state) : "") << "\""
+                << ",\"surface_reroutes\":" << (aircraft != snapshot.aircraft.end() ? aircraft->surface_reroutes : 0)
+                << ",\"taxi_distance_m\":" << (aircraft != snapshot.aircraft.end() ? aircraft->taxi_distance_m : 0.0)
+                << ",\"surface_wait_seconds\":" << (aircraft != snapshot.aircraft.end() ? aircraft->surface_wait_duration.count() : 0)
+                << ",\"pushback_started_at_seconds\":" << (aircraft != snapshot.aircraft.end() && aircraft->pushback_started_at ? std::to_string(aircraft->pushback_started_at->count()) : "null")
+                << ",\"pushback_completed_at_seconds\":" << (aircraft != snapshot.aircraft.end() && aircraft->pushback_completed_at ? std::to_string(aircraft->pushback_completed_at->count()) : "null")
+                << ",\"taxi_started_at_seconds\":" << (aircraft != snapshot.aircraft.end() && aircraft->taxi_started_at ? std::to_string(aircraft->taxi_started_at->count()) : "null")
+                << ",\"taxi_completed_at_seconds\":" << (aircraft != snapshot.aircraft.end() && aircraft->taxi_completed_at ? std::to_string(aircraft->taxi_completed_at->count()) : "null")
+                << ",\"runway_queue_entered_at_seconds\":" << (aircraft != snapshot.aircraft.end() && aircraft->runway_queue_entered_at ? std::to_string(aircraft->runway_queue_entered_at->count()) : "null")
                 << ",\"completed_required_tasks\":" << completed_tasks
                 << ",\"unfinished_required_tasks\":" << unfinished_tasks
                 << ",\"estimated_ready_time_seconds\":" << turnaround.estimated_ready_time.count()
@@ -152,7 +172,7 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
         if (!csv_path.parent_path().empty()) std::filesystem::create_directories(csv_path.parent_path());
         std::ofstream output{csv_path};
         if (!output) throw std::runtime_error("cannot create metrics CSV: " + csv_path.string());
-        output << "seed,simulated_duration_seconds,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,turnaround_id,aircraft_id,gate_id,scheduled_departure_seconds,actual_departure_seconds,departure_delay_seconds,completed_required_tasks,unfinished_required_tasks,task_id,service_type,state,requested_at_seconds,started_at_seconds,completed_at_seconds,latest_desirable_completion_seconds,reassignments,assigned_resource\n";
+        output << "seed,simulated_duration_seconds,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,turnaround_id,aircraft_id,gate_id,scheduled_departure_seconds,actual_departure_seconds,departure_delay_seconds,completed_required_tasks,unfinished_required_tasks,task_id,service_type,state,requested_at_seconds,started_at_seconds,completed_at_seconds,latest_desirable_completion_seconds,reassignments,assigned_resource,surface_state,taxi_distance_m,surface_reroutes,surface_wait_seconds,pushback_started_at_seconds,pushback_completed_at_seconds,taxi_started_at_seconds,taxi_completed_at_seconds,runway_queue_entered_at_seconds,surface_departed_aircraft,surface_total_aircraft,surface_departure_throughput_per_hour,surface_reroutes_total,surface_wait_events,surface_wait_total_seconds,surface_taxi_seconds,runway_queue_total_seconds,surface_safe_failures,max_simultaneous_taxiing_aircraft,surface_aircraft_aircraft_collisions,surface_aircraft_ground_collisions,minimum_aircraft_separation_m,minimum_aircraft_ground_separation_m\n";
         output << result.seed << ',' << result.simulated_duration.count() << ',' << result.metrics.total_turnarounds << ','
             << result.metrics.completed_turnarounds << ',' << result.metrics.delayed_turnarounds << ','
             << result.metrics.failed_or_timed_out_turnarounds << ',' << result.metrics.task_reassignments << ','
@@ -191,7 +211,26 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
                     << (task.started_at ? std::to_string(task.started_at->count()) : "") << ','
                     << (task.completed_at ? std::to_string(task.completed_at->count()) : "") << ','
                     << (task.latest_desirable_completion ? std::to_string(task.latest_desirable_completion->count()) : "") << ','
-                    << task.reassignments << ',' << csv_escape(task.assigned_resource);
+                    << task.reassignments << ',' << csv_escape(task.assigned_resource) << ','
+                    << (aircraft != snapshot.aircraft.end() ? aircraft->surface_state : "") << ','
+                    << (aircraft != snapshot.aircraft.end() ? aircraft->taxi_distance_m : 0.0) << ','
+                    << (aircraft != snapshot.aircraft.end() ? aircraft->surface_reroutes : 0) << ','
+                    << (aircraft != snapshot.aircraft.end() ? aircraft->surface_wait_duration.count() : 0) << ','
+                    << (aircraft != snapshot.aircraft.end() && aircraft->pushback_started_at ? std::to_string(aircraft->pushback_started_at->count()) : "") << ','
+                    << (aircraft != snapshot.aircraft.end() && aircraft->pushback_completed_at ? std::to_string(aircraft->pushback_completed_at->count()) : "") << ','
+                    << (aircraft != snapshot.aircraft.end() && aircraft->taxi_started_at ? std::to_string(aircraft->taxi_started_at->count()) : "") << ','
+                    << (aircraft != snapshot.aircraft.end() && aircraft->taxi_completed_at ? std::to_string(aircraft->taxi_completed_at->count()) : "") << ','
+                    << (aircraft != snapshot.aircraft.end() && aircraft->runway_queue_entered_at ? std::to_string(aircraft->runway_queue_entered_at->count()) : "") << ','
+                    << result.metrics.surface_departed_aircraft << ',' << result.metrics.surface_total_aircraft << ','
+                    << result.metrics.surface_departure_throughput_per_hour << ','
+                    << result.metrics.surface_reroutes << ',' << result.metrics.surface_wait_events << ','
+                    << result.metrics.surface_wait_seconds << ',' << result.metrics.surface_taxi_seconds << ','
+                    << result.metrics.runway_queue_seconds << ',' << result.metrics.surface_safe_failures << ','
+                    << result.metrics.max_simultaneous_taxiing_aircraft << ','
+                    << result.metrics.surface_aircraft_aircraft_collisions << ','
+                    << result.metrics.surface_aircraft_ground_collisions << ','
+                    << result.metrics.minimum_aircraft_separation_m << ','
+                    << result.metrics.minimum_aircraft_ground_separation_m;
             }
         }
         output << '\n';
@@ -250,6 +289,7 @@ public:
             if (event.estimated_ready_time) output_ << ",\"estimated_ready_time_seconds\":" << event.estimated_ready_time->count();
             if (event.schedule_slack) output_ << ",\"schedule_slack_seconds\":" << event.schedule_slack->count();
             if (event.task_duration) output_ << ",\"task_duration_seconds\":" << event.task_duration->count();
+            if (!event.detail.empty()) output_ << ",\"detail\":\"" << json_escape(event.detail) << '"';
             if (event.route) {
                 output_ << ",\"route_nodes\":[";
                 for (std::size_t index = 0; index < event.route->nodes.size(); ++index) {

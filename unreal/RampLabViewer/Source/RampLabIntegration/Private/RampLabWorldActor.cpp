@@ -506,16 +506,29 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
 
         const auto Gate = std::ranges::find(Snapshot.gates, Aircraft.assigned_gate, &airside::GateSnapshot::id);
         if (Gate == Snapshot.gates.end()) continue;
-        const airside::Vec2 StandPosition{Gate->position_m.x_m - 14.0, Gate->position_m.y_m};
+        const airside::Vec2 StandPosition = Aircraft.surface_position_m.value_or(
+            airside::Vec2{Gate->position_m.x_m - 14.0, Gate->position_m.y_m});
         const FVector Position = ToWorld(StandPosition, 260.0f);
         Actor->SetActorLocation(Position);
         Wings->SetActorLocation(Position - FVector(0.0f, 0.0f, 130.0f));
-        const FRotator StandRotation(90.0f, -Placement.SimulationHeadingDegrees, 0.0f);
+        const float SurfaceYaw = static_cast<float>(FMath::RadiansToDegrees(Aircraft.surface_heading_rad));
+        const FRotator StandRotation(90.0f, -Placement.SimulationHeadingDegrees + SurfaceYaw, 0.0f);
         Actor->SetActorRotation(StandRotation);
         Wings->SetActorRotation(FRotator(0.0f, -Placement.SimulationHeadingDegrees, 0.0f));
         Label->SetWorldLocation(Position + FVector(0.0f, 0.0f, 320.0f));
+        const FString SurfaceState = Aircraft.surface_state.empty() ? AircraftStateText(Aircraft.state)
+            : UTF8_TO_TCHAR(Aircraft.surface_state.c_str());
         Label->SetText(FText::FromString(FString::Printf(TEXT("%s  /  %s"),
-            UTF8_TO_TCHAR(Aircraft.flight_number.c_str()), *AircraftStateText(Aircraft.state))));
+            UTF8_TO_TCHAR(Aircraft.flight_number.c_str()), *SurfaceState)));
+        if (Aircraft.surface_route.size() > 1) {
+            const FColor RouteColor = Aircraft.surface_state == "WaitingForTraffic" ? FColor::Yellow : FColor::Cyan;
+            for (std::size_t RouteIndex = 1; RouteIndex < Aircraft.surface_route.size(); ++RouteIndex) {
+                const auto FromNode = std::ranges::find(Snapshot.road_nodes, Aircraft.surface_route[RouteIndex - 1], &airside::RoadNodeSnapshot::id);
+                const auto ToNode = std::ranges::find(Snapshot.road_nodes, Aircraft.surface_route[RouteIndex], &airside::RoadNodeSnapshot::id);
+                if (FromNode != Snapshot.road_nodes.end() && ToNode != Snapshot.road_nodes.end())
+                    DrawDebugLine(GetWorld(), ToWorld(FromNode->position_m, 20.0f), ToWorld(ToNode->position_m, 20.0f), RouteColor, false, 0.05f, 0, 8.0f);
+            }
+        }
         UMaterialInstanceDynamic* StateMaterial = Aircraft.state == airside::AircraftState::ReadyForPushback
             ? AircraftReadyMaterial
             : (Aircraft.state == airside::AircraftState::WaitingForServices ? AircraftWaitingMaterial : AircraftMaterial);

@@ -23,6 +23,15 @@ TEST(TurnaroundJsonTest, PublishesTaskStatePriorityScheduleAndAssignments) {
   task.assigned_resource = "FuelTruck-9";
   turnaround.tasks.push_back(task);
   snapshot.turnarounds.push_back(turnaround);
+  airside::AircraftSnapshot aircraft;
+  aircraft.id = airside::AircraftId{7};
+  aircraft.surface_state = "Taxiing";
+  aircraft.surface_position_m = airside::Vec2{12.5, -3.0};
+  aircraft.surface_heading_rad = 1.25;
+  aircraft.surface_speed_mps = 4.0;
+  aircraft.surface_route = {airside::NodeId{4}, airside::NodeId{8}};
+  aircraft.surface_wait_reason = "edge_or_intersection_reserved";
+  snapshot.aircraft.push_back(aircraft);
 
   const auto json = ramplab_ros2_bridge::turnaround_state_json(snapshot);
   EXPECT_NE(json.find("\"turnaround_id\":\"TO-AX101\""), std::string::npos);
@@ -34,6 +43,9 @@ TEST(TurnaroundJsonTest, PublishesTaskStatePriorityScheduleAndAssignments) {
   EXPECT_NE(json.find("\"critical_path_task_ids\":[3]"), std::string::npos);
   EXPECT_NE(json.find("\"assigned_vehicle_id\":9"), std::string::npos);
   EXPECT_NE(json.find("\"active_task_count\":1"), std::string::npos);
+  EXPECT_NE(json.find("\"surface_state\":\"Taxiing\""), std::string::npos);
+  EXPECT_NE(json.find("\"surface_position_m\":{\"x_m\":12.5,\"y_m\":-3}"), std::string::npos);
+  EXPECT_NE(json.find("\"surface_route_node_ids\":[4,8]"), std::string::npos);
 }
 
 TEST(TurnaroundJsonTest, SerializesStructuredTurnaroundEventsAndEscapesIdentifiers) {
@@ -46,10 +58,12 @@ TEST(TurnaroundJsonTest, SerializesStructuredTurnaroundEventsAndEscapesIdentifie
   event.service = airside::ServiceType::Catering;
   event.vehicle = airside::VehicleId{3};
   event.gate = airside::GateId{4};
+  event.route = airside::Route{{airside::NodeId{1}, airside::NodeId{2}}, {airside::EdgeId{9}}, 10.0, airside::SimTime{3}};
 
   const auto json = ramplab_ros2_bridge::turnaround_event_json(event);
   EXPECT_NE(json.find("\"type\":\"TurnaroundTaskStarted\""), std::string::npos);
   EXPECT_NE(json.find("TO-\\\"7"), std::string::npos);
   EXPECT_NE(json.find("\"task_id\":2"), std::string::npos);
   EXPECT_NE(json.find("\"gate_id\":4"), std::string::npos);
+  EXPECT_NE(json.find("\"route_node_ids\":[1,2]"), std::string::npos);
 }

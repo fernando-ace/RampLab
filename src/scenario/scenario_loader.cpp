@@ -19,7 +19,7 @@ namespace {
 struct NodeDocument { std::string id; std::string name; double x; double y; };
 struct EdgeDocument {
     std::string id; std::string from; std::string to; double distance;
-    std::int64_t traversal_seconds; bool enabled;
+    std::int64_t traversal_seconds; bool enabled; bool one_way;
 };
 struct GateDocument { std::string id; std::string name; std::string node; bool enabled; };
 struct VehicleDocument {
@@ -50,6 +50,8 @@ struct ScenarioDocument {
     std::vector<Disruption> disruptions;
     struct VehicleOutage { std::int64_t time; std::string vehicle; };
     std::vector<VehicleOutage> vehicle_outages;
+    struct SurfaceOperations { std::string departure_handoff; std::int64_t pushback_seconds{30}; std::int64_t runway_seconds{60}; double speed_mps{5.0}; double queue_spacing_m{30.0}; };
+    std::optional<SurfaceOperations> surface_operations;
 };
 
 YAML::Node required(const YAML::Node& parent, const char* key, std::string_view context) {
@@ -104,7 +106,7 @@ ScenarioDocument parse_document(const YAML::Node& root) {
             scalar<std::string>(item, "from", context), scalar<std::string>(item, "to", context),
             scalar<double>(item, "distance_m", context),
             scalar<std::int64_t>(item, "traversal_time_seconds", context),
-            optional_bool(item, "enabled", true, context)});
+            optional_bool(item, "enabled", true, context), optional_bool(item, "one_way", false, context)});
     }
 
     const auto gates = required(root, "gates", "scenario");
@@ -203,6 +205,15 @@ ScenarioDocument parse_document(const YAML::Node& root) {
                 scalar<std::string>(item, "vehicle", context)});
         }
     }
+    if (const auto surface = root["surface_operations"]) {
+        ScenarioDocument::SurfaceOperations config;
+        config.departure_handoff = scalar<std::string>(surface, "departure_handoff", "surface_operations");
+        if (surface["pushback_seconds"]) config.pushback_seconds = scalar<std::int64_t>(surface, "pushback_seconds", "surface_operations");
+        if (surface["runway_occupancy_seconds"]) config.runway_seconds = scalar<std::int64_t>(surface, "runway_occupancy_seconds", "surface_operations");
+        if (surface["aircraft_speed_mps"]) config.speed_mps = scalar<double>(surface, "aircraft_speed_mps", "surface_operations");
+        if (surface["departure_queue_spacing_m"]) config.queue_spacing_m = scalar<double>(surface, "departure_queue_spacing_m", "surface_operations");
+        document.surface_operations = std::move(config);
+    }
     return document;
 }
 
@@ -274,6 +285,14 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         scenario.graph.add_node({id, document.nodes[index].name,
             {document.nodes[index].x, document.nodes[index].y}});
     }
+    if (document.surface_operations) {
+        const auto& config = *document.surface_operations;
+        if (config.pushback_seconds <= 0 || config.runway_seconds <= 0 || config.speed_mps <= 0.0 || config.queue_spacing_m <= 0.0)
+            throw ScenarioLoadError("surface_operations durations, aircraft_speed_mps, and departure_queue_spacing_m must be positive");
+        scenario.surface_operations = SurfaceOperationsConfig{
+            lookup(nodes, config.departure_handoff, "surface_operations.departure_handoff"),
+            SimTime{config.pushback_seconds}, SimTime{config.runway_seconds}, config.speed_mps, config.queue_spacing_m};
+    }
     for (std::size_t index = 0; index < document.edges.size(); ++index) {
         const auto& value = document.edges[index];
         if (value.from == value.to || value.distance <= 0.0 || value.traversal_seconds <= 0) {
@@ -283,7 +302,7 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         edges.emplace(value.id, id);
         scenario.graph.add_edge({id, lookup(nodes, value.from, std::format("edge '{}'.from", value.id)),
             lookup(nodes, value.to, std::format("edge '{}'.to", value.id)), value.distance,
-            SimTime{value.traversal_seconds}, value.enabled});
+            SimTime{value.traversal_seconds}, value.enabled, value.one_way});
     }
     for (std::size_t index = 0; index < document.gates.size(); ++index) {
         const auto& value = document.gates[index];

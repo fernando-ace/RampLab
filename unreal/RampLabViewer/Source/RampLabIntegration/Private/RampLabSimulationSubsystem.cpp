@@ -71,6 +71,13 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     bGoal13DispatchValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13DispatchValidation"));
     bGoal13ReassignmentValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13ReassignmentValidation"));
     bTurnaroundValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabTurnaroundValidation"));
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabSurfaceTraffic"))) {
+        SelectedScenarioKey = TEXT("surface_traffic");
+        PlaybackSpeed = 10.0;
+    } else if (FParse::Param(FCommandLine::Get(), TEXT("RampLabSurfaceDisruption"))) {
+        SelectedScenarioKey = TEXT("surface_traffic_disrupted");
+        PlaybackSpeed = 10.0;
+    }
     if(bGoal13ReassignmentValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_reassignment");PlaybackSpeed=60.0;}
     else if(bGoal13DispatchValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_dynamic");PlaybackSpeed=60.0;}
     else if(bTurnaroundValidation){SelectedScenarioKey=TEXT("turnaround_flight_bank_outage");PlaybackSpeed=20.0;}
@@ -320,6 +327,38 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
             }
             bCompletionReported = true;
             FinalResultText = FormatResult(ScenarioName.ToUpper(), Result);
+            if (Result.metrics.surface_total_aircraft > 0) {
+                UE_LOG(LogRampLab, Display,
+                    TEXT("Surface runtime validation: departed=%llu/%llu throughput_per_hour=%.3f reroutes=%llu waits=%llu wait_seconds=%lld taxi_seconds=%lld taxi_distance_m=%.1f runway_queue_seconds=%lld safe_failures=%llu aircraft_collisions=%llu aircraft_ground_collisions=%llu minimum_aircraft_separation_m=%.3f minimum_aircraft_ground_separation_m=%.3f"),
+                    static_cast<unsigned long long>(Result.metrics.surface_departed_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_total_aircraft),
+                    Result.metrics.surface_departure_throughput_per_hour,
+                    static_cast<unsigned long long>(Result.metrics.surface_reroutes),
+                    static_cast<unsigned long long>(Result.metrics.surface_wait_events),
+                    static_cast<long long>(Result.metrics.surface_wait_seconds),
+                    static_cast<long long>(Result.metrics.surface_taxi_seconds), Result.metrics.surface_taxi_distance_m,
+                    static_cast<long long>(Result.metrics.runway_queue_seconds),
+                    static_cast<unsigned long long>(Result.metrics.surface_safe_failures),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_aircraft_collisions),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_ground_collisions),
+                    Result.metrics.minimum_aircraft_separation_m,
+                    Result.metrics.minimum_aircraft_ground_separation_m);
+                FinalResultText += FString::Printf(
+                    TEXT("\n\nSURFACE OPERATIONS\nDeparted  %llu / %llu\nThroughput  %.2f departures/hour\nReroutes  %llu\nTraffic waits  %llu  /  %lld s\nTaxi  %lld s  /  %.1f m\nRunway queue  %lld s\nSafe failures  %llu\nAircraft collisions  %llu\nAircraft / vehicle collisions  %llu\nMinimum aircraft separation  %.2f m\nMinimum aircraft / vehicle separation  %.2f m"),
+                    static_cast<unsigned long long>(Result.metrics.surface_departed_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_total_aircraft),
+                    Result.metrics.surface_departure_throughput_per_hour,
+                    static_cast<unsigned long long>(Result.metrics.surface_reroutes),
+                    static_cast<unsigned long long>(Result.metrics.surface_wait_events),
+                    static_cast<long long>(Result.metrics.surface_wait_seconds),
+                    static_cast<long long>(Result.metrics.surface_taxi_seconds), Result.metrics.surface_taxi_distance_m,
+                    static_cast<long long>(Result.metrics.runway_queue_seconds),
+                    static_cast<unsigned long long>(Result.metrics.surface_safe_failures),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_aircraft_collisions),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_ground_collisions),
+                    Result.metrics.minimum_aircraft_separation_m,
+                    Result.metrics.minimum_aircraft_ground_separation_m);
+            }
         }
     }
 }

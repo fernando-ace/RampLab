@@ -63,7 +63,26 @@ inline std::string turnaround_state_json(const airside::SimulationSnapshot& snap
       if (task_index != 0) output += ',';
       output += std::to_string(turnaround.critical_path_tasks[task_index].value());
     }
-    output += std::format("],\"pending_task_count\":{},\"tasks\":[", pending);
+    output += std::format(
+        "],\"pending_task_count\":{},\"surface_state\":\"{}\",\"surface_wait_reason\":\"{}\","
+        "\"surface_speed_mps\":{},\"surface_heading_rad\":{},\"surface_reroutes\":{},\"taxi_distance_m\":{},\"surface_wait_seconds\":{},"
+        "\"surface_position_m\":{},\"surface_route_node_ids\":[",
+        pending, json_escape(aircraft != snapshot.aircraft.end() ? aircraft->surface_state : std::string{}),
+        json_escape(aircraft != snapshot.aircraft.end() ? aircraft->surface_wait_reason : std::string{}),
+        aircraft != snapshot.aircraft.end() ? aircraft->surface_speed_mps : 0.0,
+        aircraft != snapshot.aircraft.end() ? aircraft->surface_heading_rad : 0.0,
+        aircraft != snapshot.aircraft.end() ? aircraft->surface_reroutes : 0U,
+        aircraft != snapshot.aircraft.end() ? aircraft->taxi_distance_m : 0.0,
+        aircraft != snapshot.aircraft.end() ? aircraft->surface_wait_duration.count() : 0,
+        aircraft != snapshot.aircraft.end() && aircraft->surface_position_m
+            ? std::format("{{\"x_m\":{},\"y_m\":{}}}", aircraft->surface_position_m->x_m, aircraft->surface_position_m->y_m) : "null");
+    if (aircraft != snapshot.aircraft.end()) {
+      for (std::size_t route_index = 0; route_index < aircraft->surface_route.size(); ++route_index) {
+        if (route_index != 0) output += ',';
+        output += std::to_string(aircraft->surface_route[route_index].value());
+      }
+    }
+    output += "],\"tasks\":[";
     for (std::size_t task_index = 0; task_index < turnaround.tasks.size(); ++task_index) {
       const auto& task = turnaround.tasks[task_index];
       if (task_index != 0) output += ',';
@@ -85,14 +104,25 @@ inline std::string turnaround_state_json(const airside::SimulationSnapshot& snap
 }
 
 inline std::string turnaround_event_json(const airside::SimulationEventRecord& event) {
-  return std::format(
+  auto output = std::format(
       "{{\"sequence\":{},\"time_seconds\":{},\"type\":\"{}\",\"turnaround_id\":\"{}\","
-      "\"aircraft_id\":{},\"gate_id\":{},\"task_id\":{},\"service_type\":\"{}\",\"vehicle_id\":{},\"detail\":\"{}\"}}",
+      "\"aircraft_id\":{},\"gate_id\":{},\"task_id\":{},\"service_type\":\"{}\",\"vehicle_id\":{},\"detail\":\"{}\"",
       event.sequence, event.timestamp.count(), airside::to_string(event.type),
       json_escape(event.turnaround_id), event.aircraft ? std::to_string(event.aircraft->value()) : "null",
       event.gate ? std::to_string(event.gate->value()) : "null", event.task ? std::to_string(event.task->value()) : "null",
       event.service ? airside::to_string(*event.service) : std::string_view{},
       event.vehicle ? std::to_string(event.vehicle->value()) : "null", json_escape(event.detail));
+  if (event.edge) output += std::format(",\"edge_id\":{}", event.edge->value());
+  if (event.route) {
+    output += ",\"route_node_ids\":[";
+    for (std::size_t index = 0; index < event.route->nodes.size(); ++index) {
+      if (index != 0) output += ',';
+      output += std::to_string(event.route->nodes[index].value());
+    }
+    output += ']';
+  }
+  output += '}';
+  return output;
 }
 
 }  // namespace ramplab_ros2_bridge

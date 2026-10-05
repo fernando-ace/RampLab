@@ -67,6 +67,23 @@ struct AircraftSnapshot {
     SimTime scheduled_departure;
     std::optional<SimTime> actual_departure;
     std::vector<ServiceTaskSnapshot> services;
+    std::string surface_state;
+    std::optional<NodeId> surface_node;
+    std::vector<NodeId> surface_route;
+    std::string surface_wait_reason;
+    std::size_t surface_reroutes{};
+    double taxi_distance_m{};
+    SimTime surface_wait_duration{};
+    std::optional<SimTime> pushback_started_at;
+    std::optional<SimTime> pushback_completed_at;
+    std::optional<SimTime> taxi_started_at;
+    std::optional<SimTime> taxi_completed_at;
+    std::optional<SimTime> runway_queue_entered_at;
+    std::optional<SimTime> actual_surface_departure;
+    std::optional<Vec2> surface_position_m;
+    double surface_heading_rad{};
+    double surface_speed_mps{};
+    std::string surface_next_waypoint;
     auto operator<=>(const AircraftSnapshot&) const = default;
 };
 

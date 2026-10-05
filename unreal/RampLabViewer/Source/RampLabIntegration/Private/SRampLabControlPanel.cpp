@@ -75,6 +75,10 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(SButton).Text(FText::FromString(TEXT("Turnaround Operations"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("turnaround_normal"))) ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [ SNew(SButton).Text(FText::FromString(TEXT("Surface Traffic"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("surface_traffic"))) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [ SNew(SButton).Text(FText::FromString(TEXT("Surface Closure"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("surface_traffic_disrupted"))) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [
                     SNew(SHorizontalBox)
                     + SHorizontalBox::Slot().AutoWidth()
@@ -203,6 +207,8 @@ FText SRampLabControlPanel::SummaryText() const
     int32 Reassignments = 0;
     int32 FailedTasks = 0;
     int32 CurrentVehicleConflicts = 0;
+    int32 AircraftTaxiing = 0, AircraftWaiting = 0, DepartureQueue = 0, SurfaceReroutes = 0;
+    int64 SurfaceWaitSeconds = 0;
     double MinimumVehicleSeparation = TNumericLimits<double>::Max();
     bool bRoadClosure = false;
     FString TurnaroundOperations, TurnaroundVehicleLines;
@@ -211,6 +217,11 @@ FText SRampLabControlPanel::SummaryText() const
             if (Aircraft.state != airside::AircraftState::Scheduled && Aircraft.state != airside::AircraftState::Departed) ++ActiveAircraft;
             if (Aircraft.state == airside::AircraftState::Departed) ++CompletedAircraft;
             if (Aircraft.state != airside::AircraftState::Departed && Time > Aircraft.scheduled_departure.count()) ++DelayedAircraft;
+            if (Aircraft.surface_state == "Taxiing") ++AircraftTaxiing;
+            if (Aircraft.surface_state == "WaitingForTraffic" || Aircraft.surface_state == "ReadyForPushback") ++AircraftWaiting;
+            if (Aircraft.surface_state == "WaitingForRunway" || Aircraft.surface_state == "ClearedForDeparture") ++DepartureQueue;
+            SurfaceReroutes += static_cast<int32>(Aircraft.surface_reroutes);
+            SurfaceWaitSeconds += Aircraft.surface_wait_duration.count();
         }
         for (const auto& Vehicle : Snapshot->vehicles) {
             Vehicle.type == airside::ServiceType::Fueling ? ++FuelTrucks : ++BaggageCarts;
@@ -276,7 +287,7 @@ FText SRampLabControlPanel::SummaryText() const
     }
 
     return FText::FromString(FString::Printf(
-        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Complete  %d    Delayed  %d\nFuel Trucks  %d    Baggage Carts  %d    Busy vehicles  %d\nReassignments  %d    Failed tasks  %d\nCurrent vehicle conflicts  %d    Minimum separation  %.1f m\nGROUND VEHICLE AVAILABILITY%s\nTURNAROUND OPERATIONS%s"),
+        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Complete  %d    Delayed  %d\nAircraft taxiing %d  / waiting %d  / runway queue %d\nTaxi wait %lld s  / reroutes %d\nFuel Trucks  %d    Baggage Carts  %d    Busy vehicles  %d\nReassignments  %d    Failed tasks  %d\nCurrent vehicle conflicts  %d    Minimum separation  %.1f m\nGROUND VEHICLE AVAILABILITY%s\nTURNAROUND OPERATIONS%s"),
         *Subsystem->GetScenarioName(),
         Time / 3600, (Time / 60) % 60, Time % 60,
         Subsystem->GetPlaybackSpeed(),
@@ -284,7 +295,8 @@ FText SRampLabControlPanel::SummaryText() const
         Subsystem->IsCaptureAccelerationActive() ? TEXT("   [QA capture acceleration]") : TEXT(""),
         *Subsystem->GetGeospatialStatus(),
         bRoadClosure ? TEXT("\nROAD CLOSURE  /  North to Gate A2 unavailable") : TEXT(""),
-        ActiveAircraft, CompletedAircraft, DelayedAircraft, FuelTrucks, BaggageCarts, BusyVehicles,
+        ActiveAircraft, CompletedAircraft, DelayedAircraft, AircraftTaxiing, AircraftWaiting, DepartureQueue,
+        SurfaceWaitSeconds, SurfaceReroutes, FuelTrucks, BaggageCarts, BusyVehicles,
         Reassignments, FailedTasks, CurrentVehicleConflicts,
         MinimumVehicleSeparation == TNumericLimits<double>::Max() ? 0.0 : MinimumVehicleSeparation,
         *TurnaroundVehicleLines, *TurnaroundOperations));
@@ -313,6 +325,11 @@ FText SRampLabControlPanel::SelectedEntityText() const
 FText SRampLabControlPanel::ResultsText() const
 {
     const auto* Subsystem = SimulationSubsystem.Get();
+    if (Subsystem != nullptr && Subsystem->GetScenarioName().StartsWith(TEXT("surface_traffic"))) {
+        return FText::FromString(Subsystem->IsFinished()
+            ? Subsystem->GetFinalResultText()
+            : TEXT("Surface traffic is running. Aircraft labels and route lines show live movement; Recent Events records pushback, waits, reroutes, and runway handoffs."));
+    }
     if (Subsystem != nullptr && Subsystem->IsAutonomyMode()) {
         if(Subsystem->IsFleetMode())return FText::FromString(Subsystem->IsFinished()?Subsystem->GetFinalResultText():TEXT("Fleet traffic metrics update during simulation. Recent Events shows typed coordination decisions."));
         const auto* State=Subsystem->GetAutonomySnapshot();

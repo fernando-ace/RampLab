@@ -84,6 +84,7 @@ std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId
             if (!edge.available) {
                 continue;
             }
+            if (edge.one_way && edge.from != current.node) continue;
             const auto next = graph.other_endpoint(edge, current.node);
             const auto new_cost = current.cost + edge.traversal_cost.count();
             const auto known = costs.find(next);

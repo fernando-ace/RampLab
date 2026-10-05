@@ -33,6 +33,19 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::TurnaroundTaskFailed: return "TurnaroundTaskFailed";
     case SimulationEventType::TurnaroundFailed: return "TurnaroundFailed";
     case SimulationEventType::TurnaroundVehicleUnavailable: return "TurnaroundVehicleUnavailable";
+    case SimulationEventType::SurfacePushbackRequested: return "SurfacePushbackRequested";
+    case SimulationEventType::SurfacePushbackStarted: return "SurfacePushbackStarted";
+    case SimulationEventType::SurfacePushbackCompleted: return "SurfacePushbackCompleted";
+    case SimulationEventType::SurfaceTaxiRouteAssigned: return "SurfaceTaxiRouteAssigned";
+    case SimulationEventType::SurfaceWaitingForTraffic: return "SurfaceWaitingForTraffic";
+    case SimulationEventType::SurfaceRerouted: return "SurfaceRerouted";
+    case SimulationEventType::SurfaceRunwayQueueEntered: return "SurfaceRunwayQueueEntered";
+    case SimulationEventType::SurfaceRunwayClearance: return "SurfaceRunwayClearance";
+    case SimulationEventType::SurfaceSafeFailure: return "SurfaceSafeFailure";
+    case SimulationEventType::SurfaceRouteInvalidated: return "SurfaceRouteInvalidated";
+    case SimulationEventType::SurfaceReservationAcquired: return "SurfaceReservationAcquired";
+    case SimulationEventType::SurfaceReservationReleased: return "SurfaceReservationReleased";
+    case SimulationEventType::SurfaceWaitingForPushback: return "SurfaceWaitingForPushback";
     }
     return "Unknown";
 }
@@ -173,6 +186,19 @@ std::string format_event(const SimulationEventRecord& event) {
         return std::format("turnaround {} failed: {}", event.turnaround_id, event.detail);
     case SimulationEventType::TurnaroundVehicleUnavailable:
         return std::format("turnaround {} vehicle {} unavailable", event.turnaround_id, vehicle);
+    case SimulationEventType::SurfacePushbackRequested: return std::format("{} requested pushback", aircraft);
+    case SimulationEventType::SurfacePushbackStarted: return std::format("{} started pushback", aircraft);
+    case SimulationEventType::SurfacePushbackCompleted: return std::format("{} completed pushback", aircraft);
+    case SimulationEventType::SurfaceTaxiRouteAssigned: return std::format("{} assigned a taxi route", aircraft);
+    case SimulationEventType::SurfaceWaitingForTraffic: return std::format("{} waiting for surface traffic", aircraft);
+    case SimulationEventType::SurfaceRerouted: return std::format("{} rerouted around a surface closure", aircraft);
+    case SimulationEventType::SurfaceRunwayQueueEntered: return std::format("{} entered the runway queue", aircraft);
+    case SimulationEventType::SurfaceRunwayClearance: return std::format("{} received runway clearance", aircraft);
+    case SimulationEventType::SurfaceSafeFailure: return std::format("{} safely stopped: no route to departure handoff", aircraft);
+    case SimulationEventType::SurfaceRouteInvalidated: return std::format("{} route invalidated by closure on edge {}", aircraft, event.edge ? event.edge->value() : 0U);
+    case SimulationEventType::SurfaceReservationAcquired: return std::format("{} acquired surface edge {}", aircraft, event.edge ? event.edge->value() : 0U);
+    case SimulationEventType::SurfaceReservationReleased: return std::format("{} released surface edge {}", aircraft, event.edge ? event.edge->value() : 0U);
+    case SimulationEventType::SurfaceWaitingForPushback: return std::format("{} waiting for a safe pushback window", aircraft);
     }
     return "unknown simulation event";
 }
