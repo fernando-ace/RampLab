@@ -117,6 +117,27 @@ nav_msgs::msg::Odometry to_odometry(
   return result;
 }
 
+nav_msgs::msg::Odometry to_filtered_odometry(
+    const airside::autonomy::EstimatedState& e) {
+  auto result = to_odometry(e.timestamp_s, e.position, e.heading_rad, e.speed_mps, 0.0);
+  const auto& p = e.covariance;
+  // ROS pose covariance is row-major in [x,y,z,roll,pitch,yaw].
+  result.pose.covariance[14] = result.pose.covariance[21] = result.pose.covariance[28] = 1.0e6;
+  result.pose.covariance[0] = p[0];
+  result.pose.covariance[1] = p[1];
+  result.pose.covariance[5] = p[2];
+  result.pose.covariance[6] = p[4];
+  result.pose.covariance[7] = p[5];
+  result.pose.covariance[11] = p[6];
+  result.pose.covariance[30] = p[8];
+  result.pose.covariance[31] = p[9];
+  result.pose.covariance[35] = p[10];
+  result.twist.covariance[7] = result.twist.covariance[14] = result.twist.covariance[21] =
+      result.twist.covariance[28] = result.twist.covariance[35] = 1.0e6;
+  result.twist.covariance[0] = p[15];
+  return result;
+}
+
 std::optional<airside::autonomy::VehicleCommand> from_twist(
     const geometry_msgs::msg::Twist& message,
     const airside::autonomy::VehicleLimits& limits) noexcept {

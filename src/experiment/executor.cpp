@@ -38,19 +38,94 @@ RunResult execute_one(const Scenario& base, const RunRequest& request) {
     result.aircraft_count = simulation_result.metrics.aircraft.size();
     result.fuel_utilization = simulation_result.metrics.fuel_utilization;
     result.baggage_utilization = simulation_result.metrics.baggage_utilization;
+    result.total_turnarounds = simulation_result.metrics.total_turnarounds;
+    result.completed_turnarounds = simulation_result.metrics.completed_turnarounds;
+    result.delayed_turnarounds = simulation_result.metrics.delayed_turnarounds;
+    result.failed_or_timed_out_turnarounds = simulation_result.metrics.failed_or_timed_out_turnarounds;
+    result.maximum_turnaround_seconds = static_cast<double>(simulation_result.metrics.maximum_turnaround_seconds);
+    result.maximum_departure_delay_seconds = static_cast<double>(simulation_result.metrics.maximum_departure_delay_seconds);
+    result.on_time_departures = simulation_result.metrics.on_time_departures;
+    result.on_time_departure_rate = simulation_result.metrics.on_time_departure_rate;
+    result.total_service_task_wait_seconds = static_cast<double>(simulation_result.metrics.total_service_task_wait_seconds);
+    result.maximum_service_task_wait_seconds = static_cast<double>(simulation_result.metrics.maximum_service_task_wait_seconds);
+    result.task_reassignments = simulation_result.metrics.task_reassignments;
+    result.disruption_triggered_replans = simulation_result.metrics.disruption_triggered_replans;
+    result.unresolved_service_requests = simulation_result.metrics.unresolved_service_requests;
+    result.fleet_collisions = simulation_result.metrics.fleet_collisions;
+    result.fleet_minimum_separation_m = simulation_result.metrics.fleet_minimum_separation_m;
+    result.fleet_reservation_requests = simulation_result.metrics.fleet_reservation_requests;
+    result.fleet_reservation_contentions = simulation_result.metrics.fleet_reservation_contentions;
+    result.fleet_outstanding_reservations = simulation_result.metrics.fleet_outstanding_reservations;
+    result.fleet_unfinished_requests = simulation_result.metrics.fleet_unfinished_requests;
+    result.fleet_reassignments = simulation_result.metrics.fleet_reassignments;
+    result.fleet_requests_created = simulation_result.metrics.fleet_requests_created;
+    result.fleet_requests_completed = simulation_result.metrics.fleet_requests_completed;
+    result.fleet_requests_failed = simulation_result.metrics.fleet_requests_failed;
+    result.surface_departed_aircraft = simulation_result.metrics.surface_departed_aircraft;
+    result.surface_arrived_aircraft = simulation_result.metrics.surface_arrived_aircraft;
+    result.gate_assignments = simulation_result.metrics.gate_assignments;
+    result.gate_wait_seconds = static_cast<double>(simulation_result.metrics.gate_wait_seconds);
+    result.gate_occupancy_seconds = static_cast<double>(simulation_result.metrics.gate_occupancy_seconds);
+    result.arrival_to_departure_seconds = static_cast<double>(simulation_result.metrics.arrival_to_departure_seconds);
+    result.surface_total_aircraft = simulation_result.metrics.surface_total_aircraft;
+    result.runway_operations_completed = simulation_result.metrics.runway_operations_completed;
+    result.maximum_runway_queue_depth = simulation_result.metrics.maximum_runway_queue_depth;
+    result.arrival_runway_wait_seconds = static_cast<double>(simulation_result.metrics.arrival_runway_wait_seconds);
+    result.departure_runway_wait_seconds = static_cast<double>(simulation_result.metrics.departure_runway_wait_seconds);
+    result.average_runway_wait_seconds = simulation_result.metrics.average_runway_wait_seconds;
+    result.runway_utilization = simulation_result.metrics.runway_utilization;
+    result.arrival_taxi_distance_m = simulation_result.metrics.arrival_taxi_distance_m;
+    result.departure_taxi_distance_m = simulation_result.metrics.departure_taxi_distance_m;
+    result.arrival_taxi_seconds = static_cast<double>(simulation_result.metrics.arrival_taxi_seconds);
+    result.departure_taxi_seconds = static_cast<double>(simulation_result.metrics.departure_taxi_seconds);
+    result.surface_departure_throughput_per_hour = simulation_result.metrics.surface_departure_throughput_per_hour;
+    result.surface_reroutes = simulation_result.metrics.surface_reroutes;
+    result.surface_wait_events = simulation_result.metrics.surface_wait_events;
+    result.surface_wait_seconds = static_cast<double>(simulation_result.metrics.surface_wait_seconds);
+    result.surface_taxi_distance_m = simulation_result.metrics.surface_taxi_distance_m;
+    result.surface_taxi_seconds = static_cast<double>(simulation_result.metrics.surface_taxi_seconds);
+    result.runway_queue_seconds = static_cast<double>(simulation_result.metrics.runway_queue_seconds);
+    result.surface_safe_failures = simulation_result.metrics.surface_safe_failures;
+    result.max_simultaneous_taxiing_aircraft = simulation_result.metrics.max_simultaneous_taxiing_aircraft;
+    result.surface_aircraft_aircraft_collisions = simulation_result.metrics.surface_aircraft_aircraft_collisions;
+    result.surface_aircraft_ground_collisions = simulation_result.metrics.surface_aircraft_ground_collisions;
+    result.minimum_aircraft_separation_m = simulation_result.metrics.minimum_aircraft_separation_m;
+    result.minimum_aircraft_ground_separation_m = simulation_result.metrics.minimum_aircraft_ground_separation_m;
+    for (const auto& [type, utilization] : simulation_result.metrics.resource_utilization) {
+        result.resource_utilization.emplace_back(std::string{to_string(type)}, utilization);
+    }
     double delay_total = 0.0;
     double waiting_total = 0.0;
     result.aircraft.reserve(simulation_result.metrics.aircraft.size());
     for (const auto& aircraft : simulation_result.metrics.aircraft) {
         delay_total += static_cast<double>(aircraft.departure_delay.count());
         waiting_total += static_cast<double>(aircraft.service_waiting.count());
-        result.aircraft.push_back({aircraft.flight_number,
+        auto& output = result.aircraft.emplace_back(AircraftRunMetrics{aircraft.flight_number,
             static_cast<double>(aircraft.turnaround.count()),
             static_cast<double>(aircraft.departure_delay.count()),
             static_cast<double>(aircraft.service_waiting.count())});
+        output.turnaround_id = aircraft.turnaround_id;
+        output.estimated_ready_time_seconds = aircraft.estimated_ready_time
+            ? static_cast<double>(aircraft.estimated_ready_time->count()) : 0.0;
+        output.actual_completion_time_seconds = aircraft.actual_completion_time
+            ? static_cast<double>(aircraft.actual_completion_time->count()) : 0.0;
+        output.schedule_slack_seconds = aircraft.schedule_slack
+            ? static_cast<double>(aircraft.schedule_slack->count()) : 0.0;
+        for (std::size_t index = 0; index < aircraft.critical_path_tasks.size(); ++index) {
+            if (index != 0) output.critical_path_task_ids += ";";
+            output.critical_path_task_ids += std::to_string(aircraft.critical_path_tasks[index].value());
+        }
+        for (const auto& task : aircraft.task_timings) {
+            output.tasks.push_back({task.task.value(), std::string{to_string(task.service)},
+                std::string{to_string(task.state)}, task.requested_at ? task.requested_at->count() : -1,
+                task.started_at ? task.started_at->count() : -1, task.completed_at ? task.completed_at->count() : -1,
+                task.waiting.count(), task.required_resource, task.assigned_resource});
+        }
     }
     if (!result.aircraft.empty()) {
-        result.average_departure_delay_seconds = delay_total / static_cast<double>(result.aircraft.size());
+        result.average_departure_delay_seconds = simulation_result.metrics.total_turnarounds != 0
+            ? simulation_result.metrics.mean_departure_delay_seconds
+            : delay_total / static_cast<double>(result.aircraft.size());
         result.average_service_waiting_seconds = waiting_total / static_cast<double>(result.aircraft.size());
     }
     return result;

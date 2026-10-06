@@ -65,7 +65,7 @@ void write_experiment_outputs(
     std::ofstream runs{runs_path};
     runs << "run_ordinal,case_id,seed,replication,scenario";
     for (const auto& axis : definition.parameters) runs << ',' << parameter_name(axis.key);
-    runs << ",simulated_duration_seconds,avg_turnaround_minutes,avg_departure_delay_minutes,avg_service_waiting_minutes,delayed_aircraft,aircraft_count,fuel_utilization,baggage_utilization,execution_ms\n";
+    runs << ",simulated_duration_seconds,avg_turnaround_minutes,avg_departure_delay_minutes,avg_service_waiting_minutes,delayed_aircraft,aircraft_count,fuel_utilization,baggage_utilization,execution_ms,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,maximum_turnaround_seconds,maximum_departure_delay_seconds,on_time_departures,on_time_departure_rate,total_service_task_wait_seconds,maximum_service_task_wait_seconds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,surface_departed_aircraft,surface_arrived_aircraft,gate_assignments,gate_wait_seconds,gate_occupancy_seconds,arrival_to_departure_seconds,surface_total_aircraft,runway_operations_completed,maximum_runway_queue_depth,arrival_runway_wait_seconds,departure_runway_wait_seconds,average_runway_wait_seconds,runway_utilization,arrival_taxi_distance_m,departure_taxi_distance_m,arrival_taxi_seconds,departure_taxi_seconds,surface_departure_throughput_per_hour,surface_reroutes,surface_wait_events,surface_wait_seconds,surface_taxi_distance_m,surface_taxi_seconds,runway_queue_seconds,surface_safe_failures,max_simultaneous_taxiing_aircraft,surface_aircraft_aircraft_collisions,surface_aircraft_ground_collisions,minimum_aircraft_separation_m,minimum_aircraft_ground_separation_m,service_resource_utilization,turnaround_task_timings\n";
     runs << std::fixed << std::setprecision(6);
     for (const auto& run : execution.runs) {
         runs << run.ordinal + 1 << ',' << csv_escape(run.case_id) << ',' << run.seed << ','
@@ -77,7 +77,49 @@ void write_experiment_outputs(
              << ',' << run.average_service_waiting_seconds / 60.0
              << ',' << run.delayed_aircraft << ',' << run.aircraft_count
              << ',' << run.fuel_utilization << ',' << run.baggage_utilization
-             << ',' << run.execution_ms << '\n';
+             << ',' << run.execution_ms << ',' << run.total_turnarounds << ',' << run.completed_turnarounds
+             << ',' << run.delayed_turnarounds << ',' << run.failed_or_timed_out_turnarounds
+             << ',' << run.maximum_turnaround_seconds << ',' << run.maximum_departure_delay_seconds
+             << ',' << run.on_time_departures << ',' << run.on_time_departure_rate
+             << ',' << run.total_service_task_wait_seconds << ',' << run.maximum_service_task_wait_seconds
+             << ',' << run.task_reassignments << ',' << run.disruption_triggered_replans
+             << ',' << run.unresolved_service_requests << ',' << run.fleet_collisions
+             << ',' << run.fleet_minimum_separation_m << ',' << run.fleet_reservation_requests
+             << ',' << run.fleet_reservation_contentions << ',' << run.fleet_outstanding_reservations
+             << ',' << run.fleet_unfinished_requests << ',' << run.fleet_reassignments
+             << ',' << run.fleet_requests_created << ',' << run.fleet_requests_completed
+             << ',' << run.fleet_requests_failed << ',' << run.surface_departed_aircraft << ','
+             << run.surface_arrived_aircraft << ',' << run.gate_assignments << ','
+             << run.gate_wait_seconds << ',' << run.gate_occupancy_seconds << ','
+             << run.arrival_to_departure_seconds << ',' << run.surface_total_aircraft << ','
+             << run.runway_operations_completed << ',' << run.maximum_runway_queue_depth << ','
+             << run.arrival_runway_wait_seconds << ',' << run.departure_runway_wait_seconds << ','
+             << run.average_runway_wait_seconds << ',' << run.runway_utilization << ','
+             << run.arrival_taxi_distance_m << ',' << run.departure_taxi_distance_m << ','
+             << run.arrival_taxi_seconds << ',' << run.departure_taxi_seconds << ','
+             << run.surface_departure_throughput_per_hour << ','
+             << run.surface_reroutes << ',' << run.surface_wait_events << ','
+             << run.surface_wait_seconds << ',' << run.surface_taxi_distance_m << ',' << run.surface_taxi_seconds << ','
+             << run.runway_queue_seconds << ',' << run.surface_safe_failures << ','
+             << run.max_simultaneous_taxiing_aircraft << ',' << run.surface_aircraft_aircraft_collisions << ','
+             << run.surface_aircraft_ground_collisions << ',' << run.minimum_aircraft_separation_m << ','
+             << run.minimum_aircraft_ground_separation_m << ',';
+        std::string resource_utilization;
+        for (const auto& [type, value] : run.resource_utilization) {
+            if (!resource_utilization.empty()) resource_utilization += ';';
+            resource_utilization += type + ':' + std::format("{:.6f}", value);
+        }
+        std::string task_timings;
+        for (const auto& aircraft : run.aircraft) {
+            for (const auto& task : aircraft.tasks) {
+                if (!task_timings.empty()) task_timings += ';';
+                task_timings += aircraft.turnaround_id + '/' + std::to_string(task.task_id) + ':' +
+                    task.service_type + ':' + task.state + ':' + std::to_string(task.requested_at_seconds) + ':' +
+                    std::to_string(task.started_at_seconds) + ':' + std::to_string(task.completed_at_seconds) + ':' +
+                    std::to_string(task.waiting_seconds) + ':' + task.required_resource + ':' + task.assigned_resource;
+            }
+        }
+        runs << csv_escape(resource_utilization) << ',' << csv_escape(task_timings) << '\n';
     }
     require_stream(runs, runs_path);
 
@@ -144,7 +186,99 @@ void write_experiment_outputs(
         }
         metadata << ']' << (axis_index + 1 == definition.parameters.size() ? "\n" : ",\n");
     }
-    metadata << "  },\n  \"outputs\": [\"runs.csv\", \"summary.csv\"]\n}\n";
+    metadata << "  },\n  \"runs\": [\n";
+    for (std::size_t run_index = 0; run_index < execution.runs.size(); ++run_index) {
+        const auto& run = execution.runs[run_index];
+        metadata << "    {\"ordinal\": " << run.ordinal + 1 << ", \"case_id\": \"" << json_escape(run.case_id)
+                 << "\", \"seed\": " << run.seed << ", \"total_turnarounds\": " << run.total_turnarounds
+                 << ", \"completed_turnarounds\": " << run.completed_turnarounds
+                 << ", \"delayed_turnarounds\": " << run.delayed_turnarounds
+                 << ", \"failed_or_timed_out_turnarounds\": " << run.failed_or_timed_out_turnarounds
+                 << ", \"mean_turnaround_duration_seconds\": " << run.average_turnaround_seconds
+                 << ", \"mean_departure_delay_seconds\": " << run.average_departure_delay_seconds
+                 << ", \"maximum_turnaround_seconds\": " << run.maximum_turnaround_seconds
+                 << ", \"maximum_departure_delay_seconds\": " << run.maximum_departure_delay_seconds
+                 << ", \"on_time_departure_rate\": " << run.on_time_departure_rate
+                 << ", \"total_service_task_wait_seconds\": " << run.total_service_task_wait_seconds
+                 << ", \"maximum_service_task_wait_seconds\": " << run.maximum_service_task_wait_seconds
+                 << ", \"task_reassignments\": " << run.task_reassignments
+                 << ", \"disruption_triggered_replans\": " << run.disruption_triggered_replans
+                 << ", \"unresolved_service_requests\": " << run.unresolved_service_requests
+                 << ", \"fleet_collisions\": " << run.fleet_collisions
+                 << ", \"fleet_minimum_separation_m\": " << run.fleet_minimum_separation_m
+                 << ", \"fleet_reservation_requests\": " << run.fleet_reservation_requests
+                 << ", \"fleet_reservation_contentions\": " << run.fleet_reservation_contentions
+                 << ", \"fleet_outstanding_reservations\": " << run.fleet_outstanding_reservations
+                 << ", \"fleet_unfinished_requests\": " << run.fleet_unfinished_requests
+                 << ", \"fleet_reassignments\": " << run.fleet_reassignments
+                 << ", \"fleet_requests_created\": " << run.fleet_requests_created
+                 << ", \"fleet_requests_completed\": " << run.fleet_requests_completed
+                 << ", \"fleet_requests_failed\": " << run.fleet_requests_failed
+                 << ", \"surface_departed_aircraft\": " << run.surface_departed_aircraft
+                 << ", \"surface_arrived_aircraft\": " << run.surface_arrived_aircraft
+                 << ", \"gate_assignments\": " << run.gate_assignments
+                 << ", \"gate_wait_seconds\": " << run.gate_wait_seconds
+                 << ", \"gate_occupancy_seconds\": " << run.gate_occupancy_seconds
+                 << ", \"arrival_to_departure_seconds\": " << run.arrival_to_departure_seconds
+                 << ", \"surface_total_aircraft\": " << run.surface_total_aircraft
+                 << ", \"runway_operations_completed\": " << run.runway_operations_completed
+                 << ", \"maximum_runway_queue_depth\": " << run.maximum_runway_queue_depth
+                 << ", \"arrival_runway_wait_seconds\": " << run.arrival_runway_wait_seconds
+                 << ", \"departure_runway_wait_seconds\": " << run.departure_runway_wait_seconds
+                 << ", \"average_runway_wait_seconds\": " << run.average_runway_wait_seconds
+                 << ", \"runway_utilization\": " << run.runway_utilization
+                 << ", \"arrival_taxi_distance_m\": " << run.arrival_taxi_distance_m
+                 << ", \"departure_taxi_distance_m\": " << run.departure_taxi_distance_m
+                 << ", \"arrival_taxi_seconds\": " << run.arrival_taxi_seconds
+                 << ", \"departure_taxi_seconds\": " << run.departure_taxi_seconds
+                 << ", \"surface_reroutes\": " << run.surface_reroutes
+                 << ", \"surface_wait_events\": " << run.surface_wait_events
+                 << ", \"surface_wait_seconds\": " << run.surface_wait_seconds
+                 << ", \"surface_taxi_distance_m\": " << run.surface_taxi_distance_m
+                 << ", \"surface_taxi_seconds\": " << run.surface_taxi_seconds
+                 << ", \"runway_queue_seconds\": " << run.runway_queue_seconds
+                 << ", \"surface_safe_failures\": " << run.surface_safe_failures
+                 << ", \"max_simultaneous_taxiing_aircraft\": " << run.max_simultaneous_taxiing_aircraft
+                 << ", \"surface_aircraft_aircraft_collisions\": " << run.surface_aircraft_aircraft_collisions
+                 << ", \"surface_aircraft_ground_collisions\": " << run.surface_aircraft_ground_collisions
+                 << ", \"minimum_aircraft_separation_m\": " << run.minimum_aircraft_separation_m
+                 << ", \"minimum_aircraft_ground_separation_m\": " << run.minimum_aircraft_ground_separation_m
+                 << ", \"resource_utilization\": {";
+        for (std::size_t resource_index = 0; resource_index < run.resource_utilization.size(); ++resource_index) {
+            if (resource_index != 0) metadata << ',';
+            metadata << "\"" << json_escape(run.resource_utilization[resource_index].first) << "\": "
+                     << run.resource_utilization[resource_index].second;
+        }
+        metadata << "}, \"turnarounds\": [";
+        for (std::size_t aircraft_index = 0; aircraft_index < run.aircraft.size(); ++aircraft_index) {
+            const auto& aircraft = run.aircraft[aircraft_index];
+            if (aircraft_index != 0) metadata << ',';
+            metadata << "{\"turnaround_id\": \"" << json_escape(aircraft.turnaround_id)
+                     << "\", \"aircraft\": \"" << json_escape(aircraft.flight_number)
+                     << "\", \"completion_seconds\": " << aircraft.actual_completion_time_seconds
+                     << ", \"turnaround_duration_seconds\": " << aircraft.turnaround_seconds
+                     << ", \"departure_delay_seconds\": " << aircraft.departure_delay_seconds
+                     << ", \"estimated_ready_time_seconds\": " << aircraft.estimated_ready_time_seconds
+                     << ", \"schedule_slack_seconds\": " << aircraft.schedule_slack_seconds
+                     << ", \"critical_path_task_ids\": \"" << json_escape(aircraft.critical_path_task_ids)
+                     << "\", \"tasks\": [";
+            for (std::size_t task_index = 0; task_index < aircraft.tasks.size(); ++task_index) {
+                const auto& task = aircraft.tasks[task_index];
+                if (task_index != 0) metadata << ',';
+                metadata << "{\"task_id\": " << task.task_id << ", \"service_type\": \""
+                         << json_escape(task.service_type) << "\", \"state\": \"" << json_escape(task.state)
+                         << "\", \"requested_at_seconds\": " << (task.requested_at_seconds < 0 ? "null" : std::to_string(task.requested_at_seconds))
+                         << ", \"started_at_seconds\": " << (task.started_at_seconds < 0 ? "null" : std::to_string(task.started_at_seconds))
+                         << ", \"completed_at_seconds\": " << (task.completed_at_seconds < 0 ? "null" : std::to_string(task.completed_at_seconds))
+                         << ", \"waiting_seconds\": " << task.waiting_seconds << ", \"required_resource\": \""
+                         << json_escape(task.required_resource) << "\", \"assigned_resource\": \""
+                         << json_escape(task.assigned_resource) << "\"}";
+            }
+            metadata << "]}";
+        }
+        metadata << "]}" << (run_index + 1 == execution.runs.size() ? "\n" : ",\n");
+    }
+    metadata << "  ],\n  \"outputs\": [\"runs.csv\", \"summary.csv\"]\n}\n";
     require_stream(metadata, metadata_path);
 }
 

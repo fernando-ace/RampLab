@@ -1,4 +1,6 @@
 #include "airside/autonomy/scenario_loader.hpp"
+#include "airside/autonomy/fleet.hpp"
+#include "airside/autonomy/dispatcher.hpp"
 
 #include "airside/scenario/scenario_loader.hpp"
 
@@ -12,12 +14,35 @@ namespace {
 template<class T> T value(const YAML::Node& n,const char* key,T fallback){return n[key]?n[key].as<T>():fallback;}
 SensorKind sensor_kind(const std::string& v){if(v=="gnss")return SensorKind::Gnss;if(v=="imu")return SensorKind::Imu;if(v=="odometry")return SensorKind::Odometry;if(v=="lidar")return SensorKind::Lidar;throw std::invalid_argument("unknown fault sensor '"+v+"'");}
 SensorFaultKind fault_kind(const std::string& v){if(v=="dropout")return SensorFaultKind::Dropout;if(v=="noise")return SensorFaultKind::Noise;if(v=="bias")return SensorFaultKind::Bias;if(v=="range_limit")return SensorFaultKind::RangeLimit;if(v=="obstruction")return SensorFaultKind::Obstruction;if(v=="scale")return SensorFaultKind::Scale;if(v=="drift")return SensorFaultKind::Drift;if(v=="delay")return SensorFaultKind::Delay;if(v=="packet_loss")return SensorFaultKind::PacketLoss;if(v=="burst_loss")return SensorFaultKind::BurstLoss;throw std::invalid_argument("unknown sensor fault type '"+v+"'");}
+ServiceKind service_kind(const std::string& v){if(v=="baggage_delivery")return ServiceKind::BaggageDelivery;if(v=="fuel_service")return ServiceKind::FuelService;if(v=="aircraft_turnaround")return ServiceKind::AircraftTurnaround;if(v=="tug_cart_movement")return ServiceKind::TugCartMovement;throw std::invalid_argument("unknown service request type '"+v+"'");}
 }
 AutonomyScenario load_scenario(const std::filesystem::path& path){
     try {
         const auto root=YAML::LoadFile(path.string());
         AutonomyScenario s;
         s.name=value<std::string>(root,"name","autonomy_tug");
+        if(const auto estimator=root["estimator"]) {
+            s.estimator_enabled=value<bool>(estimator,"enabled",true);
+            s.estimator.initial_position_variance_m2=value<double>(estimator,"initial_position_variance_m2",s.estimator.initial_position_variance_m2);
+            s.estimator.initial_heading_variance_rad2=value<double>(estimator,"initial_heading_variance_rad2",s.estimator.initial_heading_variance_rad2);
+            s.estimator.initial_speed_variance_m2ps2=value<double>(estimator,"initial_speed_variance_m2ps2",s.estimator.initial_speed_variance_m2ps2);
+            s.estimator.position_process_noise_m2ps=value<double>(estimator,"position_process_noise_m2ps",s.estimator.position_process_noise_m2ps);
+            s.estimator.heading_process_noise_rad2ps=value<double>(estimator,"heading_process_noise_rad2ps",s.estimator.heading_process_noise_rad2ps);
+            s.estimator.speed_process_noise_m2ps3=value<double>(estimator,"speed_process_noise_m2ps3",s.estimator.speed_process_noise_m2ps3);
+            s.estimator.gnss_sigma_m=value<double>(estimator,"gnss_sigma_m",s.estimator.gnss_sigma_m);
+            s.estimator.imu_heading_sigma_rad=value<double>(estimator,"imu_heading_sigma_rad",s.estimator.imu_heading_sigma_rad);
+            s.estimator.imu_yaw_rate_sigma_radps=value<double>(estimator,"imu_yaw_rate_sigma_radps",s.estimator.imu_yaw_rate_sigma_radps);
+            s.estimator.odometry_speed_sigma_mps=value<double>(estimator,"odometry_speed_sigma_mps",s.estimator.odometry_speed_sigma_mps);
+            s.estimator.odometry_heading_sigma_rad=value<double>(estimator,"odometry_heading_sigma_rad",s.estimator.odometry_heading_sigma_rad);
+            s.estimator.gnss_nis_gate=value<double>(estimator,"gnss_nis_gate",s.estimator.gnss_nis_gate);
+            s.estimator.maximum_measurement_age_s=value<double>(estimator,"maximum_measurement_age_s",s.estimator.maximum_measurement_age_s);
+            s.estimator.degraded_position_sigma_m=value<double>(estimator,"degraded_position_sigma_m",s.estimator.degraded_position_sigma_m);
+            s.estimator.unsafe_position_sigma_m=value<double>(estimator,"unsafe_position_sigma_m",s.estimator.unsafe_position_sigma_m);
+            s.estimator.degraded_heading_sigma_rad=value<double>(estimator,"degraded_heading_sigma_rad",s.estimator.degraded_heading_sigma_rad);
+            s.estimator.unsafe_heading_sigma_rad=value<double>(estimator,"unsafe_heading_sigma_rad",s.estimator.unsafe_heading_sigma_rad);
+            s.estimator.unsafe_without_gnss_s=value<double>(estimator,"unsafe_without_gnss_s",s.estimator.unsafe_without_gnss_s);
+            s.estimator.unobserved_stop_deceleration_mps2=value<double>(estimator,"unobserved_stop_deceleration_mps2",s.estimator.unobserved_stop_deceleration_mps2);
+        }
         s.default_seed=value<std::uint64_t>(root,"default_seed",42);
         const auto map_path=path.parent_path()/value<std::string>(root,"map_scenario","baseline.yaml");
         s.airport=airside::load_scenario(map_path);
@@ -41,22 +66,51 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         s.localization_timeout_s=value<double>(simulation,"localization_timeout_s",3.0);
         s.perception_timeout_s=value<double>(simulation,"perception_timeout_s",0.5);
         const auto sensors=root["sensors"];
-        s.sensors.gnss_hz=value<double>(sensors,"gnss_hz",5.0);
+        s.sensors.gnss_hz=value<double>(sensors,"gnss_hz",10.0);
         s.sensors.gnss_sigma_m=value<double>(sensors,"gnss_sigma_m",0.5);
         s.sensors.gnss_bias_m={value<double>(sensors,"gnss_bias_x_m",0.0),value<double>(sensors,"gnss_bias_y_m",0.0)};
         s.sensors.imu_hz=value<double>(sensors,"imu_hz",50.0);
         s.sensors.imu_heading_sigma_rad=value<double>(sensors,"imu_heading_sigma_rad",0.005);
         s.sensors.imu_yaw_rate_sigma_radps=value<double>(sensors,"imu_yaw_rate_sigma_radps",0.005);
         s.sensors.imu_accel_sigma_mps2=value<double>(sensors,"imu_accel_sigma_mps2",0.03);
-        s.sensors.odometry_hz=value<double>(sensors,"odometry_hz",20.0);
+        s.sensors.odometry_hz=value<double>(sensors,"odometry_hz",50.0);
         s.sensors.odometry_sigma_mps=value<double>(sensors,"odometry_sigma_mps",0.02);
         s.sensors.odometry_sigma_m=value<double>(sensors,"odometry_sigma_m",0.01);
         s.sensors.lidar_hz=value<double>(sensors,"lidar_hz",10.0);
+        s.sensors.camera_hz=value<double>(sensors,"camera_hz",20.0);
         s.sensors.lidar_fov_rad=value<double>(sensors,"lidar_fov_deg",180.0)*3.14159265358979323846/180.0;
         s.sensors.lidar_beams=value<std::size_t>(sensors,"lidar_beams",181);
         s.sensors.lidar_min_range_m=value<double>(sensors,"lidar_min_range_m",0.1);
         s.sensors.lidar_max_range_m=value<double>(sensors,"lidar_max_range_m",30.0);
         s.sensors.lidar_sigma_m=value<double>(sensors,"lidar_sigma_m",0.01);
+        const auto timing = [&](std::string_view prefix, double rate) {
+            const std::string key{prefix};
+            return SensorTimingConfig{
+                rate,
+                value<double>(sensors,(key+"_phase_s").c_str(),0.0),
+                value<double>(sensors,(key+"_latency_s").c_str(),0.0),
+                value<double>(sensors,(key+"_jitter_s").c_str(),0.0),
+                value<double>(sensors,(key+"_packet_loss_probability").c_str(),0.0),
+                value<double>(sensors,(key+"_stale_after_s").c_str(),0.0)};
+        };
+        s.sensors.gnss_timing=timing("gnss",s.sensors.gnss_hz);
+        s.sensors.imu_timing=timing("imu",s.sensors.imu_hz);
+        s.sensors.odometry_timing=timing("odometry",s.sensors.odometry_hz);
+        s.sensors.lidar_timing=timing("lidar",s.sensors.lidar_hz);
+        s.sensors.camera_timing=timing("camera",s.sensors.camera_hz);
+        const auto extrinsics = [&](std::string_view prefix, SensorExtrinsics defaults) {
+            const std::string key{prefix};
+            return SensorExtrinsics{
+                value<double>(sensors,(key+"_extrinsic_x_m").c_str(),defaults.x_m),
+                value<double>(sensors,(key+"_extrinsic_y_m").c_str(),defaults.y_m),
+                value<double>(sensors,(key+"_extrinsic_z_m").c_str(),defaults.z_m),
+                value<double>(sensors,(key+"_extrinsic_yaw_rad").c_str(),defaults.yaw_rad)};
+        };
+        s.sensors.gnss_extrinsics=extrinsics("gnss",s.sensors.gnss_extrinsics);
+        s.sensors.imu_extrinsics=extrinsics("imu",s.sensors.imu_extrinsics);
+        s.sensors.odometry_extrinsics=extrinsics("odometry",s.sensors.odometry_extrinsics);
+        s.sensors.lidar_extrinsics=extrinsics("lidar",s.sensors.lidar_extrinsics);
+        s.sensors.camera_extrinsics=extrinsics("camera",s.sensors.camera_extrinsics);
         if(const auto faults=root["faults"]) for(const auto& f:faults){
             SensorFault fault; fault.sensor=sensor_kind(f["sensor"].as<std::string>()); fault.kind=fault_kind(f["type"].as<std::string>());
             fault.start_s=f["start_s"].as<double>(); fault.duration_s=f["duration_s"].as<double>();
@@ -75,5 +129,62 @@ AutonomyScenario load_scenario(const std::filesystem::path& path){
         if(const auto obstacles=root["obstacles"])for(const auto& o:obstacles)s.obstacles.push_back({o["id"].as<std::string>(),{o["x_m"].as<double>(),o["y_m"].as<double>()},o["radius_m"].as<double>()});
         return s;
     } catch(const std::exception& e){throw std::runtime_error("autonomy scenario '"+path.string()+"': "+e.what());}
+}
+
+FleetScenario load_fleet_scenario(const std::filesystem::path& path){
+    try{
+        const auto root=YAML::LoadFile(path.string());FleetScenario out;
+        out.name=value<std::string>(root,"name","autonomy_fleet");out.default_seed=value<std::uint64_t>(root,"default_seed",42);
+        out.vehicle_scenario=load_scenario(path.parent_path()/root["vehicle_scenario"].as<std::string>());
+        out.deadlock_persistence_s=value<double>(root,"deadlock_persistence_s",2.0);
+        if(!std::isfinite(out.deadlock_persistence_s)||out.deadlock_persistence_s<0.0)throw std::invalid_argument("deadlock_persistence_s must be finite and nonnegative");
+        out.resource_specific_tie_breaks=value<bool>(root,"resource_specific_tie_breaks",false);
+        const auto list=root["missions"];
+        if(list){
+            if(!list.IsSequence()||list.size()==0)throw std::invalid_argument("fleet missions must be a nonempty sequence");
+            for(const auto& item:list){FleetMission m;m.id.value=item["id"].as<std::string>();m.start_node=item["start_node"].as<std::string>();m.goal_node=item["goal_node"].as<std::string>();m.priority=value<int>(item,"priority",0);if(const auto faults=item["faults"])for(const auto& f:faults){SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);x.offset={value<double>(f,"x_m",0.0),value<double>(f,"y_m",0.0)};if(x.start_s<0||x.duration_s<=0||x.probability<0||x.probability>1)throw std::invalid_argument("invalid fleet sensor fault window");m.faults.push_back(x);}out.missions.push_back(std::move(m));}
+            std::ranges::sort(out.missions,{},&FleetMission::id);for(std::size_t i=0;i<out.missions.size();++i){if(out.missions[i].id.value.empty()||(i&&out.missions[i-1].id==out.missions[i].id))throw std::invalid_argument("fleet vehicle IDs must be nonempty and unique");}
+        }
+        if(const auto dispatch=root["dispatch"]){
+            out.dispatch_aging_interval_s=value<double>(dispatch,"aging_interval_s",30.0);
+            if(!std::isfinite(out.dispatch_aging_interval_s)||out.dispatch_aging_interval_s<=0.0)throw std::invalid_argument("dispatch aging_interval_s must be finite and positive");
+            const auto fleet=dispatch["vehicles"],requests=dispatch["service_requests"];
+            if(!fleet||!fleet.IsSequence()||fleet.size()==0||!requests||!requests.IsSequence()||requests.size()==0)throw std::invalid_argument("dispatch scenario requires vehicles and service_requests sequences");
+            for(const auto& item:fleet){DispatchVehicle vehicle;vehicle.id.value=item["id"].as<std::string>();vehicle.current_node=item["start_node"].as<std::string>();const auto capabilities=item["capabilities"];if(capabilities&&capabilities.IsSequence())for(const auto& capability:capabilities)vehicle.capabilities.push_back(capability.as<std::string>());if(const auto faults=item["faults"])for(const auto& f:faults){SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);if(!std::isfinite(x.start_s)||!std::isfinite(x.duration_s)||x.start_s<0.0||x.duration_s<=0.0||x.probability<0.0||x.probability>1.0)throw std::invalid_argument("invalid dispatch vehicle fault window");vehicle.faults.push_back(x);}if(vehicle.id.value.empty()||vehicle.current_node.empty()||vehicle.capabilities.empty())throw std::invalid_argument("dispatch vehicles require ID, start_node, and capabilities");if(std::ranges::none_of(out.vehicle_scenario.airport.graph.nodes(),[&](const auto& node){return node.name==vehicle.current_node;}))throw std::invalid_argument("dispatch vehicle references an unknown start node");std::ranges::sort(vehicle.capabilities);vehicle.capabilities.erase(std::unique(vehicle.capabilities.begin(),vehicle.capabilities.end()),vehicle.capabilities.end());out.dispatch_fleet.push_back(std::move(vehicle));}
+            std::ranges::sort(out.dispatch_fleet,{},[](const auto& vehicle){return vehicle.id;});for(std::size_t i=0;i<out.dispatch_fleet.size();++i)if(i&&out.dispatch_fleet[i-1].id==out.dispatch_fleet[i].id)throw std::invalid_argument("dispatch vehicle IDs must be unique");
+            for(const auto& item:requests){
+                ServiceRequest request;request.id.value=item["id"].as<std::string>();request.kind=service_kind(item["type"].as<std::string>());
+                request.required_capability=value<std::string>(item,"required_capability",to_string(request.kind));
+                request.origin=item["origin"].as<std::string>();request.destination=item["destination"].as<std::string>();
+                request.release_time_s=value<double>(item,"release_time_s",0.0);request.priority=value<int>(item,"priority",0);
+                request.service_duration_s=value<double>(item,"service_duration_s",0.0);if(item["deadline_s"])request.deadline_s=item["deadline_s"].as<double>();
+                if(const auto faults=item["faults"])for(const auto& f:faults){
+                    SensorFault x;x.sensor=sensor_kind(f["sensor"].as<std::string>());x.kind=fault_kind(f["type"].as<std::string>());
+                    x.start_s=f["start_s"].as<double>();x.duration_s=f["duration_s"].as<double>();
+                    x.magnitude=value<double>(f,"magnitude",0.0);x.probability=value<double>(f,"probability",0.0);
+                    x.offset={value<double>(f,"x_m",0.0),value<double>(f,"y_m",0.0)};
+                    if(!std::isfinite(x.start_s)||!std::isfinite(x.duration_s)||!std::isfinite(x.magnitude)||
+                       !std::isfinite(x.probability)||!std::isfinite(x.offset.x_m)||!std::isfinite(x.offset.y_m)||
+                       x.start_s<0.0||x.duration_s<=0.0||x.magnitude<0.0||x.probability<0.0||x.probability>1.0)
+                        throw std::invalid_argument("invalid service request fault window");
+                    request.faults.push_back(x);
+                }
+                out.service_requests.push_back(std::move(request));
+            }
+            (void)FleetDispatcher(out.service_requests,out.dispatch_aging_interval_s);
+        }
+        if(out.missions.empty()&&(out.dispatch_fleet.empty()||out.service_requests.empty()))throw std::invalid_argument("fleet scenario requires legacy missions or a dispatch fleet with service requests");
+        if(const auto changes=root["road_events"])for(const auto& item:changes){
+            const double time=value<double>(item,"time_seconds",-1.0);
+            const auto edge_value=item["edge_id"].as<std::uint32_t>();
+            const bool available=item["available"].as<bool>();
+            if(!std::isfinite(time)||time<0.0||std::trunc(time)!=time)throw std::invalid_argument("fleet road event time_seconds must be a nonnegative whole second");
+            const EdgeId edge{edge_value};
+            (void)out.vehicle_scenario.airport.graph.edge(edge);
+            out.road_events.push_back({std::chrono::seconds{static_cast<std::int64_t>(time)},edge,available});
+        }
+        std::ranges::stable_sort(out.road_events,{},[](const auto& event){return event.time;});
+        return out;
+    }catch(const std::exception&e){throw std::runtime_error("fleet scenario '"+path.string()+"': "+e.what());}
 }
 }

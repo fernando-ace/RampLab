@@ -1,0 +1,16 @@
+name: autonomy_fleet_opposing_narrow_segment
+default_seed: 42
+vehicle_scenario: autonomy_tug_opposing.yaml
+missions:
+  - id: tug_01
+    start_node: West Holding Bay
+    goal_node: East Exit
+    priority: 0
+  - id: tug_02
+    start_node: East Holding Bay
+    goal_node: West Exit
+    priority: 0
+  - id: tug_03
+    start_node: Cargo Staging
+    goal_node: Maintenance
+    priority: 0

@@ -74,9 +74,9 @@ Standalone `visualization::CoordinateTransform` continues to cover the non-geogr
 
 ## Events and snapshots
 
-The initial snapshot creates the road graph, three gates, three aircraft mirrors, and two service-vehicle mirrors. Later snapshots reconcile every current state. Structured records feed the on-screen recent-event list and Unreal log, including assignment, departure, arrival, service, road closure, readiness, and aircraft departure records. The viewer never parses CLI output or JSONL.
+The initial snapshot creates the road graph, gates, aircraft mirrors, and service-vehicle mirrors. Later snapshots reconcile every current state. Structured records feed the on-screen recent-event list and Unreal log, including assignment, departure, arrival, service, road closure, readiness, runway requests/grants/releases, arrival taxi-in, and gate completion records. The viewer never parses CLI output or JSONL.
 
-Road availability changes its segment material. Aircraft are hidden while scheduled and after departure, visible at their assigned gate while active, and change material when ready. Fuel and baggage vehicles use different sizes/colors and their labels show Idle, Assigned, Traveling, Servicing, or Returning.
+Road availability changes its segment material. Aircraft are hidden while scheduled and after departure, visible while active, and change material when ready. Goal 17 also interpolates surface aircraft along the shared taxi routes and labels arrival/departure status, runway hold/queue, runway use, and arrival gate completion. Fuel and baggage vehicles use different sizes/colors and their labels show Idle, Assigned, Traveling, Servicing, or Returning.
 
 ## Playback
 
@@ -84,10 +84,12 @@ The default is auto-play at 10x. The Slate panel calls subsystem methods for Pla
 
 For runtime verification, `-RampLabControlCheck` exercises the exact methods bound to the controls, verifies pause freezes the clock, resume advances it, reset returns to time zero/seed 42, scenario selection and entity/camera inspection work, and logs PASS/FAIL. `-RampLabCapture -RampLabCaptureMultiplier=10` applies an explicitly labeled debug-only acceleration on top of the visible operator speed, produces six diagnostic screenshots under `Saved/Screenshots/RampLab`, and logs the completed metrics. The normal viewer accepts and displays only 1x, 5x, 10x, or 20x.
 
+Goal 17 supports visible windowed seed-42 runs with `-RampLabMixedRunwayValidation` and `-RampLabMixedRunwayDisruption`. The run log reports arrivals/departures, runway queue/wait/occupancy/utilization, taxi distance/time, failures, collisions, and sampled separation from the core result. The verified control and disruption runs completed 2/2 arrivals and 3/3 departures; disruption arrival taxi distance rose from 326 m to 623 m while runway occupancy remained 1,050 s. These are synthetic scenario demonstrations.
+
 ## Known limitations
 
 - Aircraft and service vehicles are intentionally lightweight procedural forms, not detailed production assets.
-- Aircraft appear at their assigned gates; taxi and pushback paths are not part of the current domain snapshot.
+- Aircraft taxi positions follow sampled route progress in snapshots; pushback and taxi geometry remain synthetic and are not swept-path collision proofs.
 - Existing in-transit journeys are not recalculated by a later closure, matching core behavior.
 - The focused taxiway, apron, stands, service roads, depot, and building massing are synthetic presentation geometry; only the geographic context and documented FAA runway facts are real-world data.
 - Cesium terrain/imagery needs runtime network access and an authorized ion token; the operational layer remains available without it.

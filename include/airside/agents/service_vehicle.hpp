@@ -17,7 +17,8 @@ public:
         std::string name,
         ServiceType capability,
         NodeId depot_node,
-        double speed_mps = 10.0);
+        double speed_mps = 10.0,
+        std::optional<NodeId> outage_safe_node = std::nullopt);
 
     [[nodiscard]] VehicleId id() const noexcept;
     [[nodiscard]] const std::string& name() const noexcept;
@@ -25,6 +26,7 @@ public:
     [[nodiscard]] VehicleState state() const noexcept;
     [[nodiscard]] NodeId current_node() const noexcept;
     [[nodiscard]] NodeId depot_node() const noexcept;
+    [[nodiscard]] std::optional<NodeId> outage_safe_node() const noexcept;
     [[nodiscard]] double speed_mps() const noexcept;
     [[nodiscard]] std::optional<AircraftId> assigned_aircraft() const noexcept;
     [[nodiscard]] const std::optional<Route>& active_route() const noexcept;
@@ -48,6 +50,7 @@ private:
     ServiceType capability_;
     VehicleState state_{VehicleState::Idle};
     NodeId depot_node_;
+    std::optional<NodeId> outage_safe_node_;
     NodeId current_node_;
     double speed_mps_;
     std::optional<AircraftId> assigned_aircraft_;

@@ -1,0 +1,17 @@
+name: autonomy_dispatch_fairness
+default_seed: 42
+vehicle_scenario: autonomy_tug.yaml
+dispatch:
+  aging_interval_s: 5.0
+  vehicles:
+    - id: tug_fair_01
+      start_node: Service Depot
+      capabilities: [tug_cart_movement]
+  service_requests:
+    - {id: low_waiting, type: tug_cart_movement, required_capability: tug_cart_movement, origin: Service Depot, destination: Service Depot, release_time_s: 0.0, priority: 0, service_duration_s: 4.0}
+    - {id: high_00, type: tug_cart_movement, required_capability: tug_cart_movement, origin: Service Depot, destination: Service Depot, release_time_s: 0.0, priority: 2, service_duration_s: 4.0}
+    - {id: high_02, type: tug_cart_movement, required_capability: tug_cart_movement, origin: Service Depot, destination: Service Depot, release_time_s: 2.0, priority: 2, service_duration_s: 4.0}
+    - {id: high_04, type: tug_cart_movement, required_capability: tug_cart_movement, origin: Service Depot, destination: Service Depot, release_time_s: 4.0, priority: 2, service_duration_s: 4.0}
+    - {id: high_06, type: tug_cart_movement, required_capability: tug_cart_movement, origin: Service Depot, destination: Service Depot, release_time_s: 6.0, priority: 2, service_duration_s: 4.0}
+    - {id: high_08, type: tug_cart_movement, required_capability: tug_cart_movement, origin: Service Depot, destination: Service Depot, release_time_s: 8.0, priority: 2, service_duration_s: 4.0}
+    - {id: high_10, type: tug_cart_movement, required_capability: tug_cart_movement, origin: Service Depot, destination: Service Depot, release_time_s: 10.0, priority: 2, service_duration_s: 4.0}

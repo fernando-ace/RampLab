@@ -31,6 +31,7 @@ struct RoadEdge {
     double distance_m{0.0};
     SimTime traversal_cost{};
     bool available{true};
+    bool one_way{false};
 };
 
 class AirportGraph {

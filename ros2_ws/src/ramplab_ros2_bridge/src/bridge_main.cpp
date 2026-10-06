@@ -1,5 +1,6 @@
 #include "airside/autonomy/scenario_loader.hpp"
 #include "airside/autonomy/simulation.hpp"
+#include "ramplab_ros2_bridge/camera_transport.hpp"
 #include "ramplab_ros2_bridge/command_watchdog.hpp"
 #include "ramplab_ros2_bridge/conversions.hpp"
 
@@ -9,8 +10,12 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rosgraph_msgs/msg/clock.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <std_msgs/msg/u_int8.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
 #include <tf2_ros/static_transform_broadcaster.hpp>
 #include <tf2_ros/transform_broadcaster.hpp>
 
@@ -26,6 +31,7 @@
 #include <string>
 #include <string_view>
 #include <thread>
+#include <memory>
 #include <vector>
 
 namespace {
@@ -37,13 +43,19 @@ using airside::autonomy::SensorFrame;
 using airside::autonomy::VehicleCommand;
 using airside::autonomy::VehicleLimits;
 using ramplab_ros2_bridge::CommandWatchdog;
+using ramplab_ros2_bridge::CameraTcpReceiver;
 
 struct Options {
   std::string scenario{"scenarios/autonomy_tug.yaml"};
+  std::string vehicle_id{"tug1"};
   std::optional<std::uint64_t> seed;
   std::optional<std::uint64_t> fault_seed;
   double realtime_factor{1.0};
   double command_timeout_s{0.5};
+  std::uint16_t camera_port{39010};
+  std::uint16_t lidar_port{39011};
+  bool publish_global_clock{true};
+  bool unreal_lidar{};
   std::optional<double> max_simulation_s;
 };
 
@@ -65,14 +77,33 @@ Options parse_options(int argc, char** argv) {
       return argv[i];
     };
     if (arg == "--scenario") result.scenario = next();
+    else if (arg == "--vehicle-id") result.vehicle_id = next();
     else if (arg == "--seed") result.seed = std::stoull(std::string(next()));
     else if (arg == "--fault-seed") result.fault_seed = std::stoull(std::string(next()));
     else if (arg == "--realtime-factor") result.realtime_factor = parse_double(next(), arg);
     else if (arg == "--command-timeout-s") result.command_timeout_s = parse_double(next(), arg);
+    else if (arg == "--camera-port") {
+      const auto port = std::stoul(std::string(next()));
+      if (port == 0 || port > 65535) throw std::invalid_argument("camera port must be in [1,65535]");
+      result.camera_port = static_cast<std::uint16_t>(port);
+    }
+    else if (arg == "--lidar-port") {
+      const auto port = std::stoul(std::string(next()));
+      if (port == 0 || port > 65535) throw std::invalid_argument("LiDAR port must be in [1,65535]");
+      result.lidar_port = static_cast<std::uint16_t>(port);
+    }
+    else if (arg == "--lidar-source") {
+      const auto source = next();
+      if (source == "unreal") result.unreal_lidar = true;
+      else if (source == "synthetic") result.unreal_lidar = false;
+      else throw std::invalid_argument("LiDAR source must be synthetic or unreal");
+    }
+    else if (arg == "--no-global-clock") result.publish_global_clock = false;
     else if (arg == "--max-sim-seconds") result.max_simulation_s = parse_double(next(), arg);
     else if (arg == "--help") {
       std::cout << "ramplab_ros2_bridge [--scenario FILE] [--seed N] [--fault-seed N] [--realtime-factor N] "
-                   "[--command-timeout-s N] [--max-sim-seconds N]\n";
+                   "[--command-timeout-s N] [--max-sim-seconds N] [--camera-port N] "
+                   "[--lidar-port N] [--lidar-source synthetic|unreal] [--vehicle-id ID] [--no-global-clock]\n";
       std::exit(0);
     } else if (arg != "--ros-args" && arg != "--") {
       throw std::invalid_argument("unknown option: " + std::string(arg));
@@ -98,17 +129,27 @@ private:
 class BridgeNode final : public rclcpp::Node {
 public:
   BridgeNode(AutonomySimulation& simulation, const AutonomyScenario& scenario,
-             double timeout_s)
-      : Node("ramplab_bridge", "/ramplab/tug1"), simulation_(simulation), scenario_(scenario),
-        timeout_s_(timeout_s), watchdog_(timeout_s, simulation.time_s()),
+             double timeout_s, std::uint16_t camera_port, std::uint16_t lidar_port, bool unreal_lidar,
+             bool publish_global_clock,const std::string& vehicle_id)
+      : Node("ramplab_bridge", ramplab_ros2_bridge::vehicle_namespace(vehicle_id)), simulation_(simulation), scenario_(scenario),
+        timeout_s_(timeout_s), watchdog_(timeout_s, simulation.time_s()), publish_global_clock_(publish_global_clock),
+        frame_prefix_(vehicle_id=="tug1"?std::string{}:vehicle_id+"/"),
         scan_pub_(create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::SensorDataQoS().keep_last(1))),
         imu_pub_(create_publisher<sensor_msgs::msg::Imu>("imu", rclcpp::SensorDataQoS().keep_last(1))),
         odom_pub_(create_publisher<nav_msgs::msg::Odometry>("odom", rclcpp::SensorDataQoS().keep_last(1))),
         gnss_pub_(create_publisher<sensor_msgs::msg::NavSatFix>("gnss", rclcpp::SensorDataQoS().keep_last(1))),
+        camera_image_pub_(create_publisher<sensor_msgs::msg::Image>("camera/image_raw", rclcpp::SensorDataQoS().keep_last(1))),
+        camera_info_pub_(create_publisher<sensor_msgs::msg::CameraInfo>("camera/camera_info", rclcpp::SensorDataQoS().keep_last(1))),
+        filtered_odom_pub_(create_publisher<nav_msgs::msg::Odometry>("filtered_odom", rclcpp::SensorDataQoS().keep_last(1))),
+        estimator_health_pub_(create_publisher<std_msgs::msg::UInt8>("estimator_health", rclcpp::SensorDataQoS().keep_last(1))),
+        estimator_diagnostics_pub_(create_publisher<std_msgs::msg::Float64MultiArray>("estimator_diagnostics", rclcpp::SensorDataQoS().keep_last(1))),
         route_pub_(create_publisher<nav_msgs::msg::Path>("route",
-            rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local())),
-        clock_pub_(create_publisher<rosgraph_msgs::msg::Clock>("/clock",
-            rclcpp::QoS(rclcpp::KeepLast(10)).reliable())) {
+            rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local())) {
+    if(publish_global_clock_)clock_pub_=create_publisher<rosgraph_msgs::msg::Clock>("/clock",
+        rclcpp::QoS(rclcpp::KeepLast(10)).reliable());
+    camera_receiver_ = std::make_unique<CameraTcpReceiver>(camera_port);
+    unreal_lidar_ = unreal_lidar;
+    if (unreal_lidar_) lidar_receiver_ = std::make_unique<ramplab_ros2_bridge::LidarTcpReceiver>(lidar_port);
     cmd_sub_ = create_subscription<geometry_msgs::msg::Twist>("cmd_vel",
         rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile(),
         [this](geometry_msgs::msg::Twist::ConstSharedPtr message) { receive_command(*message); });
@@ -123,9 +164,13 @@ public:
     static_tf_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(static_interfaces);
     dynamic_tf_ = std::make_shared<tf2_ros::TransformBroadcaster>(dynamic_interfaces);
     std::vector<geometry_msgs::msg::TransformStamped> transforms;
-    transforms.push_back(identity_transform("map", "odom"));
-    transforms.push_back(identity_transform("base_link", "lidar"));
-    transforms.push_back(identity_transform("base_link", "imu"));
+    transforms.push_back(identity_transform(frame_prefix_+"map", frame_prefix_+"odom"));
+    const auto& sensors = scenario_.sensors;
+    transforms.push_back(sensor_transform(frame_prefix_, "gnss", sensors.gnss_extrinsics));
+    transforms.push_back(sensor_transform(frame_prefix_, "imu", sensors.imu_extrinsics));
+    transforms.push_back(sensor_transform(frame_prefix_, "wheel_odom", sensors.odometry_extrinsics));
+    transforms.push_back(sensor_transform(frame_prefix_, "lidar", sensors.lidar_extrinsics));
+    transforms.push_back(sensor_transform(frame_prefix_, "camera", sensors.camera_extrinsics));
     static_tf_->sendTransform(transforms);
   }
 
@@ -135,7 +180,26 @@ public:
     publish_frame(simulation_.observe());
   }
 
-  void spin_once() { rclcpp::spin_some(shared_from_this()); }
+  void spin_once() {
+    rclcpp::spin_some(shared_from_this());
+    if (auto frame = camera_receiver_->poll()) {
+      auto messages = ramplab_ros2_bridge::to_camera_messages(*frame);
+      messages.image.header.frame_id=frame_prefix_+"camera";
+      messages.info.header.frame_id=frame_prefix_+"camera";
+      camera_image_pub_->publish(messages.image);
+      camera_info_pub_->publish(messages.info);
+      ++camera_count_;
+    }
+    if (unreal_lidar_) {
+      if (auto frame = lidar_receiver_->poll()) {
+        scan_pub_->publish(ramplab_ros2_bridge::to_laser_scan(
+            *frame, 1.0 / scenario_.sensors.lidar_hz, frame_prefix_+"lidar"));
+        last_scan_stamp_ = static_cast<double>(frame->timestamp_ns) / 1.0e9;
+        ++scan_count_;
+        unreal_lidar_frame_received_ = true;
+      }
+    }
+  }
 
   void advance_one(ExternalCommand& adapter) {
     adapter.set(command_for_step());
@@ -152,14 +216,28 @@ public:
   [[nodiscard]] std::uint64_t count_imu() const noexcept { return imu_count_; }
   [[nodiscard]] std::uint64_t count_odom() const noexcept { return odom_count_; }
   [[nodiscard]] std::uint64_t count_gnss() const noexcept { return gnss_count_; }
+  [[nodiscard]] std::uint64_t count_camera() const noexcept { return camera_count_; }
+  [[nodiscard]] bool has_unreal_lidar() const noexcept { return unreal_lidar_frame_received_; }
 
 private:
   static geometry_msgs::msg::TransformStamped identity_transform(
-      const std::string& parent, const std::string& child) {
+      const std::string& parent, const std::string& child,
+      double x_m = 0.0, double y_m = 0.0, double z_m = 0.0) {
     geometry_msgs::msg::TransformStamped tf;
     tf.header.frame_id = parent;
     tf.child_frame_id = child;
+    tf.transform.translation.x = x_m;
+    tf.transform.translation.y = y_m;
+    tf.transform.translation.z = z_m;
     tf.transform.rotation.w = 1.0;
+    return tf;
+  }
+
+  static geometry_msgs::msg::TransformStamped sensor_transform(
+      const std::string& prefix,
+      const std::string& child, const airside::autonomy::SensorExtrinsics& extrinsics) {
+    auto tf = identity_transform(prefix+"base_link", prefix+child, extrinsics.x_m, extrinsics.y_m, extrinsics.z_m);
+    tf.transform.rotation = ramplab_ros2_bridge::yaw_quaternion(extrinsics.yaw_rad);
     return tf;
   }
 
@@ -191,6 +269,7 @@ private:
   }
 
   void publish_clock() {
+    if(!clock_pub_)return;
     rosgraph_msgs::msg::Clock message;
     message.clock = ramplab_ros2_bridge::to_ros_time(simulation_.time_s());
     clock_pub_->publish(message);
@@ -199,7 +278,7 @@ private:
   void publish_route() {
     nav_msgs::msg::Path route;
     route.header.stamp = ramplab_ros2_bridge::to_ros_time(simulation_.time_s());
-    route.header.frame_id = "map";
+    route.header.frame_id = frame_prefix_+"map";
     const auto& points = simulation_.mission().waypoints;
     route.poses.reserve(points.size());
     for (std::size_t i = 0; i < points.size(); ++i) {
@@ -222,19 +301,19 @@ private:
   }
 
   void publish_frame(const SensorFrame& frame) {
-    if (frame.lidar && frame.lidar->timestamp_s != last_scan_stamp_) {
+    if (!unreal_lidar_ && frame.lidar && frame.lidar->timestamp_s != last_scan_stamp_) {
       scan_pub_->publish(ramplab_ros2_bridge::to_laser_scan(
-          *frame.lidar, 1.0 / scenario_.sensors.lidar_hz, "lidar"));
+          *frame.lidar, 1.0 / scenario_.sensors.lidar_hz, frame_prefix_+"lidar"));
       last_scan_stamp_ = frame.lidar->timestamp_s;
       ++scan_count_;
     }
     if (frame.imu && frame.imu->timestamp_s != last_imu_stamp_) {
-      imu_pub_->publish(ramplab_ros2_bridge::to_imu(*frame.imu, scenario_.sensors, "imu"));
+      imu_pub_->publish(ramplab_ros2_bridge::to_imu(*frame.imu, scenario_.sensors, frame_prefix_+"imu"));
       last_imu_stamp_ = frame.imu->timestamp_s;
       ++imu_count_;
     }
     if (frame.gnss && frame.gnss->timestamp_s != last_gnss_stamp_) {
-      gnss_pub_->publish(ramplab_ros2_bridge::to_nav_sat_fix(*frame.gnss, "gnss"));
+      gnss_pub_->publish(ramplab_ros2_bridge::to_nav_sat_fix(*frame.gnss, frame_prefix_+"gnss"));
       last_gnss_stamp_ = frame.gnss->timestamp_s;
       ++gnss_count_;
     }
@@ -242,10 +321,34 @@ private:
       update_odometry(*frame.odometry, frame.imu ? &*frame.imu : nullptr);
       auto message = ramplab_ros2_bridge::to_odometry(frame.odometry->timestamp_s,
           estimated_position_, estimated_heading_rad_, frame.odometry->speed_mps, estimated_yaw_rate_);
+      message.header.frame_id=frame_prefix_+"odom";
+      message.child_frame_id=frame_prefix_+"base_link";
       odom_pub_->publish(message);
-      publish_dynamic_transform(message);
       last_odom_stamp_ = frame.odometry->timestamp_s;
       ++odom_count_;
+    }
+    if(frame.estimate&&frame.estimate->initialized&&frame.estimate->timestamp_s!=last_filtered_stamp_) {
+      auto message=ramplab_ros2_bridge::to_filtered_odometry(*frame.estimate);
+      message.header.frame_id=frame_prefix_+"odom";
+      message.child_frame_id=frame_prefix_+"base_link";
+      filtered_odom_pub_->publish(message);
+      std_msgs::msg::UInt8 status;
+      status.data=static_cast<std::uint8_t>(frame.estimate->health);
+      estimator_health_pub_->publish(status);
+      std_msgs::msg::Float64MultiArray diagnostics;
+      diagnostics.data={frame.estimate->position_uncertainty_m,frame.estimate->heading_uncertainty_rad,
+          frame.estimate->time_since_gnss_s,static_cast<double>(frame.estimate->gnss_accepted),
+          static_cast<double>(frame.estimate->gnss_rejected),static_cast<double>(frame.estimate->stale_rejected),
+          static_cast<double>(frame.estimate->gate_activations),frame.estimate->last_gnss_nis,
+          static_cast<double>(frame.estimate->wheel_health),static_cast<double>(frame.estimate->gnss_recovery),
+          static_cast<double>(frame.estimate->wheel_inconsistency_count),static_cast<double>(frame.estimate->wheel_health_transitions),
+          static_cast<double>(frame.estimate->reacquisition_attempts),
+          static_cast<double>(frame.estimate->reacquisition_successes),static_cast<double>(frame.estimate->reacquisition_candidates_rejected),
+          static_cast<double>(frame.estimate->wheel_downweighted),frame.estimate->localization_degraded_time_s};
+      diagnostics.data.push_back(frame.estimate->maximum_gnss_nis);
+      estimator_diagnostics_pub_->publish(diagnostics);
+      publish_dynamic_transform(message);
+      last_filtered_stamp_=frame.estimate->timestamp_s;
     }
   }
 
@@ -288,17 +391,29 @@ private:
   const AutonomyScenario& scenario_;
   double timeout_s_;
   CommandWatchdog watchdog_;
+  bool publish_global_clock_{};
+  std::string frame_prefix_;
   rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr scan_pub_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr filtered_odom_pub_;
+  rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr estimator_health_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr estimator_diagnostics_pub_;
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr gnss_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_pub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr route_pub_;
   rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr clock_pub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> dynamic_tf_;
-  std::uint64_t scan_count_{}, imu_count_{}, odom_count_{}, gnss_count_{};
+  std::unique_ptr<CameraTcpReceiver> camera_receiver_;
+  std::unique_ptr<ramplab_ros2_bridge::LidarTcpReceiver> lidar_receiver_;
+  bool unreal_lidar_{};
+  bool unreal_lidar_frame_received_{};
+  std::uint64_t scan_count_{}, imu_count_{}, odom_count_{}, gnss_count_{}, camera_count_{};
   double last_scan_stamp_{-1.0}, last_imu_stamp_{-1.0}, last_odom_stamp_{-1.0}, last_gnss_stamp_{-1.0};
+  double last_filtered_stamp_{-1.0};
   bool odom_initialized_{};
   double last_measured_distance_m_{}, last_heading_change_rad_{};
   double estimated_heading_rad_{}, estimated_yaw_rate_{};
@@ -325,7 +440,8 @@ void print_result(const airside::autonomy::AutonomyRun& run, const BridgeNode& b
       << "Command timeout activations: " << bridge.timeout_count() << '\n'
       << "Latest command age: " << bridge.latest_command_age() << " s\n"
       << "Published messages: scan=" << bridge.count_scan() << " imu=" << bridge.count_imu()
-      << " odom=" << bridge.count_odom() << " gnss=" << bridge.count_gnss() << '\n'
+      << " odom=" << bridge.count_odom() << " gnss=" << bridge.count_gnss()
+      << " camera=" << bridge.count_camera() << '\n'
       << "Trajectory digest: " << metrics.trajectory_digest << '\n';
   if (run_limit) std::cout << "Stopped at requested simulation limit: " << *run_limit << " s\n";
 }
@@ -340,20 +456,27 @@ int main(int argc, char** argv) {
     const auto fault_seed = options.fault_seed.value_or(seed ^ 0x9e3779b97f4a7c15ULL);
     AutonomySimulation simulation(scenario, seed, fault_seed);
     rclcpp::init(argc, argv);
-    auto bridge = std::make_shared<BridgeNode>(simulation, scenario, options.command_timeout_s);
+    auto bridge = std::make_shared<BridgeNode>(simulation, scenario, options.command_timeout_s,
+        options.camera_port, options.lidar_port, options.unreal_lidar, options.publish_global_clock,options.vehicle_id);
     bridge->initialize_transforms();
     ExternalCommand command;
     bridge->publish_initial();
     RCLCPP_INFO(bridge->get_logger(),
         "ROS 2 bridge active; controller source=external ROS process, pace=%.2fx, timeout=%.3f sim s",
         options.realtime_factor, options.command_timeout_s);
-    const auto start = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point start{};
+    bool pacing_started = false;
     while (rclcpp::ok() && !simulation.finished() &&
         (!options.max_simulation_s || simulation.time_s() + 1e-9 < *options.max_simulation_s)) {
+      bridge->spin_once();
+      if (options.unreal_lidar && !bridge->has_unreal_lidar()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        continue;
+      }
+      if (!pacing_started) { start = std::chrono::steady_clock::now(); pacing_started = true; }
       const auto next_wall_time = start + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
           std::chrono::duration<double>((simulation.time_s() + scenario.timestep_s) /
               options.realtime_factor));
-      bridge->spin_once();
       bridge->advance_one(command);
       std::this_thread::sleep_until(next_wall_time);
     }

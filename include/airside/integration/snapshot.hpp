@@ -25,7 +25,35 @@ struct ServiceTaskSnapshot {
     std::optional<SimTime> requested_at;
     std::optional<SimTime> started_at;
     std::optional<SimTime> completed_at;
+    std::vector<TaskId> prerequisites;
+    SimTime earliest_start{};
+    SimTime waiting_time{};
+    std::string required_resource;
+    std::optional<VehicleId> assigned_vehicle;
+    std::string assigned_resource;
+    std::optional<SimTime> latest_desirable_completion;
+    std::size_t reassignments{};
     auto operator<=>(const ServiceTaskSnapshot&) const = default;
+};
+
+struct TurnaroundSnapshot {
+    std::string turnaround_id;
+    AircraftId aircraft;
+    GateId gate;
+    TurnaroundState state{TurnaroundState::Scheduled};
+    SimTime scheduled_arrival{};
+    std::optional<SimTime> actual_arrival;
+    SimTime scheduled_departure{};
+    SimTime target_off_block{};
+    std::optional<SimTime> completion_time;
+    std::optional<SimTime> departure_delay;
+    std::string failure_reason;
+    SimTime estimated_ready_time{};
+    SimTime schedule_slack{};
+    bool predicted_late{false};
+    std::vector<TaskId> critical_path_tasks;
+    std::vector<ServiceTaskSnapshot> tasks;
+    auto operator<=>(const TurnaroundSnapshot&) const = default;
 };
 
 struct AircraftSnapshot {
@@ -39,6 +67,46 @@ struct AircraftSnapshot {
     SimTime scheduled_departure;
     std::optional<SimTime> actual_departure;
     std::vector<ServiceTaskSnapshot> services;
+    std::string surface_state;
+    std::string operation_type;
+    std::optional<NodeId> surface_node;
+    std::vector<NodeId> surface_route;
+    std::string surface_wait_reason;
+    std::size_t surface_reroutes{};
+    double taxi_distance_m{};
+    SimTime surface_wait_duration{};
+    std::optional<SimTime> pushback_started_at;
+    std::optional<SimTime> pushback_completed_at;
+    std::optional<SimTime> taxi_started_at;
+    std::optional<SimTime> taxi_completed_at;
+    std::optional<SimTime> runway_queue_entered_at;
+    std::optional<SimTime> actual_surface_departure;
+    std::optional<SimTime> runway_clearance_at;
+    std::optional<SimTime> runway_release_at;
+    std::optional<SimTime> arrival_gate_at;
+    SimTime gate_wait_duration{};
+    SimTime gate_occupancy_duration{};
+    std::optional<SimTime> gate_released_at;
+    std::optional<SimTime> arrival_taxi_started_at;
+    std::optional<SimTime> arrival_taxi_completed_at;
+    double arrival_taxi_distance_m{};
+    std::optional<SimTime> departure_taxi_started_at;
+    std::optional<SimTime> departure_taxi_completed_at;
+    double departure_taxi_distance_m{};
+    std::optional<SimTime> gate_assigned_at;
+    SimTime runway_wait_duration{};
+    std::optional<SimTime> arrival_runway_request_time;
+    std::optional<SimTime> arrival_runway_clearance_time;
+    std::optional<SimTime> arrival_runway_release_time;
+    SimTime arrival_runway_wait_duration{};
+    std::optional<SimTime> departure_runway_request_time;
+    std::optional<SimTime> departure_runway_clearance_time;
+    std::optional<SimTime> departure_runway_release_time;
+    SimTime departure_runway_wait_duration{};
+    std::optional<Vec2> surface_position_m;
+    double surface_heading_rad{};
+    double surface_speed_mps{};
+    std::string surface_next_waypoint;
     auto operator<=>(const AircraftSnapshot&) const = default;
 };
 
@@ -72,6 +140,9 @@ struct ServiceVehicleSnapshot {
     NodeId destination_node;
     std::optional<AircraftId> assigned_aircraft;
     std::optional<VehicleJourneySnapshot> journey;
+    std::optional<Vec2> observed_position_m;
+    std::optional<double> observed_heading_rad;
+    std::string fleet_status;
     auto operator<=>(const ServiceVehicleSnapshot&) const = default;
 };
 
@@ -110,6 +181,9 @@ struct SimulationSnapshot {
     std::vector<GateSnapshot> gates;
     std::vector<RoadNodeSnapshot> road_nodes;
     std::vector<RoadEdgeSnapshot> roads;
+    std::vector<TurnaroundSnapshot> turnarounds;
+    std::optional<AircraftId> runway_owner;
+    std::vector<AircraftId> runway_queue;
     auto operator<=>(const SimulationSnapshot&) const = default;
 };
 

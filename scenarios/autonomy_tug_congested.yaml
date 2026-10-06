@@ -1,0 +1,37 @@
+name: autonomy_tug_congested
+default_seed: 42
+map_scenario: autonomy_fleet_congested_map.yaml
+mission:
+  start_node: Approach North
+  goal_node: Approach South
+vehicle:
+  x_m: 0.0
+  y_m: 0.0
+  heading_rad: 0.0
+  maximum_speed_mps: 5.0
+  maximum_acceleration_mps2: 1.0
+  maximum_deceleration_mps2: 1.5
+  maximum_yaw_rate_radps: 0.8
+  radius_m: 1.0
+simulation:
+  timestep_s: 0.02
+  timeout_s: 240.0
+  goal_tolerance_m: 2.0
+  stopped_speed_mps: 0.15
+  safety_stop_range_m: 2.2
+sensors:
+  gnss_hz: 5.0
+  gnss_sigma_m: 0.5
+  imu_hz: 50.0
+  imu_heading_sigma_rad: 0.005
+  imu_yaw_rate_sigma_radps: 0.005
+  imu_accel_sigma_mps2: 0.03
+  odometry_hz: 20.0
+  odometry_sigma_mps: 0.02
+  odometry_sigma_m: 0.01
+  lidar_hz: 10.0
+  lidar_fov_deg: 180.0
+  lidar_beams: 181
+  lidar_min_range_m: 0.1
+  lidar_max_range_m: 30.0
+  lidar_sigma_m: 0.01

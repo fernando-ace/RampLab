@@ -1,0 +1,9 @@
+name: autonomy_fleet_three_vehicle_deadlock
+default_seed: 42
+vehicle_scenario: autonomy_tug_deadlock.yaml
+deadlock_persistence_s: 0.1
+resource_specific_tie_breaks: true
+missions:
+  - { id: tug_01, start_node: Holding A, goal_node: Exit B, priority: 0 }
+  - { id: tug_02, start_node: Holding B, goal_node: Exit C, priority: 0 }
+  - { id: tug_03, start_node: Holding C, goal_node: Exit A, priority: 0 }

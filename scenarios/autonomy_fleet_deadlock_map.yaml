@@ -1,0 +1,36 @@
+name: autonomy_fleet_deadlock_map
+airport:
+  nodes:
+    - { id: cycle_a, name: Cycle A, x_m: 0.0, y_m: 0.0 }
+    - { id: cycle_b, name: Cycle B, x_m: 26.0, y_m: 0.0 }
+    - { id: cycle_c, name: Cycle C, x_m: 13.0, y_m: 22.5166605 }
+    - { id: hold_a, name: Holding A, x_m: -10.0, y_m: -17.3205081 }
+    - { id: hold_b, name: Holding B, x_m: 36.0, y_m: -17.3205081 }
+    - { id: hold_c, name: Holding C, x_m: 13.0, y_m: 42.5166605 }
+    - { id: exit_a, name: Exit A, x_m: -20.0, y_m: 0.0 }
+    - { id: exit_b, name: Exit B, x_m: 100.0, y_m: 0.0 }
+    - { id: exit_c, name: Exit C, x_m: 3.0, y_m: 39.836914 }
+    - { id: recovery_lane, name: Recovery Lane, x_m: 0.0, y_m: -60.0 }
+    - { id: recovery_east, name: Recovery East, x_m: 100.0, y_m: -60.0 }
+  edges:
+    - { id: hold_a, from: hold_a, to: cycle_a, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: ab, from: cycle_a, to: cycle_b, distance_m: 26.0, traversal_time_seconds: 20 }
+    - { id: exit_b, from: cycle_b, to: exit_b, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: hold_b, from: hold_b, to: cycle_b, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: bc, from: cycle_b, to: cycle_c, distance_m: 26.0, traversal_time_seconds: 20 }
+    - { id: exit_c, from: cycle_c, to: exit_c, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: hold_c, from: hold_c, to: cycle_c, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: ca, from: cycle_c, to: cycle_a, distance_m: 26.0, traversal_time_seconds: 20 }
+    - { id: exit_a, from: cycle_a, to: exit_a, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: recovery_a, from: cycle_a, to: recovery_lane, distance_m: 60.0, traversal_time_seconds: 15 }
+    - { id: recovery_east, from: recovery_lane, to: recovery_east, distance_m: 100.0, traversal_time_seconds: 15 }
+    - { id: recovery_b, from: recovery_east, to: exit_b, distance_m: 60.0, traversal_time_seconds: 15 }
+gates:
+  - { id: TRAINING, node: hold_a }
+fleet:
+  vehicles:
+    - { id: fuel, name: FuelTruck, type: fueling, depot_node: hold_a, speed_mps: 5.0 }
+    - { id: baggage, name: BaggageCart, type: baggage, depot_node: hold_a, speed_mps: 5.0 }
+aircraft:
+  - { id: TRAINING, gate: TRAINING, scheduled_arrival_seconds: 0, scheduled_departure_seconds: 60, required_services: [fueling] }
+service_durations_seconds: { fueling: 1, baggage: 1 }

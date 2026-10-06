@@ -26,7 +26,7 @@ Set-Location C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab
 . 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab\ros2_ws\scripts\build.ps1'
 ```
 
-`build.ps1` puts the verified CMake 4.4.3 binary directory first on `PATH`, then builds the bridge and controller with colcon. Override `-CMakeBin` if CMake 4.4 is installed elsewhere. To run the nine conversion/watchdog cases:
+`build.ps1` puts the verified CMake 4.4.3 binary directory first on `PATH`, then builds the bridge and controller with colcon. Override `-CMakeBin` if CMake 4.4 is installed elsewhere. The bridge conversion suite has ten GTest cases plus one CTest harness result:
 
 ```powershell
 Set-Location C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab\ros2_ws
@@ -41,13 +41,59 @@ The tests can also be run in one activated Pixi invocation using the setup seque
 ```text
 ros2_ws/src/
 ├── ramplab_ros2_common/       # WGS84/local ENU conversion
-├── ramplab_ros2_bridge/       # ROS messages <-> existing autonomy simulation
+├── ramplab_ros2_bridge/       # per-vehicle bridge plus coordinated fleet-state adapter
 └── ramplab_ros2_controller/   # independent rclcpp executable
 ```
 
-The bridge imports the already-built RampLab autonomy libraries; this is an adapter, not a new simulation implementation. The external controller links only ROS packages and the small coordinate-conversion header. It does not include or link RampLab simulation, ground-truth, obstacle-state, or controller internals. It consumes the published route, GNSS, IMU, wheel odometry, and LiDAR messages and publishes `cmd_vel`.
+The bridge imports the already-built RampLab autonomy libraries; this is an adapter, not a new simulation implementation. The external controller links ROS packages only. It does not include or link RampLab simulation, ground-truth, obstacle-state, estimator, or controller internals. It consumes the route, fused odometry, estimator health, and LiDAR messages and publishes `cmd_vel`.
+
+## Turnaround observation
+
+`ramplab_ros2_turnaround_bridge` runs the authoritative discrete-event `Simulation` from a turnaround YAML scenario and publishes read-only state. It advances a bounded batch of scheduled events per bridge timer tick so fleet fixed-step events do not make multi-aircraft observation impractically slow; the core still determines every simulation timestamp, task transition, route, and resource assignment. Playback pacing does not enter the simulation's scheduling decisions.
+
+| Topic | Type | Contents |
+|---|---|---|
+| `/ramplab/turnaround/state` | `std_msgs/msg/String` | Transient-local JSON with simulation time; turnaround, aircraft, and gate IDs; state/failure; scheduled and actual arrival/departure; gate wait/occupancy and pushback timing; separate arrival/departure taxi timing and distance; separate arrival/departure runway request, clearance, wait, and release; pending/active/completed tasks; critical-path IDs; and per-task state, service, assigned resource/vehicle, latest desirable completion, and reassignment count. |
+| `/ramplab/turnaround/events` | `std_msgs/msg/String` | Reliable ordered JSON events with sequence, simulation timestamp, type, detail, turnaround, aircraft, gate, task, service, and vehicle IDs. |
+
+Build the ROS overlay after the normal Release core build, then launch the observer and probe from the activated ROS environment:
+
+```powershell
+python .\ros2_ws\scripts\verify_turnaround_topics.py --duration 30 --min-aircraft 3 `
+  --bridge-executable .\ros2_ws\install\lib\ramplab_ros2_bridge\ramplab_ros2_turnaround_bridge.exe `
+  --scenario scenarios\turnaround_flight_bank_outage.yaml --seed 42 --require-outage-reassignment
+```
+
+For the Goal 18 integrated arrival-to-departure bank, use the same observer with `--scenario scenarios\turnaround_lifecycle.yaml --seed 42 --require-integrated-lifecycle`. The live probe follows one aircraft ID through actual arrival, gate arrival, task completion, pushback, departure runway queue, and departure. The test remains observational; the C++ simulation owns all scheduling and state transitions. The bridge suite now checks the lifecycle timing fields in its state JSON.
+
+With `--bridge-executable`, the probe creates its subscriptions before launching the bridge, then checks three distinct aircraft, each aircraft's complete task list and departure, ordered events, and at least one mobile-resource service. `--require-outage-reassignment` additionally verifies the original assignment, outage, reassignment of that task, replacement start/completion, and matching final task state. The Goal 15 outage probe observed 3/3 departures, 18 completed task events, outage vehicle 2 and task 3 at simulation time 130, and reassignment to vehicle 3. The state schema reports simulator estimates only; service durations and operating policies remain synthetic assumptions.
+
+`ramplab_ros2_fleet_bridge` runs one deterministic `FleetSimulation` in one process and publishes identity-keyed fleet state and traffic decisions. The C++ simulation remains the only source of route, reservation, wait-for, deadlock, closure, and recovery decisions. The fleet adapter does not accept low-level vehicle commands; the per-vehicle bridges and external controllers remain available for isolated closed-loop tests.
+
+| Topic | Type | Contents |
+|---|---|---|
+| `/ramplab/fleet/state` | `std_msgs/msg/String` | Transient-local JSON snapshot containing simulation time, mission/deadlock/recovery/retreat counts, outstanding reservations, and a `vehicles` array keyed by `vehicle_id`; each row includes goal, pose, speed, waiting/finished state, recovery state/resource/target/progress/attempts, dispatch state, current request, task count, busy/idle time and utilization, and blocker/resource/wait duration when blocked. A `dispatch` object contains aggregate counts/waits and a `requests` array with request kind, required capability, origin/destination, priority, release time, lifecycle, assignment, queue wait, and reassignments. |
+| `/ramplab/fleet/traffic_events` | `std_msgs/msg/String` | Reliable JSON events with simulation time, typed event kind, `vehicle_id`, `other_vehicle_id`, resource, current position, retreat target, and progress distance. |
+| `/ramplab/fleet/dispatch_events` | `std_msgs/msg/String` | Reliable read-only JSON stream for request release, candidate evaluation, assignment, lifecycle transition, requeue/reassignment, aging, completion, and failure. Records include request/vehicle IDs, effective priority, route-distance estimate, and the decision/rejection reason. |
+
+Use the fleet-level node together with a scenario file:
+
+```powershell
+ros2 run ramplab_ros2_bridge ramplab_ros2_fleet_bridge --scenario scenarios\autonomy_fleet.yaml --seed 42
+python .\ros2_ws\scripts\verify_fleet_manager.py --seconds 4
+```
+
+The verifier checks that all three IDs appear exactly once, per-vehicle kinematics are present, simulation time advances, and coordinated traffic events reach the ROS topic. Validation received 999 state snapshots and 8 traffic events over 20 wall seconds; the reported simulation clock advanced from 0.20 to 20.16 s. The older `verify_multi_vehicle_isolation.py` still validates command/sensor namespacing across three independent bridge processes.
+
+Goal 13 dispatch snapshots and events are observation-only; the fleet adapter still does not accept low-level vehicle commands or let an external ROS process change task state. The Goal 13 dynamic probe received 737 fleet-state samples and 17 dispatch events over 15 wall seconds, observed 4/4 requests complete with 4 assignments, and found zero unfinished requests. It asserted request release, candidate evaluation, assignment, completion, and at least one capability rejection. The package suite passed all 16 tests. The state stream continues to expose only the fields already used by the simulator's fleet validation surface; the dispatch addition contributes task/capability/lifecycle/metric data and does not expose new sensor ground truth.
 
 ## Topics and QoS
+
+The read-only `/ramplab/turnaround/state` stream also carries aircraft surface state when the loaded scenario enables `surface_operations`: position in airport-local meters, heading, speed, route node IDs, wait reason, reroute count, taxi distance, and wait duration. `/ramplab/turnaround/events` forwards pushback, route assignment, traffic wait, reservation, closure invalidation, reroute, runway queue/clearance, safe failure, and departure events with their deterministic core sequence numbers. Run `ramplab_ros2_turnaround_bridge --scenario scenarios/surface_traffic.yaml --seed 42` and use `verify_turnaround_topics.py --min-aircraft 3 --require-surface`; add `--require-reroute` for the disrupted scenario.
+
+The live seed-42 surface probes passed after rebuilding the bridge against the Release core. Control observed 3/3 departures, 18 task completions, three pushbacks, three runway queue entries, one traffic wait, and zero reroutes. The closure probe observed 3/3 departures, 18 task completions, three pushbacks and queue entries, one traffic wait, and one reroute. The bridge suite passed 19 tests (15 conversion cases, two surface JSON cases, and two CTest harness cases).
+
+Goal 17 mixed operations use the same observer with `--require-surface --require-mixed-traffic` and scenarios `mixed_runway_operations.yaml` / `mixed_runway_disrupted.yaml`. State includes arrival/departure operation type, runway request/clearance/release timestamps and wait, arrival gate time, current owner, and queued aircraft; events preserve the core sequence for both operation types. Both live seed-42 probes observed 2/2 arrivals at assigned gates, 3/3 departures, five runway grants, and a free runway with an empty queue at completion. The ROS bridge suite passed 20 tests (18 GTests and two CTest harness cases). The disruption closes the A4 merge-to-gate edge before taxi routing, so the arrival selects the available detour route directly; the live probe does not expect a post-assignment reroute event.
 
 All tug topics are under `/ramplab/tug1`. Sensor rates below are configured simulation rates; measured rates came from an 8-second external `rclpy` observation during a 1× real-time run.
 
@@ -57,11 +103,16 @@ All tug topics are under `/ramplab/tug1`. Sensor rates below are configured simu
 | `/ramplab/tug1/scan` | `sensor_msgs/msg/LaserScan` | bridge publishes | 10 / 10.00 Hz | `lidar` |
 | `/ramplab/tug1/imu` | `sensor_msgs/msg/Imu` | bridge publishes | 50 / 49.13 Hz* | `imu` |
 | `/ramplab/tug1/odom` | `nav_msgs/msg/Odometry` | bridge publishes | 20 / 20.03 Hz | `odom`, child `base_link` |
+| `/ramplab/tug1/filtered_odom` | `nav_msgs/msg/Odometry` | bridge publishes | 50 Hz simulation updates | `odom`, child `base_link` |
+| `/ramplab/tug1/estimator_health` | `std_msgs/msg/UInt8` | bridge publishes | 50 Hz simulation updates | 0 uninitialized, 1 healthy, 2 degraded, 3 unsafe, 4 invalid |
+| `/ramplab/tug1/estimator_diagnostics` | `std_msgs/msg/Float64MultiArray` | bridge publishes | 50 Hz simulation updates | `[position_sigma_m, heading_sigma_rad, gnss_age_s, accepted, rejected, stale, gate_activations, last_gnss_nis, wheel_health, gnss_recovery, wheel_inconsistencies, wheel_transitions, reacq_attempts, reacq_successes, candidate_rejections, wheel_downweighted, degraded_time_s, max_gnss_nis]` |
 | `/ramplab/tug1/gnss` | `sensor_msgs/msg/NavSatFix` | bridge publishes | 5 / 5.00 Hz | `gnss` |
+| `/ramplab/tug1/camera/image_raw` | `sensor_msgs/msg/Image` | bridge publishes Unreal RGB frames | up to 20 Hz | `camera`, `bgra8` |
+| `/ramplab/tug1/camera/camera_info` | `sensor_msgs/msg/CameraInfo` | bridge publishes with each image | up to 20 Hz | `camera`, zero-distortion pinhole model |
 | `/ramplab/tug1/route` | `nav_msgs/msg/Path` | bridge publishes once, transient-local | mission route | `map` |
 | `/ramplab/tug1/cmd_vel` | `geometry_msgs/msg/Twist` | controller publishes; bridge subscribes | not stamped / measured 20.05 Hz wall rate | — |
-| `/tf` | `tf2_msgs/msg/TFMessage` | bridge publishes | odometry updates | `odom` → `base_link` |
-| `/tf_static` | `tf2_msgs/msg/TFMessage` | bridge publishes | static | `map` → `odom`; `base_link` → `lidar`, `imu` |
+| `/tf` | `tf2_msgs/msg/TFMessage` | bridge publishes | filtered odometry updates | `odom` → `base_link` |
+| `/tf_static` | `tf2_msgs/msg/TFMessage` | bridge publishes | static | `map` → `odom`; `base_link` → `gnss`, `imu`, `wheel_odom`, `lidar`, `camera` |
 
 The measured wall rates at factor 1 were approximately 50.93, 10.05, 49.29, 20.10, and 4.99 Hz respectively for clock, scan, IMU, odometry, and GNSS. The probe enforces strictly increasing simulation stamps and checks rates within 35% of configured values. `*`IMU's measured rate is lower because the best-effort depth-one stream may drop samples while the Windows processes are scheduled; its simulation timestamp span is 49.13 Hz and the wall observation was 49.29 Hz.
 
@@ -71,7 +122,13 @@ Sensor streams use best-effort depth one. The path is reliable, transient-local,
 
 The bridge publishes `/clock` at the 20 ms simulation step, before publishing the measurements for that step. Measurement headers use that same simulation clock, never wall time. The monitor confirmed strictly increasing clock and sensor stamps. `geometry_msgs/Twist` has no header timestamp; command freshness is measured by the bridge's simulation-time receive stamp. Non-finite velocity values are rejected, and finite speed/yaw values are clamped to scenario limits.
 
-`map` is the local east/north tangent plane. `odom` is currently identity-aligned to `map`. `odom → base_link` is derived from measured wheel-odometry increments (with heading corrected from IMU), rather than the simulation's truth pose. `base_link → lidar` and `base_link → imu` are fixed identity transforms for this planar sensor model. GNSS converts local ENU to WGS84 about the KAUO reference (32.6151667°, -85.4340000°, 208.27 m ellipsoid height); `NavSatFix` reports horizontal variance on its diagonal.
+`map` is the local east/north tangent plane. `odom` is identity-aligned to `map`. TF has one owner: the bridge publishes static `map → odom`, dynamic `odom → base_link` from `/filtered_odom`, and static `base_link → gnss`, `imu`, `wheel_odom`, `lidar`, and `camera` transforms using the sensor extrinsics from the loaded scenario YAML. Raw wheel `/odom` does not publish TF. Filtered pose covariance maps east/north/yaw into ROS 6×6 pose covariance; speed variance is in twist covariance and unmodeled axes carry large variances. GNSS converts local ENU to WGS84 about the KAUO reference (32.6151667°, -85.4340000°, 208.27 m ellipsoid height); `NavSatFix` reports horizontal variance on its diagonal.
+
+### Unreal RGB transport
+
+When the Unreal camera component connects, it streams each captured 320×180 BGRA8 frame over a localhost TCP connection to the bridge (`127.0.0.1:39010` by default). The bridge accepts only loopback clients and publishes the paired `Image` and `CameraInfo` with the camera simulation timestamp and frame ID. Configure the same port in the Unreal component's `TransportPort` and bridge's `--camera-port` option. The versioned `RLSN` frame header carries timestamp, sequence, dimensions, byte count, and horizontal FOV; the bridge rejects malformed frames and retains only the newest complete frame if several arrive between simulation ticks. A disconnected camera leaves the image topics quiet while other sensors and the controller continue. This local socket is a transport adapter; it does not make Unreal authoritative over vehicle state.
+
+LiDAR defaults to the deterministic core scan. To let the ROS controller consume Unreal's scene geometry rays, run the bridge with `--lidar-source unreal` (optional `--lidar-port`, default 39011) and connect the Unreal LiDAR component's `TransportPort` to the same port. Unreal streams `RLLD` v1 records containing simulation timestamp, sequence, angular bounds/resolution, range limits, and float32 ranges. The receiver is loopback-only, validates the full scan, and publishes geometry-derived messages on the existing `/ramplab/tug1/scan` topic. In this mode, the bridge waits for the first Unreal scan before advancing its simulation clock, then paces it from simulation time; the external ROS controller therefore receives the actual Unreal scan through its existing safety subscription. The core estimator and RampLab vehicle state remain driven by the authoritative portable simulation. The default `synthetic` source preserves headless/ROS behavior when Unreal is absent.
 
 ## Run the external mission
 
@@ -112,12 +169,14 @@ Set-Location C:\dev\ros2_lyrical
 pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\scripts\build.ps1'"
 ```
 
-The script below launches the separately compiled controller and bridge as distinct processes and observes `/clock`, GNSS, LiDAR, odometry, and `cmd_vel`. Its staged scenario checks GNSS dropout, LiDAR range degradation, wheel slip, combined localization faults, and a severe LiDAR/GNSS/IMU outage that causes the external controller to command zero speed:
+The script below launches the separately compiled controller and bridge as distinct processes and observes `/clock`, GNSS, LiDAR, raw/filtered odometry, estimator covariance/health/gates, TF, and `cmd_vel`. Its staged scenario checks GNSS dropout and covariance growth, LiDAR range degradation, wheel slip, biased GNSS plus IMU degradation and gate activation, combined faults, and a severe outage that causes the external controller to command zero speed. It also confirms the graph has no ground-truth topic and one dynamic TF publisher:
 
 ```powershell
 Set-Location C:\dev\ros2_lyrical
 pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_ros2_fault_validation.yaml --seed 42 --fault-seed 7019 --factor 1"
 ```
+
+The final staged probe passed over 34.000 simulation seconds and published 1,628 filtered odometry samples. Reported radial position uncertainty increased from 0.300 to 0.540 m during GNSS loss; the biased-GNSS interval triggered 54 gate activations. The measured odometry/command-model speed ratio was 0.750 during 25% slip versus 0.965 nominal. The severe-loss interval produced 321 zero-speed controller commands. The requested 34 s horizon ended as `TIMEOUT` by design; collisions were zero, GNSS dropout fixes were zero, and the ROS graph had no ground-truth topic.
 
 The same two-process probe can regression-check the Goal 6B command watchdog by stopping only the external controller at simulation time 5 s. The probe requires a command-timeout activation after controller termination and a zero-speed finish without collision. Windows process scheduling can also produce an earlier startup timeout if the controller has not published its first command yet:
 
@@ -126,16 +185,41 @@ Set-Location C:\dev\ros2_lyrical
 pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_tug.yaml --max-sim-seconds 12 --kill-controller-at 5 --factor 1"
 ```
 
-The verified external Depot → Gate A2 mission completed successfully: 66.700 s simulation time, 310.063 m travelled, 0.767 m mean route error, 3.348 m maximum route error, 4.724 m minimum obstacle clearance, zero emergency stops, zero collisions, and zero command timeouts. It published 668 scans, 3336 IMUs, 1335 odometry messages, and 334 GNSS messages.
+The clean external Depot → Gate A2 run with the estimator completed successfully at 66.660 s simulation time, travelled 309.459 m, had 0.799 m mean and 3.465 m maximum route error, 4.793 m minimum obstacle clearance, zero collisions, and final speed 0.135 m/s. It published 667 scans, 3334 IMUs, 1334 raw odometry messages, and 334 GNSS messages. The 2× probe observed 3326 filtered-odometry messages and one `/tf` publisher (`ramplab_bridge`). Two startup command timeouts at 3.640 s and 5.680 s cleared when fresh controller commands arrived.
+
+Reproduce this clean separate-process mission and frame/graph check with:
+
+```powershell
+Set-Location C:\dev\ros2_lyrical
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\local_setup.ps1'; . '.\ros2_ws\install\local_setup.ps1'; python .\ros2_ws\scripts\verify_fault_topics.py --scenario scenarios\autonomy_tug.yaml --seed 42 --fault-seed 7019 --factor 2 --max-sim-seconds 80 --clean-mission"
+```
 
 ## Command timeout and determinism
 
-The bridge defaults to a 0.500 simulation-second command timeout. On expiry it supplies zero target speed and yaw rate to the unchanged tug dynamics, which decelerate the tug under the scenario's limit. A second run force-terminated the native controller process at about simulation time 5.66 s. The bridge logged expiry at 6.180 s (last-command age 0.520 s), counted one timeout, and ended its 15 s observation with speed 0.000 m/s and zero collisions.
+The bridge defaults to a 0.500 simulation-second command timeout. On expiry it supplies zero target speed and yaw rate to the unchanged tug dynamics, which decelerate the tug under the scenario's limit. In the watchdog regression the external controller was terminated at 5.000 s; the bridge logged expiry at 6.380 s (last-command age 0.520 s), counted one post-termination timeout, and ended its 15 s observation at speed 0.000 m/s with zero collisions.
 
 The standalone deterministic simulator and its seeded tests remain deterministic and ROS-independent. With an external process, DDS delivery, Windows scheduling, sensor sample reception, and command callback timing depend on process scheduling; therefore the ROS-controlled trajectory digest is not expected to match the built-in controller. The built-in seed-42 reference is 66.36 s, 309.76 m, 0.73 m mean route error, zero collisions, digest `1488735950019943363`. No lockstep transport was implemented.
 
+## Fused estimator interface
+
+The bridge adapts the core estimate to `/ramplab/tug1/filtered_odom` (`nav_msgs/msg/Odometry`) with simulation-time header stamps and planar pose/speed covariance. `/ramplab/tug1/estimator_health` is a `std_msgs/msg/UInt8` state code: 0 uninitialized, 1 healthy, 2 degraded, 3 unsafe, 4 invalid. The 18 diagnostic values preserve the original first eight fields and append wheel health (0 nominal, 1 suspect, 2 degraded), GNSS recovery (0 tracking, 1 inconsistent, 2 reacquiring, 3 recovered), wheel inconsistency and transition counts, reacquisition attempt and success counts, rejected-candidate and downweighted-wheel counts, degraded time, and maximum GNSS NIS. The controller consumes filtered odometry and the health code; it does not recompute localization from GNSS or raw wheel odometry.
+
+The bridge alone publishes dynamic `odom → base_link` from filtered odometry. Its static publisher owns `map → odom`, `base_link → lidar`, and `base_link → imu`. Raw `/odom` remains a sensor stream and has no associated TF broadcast. The live probe checks these frame edges and confirms a single `/tf` publisher.
+
+Goal 9 validation on 2026-09-29 rebuilt the native overlay and passed all 11 bridge conversion/harness tests. The staged fault probe ran to its requested 34 s horizon with zero collisions, observed health states healthy/degraded/unsafe, covariance growth from 0.300 to 0.540 m, 36 GNSS gate activations, no fixes during dropout, 12 m LiDAR range, and measured/command-model speed ratio 0.750 during 25% slip versus 0.998 nominal. A separate 80 s Goal 9 reacquisition probe observed degraded wheel health, six reacquisition-success updates, 4,001 filtered odometry samples, and zero collisions; it ended in `TIMEOUT` at the observation horizon, so it verifies the sensor, estimator, and graph behavior rather than mission completion. Both probes found no ground-truth topic and one dynamic TF publisher.
+
 ## Validation and limits
+
+The bridge accepts `--vehicle-id tug_01` to set its ROS namespace to `/ramplab/tug_01`; the default remains `tug1`. Run one bridge process per vehicle and choose unique `--camera-port` and `--lidar-port` values. `--no-global-clock` disables that process's global `/clock` publisher so exactly one bridge owns `/clock` when independent bridge processes share a ROS graph. The namespace unit test rejects IDs containing path separators or punctuation.
+
+`ros2_ws/scripts/verify_multi_vehicle_isolation.py` starts three bridge processes concurrently, publishes distinct 1.5, 0, and 0.75 m/s commands to namespaced `cmd_vel` inputs, and checks namespaced odometry, LiDAR, and TF outputs. The latest 12-second run measured 15.001 m, 0.000 m, and 8.485 m displacement respectively; all three produced odometry and LiDAR, each command topic had one bridge subscriber, only one bridge published global `/clock`, and all TF frame chains remained separate. Non-default IDs prefix the bridge's TF frames with the vehicle ID; default `tug1` retains the existing frame IDs. On this Windows Fast DDS 3.6.2 setup, the default shared-memory transport crashes when starting additional participants; the probe sets `FASTDDS_BUILTIN_TRANSPORTS=UDPv4` for all bridges and its rclpy observer. Reproduce it from the ROS workspace with:
+
+```powershell
+pixi run powershell -NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\Users\Ferna\OneDrive\Documents\ChatGPT\RampLab'; . 'C:\dev\ros2_lyrical\install\setup.ps1'; . '.\ros2_ws\install\setup.ps1'; python .\ros2_ws\scripts\verify_multi_vehicle_isolation.py"
+```
+
+This verifies namespaced command/sensor separation across three independent bridge simulations; it does not connect the bridges to one coordinated fleet simulation.
 
 The environment check found ROS 2 Lyrical, `rclcpp`, `ament_cmake`, colcon-core 0.17.1, all six requested message interfaces, and the Fast DDS RMW. `ros2 --help`, C++ demo talker/listener processes, and a separately compiled native `rclcpp` node succeeded. The normal RampLab build remains usable without this installation.
 
-This is a planar synthetic mission, not surveyed airport-road geometry or hardware-calibrated sensing. The GNSS/odometry estimate and geometric route follower are deliberately modest; the LiDAR rule can stop but cannot route around a blockage. ROS 2 middleware scheduling is not deterministic lockstep. There is no Nav2, Gazebo, camera, or multi-vehicle stack in this milestone.
+This is a planar synthetic mission, not surveyed airport-road geometry or hardware-calibrated sensing. The GNSS/odometry estimate and geometric route follower are deliberately modest; the LiDAR rule can stop but cannot route around a blockage. ROS 2 middleware scheduling is not deterministic lockstep. The camera stream is observational and does not feed the controller. There is no Nav2, Gazebo, or multi-vehicle stack in this milestone.

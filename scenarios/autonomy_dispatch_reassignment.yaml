@@ -1,0 +1,16 @@
+name: autonomy_dispatch_reassignment
+default_seed: 42
+vehicle_scenario: autonomy_tug.yaml
+dispatch:
+  aging_interval_s: 30.0
+  vehicles:
+    - id: baggage_faulted
+      start_node: Gate A2
+      capabilities: [baggage_delivery]
+      faults:
+        - {sensor: gnss, type: dropout, start_s: 0.0, duration_s: 300.0}
+    - id: baggage_backup
+      start_node: North Junction
+      capabilities: [baggage_delivery]
+  service_requests:
+    - {id: baggage_recovery, type: baggage_delivery, required_capability: baggage_delivery, origin: Gate A1, destination: Gate A1, release_time_s: 0.0, priority: 2, service_duration_s: 0.0}

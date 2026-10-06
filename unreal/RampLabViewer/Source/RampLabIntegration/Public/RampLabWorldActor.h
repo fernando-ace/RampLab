@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "RampLabAirportPlacement.h"
 
+#include <vector>
+
 #include "RampLabWorldActor.generated.h"
 
 class UMaterialInstanceDynamic;
@@ -14,8 +16,10 @@ class UStaticMesh;
 class UStaticMeshComponent;
 class UTextRenderComponent;
 class AStaticMeshActor;
+class URampLabLidarSensorComponent;
+class URampLabCameraSensorComponent;
 struct FLinearColor;
-namespace airside { struct SimulationSnapshot; struct Vec2; namespace autonomy { struct AutonomySnapshot; } }
+namespace airside { struct SimulationSnapshot; struct Vec2; namespace autonomy { struct AutonomySnapshot; struct FleetVehicleSnapshot; } }
 
 UCLASS()
 class RAMPLABINTEGRATION_API ARampLabWorldActor final : public AActor
@@ -34,6 +38,7 @@ private:
     void Reconcile(const airside::SimulationSnapshot& Snapshot, float DeltaSeconds);
     void BuildAutonomyTopology(const airside::autonomy::AutonomySnapshot& Snapshot);
     void ReconcileAutonomy(const airside::autonomy::AutonomySnapshot& Snapshot);
+    void ReconcileFleet(const std::vector<airside::autonomy::FleetVehicleSnapshot>& Snapshots);
     void MaybeCapture();
     void UpdateCamera(float DeltaSeconds);
     void ApplyCameraPreset(const FString& Preset);
@@ -63,6 +68,8 @@ private:
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> ObstacleMaterial;
     UPROPERTY() TObjectPtr<AStaticMeshActor> AutonomyVehicleActor;
     UPROPERTY() TObjectPtr<AStaticMeshActor> GnssMarkerActor;
+    UPROPERTY() TObjectPtr<URampLabLidarSensorComponent> AutonomyLidarSensor;
+    UPROPERTY() TObjectPtr<URampLabCameraSensorComponent> AutonomyCameraSensor;
     UPROPERTY() TArray<TObjectPtr<AStaticMeshActor>> AutonomyObstacleActors;
 
     UPROPERTY() TMap<uint32, TObjectPtr<UStaticMeshComponent>> RoadMeshes;
@@ -75,6 +82,8 @@ private:
     UPROPERTY() TMap<uint32, TObjectPtr<UTextRenderComponent>> GateLabels;
     UPROPERTY() TMap<uint32, TObjectPtr<UTextRenderComponent>> AircraftLabels;
     UPROPERTY() TMap<uint32, TObjectPtr<UTextRenderComponent>> VehicleLabels;
+    UPROPERTY() TMap<FString, TObjectPtr<AStaticMeshActor>> FleetVehicleActors;
+    UPROPERTY() TMap<FString, TObjectPtr<UTextRenderComponent>> FleetVehicleLabels;
     bool bTopologyBuilt{false};
     uint32 TopologyGeneration{0};
     bool bCaptureRun{false};
