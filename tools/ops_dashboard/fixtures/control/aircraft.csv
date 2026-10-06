@@ -1,0 +1,4 @@
+aircraft_id,flight_number,operation_type,surface_state,scheduled_arrival_seconds,actual_arrival_seconds,runway_request_time_seconds,runway_clearance_time_seconds,runway_wait_seconds,runway_release_time_seconds,runway_occupancy_seconds,taxi_time_seconds,taxi_distance_m,gate_arrival_time_seconds,departure_time_seconds,total_operational_delay_seconds
+1,AR401,arrival,AtGate,0,0,0,158,158,190,32,326,326,516,,0
+2,AX101,departure,Departed,210,210,0,0,0,0,0,224,228,,,126
+3,AX202,departure,Departed,480,480,0,0,0,0,0,238,219,,,0
