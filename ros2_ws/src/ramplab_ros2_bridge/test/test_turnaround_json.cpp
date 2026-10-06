@@ -67,3 +67,25 @@ TEST(TurnaroundJsonTest, SerializesStructuredTurnaroundEventsAndEscapesIdentifie
   EXPECT_NE(json.find("\"gate_id\":4"), std::string::npos);
   EXPECT_NE(json.find("\"route_node_ids\":[1,2]"), std::string::npos);
 }
+
+TEST(TurnaroundJsonTest, PublishesMixedRunwayOwnerQueueAndArrivalOperationState) {
+  airside::SimulationSnapshot snapshot;
+  snapshot.simulation_time = airside::SimTime{25};
+  snapshot.runway_owner = airside::AircraftId{8};
+  snapshot.runway_queue = {airside::AircraftId{9}};
+  airside::AircraftSnapshot arrival;
+  arrival.id = airside::AircraftId{8};
+  arrival.flight_number = "AR-8";
+  arrival.operation_type = "arrival";
+  arrival.surface_state = "RunwayOccupied";
+  arrival.runway_queue_entered_at = airside::SimTime{10};
+  arrival.runway_clearance_at = airside::SimTime{20};
+  arrival.runway_release_at = airside::SimTime{25};
+  snapshot.aircraft.push_back(arrival);
+  const auto json = ramplab_ros2_bridge::turnaround_state_json(snapshot);
+  EXPECT_NE(json.find("\"runway_owner_id\":8"), std::string::npos);
+  EXPECT_NE(json.find("\"runway_queue_aircraft_ids\":[9]"), std::string::npos);
+  EXPECT_NE(json.find("\"operation_type\":\"arrival\""), std::string::npos);
+  EXPECT_NE(json.find("\"surface_state\":\"RunwayOccupied\""), std::string::npos);
+  EXPECT_NE(json.find("\"runway_clearance_time_seconds\":20"), std::string::npos);
+}

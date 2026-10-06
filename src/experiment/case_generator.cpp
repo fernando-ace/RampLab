@@ -117,7 +117,8 @@ std::vector<Aircraft> rebuild_aircraft(const Scenario& base, const ScenarioOverr
         // when rebuilding aircraft for experiment overrides.
         tasks = source.tasks();
         result.emplace_back(source.id(), source.flight_number(), arrival, departure,
-            source.gate(), source.gate_node(), std::move(tasks), source.turnaround_id(), source.target_off_block());
+            source.gate(), source.gate_node(), std::move(tasks), source.turnaround_id(), source.target_off_block(),
+            source.operation_type(), source.arrival_exit_node());
     }
     return result;
 }

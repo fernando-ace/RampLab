@@ -68,6 +68,7 @@ struct AircraftSnapshot {
     std::optional<SimTime> actual_departure;
     std::vector<ServiceTaskSnapshot> services;
     std::string surface_state;
+    std::string operation_type;
     std::optional<NodeId> surface_node;
     std::vector<NodeId> surface_route;
     std::string surface_wait_reason;
@@ -80,6 +81,10 @@ struct AircraftSnapshot {
     std::optional<SimTime> taxi_completed_at;
     std::optional<SimTime> runway_queue_entered_at;
     std::optional<SimTime> actual_surface_departure;
+    std::optional<SimTime> runway_clearance_at;
+    std::optional<SimTime> runway_release_at;
+    std::optional<SimTime> arrival_gate_at;
+    SimTime runway_wait_duration{};
     std::optional<Vec2> surface_position_m;
     double surface_heading_rad{};
     double surface_speed_mps{};
@@ -159,6 +164,8 @@ struct SimulationSnapshot {
     std::vector<RoadNodeSnapshot> road_nodes;
     std::vector<RoadEdgeSnapshot> roads;
     std::vector<TurnaroundSnapshot> turnarounds;
+    std::optional<AircraftId> runway_owner;
+    std::vector<AircraftId> runway_queue;
     auto operator<=>(const SimulationSnapshot&) const = default;
 };
 

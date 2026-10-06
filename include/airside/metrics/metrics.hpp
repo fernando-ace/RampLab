@@ -34,6 +34,17 @@ struct AircraftMetrics {
         auto operator<=>(const TaskTiming&) const = default;
     };
     std::vector<TaskTiming> task_timings;
+    std::string operation_type;
+    std::optional<SimTime> runway_request_time;
+    std::optional<SimTime> runway_clearance_time;
+    SimTime runway_wait{};
+    std::optional<SimTime> runway_release_time;
+    SimTime runway_occupancy{};
+    SimTime arrival_taxi_time{};
+    double arrival_taxi_distance_m{0.0};
+    std::optional<SimTime> gate_arrival_time;
+    std::optional<SimTime> surface_departure_time;
+    SimTime total_operational_delay{};
 
     constexpr auto operator<=>(const AircraftMetrics&) const = default;
 };
@@ -85,6 +96,18 @@ struct SimulationMetrics {
     std::size_t surface_aircraft_aircraft_collisions{0};
     std::size_t surface_aircraft_ground_collisions{0};
     double minimum_aircraft_ground_separation_m{0.0};
+    std::size_t surface_arrived_aircraft{0};
+    std::size_t runway_operations_completed{0};
+    std::size_t maximum_runway_queue_depth{0};
+    std::int64_t arrival_runway_wait_seconds{0};
+    std::int64_t departure_runway_wait_seconds{0};
+    double average_runway_wait_seconds{0.0};
+    double runway_utilization{0.0};
+    std::int64_t runway_occupied_seconds{0};
+    std::int64_t arrival_taxi_seconds{0};
+    double arrival_taxi_distance_m{0.0};
+    std::int64_t departure_taxi_seconds{0};
+    double departure_taxi_distance_m{0.0};
 
     constexpr auto operator<=>(const SimulationMetrics&) const = default;
 };

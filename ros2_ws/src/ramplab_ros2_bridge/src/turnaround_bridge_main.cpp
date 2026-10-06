@@ -39,7 +39,7 @@ class TurnaroundBridge final : public rclcpp::Node, public airside::ISimulationE
   }
 
   void on_event(const airside::SimulationEventRecord& event) noexcept override {
-    if (event.turnaround_id.empty()) return;
+    if (event.turnaround_id.empty() && event.aircraft_name.empty()) return;
     try {
       std_msgs::msg::String message;
       message.data = ramplab_ros2_bridge::turnaround_event_json(event);

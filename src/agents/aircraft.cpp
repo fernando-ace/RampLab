@@ -16,7 +16,9 @@ Aircraft::Aircraft(
     NodeId gate_node,
     std::vector<ServiceTask> tasks,
     std::string turnaround_id,
-    std::optional<SimTime> target_off_block)
+    std::optional<SimTime> target_off_block,
+    AircraftOperationType operation_type,
+    NodeId arrival_exit_node)
     : id_(id),
       flight_number_(std::move(flight_number)),
       scheduled_arrival_(scheduled_arrival),
@@ -25,9 +27,13 @@ Aircraft::Aircraft(
       gate_node_(gate_node),
       tasks_(std::move(tasks)),
       turnaround_id_(turnaround_id.empty() ? flight_number_ : std::move(turnaround_id)),
-      target_off_block_(target_off_block.value_or(scheduled_departure)) {
-    if (flight_number_.empty() || scheduled_departure_ < scheduled_arrival_ || tasks_.empty()) {
-        throw std::invalid_argument("invalid aircraft schedule or required tasks");
+      target_off_block_(target_off_block.value_or(scheduled_departure)),
+      operation_type_(operation_type), arrival_exit_node_(arrival_exit_node) {
+    if (flight_number_.empty() || scheduled_departure_ < scheduled_arrival_ ||
+        (tasks_.empty() && operation_type_ != AircraftOperationType::ArrivalOnly)) {
+        throw std::invalid_argument(std::format("invalid aircraft schedule or required tasks for '{}' (arrival={}, departure={}, tasks={}, operation={})",
+            flight_number_, scheduled_arrival_.count(), scheduled_departure_.count(), tasks_.size(),
+            operation_type_ == AircraftOperationType::ArrivalOnly ? "arrival" : "turnaround"));
     }
 }
 
@@ -45,6 +51,8 @@ const std::vector<ServiceTask>& Aircraft::tasks() const noexcept { return tasks_
 std::vector<ServiceTask>& Aircraft::mutable_tasks() noexcept { return tasks_; }
 const std::string& Aircraft::turnaround_id() const noexcept { return turnaround_id_; }
 SimTime Aircraft::target_off_block() const noexcept { return target_off_block_; }
+AircraftOperationType Aircraft::operation_type() const noexcept { return operation_type_; }
+NodeId Aircraft::arrival_exit_node() const noexcept { return arrival_exit_node_; }
 TurnaroundState Aircraft::turnaround_state() const noexcept {
     if (failed_) return TurnaroundState::Failed;
     switch (state_) {
@@ -87,10 +95,17 @@ void Aircraft::arrive(SimTime now) {
     if (now < scheduled_arrival_) {
         throw std::logic_error("aircraft cannot arrive before its scheduled event");
     }
-    transition_to(AircraftState::Arriving);
+    if (state_ == AircraftState::Scheduled) transition_to(AircraftState::Arriving);
+    else if (state_ != AircraftState::Arriving) throw std::logic_error("aircraft cannot complete arrival in its current state");
     transition_to(AircraftState::AtGate);
     actual_arrival_ = now;
-    transition_to(AircraftState::WaitingForServices);
+    if (operation_type_ == AircraftOperationType::Turnaround) transition_to(AircraftState::WaitingForServices);
+}
+
+void Aircraft::begin_surface_arrival() {
+    if (operation_type_ != AircraftOperationType::ArrivalOnly || state_ != AircraftState::Scheduled)
+        throw std::logic_error("only a scheduled inbound aircraft may enter the arrival operation");
+    transition_to(AircraftState::Arriving);
 }
 
 void Aircraft::mark_task_waiting(ServiceType type, SimTime now) {

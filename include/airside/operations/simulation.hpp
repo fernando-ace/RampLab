@@ -43,8 +43,11 @@ struct VehicleOutageEvent {
 
 struct SurfaceOperationsConfig {
     NodeId departure_handoff;
+    NodeId runway_node;
+    NodeId arrival_exit;
     SimTime pushback_duration{SimTime{30}};
     SimTime runway_occupancy{SimTime{60}};
+    SimTime arrival_rollout{SimTime{90}};
     double aircraft_speed_mps{5.0};
     double departure_queue_spacing_m{30.0};
 };
@@ -156,7 +159,7 @@ private:
     std::uint64_t task_reassignments_{0};
     std::uint64_t disruption_replans_{0};
     struct SurfaceAircraftState {
-        enum class Phase { None, WaitingForPushback, Pushback, Taxiing, WaitingForTraffic, WaitingForRunway, Runway, Departed, Failed };
+        enum class Phase { None, ArrivalQueue, WaitingForPushback, Pushback, Taxiing, WaitingForTraffic, WaitingForRunway, Runway, Arrived, Departed, Failed };
         Phase phase{Phase::None};
         NodeId node{};
         std::vector<NodeId> route_nodes;
@@ -170,11 +173,17 @@ private:
         SimTime accumulated_wait{};
         bool pushback_wait_reported{false};
         bool clearance_waiting{false};
+        bool arrival_operation{false};
         std::optional<SimTime> pushback_started_at;
         std::optional<SimTime> pushback_completed_at;
         std::optional<SimTime> taxi_started_at;
         std::optional<SimTime> taxi_completed_at;
         std::optional<SimTime> runway_queue_entered_at;
+        std::optional<SimTime> runway_clearance_at;
+        std::optional<SimTime> runway_release_at;
+        std::optional<SimTime> arrival_gate_at;
+        SimTime runway_wait{};
+        SimTime runway_occupied{};
         std::optional<SimTime> actual_surface_departure;
         double taxi_distance_m{};
         std::size_t reroutes{};
@@ -187,6 +196,7 @@ private:
     std::size_t maximum_simultaneous_taxiing_{};
     std::size_t surface_wait_events_{};
     std::size_t next_surface_queue_slot_{};
+    std::size_t maximum_runway_queue_depth_{};
     double minimum_aircraft_separation_m_{std::numeric_limits<double>::infinity()};
     double minimum_aircraft_ground_separation_m_{std::numeric_limits<double>::infinity()};
     std::size_t surface_aircraft_aircraft_collisions_{};

@@ -78,7 +78,18 @@ struct RunResult {
     std::size_t fleet_requests_completed{0};
     std::size_t fleet_requests_failed{0};
     std::size_t surface_departed_aircraft{0};
+    std::size_t surface_arrived_aircraft{0};
     std::size_t surface_total_aircraft{0};
+    std::size_t runway_operations_completed{0};
+    std::size_t maximum_runway_queue_depth{0};
+    double arrival_runway_wait_seconds{0.0};
+    double departure_runway_wait_seconds{0.0};
+    double average_runway_wait_seconds{0.0};
+    double runway_utilization{0.0};
+    double arrival_taxi_distance_m{0.0};
+    double departure_taxi_distance_m{0.0};
+    double arrival_taxi_seconds{0.0};
+    double departure_taxi_seconds{0.0};
     double surface_departure_throughput_per_hour{0.0};
     std::size_t surface_reroutes{0};
     std::size_t surface_wait_events{0};

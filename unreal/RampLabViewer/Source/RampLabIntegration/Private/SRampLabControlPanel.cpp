@@ -79,6 +79,10 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(SButton).Text(FText::FromString(TEXT("Surface Closure"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("surface_traffic_disrupted"))) ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [ SNew(SButton).Text(FText::FromString(TEXT("Mixed Runway Operations"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("mixed_runway_operations"))) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [ SNew(SButton).Text(FText::FromString(TEXT("Mixed Runway Disruption"))).OnClicked(this, &SRampLabControlPanel::SelectScenario, FString(TEXT("mixed_runway_disrupted"))) ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [
                     SNew(SHorizontalBox)
                     + SHorizontalBox::Slot().AutoWidth()
@@ -217,9 +221,9 @@ FText SRampLabControlPanel::SummaryText() const
             if (Aircraft.state != airside::AircraftState::Scheduled && Aircraft.state != airside::AircraftState::Departed) ++ActiveAircraft;
             if (Aircraft.state == airside::AircraftState::Departed) ++CompletedAircraft;
             if (Aircraft.state != airside::AircraftState::Departed && Time > Aircraft.scheduled_departure.count()) ++DelayedAircraft;
-            if (Aircraft.surface_state == "Taxiing") ++AircraftTaxiing;
-            if (Aircraft.surface_state == "WaitingForTraffic" || Aircraft.surface_state == "ReadyForPushback") ++AircraftWaiting;
-            if (Aircraft.surface_state == "WaitingForRunway" || Aircraft.surface_state == "ClearedForDeparture") ++DepartureQueue;
+            if (Aircraft.surface_state == "Taxiing" || Aircraft.surface_state == "TaxiingToGate") ++AircraftTaxiing;
+            if (Aircraft.surface_state == "WaitingForTraffic" || Aircraft.surface_state == "ReadyForPushback" ||
+                Aircraft.surface_state == "ArrivalQueue") ++AircraftWaiting;
             SurfaceReroutes += static_cast<int32>(Aircraft.surface_reroutes);
             SurfaceWaitSeconds += Aircraft.surface_wait_duration.count();
         }
@@ -276,18 +280,45 @@ FText SRampLabControlPanel::SummaryText() const
                 CriticalPath += FString::FromInt(static_cast<int32>(TaskId.value()));
             }
             TurnaroundOperations += FString::Printf(
-                TEXT("\n%s / %s  Gate %u  /  %s\nScheduled dep %lld s  /  actual %s  /  delay %lld s\nEst ready %lld  /  slack %lld s\nTasks %d / %d  / critical %s%s"),
+                TEXT("\n%s / %s  %s  / Gate %u  /  %s\nScheduled dep %lld s  /  actual %s  /  delay %lld s\nEst ready %lld  /  slack %lld s\nTasks %d / %d  / critical %s%s"),
                 UTF8_TO_TCHAR(Turnaround.turnaround_id.c_str()),
                 *FlightNumber,
+                AircraftIt != Snapshot->aircraft.end() ? UTF8_TO_TCHAR(AircraftIt->operation_type.c_str()) : TEXT("departure"),
                 Turnaround.gate.value(), UTF8_TO_TCHAR(airside::to_string(Turnaround.state).data()),
                 Turnaround.scheduled_departure.count(), *ActualDeparture, CurrentDelay.count(), Turnaround.estimated_ready_time.count(),
                 Turnaround.schedule_slack.count(), CompletedTasks, static_cast<int32>(Turnaround.tasks.size()),
                 *CriticalPath, *ActiveTasks);
         }
+        DepartureQueue = static_cast<int32>(Snapshot->runway_queue.size());
     }
 
+    FString RunwayOwner = TEXT("free");
+    FString RunwayQueue;
+    int32 ArrivalCount = 0;
+    int32 ArrivedCount = 0;
+    if (Snapshot != nullptr) {
+        const auto& State = *Snapshot;
+        if (State.runway_owner) {
+            const auto Owner = std::ranges::find(State.aircraft, *State.runway_owner, &airside::AircraftSnapshot::id);
+            if (Owner != State.aircraft.end()) RunwayOwner = FString(UTF8_TO_TCHAR(Owner->flight_number.c_str()));
+            else RunwayOwner = FString::FromInt(State.runway_owner->value());
+        }
+        for (const auto QueuedId : State.runway_queue) {
+            const auto Queued = std::ranges::find(State.aircraft, QueuedId, &airside::AircraftSnapshot::id);
+            if (!RunwayQueue.IsEmpty()) RunwayQueue += TEXT(", ");
+            if (Queued != State.aircraft.end()) RunwayQueue += FString(UTF8_TO_TCHAR(Queued->flight_number.c_str()));
+            else RunwayQueue += FString::FromInt(QueuedId.value());
+        }
+        for (const auto& Aircraft : State.aircraft) if (Aircraft.operation_type == "arrival") {
+            ++ArrivalCount;
+            ArrivedCount += Aircraft.surface_state == "Arrived" ? 1 : 0;
+            TurnaroundOperations += FString::Printf(TEXT("\n%s  ARRIVAL  /  %s"),
+                *FString(UTF8_TO_TCHAR(Aircraft.flight_number.c_str())),
+                *FString(UTF8_TO_TCHAR(Aircraft.surface_state.c_str())));
+        }
+    }
     return FText::FromString(FString::Printf(
-        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Complete  %d    Delayed  %d\nAircraft taxiing %d  / waiting %d  / runway queue %d\nTaxi wait %lld s  / reroutes %d\nFuel Trucks  %d    Baggage Carts  %d    Busy vehicles  %d\nReassignments  %d    Failed tasks  %d\nCurrent vehicle conflicts  %d    Minimum separation  %.1f m\nGROUND VEHICLE AVAILABILITY%s\nTURNAROUND OPERATIONS%s"),
+        TEXT("Scenario  %s\nSimulation Time  %02lld:%02lld:%02lld\nPlayback  %.0fx  /  %s%s\n%s\n%s\nOPERATIONS\nAircraft Active  %d    Departed  %d    Delayed  %d\nRunway owner  %s  / queue  %s\nArrivals at gates  %d / %d\nAircraft taxiing %d  / holding %d  / runway queue %d\nTaxi wait %lld s  / reroutes %d\nFuel Trucks  %d    Baggage Carts  %d    Busy vehicles  %d\nReassignments  %d    Failed tasks  %d\nCurrent vehicle conflicts  %d    Minimum separation  %.1f m\nGROUND VEHICLE AVAILABILITY%s\nAIRCRAFT OPERATIONS%s"),
         *Subsystem->GetScenarioName(),
         Time / 3600, (Time / 60) % 60, Time % 60,
         Subsystem->GetPlaybackSpeed(),
@@ -295,7 +326,8 @@ FText SRampLabControlPanel::SummaryText() const
         Subsystem->IsCaptureAccelerationActive() ? TEXT("   [QA capture acceleration]") : TEXT(""),
         *Subsystem->GetGeospatialStatus(),
         bRoadClosure ? TEXT("\nROAD CLOSURE  /  North to Gate A2 unavailable") : TEXT(""),
-        ActiveAircraft, CompletedAircraft, DelayedAircraft, AircraftTaxiing, AircraftWaiting, DepartureQueue,
+        ActiveAircraft, CompletedAircraft, DelayedAircraft, *RunwayOwner, RunwayQueue.IsEmpty() ? TEXT("none") : *RunwayQueue,
+        ArrivedCount, ArrivalCount, AircraftTaxiing, AircraftWaiting, DepartureQueue,
         SurfaceWaitSeconds, SurfaceReroutes, FuelTrucks, BaggageCarts, BusyVehicles,
         Reassignments, FailedTasks, CurrentVehicleConflicts,
         MinimumVehicleSeparation == TNumericLimits<double>::Max() ? 0.0 : MinimumVehicleSeparation,
@@ -325,7 +357,8 @@ FText SRampLabControlPanel::SelectedEntityText() const
 FText SRampLabControlPanel::ResultsText() const
 {
     const auto* Subsystem = SimulationSubsystem.Get();
-    if (Subsystem != nullptr && Subsystem->GetScenarioName().StartsWith(TEXT("surface_traffic"))) {
+    if (Subsystem != nullptr && (Subsystem->GetScenarioName().StartsWith(TEXT("surface_traffic")) ||
+        Subsystem->GetScenarioName().StartsWith(TEXT("mixed_runway")))) {
         return FText::FromString(Subsystem->IsFinished()
             ? Subsystem->GetFinalResultText()
             : TEXT("Surface traffic is running. Aircraft labels and route lines show live movement; Recent Events records pushback, waits, reroutes, and runway handoffs."));

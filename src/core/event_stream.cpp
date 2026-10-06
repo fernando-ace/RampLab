@@ -46,6 +46,13 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::SurfaceReservationAcquired: return "SurfaceReservationAcquired";
     case SimulationEventType::SurfaceReservationReleased: return "SurfaceReservationReleased";
     case SimulationEventType::SurfaceWaitingForPushback: return "SurfaceWaitingForPushback";
+    case SimulationEventType::RunwayRequest: return "RunwayRequest";
+    case SimulationEventType::RunwayGrant: return "RunwayGrant";
+    case SimulationEventType::RunwayOccupied: return "RunwayOccupied";
+    case SimulationEventType::RunwayReleased: return "RunwayReleased";
+    case SimulationEventType::ArrivalRunwayExit: return "ArrivalRunwayExit";
+    case SimulationEventType::ArrivalTaxiInStarted: return "ArrivalTaxiInStarted";
+    case SimulationEventType::ArrivalAtGate: return "ArrivalAtGate";
     }
     return "Unknown";
 }
@@ -119,6 +126,13 @@ std::string format_event(const SimulationEventRecord& event) {
         *event.service == ServiceType::Fueling ? std::string_view{"fuel"} :
         *event.service == ServiceType::Baggage ? std::string_view{"baggage"} : to_string(*event.service);
     switch (event.type) {
+    case SimulationEventType::RunwayRequest: return std::format("{} requested runway access ({})", aircraft, event.detail);
+    case SimulationEventType::RunwayGrant: return std::format("{} received runway clearance", aircraft);
+    case SimulationEventType::RunwayOccupied: return std::format("{} entered the runway", aircraft);
+    case SimulationEventType::RunwayReleased: return std::format("{} released the runway", aircraft);
+    case SimulationEventType::ArrivalRunwayExit: return std::format("{} exited the runway", aircraft);
+    case SimulationEventType::ArrivalTaxiInStarted: return std::format("{} began taxi-in", aircraft);
+    case SimulationEventType::ArrivalAtGate: return std::format("{} arrived at its assigned gate", aircraft);
     case SimulationEventType::AircraftArrived:
         return std::format("{} arrived at Gate A{}", aircraft, event.gate->value());
     case SimulationEventType::AircraftStateChanged:
@@ -194,7 +208,9 @@ std::string format_event(const SimulationEventRecord& event) {
     case SimulationEventType::SurfaceRerouted: return std::format("{} rerouted around a surface closure", aircraft);
     case SimulationEventType::SurfaceRunwayQueueEntered: return std::format("{} entered the runway queue", aircraft);
     case SimulationEventType::SurfaceRunwayClearance: return std::format("{} received runway clearance", aircraft);
-    case SimulationEventType::SurfaceSafeFailure: return std::format("{} safely stopped: no route to departure handoff", aircraft);
+    case SimulationEventType::SurfaceSafeFailure:
+        return std::format("{} safely stopped: {}", aircraft,
+            event.detail.empty() ? "no route to departure handoff" : event.detail);
     case SimulationEventType::SurfaceRouteInvalidated: return std::format("{} route invalidated by closure on edge {}", aircraft, event.edge ? event.edge->value() : 0U);
     case SimulationEventType::SurfaceReservationAcquired: return std::format("{} acquired surface edge {}", aircraft, event.edge ? event.edge->value() : 0U);
     case SimulationEventType::SurfaceReservationReleased: return std::format("{} released surface edge {}", aircraft, event.edge ? event.edge->value() : 0U);

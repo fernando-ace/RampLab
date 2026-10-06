@@ -27,8 +27,13 @@ inline std::string json_escape(std::string_view value) {
 }
 
 inline std::string turnaround_state_json(const airside::SimulationSnapshot& snapshot) {
-  std::string output = std::format("{{\"simulation_time_seconds\":{},\"turnarounds\":[",
-                                   snapshot.simulation_time.count());
+  std::string output = std::format("{{\"simulation_time_seconds\":{},\"runway_owner_id\":{},\"runway_queue_aircraft_ids\":[",
+      snapshot.simulation_time.count(), snapshot.runway_owner ? std::to_string(snapshot.runway_owner->value()) : "null");
+  for (std::size_t index = 0; index < snapshot.runway_queue.size(); ++index) {
+    if (index) output += ',';
+    output += std::to_string(snapshot.runway_queue[index].value());
+  }
+  output += "],\"turnarounds\":[";
   for (std::size_t index = 0; index < snapshot.turnarounds.size(); ++index) {
     const auto& turnaround = snapshot.turnarounds[index];
     if (index != 0) output += ',';
@@ -98,6 +103,27 @@ inline std::string turnaround_state_json(const airside::SimulationSnapshot& snap
           task.reassignments);
     }
     output += "]}";
+  }
+  output += "],\"aircraft_operations\":[";
+  for (std::size_t index = 0; index < snapshot.aircraft.size(); ++index) {
+    const auto& aircraft = snapshot.aircraft[index];
+    if (index) output += ',';
+    output += std::format(
+        "{{\"aircraft_id\":{},\"flight_number\":\"{}\",\"operation_type\":\"{}\",\"surface_state\":\"{}\","
+        "\"runway_request_time_seconds\":{},\"runway_clearance_time_seconds\":{},\"runway_wait_seconds\":{},"
+        "\"runway_release_time_seconds\":{},\"arrival_gate_time_seconds\":{},\"actual_departure_seconds\":{},"
+        "\"taxi_distance_m\":{},\"taxi_started_at_seconds\":{},\"taxi_completed_at_seconds\":{}}}",
+        aircraft.id.value(), json_escape(aircraft.flight_number), json_escape(aircraft.operation_type),
+        json_escape(aircraft.surface_state),
+        aircraft.runway_queue_entered_at ? std::to_string(aircraft.runway_queue_entered_at->count()) : "null",
+        aircraft.runway_clearance_at ? std::to_string(aircraft.runway_clearance_at->count()) : "null",
+        aircraft.runway_wait_duration.count(),
+        aircraft.runway_release_at ? std::to_string(aircraft.runway_release_at->count()) : "null",
+        aircraft.arrival_gate_at ? std::to_string(aircraft.arrival_gate_at->count()) : "null",
+        aircraft.actual_surface_departure ? std::to_string(aircraft.actual_surface_departure->count()) : "null",
+        aircraft.taxi_distance_m,
+        aircraft.taxi_started_at ? std::to_string(aircraft.taxi_started_at->count()) : "null",
+        aircraft.taxi_completed_at ? std::to_string(aircraft.taxi_completed_at->count()) : "null");
   }
   output += "]}";
   return output;

@@ -50,6 +50,8 @@ def main():
                         help="require pushback, taxi, traffic waiting, and runway events in the live feed")
     parser.add_argument("--require-reroute", action="store_true",
                         help="also require a surface closure reroute")
+    parser.add_argument("--require-mixed-traffic", action="store_true",
+                        help="require the canonical arrivals, departures, and shared-runway event sequence")
     args = parser.parse_args()
     rclpy.init()
     node = Probe()
@@ -66,8 +68,13 @@ def main():
         while time.monotonic() < deadline:
             rclpy.spin_once(node, timeout_sec=0.1)
             if node.states and node.states[-1]["turnarounds"]:
-                turnarounds = node.states[-1]["turnarounds"]
-                if len(turnarounds) >= args.min_aircraft and all(
+                state = node.states[-1]
+                turnarounds = state["turnarounds"]
+                mixed_complete = not args.require_mixed_traffic or all(
+                    item["surface_state"] in {"Arrived", "Departed"}
+                    for item in state.get("aircraft_operations", [])
+                )
+                if len(turnarounds) >= args.min_aircraft and mixed_complete and all(
                     item["state"] == "Departed" for item in turnarounds
                 ):
                     if all_departed_since is None:
@@ -114,6 +121,35 @@ def main():
                 "traffic_waits": sum(event["type"] == "SurfaceWaitingForTraffic" for event in node.events),
                 "runway_queue_entries": sum(event["type"] == "SurfaceRunwayQueueEntered" for event in node.events),
                 "reroutes": len(reroutes),
+            }
+        mixed_summary = None
+        if args.require_mixed_traffic:
+            operations = final_state.get("aircraft_operations", [])
+            arrivals = [item for item in operations if item.get("operation_type") == "arrival"]
+            departures = [item for item in operations if item.get("operation_type") == "departure"]
+            if len(arrivals) < 2 or len(departures) < 3:
+                raise RuntimeError(f"expected at least 2 arrivals and 3 departures; received {len(arrivals)} and {len(departures)}")
+            if any(item.get("surface_state") != "Arrived" or item.get("arrival_gate_time_seconds") is None for item in arrivals):
+                raise RuntimeError("not all inbound aircraft reached their assigned gates")
+            if any(item.get("surface_state") != "Departed" or item.get("actual_departure_seconds") is None for item in departures):
+                raise RuntimeError("not all outbound aircraft departed")
+            required = {"RunwayRequest", "RunwayGrant", "RunwayOccupied", "RunwayReleased",
+                        "ArrivalRunwayExit", "ArrivalTaxiInStarted", "ArrivalAtGate"}
+            observed = {event.get("type") for event in node.events}
+            missing = sorted(required - observed)
+            if missing:
+                raise RuntimeError(f"mixed runway event stream missed {missing}")
+            grants = [event for event in node.events if event.get("type") == "RunwayGrant"]
+            arrival_ids = {item["aircraft_id"] for item in arrivals}
+            departure_ids = {item["aircraft_id"] for item in departures}
+            if not any(event.get("aircraft_id") in arrival_ids for event in grants) or not any(
+                event.get("aircraft_id") in departure_ids for event in grants
+            ):
+                raise RuntimeError("both operation types were not granted shared runway access")
+            mixed_summary = {
+                "arrivals_at_gates": len(arrivals), "departures_completed": len(departures),
+                "runway_grants": len(grants), "runway_owner_id": final_state.get("runway_owner_id"),
+                "runway_queue_ids": final_state.get("runway_queue_aircraft_ids", []),
             }
         sequences = [event["sequence"] for event in node.events]
         if sequences != sorted(set(sequences)):
@@ -176,6 +212,7 @@ def main():
             "task_completion_events": len(completed),
             "outage_reassignment": outage_summary,
             "surface_operations": surface_summary,
+            "mixed_traffic": mixed_summary,
             "aircraft": [{
                 "turnaround_id": item["turnaround_id"],
                 "state": item["state"],

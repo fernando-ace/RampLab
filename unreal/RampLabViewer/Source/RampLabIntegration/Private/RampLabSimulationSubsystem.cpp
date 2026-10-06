@@ -78,6 +78,11 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
         SelectedScenarioKey = TEXT("surface_traffic_disrupted");
         PlaybackSpeed = 10.0;
     }
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabMixedRunwayValidation"))) {
+        SelectedScenarioKey = TEXT("mixed_runway_operations"); PlaybackSpeed = 20.0;
+    } else if (FParse::Param(FCommandLine::Get(), TEXT("RampLabMixedRunwayDisruption"))) {
+        SelectedScenarioKey = TEXT("mixed_runway_disrupted"); PlaybackSpeed = 20.0;
+    }
     if(bGoal13ReassignmentValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_reassignment");PlaybackSpeed=60.0;}
     else if(bGoal13DispatchValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_dynamic");PlaybackSpeed=60.0;}
     else if(bTurnaroundValidation){SelectedScenarioKey=TEXT("turnaround_flight_bank_outage");PlaybackSpeed=20.0;}
@@ -329,9 +334,17 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
             FinalResultText = FormatResult(ScenarioName.ToUpper(), Result);
             if (Result.metrics.surface_total_aircraft > 0) {
                 UE_LOG(LogRampLab, Display,
-                    TEXT("Surface runtime validation: departed=%llu/%llu throughput_per_hour=%.3f reroutes=%llu waits=%llu wait_seconds=%lld taxi_seconds=%lld taxi_distance_m=%.1f runway_queue_seconds=%lld safe_failures=%llu aircraft_collisions=%llu aircraft_ground_collisions=%llu minimum_aircraft_separation_m=%.3f minimum_aircraft_ground_separation_m=%.3f"),
+                    TEXT("Surface runtime validation: arrivals=%llu departures=%llu/%llu runway_operations=%llu queue_max=%llu arrival_wait_s=%lld departure_wait_s=%lld occupied_s=%lld utilization=%.3f arrival_taxi_s=%lld arrival_taxi_m=%.1f departure_taxi_s=%lld departure_taxi_m=%.1f throughput_per_hour=%.3f reroutes=%llu waits=%llu wait_seconds=%lld taxi_seconds=%lld taxi_distance_m=%.1f runway_queue_seconds=%lld safe_failures=%llu aircraft_collisions=%llu aircraft_ground_collisions=%llu minimum_aircraft_separation_m=%.3f minimum_aircraft_ground_separation_m=%.3f"),
+                    static_cast<unsigned long long>(Result.metrics.surface_arrived_aircraft),
                     static_cast<unsigned long long>(Result.metrics.surface_departed_aircraft),
                     static_cast<unsigned long long>(Result.metrics.surface_total_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.runway_operations_completed),
+                    static_cast<unsigned long long>(Result.metrics.maximum_runway_queue_depth),
+                    static_cast<long long>(Result.metrics.arrival_runway_wait_seconds),
+                    static_cast<long long>(Result.metrics.departure_runway_wait_seconds),
+                    static_cast<long long>(Result.metrics.runway_occupied_seconds), Result.metrics.runway_utilization,
+                    static_cast<long long>(Result.metrics.arrival_taxi_seconds), Result.metrics.arrival_taxi_distance_m,
+                    static_cast<long long>(Result.metrics.departure_taxi_seconds), Result.metrics.departure_taxi_distance_m,
                     Result.metrics.surface_departure_throughput_per_hour,
                     static_cast<unsigned long long>(Result.metrics.surface_reroutes),
                     static_cast<unsigned long long>(Result.metrics.surface_wait_events),
@@ -408,7 +421,8 @@ void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
         ScenarioKey != TEXT("autonomy_tug") && ScenarioKey != TEXT("autonomy_sensor_validation") &&
         ScenarioKey != TEXT("turnaround_normal") && ScenarioKey != TEXT("turnaround_contention") &&
         ScenarioKey != TEXT("turnaround_disrupted") && ScenarioKey != TEXT("turnaround_flight_bank") &&
-        ScenarioKey != TEXT("turnaround_flight_bank_disrupted")) return;
+        ScenarioKey != TEXT("turnaround_flight_bank_disrupted") &&
+        ScenarioKey != TEXT("mixed_runway_operations") && ScenarioKey != TEXT("mixed_runway_disrupted")) return;
     SelectedScenarioKey = ScenarioKey;
     LoadSelectedScenario();
 }

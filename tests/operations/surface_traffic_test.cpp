@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
+#include <optional>
 
 namespace {
 
@@ -197,6 +198,42 @@ TEST(SurfaceTrafficTest, SeedsFortyTwoThroughFortyFourMatchSerialAndParallelExpe
     }
 }
 
+TEST(SurfaceTrafficTest, MixedRunwaySeedsFortyTwoThroughFortyFourMatchSerialAndParallel) {
+    const auto definition = airside::experiment::load_experiment(
+        std::filesystem::path{AIRSIDE_SOURCE_DIR} / "experiments" / "mixed_runway_operations_validation.yaml");
+    const auto cases = airside::experiment::generate_cases(definition);
+    const auto requests = airside::experiment::generate_runs(definition, cases);
+    const auto scenario = airside::load_scenario(definition.scenario_path);
+    const auto serial = airside::experiment::execute_runs(scenario, requests, 1);
+    const auto parallel = airside::experiment::execute_runs(scenario, requests, 3);
+    ASSERT_EQ(serial.runs.size(), 3U);
+    ASSERT_EQ(parallel.runs.size(), serial.runs.size());
+    for (std::size_t i = 0; i < serial.runs.size(); ++i) {
+        const auto& a = serial.runs[i];
+        const auto& b = parallel.runs[i];
+        EXPECT_EQ(a.seed, 42U + i);
+        EXPECT_EQ(a.seed, b.seed);
+        EXPECT_EQ(a.simulated_duration_seconds, b.simulated_duration_seconds);
+        EXPECT_EQ(a.surface_arrived_aircraft, b.surface_arrived_aircraft);
+        EXPECT_EQ(a.surface_departed_aircraft, b.surface_departed_aircraft);
+        EXPECT_EQ(a.runway_operations_completed, b.runway_operations_completed);
+        EXPECT_EQ(a.maximum_runway_queue_depth, b.maximum_runway_queue_depth);
+        EXPECT_EQ(a.arrival_runway_wait_seconds, b.arrival_runway_wait_seconds);
+        EXPECT_EQ(a.departure_runway_wait_seconds, b.departure_runway_wait_seconds);
+        EXPECT_EQ(a.average_runway_wait_seconds, b.average_runway_wait_seconds);
+        EXPECT_EQ(a.runway_utilization, b.runway_utilization);
+        EXPECT_EQ(a.arrival_taxi_distance_m, b.arrival_taxi_distance_m);
+        EXPECT_EQ(a.departure_taxi_distance_m, b.departure_taxi_distance_m);
+        EXPECT_EQ(a.arrival_taxi_seconds, b.arrival_taxi_seconds);
+        EXPECT_EQ(a.departure_taxi_seconds, b.departure_taxi_seconds);
+        EXPECT_EQ(a.surface_aircraft_aircraft_collisions, 0U);
+        EXPECT_EQ(a.surface_aircraft_ground_collisions, 0U);
+        EXPECT_EQ(a.surface_safe_failures, 0U);
+        EXPECT_EQ(a.fleet_outstanding_reservations, 0U);
+        EXPECT_EQ(a.fleet_collisions, 0U);
+    }
+}
+
 TEST(SurfaceTrafficTest, DisconnectedDepartureHandoffSafelyFailsAtGate) {
     auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
     const auto isolated = airside::NodeId{999};
@@ -209,6 +246,192 @@ TEST(SurfaceTrafficTest, DisconnectedDepartureHandoffSafelyFailsAtGate) {
     EXPECT_TRUE(std::ranges::all_of(result.aircraft, [](const auto& flight) {
         return !flight.actual_departure();
     }));
+}
+
+TEST(SurfaceTrafficTest, MixedArrivalDisruptionCompletesInboundAndOutboundAircraft) {
+    auto scenario = airside::load_scenario(scenario_file("mixed_runway_disrupted.yaml"));
+    const auto detour = std::ranges::find(scenario.graph.nodes(), std::string{"A4 Taxi Detour"},
+        &airside::AirportNode::name);
+    const auto merge = std::ranges::find(scenario.graph.nodes(), std::string{"A4 Taxi Merge"},
+        &airside::AirportNode::name);
+    const auto gate = std::ranges::find(scenario.graph.nodes(), std::string{"Arrival Gate A4"},
+        &airside::AirportNode::name);
+    ASSERT_NE(detour, scenario.graph.nodes().end());
+    ASSERT_NE(merge, scenario.graph.nodes().end());
+    ASSERT_NE(gate, scenario.graph.nodes().end());
+    const auto closed_edge = std::ranges::find_if(scenario.graph.edges(), [&](const auto& edge) {
+        return edge.from == merge->id && edge.to == gate->id;
+    });
+    ASSERT_NE(closed_edge, scenario.graph.edges().end());
+    const auto detour_id = detour->id;
+    const auto closed_edge_id = closed_edge->id;
+    airside::Simulation simulation(std::move(scenario), 42);
+    for (std::size_t step = 0; step < 20000 && !simulation.finished(); ++step)
+        (void)simulation.advance();
+    ASSERT_TRUE(simulation.finished()) << "last time=" << simulation.snapshot().simulation_time.count();
+    const auto result = simulation.result();
+    EXPECT_EQ(result.metrics.surface_departed_aircraft, 3U);
+    EXPECT_EQ(result.metrics.surface_arrived_aircraft, 2U);
+    EXPECT_EQ(result.metrics.runway_operations_completed, 5U);
+    EXPECT_EQ(result.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_aircraft_ground_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(result.metrics.fleet_outstanding_reservations, 0U);
+    EXPECT_EQ(std::ranges::count_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfaceReservationAcquired;
+    }), std::ranges::count_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfaceReservationReleased;
+    }));
+    EXPECT_GT(result.metrics.maximum_runway_queue_depth, 0U);
+    EXPECT_GT(result.metrics.runway_utilization, 0.0);
+    EXPECT_LE(result.metrics.runway_utilization, 1.0);
+    EXPECT_GE(result.metrics.minimum_aircraft_separation_m, 12.0);
+    EXPECT_GE(result.metrics.minimum_aircraft_ground_separation_m, 8.0);
+    EXPECT_EQ(std::ranges::count_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::ArrivalAtGate;
+    }), 2);
+    const auto rerouted_arrival = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfaceTaxiRouteAssigned &&
+            event.aircraft == airside::AircraftId{4};
+    });
+    ASSERT_NE(rerouted_arrival, result.events.end());
+    ASSERT_TRUE(rerouted_arrival->route.has_value());
+    EXPECT_NE(std::ranges::find(rerouted_arrival->route->nodes, detour_id), rerouted_arrival->route->nodes.end());
+    EXPECT_EQ(std::ranges::find(rerouted_arrival->route->edges, closed_edge_id), rerouted_arrival->route->edges.end());
+    EXPECT_GT(result.metrics.arrival_taxi_distance_m, 326.0);
+    const auto departure_release = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayReleased && event.aircraft == airside::AircraftId{1};
+    });
+    const auto arrival_request = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayRequest && event.aircraft == airside::AircraftId{4};
+    });
+    const auto arrival_grant = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayGrant && event.aircraft == airside::AircraftId{4};
+    });
+    ASSERT_NE(departure_release, result.events.end());
+    ASSERT_NE(arrival_request, result.events.end());
+    ASSERT_NE(arrival_grant, result.events.end());
+    EXPECT_LT(arrival_request->timestamp, departure_release->timestamp);
+    EXPECT_GE(arrival_grant->timestamp, departure_release->timestamp);
+    const auto operation = std::ranges::find(result.metrics.aircraft, airside::AircraftId{4}, &airside::AircraftMetrics::id);
+    ASSERT_NE(operation, result.metrics.aircraft.end());
+    EXPECT_EQ(operation->operation_type, "arrival");
+    EXPECT_GT(operation->arrival_taxi_distance_m, 0.0);
+    EXPECT_TRUE(operation->gate_arrival_time.has_value());
+}
+
+TEST(SurfaceTrafficTest, ControlMixedTrafficUsesSharedRunwayAndReleasesEveryOperation) {
+    airside::Simulation simulation(airside::load_scenario(scenario_file("mixed_runway_operations.yaml")), 42);
+    const auto result = simulation.run();
+    EXPECT_EQ(result.metrics.surface_arrived_aircraft, 2U);
+    EXPECT_EQ(result.metrics.surface_departed_aircraft, 3U);
+    EXPECT_EQ(result.metrics.runway_operations_completed, 5U);
+    EXPECT_EQ(result.metrics.surface_total_aircraft, 5U);
+    EXPECT_EQ(result.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_aircraft_ground_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(result.metrics.runway_occupied_seconds, 1050);
+    EXPECT_GT(result.metrics.arrival_runway_wait_seconds, 0);
+    EXPECT_GT(result.metrics.arrival_taxi_distance_m, 0.0);
+    EXPECT_GT(result.metrics.departure_taxi_distance_m, 0.0);
+    std::vector<airside::AircraftId> granted;
+    std::optional<airside::AircraftId> runway_owner;
+    for (const auto& event : result.events) {
+        if (event.type == airside::SimulationEventType::RunwayGrant) {
+            ASSERT_TRUE(event.aircraft.has_value());
+            EXPECT_FALSE(runway_owner.has_value());
+            runway_owner = event.aircraft;
+            granted.push_back(*event.aircraft);
+        } else if (event.type == airside::SimulationEventType::RunwayOccupied) {
+            EXPECT_TRUE(event.aircraft.has_value());
+            EXPECT_EQ(runway_owner, event.aircraft);
+        } else if (event.type == airside::SimulationEventType::RunwayReleased) {
+            EXPECT_TRUE(event.aircraft.has_value());
+            EXPECT_EQ(runway_owner, event.aircraft);
+            runway_owner.reset();
+        }
+    }
+    EXPECT_EQ(granted.size(), 5U);
+    EXPECT_FALSE(runway_owner.has_value());
+    const auto arrival_request = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayRequest && event.aircraft == airside::AircraftId{4};
+    });
+    const auto departure_release = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayReleased && event.aircraft == airside::AircraftId{1};
+    });
+    const auto arrival_grant = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayGrant && event.aircraft == airside::AircraftId{4};
+    });
+    ASSERT_NE(arrival_request, result.events.end());
+    ASSERT_NE(departure_release, result.events.end());
+    ASSERT_NE(arrival_grant, result.events.end());
+    EXPECT_LT(arrival_request->timestamp, departure_release->timestamp);
+    EXPECT_LE(departure_release->timestamp, arrival_grant->timestamp);
+    EXPECT_GT(result.metrics.arrival_runway_wait_seconds, 0);
+}
+
+TEST(SurfaceTrafficTest, SimultaneousArrivalRequestsUseStableAircraftIdTieBreakAndRepeatExactly) {
+    const auto run = [] {
+        auto scenario = airside::load_scenario(scenario_file("mixed_runway_operations.yaml"));
+        const auto& second_arrival = scenario.aircraft[4];
+        scenario.aircraft[4] = airside::Aircraft(second_arrival.id(), second_arrival.flight_number(), airside::SimTime{700},
+            airside::SimTime{700}, second_arrival.gate(), second_arrival.gate_node(), second_arrival.tasks(),
+            second_arrival.turnaround_id(), airside::SimTime{700}, second_arrival.operation_type(),
+            second_arrival.arrival_exit_node());
+        std::swap(scenario.aircraft[3], scenario.aircraft[4]);
+        airside::Simulation simulation(std::move(scenario), 42);
+        return simulation.run();
+    };
+    const auto first = run();
+    const auto repeated = run();
+    EXPECT_EQ(first.events, repeated.events);
+    EXPECT_EQ(first.metrics.surface_arrived_aircraft, 2U);
+    EXPECT_EQ(first.metrics.surface_departed_aircraft, 3U);
+    const auto request_five = std::ranges::find_if(first.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayRequest && event.aircraft == airside::AircraftId{5};
+    });
+    const auto request_four = std::ranges::find_if(first.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayRequest && event.aircraft == airside::AircraftId{4};
+    });
+    const auto grant_four = std::ranges::find_if(first.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayGrant && event.aircraft == airside::AircraftId{4};
+    });
+    const auto grant_five = std::ranges::find_if(first.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RunwayGrant && event.aircraft == airside::AircraftId{5};
+    });
+    ASSERT_NE(request_five, first.events.end());
+    ASSERT_NE(request_four, first.events.end());
+    ASSERT_NE(grant_four, first.events.end());
+    ASSERT_NE(grant_five, first.events.end());
+    EXPECT_LT(request_five->sequence, request_four->sequence);
+    EXPECT_LT(grant_four->sequence, grant_five->sequence);
+}
+
+TEST(SurfaceTrafficTest, ArrivalWithNoReachableTaxiRouteFailsSafelyWithReason) {
+    auto scenario = airside::load_scenario(scenario_file("mixed_runway_operations.yaml"));
+    const auto exit = std::ranges::find(scenario.graph.nodes(), std::string{"Runway Exit A4"},
+        &airside::AirportNode::name);
+    ASSERT_NE(exit, scenario.graph.nodes().end());
+    std::size_t disabled_edges = 0;
+    for (const auto& edge : scenario.graph.edges()) {
+        if (edge.from == exit->id || edge.to == exit->id) {
+            scenario.graph.set_edge_available(edge.id, false);
+            ++disabled_edges;
+        }
+    }
+    ASSERT_GT(disabled_edges, 0U);
+    airside::Simulation simulation(std::move(scenario), 42);
+    const auto result = simulation.run();
+    EXPECT_EQ(result.metrics.surface_safe_failures, 1U);
+    EXPECT_EQ(result.metrics.surface_arrived_aircraft, 1U);
+    const auto failure = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfaceSafeFailure &&
+            event.aircraft == airside::AircraftId{4};
+    });
+    ASSERT_NE(failure, result.events.end());
+    EXPECT_EQ(failure->detail, "no available taxi route from runway exit to assigned arrival gate");
+    EXPECT_NE(airside::format_event(*failure).find("no available taxi route from runway exit to assigned arrival gate"),
+        std::string::npos);
 }
 
 TEST(SurfaceTrafficTest, CollisionDetectorsPreserveHoldAndCollisionThresholds) {

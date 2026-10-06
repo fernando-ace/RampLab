@@ -134,6 +134,16 @@ bool Simulation::advance() {
 SimulationSnapshot Simulation::snapshot() const {
     SimulationSnapshot result;
     result.simulation_time = now_;
+    for (const auto& [id, state] : surface_aircraft_) {
+        if (state.phase == SurfaceAircraftState::Phase::Runway) result.runway_owner = id;
+        if (state.phase == SurfaceAircraftState::Phase::ArrivalQueue ||
+            state.phase == SurfaceAircraftState::Phase::WaitingForRunway) result.runway_queue.push_back(id);
+    }
+    std::ranges::sort(result.runway_queue, [this](AircraftId left, AircraftId right) {
+        const auto& l = surface_aircraft_.at(left);
+        const auto& r = surface_aircraft_.at(right);
+        return l.queued_at == r.queued_at ? left < right : l.queued_at < r.queued_at;
+    });
     result.aircraft.reserve(scenario_.aircraft.size());
     for (const auto& flight : scenario_.aircraft) {
         AircraftSnapshot item{flight.id(), flight.flight_number(), flight.state(), flight.gate(),
@@ -144,15 +154,18 @@ SimulationSnapshot Simulation::snapshot() const {
         }
         if (const auto surface = surface_aircraft_.find(flight.id()); surface != surface_aircraft_.end()) {
             const auto& state = surface->second;
+            item.operation_type = flight.operation_type() == AircraftOperationType::ArrivalOnly ? "arrival" : "departure";
             switch (state.phase) {
             case SurfaceAircraftState::Phase::None: item.surface_state = flight.state() == AircraftState::Scheduled ? "Scheduled" : "ParkedAtGate"; break;
+            case SurfaceAircraftState::Phase::ArrivalQueue: item.surface_state = "ArrivalQueue"; break;
             case SurfaceAircraftState::Phase::WaitingForPushback: item.surface_state = "ReadyForPushback"; break;
             case SurfaceAircraftState::Phase::Pushback: item.surface_state = "Pushback"; break;
-            case SurfaceAircraftState::Phase::Taxiing: item.surface_state = "Taxiing"; break;
+            case SurfaceAircraftState::Phase::Taxiing: item.surface_state = state.arrival_operation ? "TaxiingToGate" : "Taxiing"; break;
             case SurfaceAircraftState::Phase::WaitingForTraffic: item.surface_state = "WaitingForTraffic"; break;
             case SurfaceAircraftState::Phase::WaitingForRunway: item.surface_state = "WaitingForRunway"; break;
-            case SurfaceAircraftState::Phase::Runway: item.surface_state = "ClearedForDeparture"; break;
+            case SurfaceAircraftState::Phase::Runway: item.surface_state = "RunwayOccupied"; break;
             case SurfaceAircraftState::Phase::Departed: item.surface_state = "Departed"; break;
+            case SurfaceAircraftState::Phase::Arrived: item.surface_state = "Arrived"; break;
             case SurfaceAircraftState::Phase::Failed: item.surface_state = "SafelyStopped"; break;
             }
             if (state.clearance_waiting && state.phase == SurfaceAircraftState::Phase::Taxiing)
@@ -169,15 +182,24 @@ SimulationSnapshot Simulation::snapshot() const {
             item.taxi_completed_at = state.taxi_completed_at;
             item.runway_queue_entered_at = state.runway_queue_entered_at;
             item.actual_surface_departure = state.actual_surface_departure;
+            item.runway_clearance_at = state.runway_clearance_at;
+            item.runway_release_at = state.runway_release_at;
+            item.arrival_gate_at = state.arrival_gate_at;
+            item.runway_wait_duration = state.runway_wait;
             if (state.clearance_waiting) item.surface_wait_reason = "aircraft_ground_vehicle_clearance";
             else if (state.phase == SurfaceAircraftState::Phase::WaitingForTraffic) item.surface_wait_reason = "edge_or_intersection_reserved";
             if (state.phase == SurfaceAircraftState::Phase::WaitingForPushback) item.surface_wait_reason = "pushback_area_reserved";
             item.surface_speed_mps = state.phase == SurfaceAircraftState::Phase::Taxiing && !state.clearance_waiting
                 ? scenario_.surface_operations->aircraft_speed_mps : 0.0;
-            if (state.phase != SurfaceAircraftState::Phase::Departed && flight.state() != AircraftState::Scheduled) {
+            if (state.phase != SurfaceAircraftState::Phase::Departed && state.phase != SurfaceAircraftState::Phase::Arrived &&
+                (flight.state() != AircraftState::Scheduled || state.phase == SurfaceAircraftState::Phase::ArrivalQueue)) {
                 item.surface_position_m = scenario_.graph.node(state.node).position;
+                const bool departure_only_scenario = std::ranges::none_of(scenario_.aircraft, [](const Aircraft& candidate) {
+                    return candidate.operation_type() == AircraftOperationType::ArrivalOnly;
+                });
                 if (state.phase == SurfaceAircraftState::Phase::WaitingForRunway ||
-                    state.phase == SurfaceAircraftState::Phase::Runway) {
+                    state.phase == SurfaceAircraftState::Phase::ArrivalQueue ||
+                    (state.phase == SurfaceAircraftState::Phase::Runway && departure_only_scenario)) {
                     item.surface_position_m->x_m -= scenario_.surface_operations->departure_queue_spacing_m *
                         static_cast<double>(state.queue_slot + 1U);
                 }
@@ -195,6 +217,7 @@ SimulationSnapshot Simulation::snapshot() const {
                 item.surface_next_waypoint = scenario_.graph.node(state.route_nodes[state.edge_index + 1]).name;
             }
         } else if (scenario_.surface_operations) {
+            item.operation_type = flight.operation_type() == AircraftOperationType::ArrivalOnly ? "arrival" : "departure";
             item.surface_state = flight.state() == AircraftState::Scheduled ? "Scheduled" :
                 flight.state() == AircraftState::Departed ? "Departed" : "ParkedAtGate";
             item.surface_node = flight.gate_node();
@@ -288,6 +311,7 @@ SimulationSnapshot Simulation::snapshot() const {
     }
     for (const auto& flight : scenario_.aircraft) {
         if (!scenario_.turnaround_orchestration) break;
+        if (flight.operation_type() == AircraftOperationType::ArrivalOnly) continue;
         TurnaroundSnapshot turnaround;
         turnaround.turnaround_id = flight.turnaround_id();
         turnaround.aircraft = flight.id();
@@ -330,17 +354,19 @@ SimulationResult Simulation::result() const {
     std::vector<Aircraft> completed_aircraft;
     if (scenario_.turnaround_orchestration) {
         std::ranges::copy_if(scenario_.aircraft, std::back_inserter(completed_aircraft),
-            [](const Aircraft& flight) { return flight.actual_departure().has_value(); });
+            [](const Aircraft& flight) { return flight.operation_type() == AircraftOperationType::Turnaround && flight.actual_departure().has_value(); });
     }
     auto metrics = calculate_metrics(scenario_.turnaround_orchestration ? completed_aircraft : scenario_.aircraft,
         scenario_.vehicles, now_);
     if (scenario_.turnaround_orchestration) {
-        metrics.total_turnarounds = scenario_.aircraft.size();
+        metrics.total_turnarounds = static_cast<std::size_t>(std::ranges::count_if(scenario_.aircraft,
+            [](const Aircraft& flight) { return flight.operation_type() == AircraftOperationType::Turnaround; }));
         std::int64_t total_delay = 0;
         std::int64_t total_turnaround_duration = 0;
         std::unordered_map<ServiceType, std::int64_t> service_seconds;
         std::unordered_map<ServiceType, std::size_t> service_counts;
         for (const auto& flight : scenario_.aircraft) {
+            if (flight.operation_type() == AircraftOperationType::ArrivalOnly) continue;
             const auto found = std::ranges::find(metrics.aircraft, flight.id(), &AircraftMetrics::id);
             if (found == metrics.aircraft.end()) continue;
             found->turnaround_id = flight.turnaround_id();
@@ -461,18 +487,57 @@ SimulationResult Simulation::result() const {
             metrics.surface_aircraft_aircraft_collisions = surface_aircraft_aircraft_collisions_;
             metrics.surface_aircraft_ground_collisions = surface_aircraft_ground_collisions_;
             for (const auto& [id, state] : surface_aircraft_) {
-                (void)id;
+                const auto flight_it = std::ranges::find(scenario_.aircraft, id, &Aircraft::id);
+                const auto& flight = *flight_it;
+                const bool inbound = flight.operation_type() == AircraftOperationType::ArrivalOnly;
+                auto metric = std::ranges::find(metrics.aircraft, id, &AircraftMetrics::id);
+                if (metric == metrics.aircraft.end()) {
+                    metrics.aircraft.push_back(AircraftMetrics{id, flight.flight_number()});
+                    metric = std::prev(metrics.aircraft.end());
+                }
+                metric->operation_type = inbound ? "arrival" : "departure";
+                metric->runway_request_time = state.runway_queue_entered_at;
+                metric->runway_clearance_time = state.runway_clearance_at;
+                metric->runway_wait = state.runway_wait;
+                metric->runway_release_time = state.runway_release_at;
+                metric->runway_occupancy = state.runway_occupied;
+                metric->arrival_taxi_distance_m = inbound ? state.taxi_distance_m : 0.0;
+                metric->arrival_taxi_time = inbound && state.taxi_started_at && state.taxi_completed_at
+                    ? *state.taxi_completed_at - *state.taxi_started_at : SimTime::zero();
+                metric->gate_arrival_time = state.arrival_gate_at;
+                metric->surface_departure_time = state.actual_surface_departure;
+                metric->total_operational_delay = inbound && state.arrival_gate_at
+                    ? std::max(SimTime::zero(), *state.arrival_gate_at - flight.scheduled_arrival())
+                    : flight.departure_delay().value_or(SimTime::zero());
                 metrics.surface_departed_aircraft += state.actual_surface_departure.has_value() ? 1U : 0U;
+                metrics.surface_arrived_aircraft += state.phase == SurfaceAircraftState::Phase::Arrived ? 1U : 0U;
+                metrics.runway_operations_completed += state.runway_release_at.has_value() ? 1U : 0U;
+                if (state.runway_release_at) {
+                    if (inbound) metrics.arrival_runway_wait_seconds += state.runway_wait.count();
+                    else metrics.departure_runway_wait_seconds += state.runway_wait.count();
+                }
+                metrics.runway_occupied_seconds += state.runway_occupied.count();
                 metrics.surface_safe_failures += state.phase == SurfaceAircraftState::Phase::Failed ? 1U : 0U;
                 metrics.surface_reroutes += state.reroutes;
                 metrics.surface_wait_seconds += state.accumulated_wait.count();
                 metrics.surface_taxi_distance_m += state.taxi_distance_m;
-                if (state.taxi_started_at && state.taxi_completed_at)
+                if (state.taxi_started_at && state.taxi_completed_at) {
                     metrics.surface_taxi_seconds += (*state.taxi_completed_at - *state.taxi_started_at).count();
+                    if (inbound) metrics.arrival_taxi_seconds += (*state.taxi_completed_at - *state.taxi_started_at).count();
+                    else metrics.departure_taxi_seconds += (*state.taxi_completed_at - *state.taxi_started_at).count();
+                }
+                if (inbound) metrics.arrival_taxi_distance_m += state.taxi_distance_m;
+                else metrics.departure_taxi_distance_m += state.taxi_distance_m;
                 if (state.runway_queue_entered_at && state.phase_started &&
                     (state.phase == SurfaceAircraftState::Phase::Runway || state.phase == SurfaceAircraftState::Phase::Departed))
                     metrics.runway_queue_seconds += (*state.phase_started - *state.runway_queue_entered_at).count();
             }
+            metrics.maximum_runway_queue_depth = maximum_runway_queue_depth_;
+            const auto runway_wait_total = metrics.arrival_runway_wait_seconds + metrics.departure_runway_wait_seconds;
+            metrics.average_runway_wait_seconds = metrics.runway_operations_completed > 0
+                ? static_cast<double>(runway_wait_total) / static_cast<double>(metrics.runway_operations_completed) : 0.0;
+            metrics.runway_utilization = now_ > SimTime::zero()
+                ? static_cast<double>(metrics.runway_occupied_seconds) / static_cast<double>(now_.count()) : 0.0;
             const double elapsed_seconds = static_cast<double>(now_.count());
             metrics.surface_departure_throughput_per_hour = elapsed_seconds > 0.0
                 ? static_cast<double>(metrics.surface_departed_aircraft) * 3600.0 / elapsed_seconds : 0.0;
@@ -512,6 +577,27 @@ void Simulation::process(const Event& event) {
 
 void Simulation::handle_aircraft_arrival(AircraftId id) {
     auto& flight = aircraft(id);
+    if (flight.operation_type() == AircraftOperationType::ArrivalOnly) {
+        if (!scenario_.surface_operations) throw std::logic_error("inbound arrival requires surface operations");
+        flight.begin_surface_arrival();
+        auto& state = surface_aircraft_[id];
+        state.arrival_operation = true;
+        state.phase = SurfaceAircraftState::Phase::ArrivalQueue;
+        state.node = scenario_.surface_operations->runway_node;
+        state.queued_at = now_;
+        state.queue_slot = next_surface_queue_slot_++;
+        state.runway_queue_entered_at = now_;
+        state.wait_started = now_;
+        auto request = aircraft_event(SimulationEventType::RunwayRequest, flight);
+        request.detail = "arrival";
+        emit(std::move(request));
+        emit(aircraft_event(SimulationEventType::SurfaceRunwayQueueEntered, flight));
+        if (!surface_tick_scheduled_) {
+            surface_tick_scheduled_ = true;
+            [[maybe_unused]] const auto sequence = events_.schedule(now_ + SimTime{1}, EventType::SurfaceTick);
+        }
+        return;
+    }
     auto& assigned_gate = gate(flight.gate());
     if (!assigned_gate.enabled || assigned_gate.occupying_aircraft) {
         throw std::logic_error("aircraft arrived at an unavailable gate");
@@ -723,7 +809,8 @@ void Simulation::handle_vehicle_outage(VehicleId id) {
 }
 
 void Simulation::schedule_turnaround_tasks(Aircraft& flight) {
-    if (!scenario_.turnaround_orchestration || flight.state() == AircraftState::Scheduled ||
+    if (!scenario_.turnaround_orchestration || flight.operation_type() == AircraftOperationType::ArrivalOnly ||
+        flight.state() == AircraftState::Scheduled ||
         flight.state() == AircraftState::Departed) return;
     update_turnaround_estimate(flight);
     for (auto& task_value : flight.mutable_tasks()) {
@@ -1028,7 +1115,7 @@ void Simulation::handle_task_duration_change(TaskId task_id, SimTime duration_va
 }
 
 void Simulation::update_turnaround_estimate(const Aircraft& flight) {
-    if (!scenario_.turnaround_orchestration) return;
+    if (!scenario_.turnaround_orchestration || flight.operation_type() == AircraftOperationType::ArrivalOnly) return;
     const auto& tasks = flight.tasks();
     std::vector<SimTime> finish(tasks.size(), now_);
     std::vector<std::optional<std::size_t>> parent(tasks.size());
@@ -1145,6 +1232,8 @@ void Simulation::finish_surface_departure(AircraftId id) {
     state.phase = SurfaceAircraftState::Phase::Departed;
     state.phase_end.reset();
     state.actual_surface_departure = now_;
+    state.runway_release_at = now_;
+    if (state.phase_started) state.runway_occupied += now_ - *state.phase_started;
     handle_departure(id);
 }
 
@@ -1154,6 +1243,11 @@ void Simulation::handle_surface_tick() {
     const auto event_for = [this](SimulationEventType type, AircraftId id, std::optional<EdgeId> edge = std::nullopt) {
         auto event = aircraft_event(type, aircraft(id));
         event.edge = edge;
+        if (type == SimulationEventType::SurfaceRunwayQueueEntered) {
+            auto request = aircraft_event(SimulationEventType::RunwayRequest, aircraft(id));
+            request.detail = surface_aircraft_.at(id).arrival_operation ? "arrival" : "departure";
+            emit(std::move(request));
+        }
         emit(std::move(event));
     };
 
@@ -1192,6 +1286,7 @@ void Simulation::handle_surface_tick() {
                 state.queued_at = now_;
                 state.queue_slot = next_surface_queue_slot_++;
                 state.runway_queue_entered_at = now_;
+                state.wait_started = now_;
                 event_for(SimulationEventType::SurfaceRunwayQueueEntered, id);
             }
         } else if (state.phase == Phase::Taxiing && state.edge_index < state.route_edges.size()) {
@@ -1205,14 +1300,78 @@ void Simulation::handle_surface_tick() {
             if (state.edge_index >= state.route_edges.size()) {
                 surface_node_reservations_.erase(state.node);
                 state.taxi_completed_at = now_;
+                if (state.arrival_operation) {
+                    auto& assigned_gate = gate(aircraft(id).gate());
+                    if (assigned_gate.occupying_aircraft && assigned_gate.occupying_aircraft != id) {
+                        state.phase = Phase::Failed;
+                        event_for(SimulationEventType::SurfaceSafeFailure, id);
+                        aircraft(id).fail_turnaround("assigned arrival gate remained occupied at taxi-in completion");
+                        continue;
+                    }
+                    assigned_gate.occupying_aircraft = id;
+                    const auto before = aircraft(id).state();
+                    aircraft(id).arrive(now_);
+                    state.phase = Phase::Arrived;
+                    state.arrival_gate_at = now_;
+                    auto at_gate = aircraft_event(SimulationEventType::ArrivalAtGate, aircraft(id));
+                    at_gate.detail = "arrived";
+                    emit(std::move(at_gate));
+                    emit(aircraft_event(SimulationEventType::AircraftArrived, aircraft(id)));
+                    emit_aircraft_state(aircraft(id), before);
+                    continue;
+                }
                 state.phase = Phase::WaitingForRunway;
                 state.queued_at = now_;
                 state.queue_slot = next_surface_queue_slot_++;
                 state.runway_queue_entered_at = now_;
+                state.wait_started = now_;
                 event_for(SimulationEventType::SurfaceRunwayQueueEntered, id);
             }
         } else if (state.phase == Phase::Runway) {
-            finish_surface_departure(id);
+            if (state.arrival_operation) {
+                const auto exit_node = aircraft(id).arrival_exit_node();
+                const auto occupied = surface_node_reservations_.find(exit_node);
+                if (occupied != surface_node_reservations_.end() && occupied->second != id) {
+                    state.phase_end = now_ + SimTime{1};
+                    continue;
+                }
+                state.phase = Phase::Taxiing;
+                state.node = exit_node;
+                state.phase_end.reset();
+                if (state.phase_started) state.runway_occupied += now_ - *state.phase_started;
+                state.phase_started.reset();
+                surface_node_reservations_[exit_node] = id;
+                const auto route = find_route(scenario_.graph, exit_node, aircraft(id).gate_node());
+                auto release = aircraft_event(SimulationEventType::RunwayReleased, aircraft(id));
+                release.detail = "arrival rollout complete";
+                emit(std::move(release));
+                state.runway_release_at = now_;
+                auto runway_exit = aircraft_event(SimulationEventType::ArrivalRunwayExit, aircraft(id));
+                runway_exit.detail = "runway exit " + std::to_string(exit_node.value());
+                emit(std::move(runway_exit));
+                if (!route) {
+                    state.phase = Phase::Failed;
+                    aircraft(id).fail_turnaround("no available taxi route from runway exit to assigned arrival gate");
+                    auto failure = aircraft_event(SimulationEventType::SurfaceSafeFailure, aircraft(id));
+                    failure.detail = aircraft(id).failure_reason();
+                    emit(std::move(failure));
+                    continue;
+                }
+                state.route_nodes = route->nodes;
+                state.route_edges = route->edges;
+                state.edge_index = 0;
+                state.taxi_started_at = now_;
+                state.taxi_completed_at.reset();
+                emit(aircraft_event(SimulationEventType::ArrivalTaxiInStarted, aircraft(id)));
+                auto assigned = aircraft_event(SimulationEventType::SurfaceTaxiRouteAssigned, aircraft(id));
+                assigned.route = *route;
+                emit(std::move(assigned));
+            } else {
+                auto release = aircraft_event(SimulationEventType::RunwayReleased, aircraft(id));
+                release.detail = "departure interval complete";
+                emit(std::move(release));
+                finish_surface_departure(id);
+            }
         }
     }
 
@@ -1223,13 +1382,15 @@ void Simulation::handle_surface_tick() {
                 state.queued_at = now_;
                 state.queue_slot = next_surface_queue_slot_++;
                 state.runway_queue_entered_at = now_;
+                state.wait_started = now_;
                 event_for(SimulationEventType::SurfaceRunwayQueueEntered, id);
                 continue;
             }
             const auto edge_id = state.route_edges.front();
             if (!scenario_.graph.edge(edge_id).available) {
                 event_for(SimulationEventType::SurfaceRouteInvalidated, id, edge_id);
-                const auto reroute = find_route(scenario_.graph, state.node, config.departure_handoff);
+                const auto reroute = find_route(scenario_.graph, state.node,
+                    state.arrival_operation ? aircraft(id).gate_node() : config.departure_handoff);
                 if (!reroute) {
                     state.phase = Phase::Failed;
                     event_for(SimulationEventType::SurfaceSafeFailure, id);
@@ -1286,7 +1447,8 @@ void Simulation::handle_surface_tick() {
                     }
                 }
                 event_for(SimulationEventType::SurfaceRouteInvalidated, id, closed_edge);
-                const auto reroute = find_route(scenario_.graph, state.node, config.departure_handoff);
+                const auto reroute = find_route(scenario_.graph, state.node,
+                    state.arrival_operation ? aircraft(id).gate_node() : config.departure_handoff);
                 if (!reroute) {
                     state.phase = Phase::Failed;
                     event_for(SimulationEventType::SurfaceSafeFailure, id);
@@ -1382,7 +1544,7 @@ void Simulation::handle_surface_tick() {
         // Aircraft waiting for turnaround completion are parked at their gates. Ground
         // service vehicles are expected to be nearby during servicing, so collision
         // interlocks begin when the aircraft is authorized to occupy surface lanes.
-        if (phase != Phase::Pushback && phase != Phase::Taxiing &&
+        if (phase != Phase::ArrivalQueue && phase != Phase::Pushback && phase != Phase::Taxiing &&
             phase != Phase::WaitingForTraffic && phase != Phase::WaitingForRunway &&
             phase != Phase::Runway) continue;
         if (phase == Phase::Failed || phase == Phase::Departed || phase == Phase::None) continue;
@@ -1429,11 +1591,13 @@ void Simulation::handle_surface_tick() {
         state.clearance_waiting = false;
     }
 
-    // A single runway resource uses FIFO queue arrival, then stable aircraft ID.
+    // Shared runway policy: FIFO simulated request timestamp, then stable aircraft ID.
+    // This work-conserving aging policy prevents starvation for finite arrivals/departures.
     if (runway_available_at_ <= now_) {
         std::vector<AircraftId> queued;
         for (const auto& [id, state] : surface_aircraft_)
-            if (state.phase == Phase::WaitingForRunway && aircraft(id).scheduled_departure() <= now_)
+            if ((state.phase == Phase::WaitingForRunway || state.phase == Phase::ArrivalQueue) &&
+                (state.arrival_operation || aircraft(id).scheduled_departure() <= now_))
                 queued.push_back(id);
         std::ranges::sort(queued, [this](AircraftId left, AircraftId right) {
             const auto l = surface_aircraft_.at(left).queued_at;
@@ -1443,17 +1607,27 @@ void Simulation::handle_surface_tick() {
         if (!queued.empty()) {
             const auto id = queued.front();
             auto& state = surface_aircraft_.at(id);
+            if (state.wait_started) state.accumulated_wait += now_ - *state.wait_started;
+            state.wait_started.reset();
+            state.runway_wait = now_ - state.queued_at;
             state.phase = Phase::Runway;
             state.phase_started = now_;
-            state.phase_end = now_ + config.runway_occupancy;
+            state.runway_clearance_at = now_;
+            state.phase_end = now_ + (state.arrival_operation ? config.arrival_rollout : config.runway_occupancy);
             runway_available_at_ = *state.phase_end;
             event_for(SimulationEventType::SurfaceRunwayClearance, id);
+            event_for(SimulationEventType::RunwayGrant, id);
+            event_for(SimulationEventType::RunwayOccupied, id);
         }
     }
+    maximum_runway_queue_depth_ = std::max(maximum_runway_queue_depth_, static_cast<std::size_t>(std::ranges::count_if(
+        surface_aircraft_, [](const auto& item) {
+            return item.second.phase == Phase::WaitingForRunway || item.second.phase == Phase::ArrivalQueue;
+        })));
 
     const bool active = std::ranges::any_of(surface_aircraft_, [](const auto& item) {
         const auto phase = item.second.phase;
-        return phase != Phase::None && phase != Phase::Departed && phase != Phase::Failed;
+        return phase != Phase::None && phase != Phase::Departed && phase != Phase::Arrived && phase != Phase::Failed;
     });
     if (active && !surface_tick_scheduled_) {
         surface_tick_scheduled_ = true;

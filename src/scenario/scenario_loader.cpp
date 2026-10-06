@@ -30,6 +30,7 @@ struct AircraftDocument {
     std::string id; std::string gate; std::int64_t arrival;
     std::int64_t departure; std::vector<std::string> services;
     std::string turnaround_id; std::int64_t target_off_block;
+    bool arrival_only{false}; std::string arrival_exit;
     struct Task { std::string id; std::string type; std::vector<std::string> prerequisites;
         std::int64_t earliest_start{0}; std::optional<std::int64_t> latest_completion;
         std::optional<std::int64_t> duration; std::string resource; };
@@ -50,7 +51,7 @@ struct ScenarioDocument {
     std::vector<Disruption> disruptions;
     struct VehicleOutage { std::int64_t time; std::string vehicle; };
     std::vector<VehicleOutage> vehicle_outages;
-    struct SurfaceOperations { std::string departure_handoff; std::int64_t pushback_seconds{30}; std::int64_t runway_seconds{60}; double speed_mps{5.0}; double queue_spacing_m{30.0}; };
+    struct SurfaceOperations { std::string departure_handoff; std::string runway_node; std::string arrival_exit; std::int64_t pushback_seconds{30}; std::int64_t runway_seconds{60}; std::int64_t arrival_rollout_seconds{90}; double speed_mps{5.0}; double queue_spacing_m{30.0}; };
     std::optional<SurfaceOperations> surface_operations;
 };
 
@@ -135,17 +136,22 @@ ScenarioDocument parse_document(const YAML::Node& root) {
     for (std::size_t index = 0; index < aircraft.size(); ++index) {
         const auto item = aircraft[index];
         const auto context = std::format("aircraft[{}]", index);
+        const auto operation_type = item["operation_type"] ? scalar<std::string>(item, "operation_type", context) : "turnaround";
+        if (operation_type != "turnaround" && operation_type != "arrival")
+            throw ScenarioLoadError(std::format("{}: operation_type must be 'turnaround' or 'arrival'", context));
         const auto services = item["required_services"];
         const auto tasks = item["service_tasks"];
-        if (!services && !tasks) throw ScenarioLoadError(std::format("{}: missing 'required_services' or 'service_tasks'", context));
+        if (operation_type == "turnaround" && !services && !tasks) throw ScenarioLoadError(std::format("{}: missing 'required_services' or 'service_tasks'", context));
         if (services) require_sequence(services, std::format("{}.required_services", context));
         if (tasks && !tasks.IsSequence()) throw ScenarioLoadError(std::format("{}.service_tasks must be a sequence", context));
         if (tasks && tasks.size() == 0) throw ScenarioLoadError(std::format("{}.service_tasks cannot be empty", context));
         AircraftDocument flight;
         flight.id = scalar<std::string>(item, "id", context);
+        flight.arrival_only = operation_type == "arrival";
+        if (flight.arrival_only) flight.arrival_exit = scalar<std::string>(item, "arrival_exit", context);
         flight.gate = scalar<std::string>(item, "gate", context);
         flight.arrival = scalar<std::int64_t>(item, "scheduled_arrival_seconds", context);
-        flight.departure = scalar<std::int64_t>(item, "scheduled_departure_seconds", context);
+        flight.departure = item["scheduled_departure_seconds"] ? scalar<std::int64_t>(item, "scheduled_departure_seconds", context) : flight.arrival;
         flight.turnaround_id = item["turnaround_id"] ? scalar<std::string>(item, "turnaround_id", context) : flight.id;
         flight.target_off_block = item["target_off_block_seconds"] ? scalar<std::int64_t>(item, "target_off_block_seconds", context) : flight.departure;
         if (services) for (const auto service : services) flight.services.push_back(service.as<std::string>());
@@ -208,8 +214,11 @@ ScenarioDocument parse_document(const YAML::Node& root) {
     if (const auto surface = root["surface_operations"]) {
         ScenarioDocument::SurfaceOperations config;
         config.departure_handoff = scalar<std::string>(surface, "departure_handoff", "surface_operations");
+        config.runway_node = surface["runway_node"] ? scalar<std::string>(surface, "runway_node", "surface_operations") : config.departure_handoff;
+        config.arrival_exit = surface["arrival_exit"] ? scalar<std::string>(surface, "arrival_exit", "surface_operations") : config.departure_handoff;
         if (surface["pushback_seconds"]) config.pushback_seconds = scalar<std::int64_t>(surface, "pushback_seconds", "surface_operations");
         if (surface["runway_occupancy_seconds"]) config.runway_seconds = scalar<std::int64_t>(surface, "runway_occupancy_seconds", "surface_operations");
+        if (surface["arrival_rollout_seconds"]) config.arrival_rollout_seconds = scalar<std::int64_t>(surface, "arrival_rollout_seconds", "surface_operations");
         if (surface["aircraft_speed_mps"]) config.speed_mps = scalar<double>(surface, "aircraft_speed_mps", "surface_operations");
         if (surface["departure_queue_spacing_m"]) config.queue_spacing_m = scalar<double>(surface, "departure_queue_spacing_m", "surface_operations");
         document.surface_operations = std::move(config);
@@ -287,11 +296,15 @@ Scenario validate_and_build(const ScenarioDocument& document) {
     }
     if (document.surface_operations) {
         const auto& config = *document.surface_operations;
-        if (config.pushback_seconds <= 0 || config.runway_seconds <= 0 || config.speed_mps <= 0.0 || config.queue_spacing_m <= 0.0)
+        if (config.pushback_seconds <= 0 || config.runway_seconds <= 0 || config.arrival_rollout_seconds <= 0 ||
+            config.speed_mps <= 0.0 || config.queue_spacing_m <= 0.0)
             throw ScenarioLoadError("surface_operations durations, aircraft_speed_mps, and departure_queue_spacing_m must be positive");
         scenario.surface_operations = SurfaceOperationsConfig{
             lookup(nodes, config.departure_handoff, "surface_operations.departure_handoff"),
-            SimTime{config.pushback_seconds}, SimTime{config.runway_seconds}, config.speed_mps, config.queue_spacing_m};
+            lookup(nodes, config.runway_node, "surface_operations.runway_node"),
+            lookup(nodes, config.arrival_exit, "surface_operations.arrival_exit"),
+            SimTime{config.pushback_seconds}, SimTime{config.runway_seconds},
+            SimTime{config.arrival_rollout_seconds}, config.speed_mps, config.queue_spacing_m};
     }
     for (std::size_t index = 0; index < document.edges.size(); ++index) {
         const auto& value = document.edges[index];
@@ -388,9 +401,13 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         } else for (const auto& service : value.services) {
             make_task({service, service, {}, 0, std::nullopt, std::nullopt, {}});
         }
+        if (value.arrival_only && !scenario.surface_operations)
+            throw ScenarioLoadError(std::format("arrival aircraft '{}' requires surface_operations", value.id));
         scenario.aircraft.emplace_back(AircraftId{static_cast<std::uint32_t>(index + 1)}, value.id,
             SimTime{value.arrival}, SimTime{value.departure}, gate_id, gate_it->node, std::move(tasks),
-            value.turnaround_id, SimTime{value.target_off_block});
+            value.turnaround_id, SimTime{value.target_off_block},
+            value.arrival_only ? AircraftOperationType::ArrivalOnly : AircraftOperationType::Turnaround,
+            value.arrival_only ? lookup(nodes, value.arrival_exit, std::format("aircraft '{}'.arrival_exit", value.id)) : NodeId{});
     }
     for (const auto& [name, seconds] : document.service_durations) {
         const auto type = parse_service(name, "service_durations_seconds");

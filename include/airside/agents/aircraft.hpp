@@ -16,6 +16,7 @@ enum class AircraftState {
     ReadyForPushback,
     Departed,
 };
+enum class AircraftOperationType { Turnaround, ArrivalOnly };
 
 enum class ServiceType {
     Fueling, Baggage, Deboarding, Catering, CabinCleaning, BaggageLoad, PushbackPreparation
@@ -55,7 +56,9 @@ public:
         NodeId gate_node,
         std::vector<ServiceTask> tasks,
         std::string turnaround_id = {},
-        std::optional<SimTime> target_off_block = std::nullopt);
+        std::optional<SimTime> target_off_block = std::nullopt,
+        AircraftOperationType operation_type = AircraftOperationType::Turnaround,
+        NodeId arrival_exit_node = {});
 
     [[nodiscard]] AircraftId id() const noexcept;
     [[nodiscard]] const std::string& flight_number() const noexcept;
@@ -71,12 +74,15 @@ public:
     [[nodiscard]] std::vector<ServiceTask>& mutable_tasks() noexcept;
     [[nodiscard]] const std::string& turnaround_id() const noexcept;
     [[nodiscard]] SimTime target_off_block() const noexcept;
+    [[nodiscard]] AircraftOperationType operation_type() const noexcept;
+    [[nodiscard]] NodeId arrival_exit_node() const noexcept;
     [[nodiscard]] TurnaroundState turnaround_state() const noexcept;
     [[nodiscard]] std::optional<SimTime> departure_delay() const noexcept;
     [[nodiscard]] const std::string& failure_reason() const noexcept;
 
     void transition_to(AircraftState next);
     void arrive(SimTime now);
+    void begin_surface_arrival();
     void mark_task_waiting(ServiceType type, SimTime now);
     void mark_task_waiting(TaskId id, SimTime now);
     void make_task_ready(TaskId id);
@@ -115,6 +121,8 @@ private:
     std::string turnaround_id_;
     SimTime target_off_block_{};
     bool failed_{};
+    AircraftOperationType operation_type_{AircraftOperationType::Turnaround};
+    NodeId arrival_exit_node_{};
     std::string failure_reason_;
 };
 

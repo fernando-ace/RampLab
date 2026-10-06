@@ -91,6 +91,8 @@ The read-only `/ramplab/turnaround/state` stream also carries aircraft surface s
 
 The live seed-42 surface probes passed after rebuilding the bridge against the Release core. Control observed 3/3 departures, 18 task completions, three pushbacks, three runway queue entries, one traffic wait, and zero reroutes. The closure probe observed 3/3 departures, 18 task completions, three pushbacks and queue entries, one traffic wait, and one reroute. The bridge suite passed 19 tests (15 conversion cases, two surface JSON cases, and two CTest harness cases).
 
+Goal 17 mixed operations use the same observer with `--require-surface --require-mixed-traffic` and scenarios `mixed_runway_operations.yaml` / `mixed_runway_disrupted.yaml`. State includes arrival/departure operation type, runway request/clearance/release timestamps and wait, arrival gate time, current owner, and queued aircraft; events preserve the core sequence for both operation types. Both live seed-42 probes observed 2/2 arrivals at assigned gates, 3/3 departures, five runway grants, and a free runway with an empty queue at completion. The ROS bridge suite passed 20 tests (18 GTests and two CTest harness cases). The disruption closes the A4 merge-to-gate edge before taxi routing, so the arrival selects the available detour route directly; the live probe does not expect a post-assignment reroute event.
+
 All tug topics are under `/ramplab/tug1`. Sensor rates below are configured simulation rates; measured rates came from an 8-second external `rclpy` observation during a 1× real-time run.
 
 | Topic | Type | Direction | Configured simulation rate / observed rate (simulation time unless noted) | Frame |
