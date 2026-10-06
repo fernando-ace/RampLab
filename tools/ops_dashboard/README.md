@@ -40,6 +40,18 @@ No missing collision field is treated as zero. A single run with collision field
 
 The **Control** and **Disruption** buttons load illustrative files in `fixtures/control/` and `fixtures/disruption/`. Both are synthetic, seed 42, and follow the committed experiment.json and runs.csv export structures plus aircraft CSV and JSONL event records. The disruption demonstrates increased taxi distance/time, queueing, rerouting, and a service reassignment, with zero recorded collisions in both runs. The fixtures are dashboard examples, not simulator-generated validation outputs.
 
+## Real RampLab demo
+
+The repository-level workflow [docs/goal21-real-operations.md](../../docs/goal21-real-operations.md) generates simulator-backed bundles and checks their cross-artifact consistency. After generation, start the dashboard with:
+
+```powershell
+python tools/ops_dashboard/server.py --real-demo-dir results/goal21-real
+```
+
+The **Real RampLab runs** banner loads the generated control and road-closure bundles. This acceptance pair uses the existing baseline scenario with its scheduled road closure enabled or disabled, seed 42. Replay uses the simulator's ordered operational event log, not physical-motion playback. The current merged simulation export has no aircraft taxi/runway or collision/separation measures; the dashboard leaves them unavailable and safety unknown.
+
+Validate a bundle independently with `python tools/ops_dashboard/validate_real_bundle.py results/goal21-real/disruption`. The runner emits repeated runs and Goal 19 metric/event determinism reports alongside the primary comparison.
+
 ## Data limits
 
 - Current batch experiment exports contain aggregate run KPIs and turnaround/task details; the batch executor discards event history. A timeline is available only when a JSONL event stream or embedded event list is supplied.

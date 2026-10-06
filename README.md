@@ -41,6 +41,7 @@ The core `airside_sim` and `airside_autonomy` libraries contain no YAML, UI, net
 ```
 
 See [architecture.md](docs/architecture.md) and [unreal-integration.md](docs/unreal-integration.md).
+For the local simulator-to-analysis-to-dashboard workflow, see [real operational experiment](docs/goal21-real-operations.md).
 
 ## Repository layout
 

@@ -14,6 +14,7 @@ from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
+REAL_DEMO_DIR: Path | None = None
 ANALYZER_PATH = REPO / "tools" / "experiment_analysis" / "analyze.py"
 spec = importlib.util.spec_from_file_location("ramplab_experiment_analysis", ANALYZER_PATH)
 if spec is None or spec.loader is None:
@@ -178,6 +179,27 @@ class Handler(BaseHTTPRequestHandler):
         path = unquote(urlparse(self.path).path)
         if path == "/api/health":
             return self._send(200, b'{"status":"ok"}', "application/json; charset=utf-8")
+        if path == "/api/real-demo":
+            if REAL_DEMO_DIR is None:
+                return self._send(404, b'{"error":"Start server with --real-demo-dir RUN_DIRECTORY."}',
+                                  "application/json; charset=utf-8")
+            try:
+                data = []
+                for name, folder in (("Control · baseline without scheduled road closure", "control"),
+                                     ("Disruption · baseline with scheduled road closure", "disruption"),
+                                     ("Control repeat · seed 42", "control-repeat"),
+                                     ("Disruption repeat · seed 42", "disruption-repeat")):
+                    bundle = REAL_DEMO_DIR / folder
+                    files = []
+                    for filename in ("experiment.json", "runs.csv", "aircraft.csv", "events.jsonl"):
+                        candidate = (bundle / filename).resolve()
+                        if REAL_DEMO_DIR not in candidate.parents or not candidate.is_file():
+                            raise FileNotFoundError(f"Missing {folder}/{filename} in configured run bundles.")
+                        files.append({"name": filename, "content": candidate.read_text(encoding="utf-8")})
+                    data.append({"id": f"real-{folder}", "label": name, "files": files})
+                return self._send(200, json.dumps({"runs": data}).encode("utf-8"), "application/json; charset=utf-8")
+            except (OSError, ValueError) as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
         relative = "index.html" if path in {"/", "/index.html"} else path.lstrip("/")
         target = (ROOT / relative).resolve()
         if ROOT not in target.parents and target != ROOT:
@@ -237,7 +259,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="127.0.0.1", help="Bind address (default: loopback only).")
     parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--real-demo-dir", type=Path,
+                        help="Load generated control/ and disruption/ bundles from this local run directory.")
     args = parser.parse_args()
+    global REAL_DEMO_DIR
+    REAL_DEMO_DIR = args.real_demo_dir.resolve() if args.real_demo_dir else None
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"RampLab Operator Experiment Dashboard: http://{args.host}:{args.port}", flush=True)
     try:
