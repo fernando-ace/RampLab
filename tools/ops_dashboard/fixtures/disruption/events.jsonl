@@ -1,0 +1,6 @@
+{"sequence":1,"time_seconds":0,"type":"aircraft_arrived","aircraft_name":"AR401","gate":"A4"}
+{"sequence":2,"time_seconds":130,"type":"turnaround_vehicle_unavailable","aircraft_name":"AX101","vehicle_name":"BaggageCart-1","detail":"outage at simulation time 130"}
+{"sequence":3,"time_seconds":130,"type":"turnaround_task_reassigned","aircraft_name":"AX101","detail":"task 3 reassigned to BaggageCart-Backup"}
+{"sequence":4,"time_seconds":210,"type":"surface_rerouted","aircraft_name":"AR401","detail":"selected available taxi route"}
+{"sequence":5,"time_seconds":408,"type":"turnaround_task_completed","aircraft_name":"AX101","detail":"baggage unload completed after reassignment"}
+{"sequence":6,"time_seconds":939,"type":"aircraft_departed","aircraft_name":"AX202","detail":"runway released"}
