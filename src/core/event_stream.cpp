@@ -53,6 +53,11 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::ArrivalRunwayExit: return "ArrivalRunwayExit";
     case SimulationEventType::ArrivalTaxiInStarted: return "ArrivalTaxiInStarted";
     case SimulationEventType::ArrivalAtGate: return "ArrivalAtGate";
+    case SimulationEventType::GateWaitStarted: return "GateWaitStarted";
+    case SimulationEventType::GateAssigned: return "GateAssigned";
+    case SimulationEventType::AircraftLanded: return "AircraftLanded";
+    case SimulationEventType::TurnaroundStarted: return "TurnaroundStarted";
+    case SimulationEventType::PushbackTaxiOutStarted: return "PushbackTaxiOutStarted";
     }
     return "Unknown";
 }
@@ -131,8 +136,15 @@ std::string format_event(const SimulationEventRecord& event) {
     case SimulationEventType::RunwayOccupied: return std::format("{} entered the runway", aircraft);
     case SimulationEventType::RunwayReleased: return std::format("{} released the runway", aircraft);
     case SimulationEventType::ArrivalRunwayExit: return std::format("{} exited the runway", aircraft);
+    case SimulationEventType::AircraftLanded: return std::format("{} landed", aircraft);
     case SimulationEventType::ArrivalTaxiInStarted: return std::format("{} began taxi-in", aircraft);
     case SimulationEventType::ArrivalAtGate: return std::format("{} arrived at its assigned gate", aircraft);
+    case SimulationEventType::GateWaitStarted: return std::format("{} waiting for its assigned gate", aircraft);
+    case SimulationEventType::GateAssigned:
+        return event.gate ? std::format("{} assigned Gate A{}", aircraft, event.gate->value()) :
+            std::format("{} assigned an arrival gate", aircraft);
+    case SimulationEventType::TurnaroundStarted: return std::format("{} turnaround started", aircraft);
+    case SimulationEventType::PushbackTaxiOutStarted: return std::format("{} started pushback and taxi-out", aircraft);
     case SimulationEventType::AircraftArrived:
         return std::format("{} arrived at Gate A{}", aircraft, event.gate->value());
     case SimulationEventType::AircraftStateChanged:

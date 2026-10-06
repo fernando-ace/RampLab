@@ -222,7 +222,8 @@ FText SRampLabControlPanel::SummaryText() const
             if (Aircraft.state == airside::AircraftState::Departed) ++CompletedAircraft;
             if (Aircraft.state != airside::AircraftState::Departed && Time > Aircraft.scheduled_departure.count()) ++DelayedAircraft;
             if (Aircraft.surface_state == "Taxiing" || Aircraft.surface_state == "TaxiingToGate") ++AircraftTaxiing;
-            if (Aircraft.surface_state == "WaitingForTraffic" || Aircraft.surface_state == "ReadyForPushback" ||
+            if (Aircraft.surface_state == "WaitingForTraffic" || Aircraft.surface_state == "WaitingForGate" ||
+                Aircraft.surface_state == "ReadyForPushback" ||
                 Aircraft.surface_state == "ArrivalQueue") ++AircraftWaiting;
             SurfaceReroutes += static_cast<int32>(Aircraft.surface_reroutes);
             SurfaceWaitSeconds += Aircraft.surface_wait_duration.count();
@@ -288,6 +289,18 @@ FText SRampLabControlPanel::SummaryText() const
                 Turnaround.scheduled_departure.count(), *ActualDeparture, CurrentDelay.count(), Turnaround.estimated_ready_time.count(),
                 Turnaround.schedule_slack.count(), CompletedTasks, static_cast<int32>(Turnaround.tasks.size()),
                 *CriticalPath, *ActiveTasks);
+            if (AircraftIt != Snapshot->aircraft.end() && AircraftIt->operation_type == "arrival_turnaround") {
+                const FString ArrivalTime = AircraftIt->actual_arrival
+                    ? FString::Printf(TEXT("%lld s"), AircraftIt->actual_arrival->count()) : TEXT("pending");
+                const FString GateTime = AircraftIt->arrival_gate_at
+                    ? FString::Printf(TEXT("%lld s"), AircraftIt->arrival_gate_at->count()) : TEXT("pending");
+                const FString PushbackTime = AircraftIt->pushback_started_at
+                    ? FString::Printf(TEXT("%lld s"), AircraftIt->pushback_started_at->count()) : TEXT("pending");
+                TurnaroundOperations += FString::Printf(
+                    TEXT("\nArrival %s  / gate arrival %s  / pushback %s\nGate/surface wait %lld s  / runway wait %lld s  / status %s"),
+                    *ArrivalTime, *GateTime, *PushbackTime, AircraftIt->surface_wait_duration.count(),
+                    AircraftIt->runway_wait_duration.count(), UTF8_TO_TCHAR(AircraftIt->surface_state.c_str()));
+            }
         }
         DepartureQueue = static_cast<int32>(Snapshot->runway_queue.size());
     }
@@ -309,9 +322,10 @@ FText SRampLabControlPanel::SummaryText() const
             if (Queued != State.aircraft.end()) RunwayQueue += FString(UTF8_TO_TCHAR(Queued->flight_number.c_str()));
             else RunwayQueue += FString::FromInt(QueuedId.value());
         }
-        for (const auto& Aircraft : State.aircraft) if (Aircraft.operation_type == "arrival") {
+        for (const auto& Aircraft : State.aircraft) if (Aircraft.operation_type == "arrival" ||
+            Aircraft.operation_type == "arrival_turnaround") {
             ++ArrivalCount;
-            ArrivedCount += Aircraft.surface_state == "Arrived" ? 1 : 0;
+            ArrivedCount += Aircraft.arrival_gate_at.has_value() ? 1 : 0;
             TurnaroundOperations += FString::Printf(TEXT("\n%s  ARRIVAL  /  %s"),
                 *FString(UTF8_TO_TCHAR(Aircraft.flight_number.c_str())),
                 *FString(UTF8_TO_TCHAR(Aircraft.surface_state.c_str())));

@@ -104,3 +104,18 @@ For the deterministic two-scenario presentation flow, launch with:
 The demo runs the real baseline scenario, the real high-capacity YAML, and then the sensor-driven Autonomy mission. `-RampLabCapture -RampLabCaptureMultiplier=10` captures their actual simulated states. The multiplier accelerates wall-clock capture only; the visible operator playback remains one of 1x, 5x, 10x, or 20x and the fixed simulation step/outcomes are unchanged.
 
 Camera controls are `W/A/S/D` to pan, `Q/E` to rotate, and mouse wheel to zoom. The UI also provides Overview, Ramp, Gate A2, and Service Roads presets.
+
+## Goal 18 integrated lifecycle validation
+
+Build the linked C++ core and Editor target using the commands above, then launch the visible seed-42 lifecycle control scenario:
+
+```powershell
+& 'C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe' `
+  "$PWD\unreal\RampLabViewer\RampLabViewer.uproject" `
+  -game -windowed -ResX=1280 -ResY=720 -NoSplash -RampLabGoal18Validation `
+  "-abslog=$PWD\unreal\RampLabViewer\Saved\Logs\RampLabGoal18.log"
+```
+
+The flag selects `turnaround_lifecycle.yaml` at 20x playback. The operator panel reports lifecycle phase, gate, service progress, gate wait, runway wait, and departure state. On completion, `RampLabGoal18.log` records the ordered arrival-taxi-in, gate, turnaround, pushback/taxi-out, runway-queue, and departure events for each integrated aircraft, plus aggregate completions and sampled collision/separation results. The viewer renders C++ snapshots and events; it does not implement airport scheduling. Use the disrupted YAML with the CLI or ROS observer for the matching delay comparison.
+
+The visible final run completed both integrated lifecycles and all 3/3 departures. The log traced aircraft IDs 2 and 3 from taxi-in through gate, turnaround, taxi-out, runway queue, and departure. It reported 5/5 runway operations, zero aircraft-aircraft or aircraft-ground collisions, 30.000 m minimum sampled aircraft spacing, and 80.000 m aircraft-ground spacing.

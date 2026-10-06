@@ -65,7 +65,7 @@ void write_experiment_outputs(
     std::ofstream runs{runs_path};
     runs << "run_ordinal,case_id,seed,replication,scenario";
     for (const auto& axis : definition.parameters) runs << ',' << parameter_name(axis.key);
-    runs << ",simulated_duration_seconds,avg_turnaround_minutes,avg_departure_delay_minutes,avg_service_waiting_minutes,delayed_aircraft,aircraft_count,fuel_utilization,baggage_utilization,execution_ms,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,maximum_turnaround_seconds,maximum_departure_delay_seconds,on_time_departures,on_time_departure_rate,total_service_task_wait_seconds,maximum_service_task_wait_seconds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,surface_departed_aircraft,surface_arrived_aircraft,surface_total_aircraft,runway_operations_completed,maximum_runway_queue_depth,arrival_runway_wait_seconds,departure_runway_wait_seconds,average_runway_wait_seconds,runway_utilization,arrival_taxi_distance_m,departure_taxi_distance_m,arrival_taxi_seconds,departure_taxi_seconds,surface_departure_throughput_per_hour,surface_reroutes,surface_wait_events,surface_wait_seconds,surface_taxi_distance_m,surface_taxi_seconds,runway_queue_seconds,surface_safe_failures,max_simultaneous_taxiing_aircraft,surface_aircraft_aircraft_collisions,surface_aircraft_ground_collisions,minimum_aircraft_separation_m,minimum_aircraft_ground_separation_m,service_resource_utilization,turnaround_task_timings\n";
+    runs << ",simulated_duration_seconds,avg_turnaround_minutes,avg_departure_delay_minutes,avg_service_waiting_minutes,delayed_aircraft,aircraft_count,fuel_utilization,baggage_utilization,execution_ms,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,maximum_turnaround_seconds,maximum_departure_delay_seconds,on_time_departures,on_time_departure_rate,total_service_task_wait_seconds,maximum_service_task_wait_seconds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,surface_departed_aircraft,surface_arrived_aircraft,gate_assignments,gate_wait_seconds,gate_occupancy_seconds,arrival_to_departure_seconds,surface_total_aircraft,runway_operations_completed,maximum_runway_queue_depth,arrival_runway_wait_seconds,departure_runway_wait_seconds,average_runway_wait_seconds,runway_utilization,arrival_taxi_distance_m,departure_taxi_distance_m,arrival_taxi_seconds,departure_taxi_seconds,surface_departure_throughput_per_hour,surface_reroutes,surface_wait_events,surface_wait_seconds,surface_taxi_distance_m,surface_taxi_seconds,runway_queue_seconds,surface_safe_failures,max_simultaneous_taxiing_aircraft,surface_aircraft_aircraft_collisions,surface_aircraft_ground_collisions,minimum_aircraft_separation_m,minimum_aircraft_ground_separation_m,service_resource_utilization,turnaround_task_timings\n";
     runs << std::fixed << std::setprecision(6);
     for (const auto& run : execution.runs) {
         runs << run.ordinal + 1 << ',' << csv_escape(run.case_id) << ',' << run.seed << ','
@@ -89,7 +89,9 @@ void write_experiment_outputs(
              << ',' << run.fleet_unfinished_requests << ',' << run.fleet_reassignments
              << ',' << run.fleet_requests_created << ',' << run.fleet_requests_completed
              << ',' << run.fleet_requests_failed << ',' << run.surface_departed_aircraft << ','
-             << run.surface_arrived_aircraft << ',' << run.surface_total_aircraft << ','
+             << run.surface_arrived_aircraft << ',' << run.gate_assignments << ','
+             << run.gate_wait_seconds << ',' << run.gate_occupancy_seconds << ','
+             << run.arrival_to_departure_seconds << ',' << run.surface_total_aircraft << ','
              << run.runway_operations_completed << ',' << run.maximum_runway_queue_depth << ','
              << run.arrival_runway_wait_seconds << ',' << run.departure_runway_wait_seconds << ','
              << run.average_runway_wait_seconds << ',' << run.runway_utilization << ','
@@ -214,6 +216,10 @@ void write_experiment_outputs(
                  << ", \"fleet_requests_failed\": " << run.fleet_requests_failed
                  << ", \"surface_departed_aircraft\": " << run.surface_departed_aircraft
                  << ", \"surface_arrived_aircraft\": " << run.surface_arrived_aircraft
+                 << ", \"gate_assignments\": " << run.gate_assignments
+                 << ", \"gate_wait_seconds\": " << run.gate_wait_seconds
+                 << ", \"gate_occupancy_seconds\": " << run.gate_occupancy_seconds
+                 << ", \"arrival_to_departure_seconds\": " << run.arrival_to_departure_seconds
                  << ", \"surface_total_aircraft\": " << run.surface_total_aircraft
                  << ", \"runway_operations_completed\": " << run.runway_operations_completed
                  << ", \"maximum_runway_queue_depth\": " << run.maximum_runway_queue_depth

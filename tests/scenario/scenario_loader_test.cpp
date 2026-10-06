@@ -75,6 +75,23 @@ TEST(ScenarioLoaderTest, LoadsExternalBaselineAndDefaultSeed) {
     EXPECT_EQ(scenario.road_events.size(), 1U);
 }
 
+TEST(ScenarioLoaderTest, LoadsIntegratedArrivalTurnaroundOperation) {
+    auto contents = replaced(std::string{kValidScenario},
+        "    gate: A1\n", "    operation_type: arrival_turnaround\n    arrival_exit: depot\n    gate: A1\n");
+    contents = replaced(std::move(contents),
+        "    required_services: [fueling, baggage]\n",
+        "    service_tasks:\n      - { id: deboard, type: deboarding, duration_seconds: 20 }\n");
+    contents = replaced(std::move(contents),
+        "service_durations_seconds:",
+        "surface_operations: { departure_handoff: depot, runway_node: depot, arrival_exit: depot }\nservice_durations_seconds:");
+    const TemporaryScenario file{std::move(contents)};
+    const auto scenario = load_scenario(file.path());
+    ASSERT_EQ(scenario.aircraft.size(), 1U);
+    EXPECT_EQ(scenario.aircraft.front().operation_type(), AircraftOperationType::ArrivalTurnaround);
+    EXPECT_EQ(scenario.aircraft.front().arrival_exit_node(), NodeId{1});
+    EXPECT_TRUE(scenario.surface_operations.has_value());
+}
+
 TEST(ScenarioLoaderTest, RejectsDuplicateIds) {
     const TemporaryScenario file{replaced(std::string{kValidScenario},
         "- { id: gate, x_m", "- { id: depot, x_m")};

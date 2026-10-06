@@ -86,7 +86,8 @@ bool Aircraft::can_transition(AircraftState from, AircraftState to) noexcept {
 
 void Aircraft::transition_to(AircraftState next) {
     if (!can_transition(state_, next)) {
-        throw std::logic_error("invalid aircraft state transition");
+        throw std::logic_error(std::format("invalid aircraft state transition for '{}' ({} -> {})",
+            flight_number_, static_cast<int>(state_), static_cast<int>(next)));
     }
     state_ = next;
 }
@@ -98,14 +99,20 @@ void Aircraft::arrive(SimTime now) {
     if (state_ == AircraftState::Scheduled) transition_to(AircraftState::Arriving);
     else if (state_ != AircraftState::Arriving) throw std::logic_error("aircraft cannot complete arrival in its current state");
     transition_to(AircraftState::AtGate);
-    actual_arrival_ = now;
-    if (operation_type_ == AircraftOperationType::Turnaround) transition_to(AircraftState::WaitingForServices);
+    if (!actual_arrival_) actual_arrival_ = now;
+    if (operation_type_ != AircraftOperationType::ArrivalOnly) transition_to(AircraftState::WaitingForServices);
 }
 
 void Aircraft::begin_surface_arrival() {
-    if (operation_type_ != AircraftOperationType::ArrivalOnly || state_ != AircraftState::Scheduled)
+    if (operation_type_ == AircraftOperationType::Turnaround || state_ != AircraftState::Scheduled)
         throw std::logic_error("only a scheduled inbound aircraft may enter the arrival operation");
     transition_to(AircraftState::Arriving);
+}
+
+void Aircraft::mark_landed(SimTime now) {
+    if (now < scheduled_arrival_ || state_ != AircraftState::Arriving || actual_arrival_)
+        throw std::logic_error("aircraft can only be marked landed once during its arrival operation");
+    actual_arrival_ = now;
 }
 
 void Aircraft::mark_task_waiting(ServiceType type, SimTime now) {

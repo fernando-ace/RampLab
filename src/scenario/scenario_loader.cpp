@@ -30,7 +30,7 @@ struct AircraftDocument {
     std::string id; std::string gate; std::int64_t arrival;
     std::int64_t departure; std::vector<std::string> services;
     std::string turnaround_id; std::int64_t target_off_block;
-    bool arrival_only{false}; std::string arrival_exit;
+    bool arrival_only{false}; bool arrival_turnaround{false}; std::string arrival_exit;
     struct Task { std::string id; std::string type; std::vector<std::string> prerequisites;
         std::int64_t earliest_start{0}; std::optional<std::int64_t> latest_completion;
         std::optional<std::int64_t> duration; std::string resource; };
@@ -137,18 +137,19 @@ ScenarioDocument parse_document(const YAML::Node& root) {
         const auto item = aircraft[index];
         const auto context = std::format("aircraft[{}]", index);
         const auto operation_type = item["operation_type"] ? scalar<std::string>(item, "operation_type", context) : "turnaround";
-        if (operation_type != "turnaround" && operation_type != "arrival")
-            throw ScenarioLoadError(std::format("{}: operation_type must be 'turnaround' or 'arrival'", context));
+        if (operation_type != "turnaround" && operation_type != "arrival" && operation_type != "arrival_turnaround")
+            throw ScenarioLoadError(std::format("{}: operation_type must be 'turnaround', 'arrival', or 'arrival_turnaround'", context));
         const auto services = item["required_services"];
         const auto tasks = item["service_tasks"];
-        if (operation_type == "turnaround" && !services && !tasks) throw ScenarioLoadError(std::format("{}: missing 'required_services' or 'service_tasks'", context));
+        if (operation_type != "arrival" && !services && !tasks) throw ScenarioLoadError(std::format("{}: missing 'required_services' or 'service_tasks'", context));
         if (services) require_sequence(services, std::format("{}.required_services", context));
         if (tasks && !tasks.IsSequence()) throw ScenarioLoadError(std::format("{}.service_tasks must be a sequence", context));
         if (tasks && tasks.size() == 0) throw ScenarioLoadError(std::format("{}.service_tasks cannot be empty", context));
         AircraftDocument flight;
         flight.id = scalar<std::string>(item, "id", context);
         flight.arrival_only = operation_type == "arrival";
-        if (flight.arrival_only) flight.arrival_exit = scalar<std::string>(item, "arrival_exit", context);
+        flight.arrival_turnaround = operation_type == "arrival_turnaround";
+        if (flight.arrival_only || flight.arrival_turnaround) flight.arrival_exit = scalar<std::string>(item, "arrival_exit", context);
         flight.gate = scalar<std::string>(item, "gate", context);
         flight.arrival = scalar<std::int64_t>(item, "scheduled_arrival_seconds", context);
         flight.departure = item["scheduled_departure_seconds"] ? scalar<std::int64_t>(item, "scheduled_departure_seconds", context) : flight.arrival;
@@ -401,13 +402,15 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         } else for (const auto& service : value.services) {
             make_task({service, service, {}, 0, std::nullopt, std::nullopt, {}});
         }
-        if (value.arrival_only && !scenario.surface_operations)
+        if ((value.arrival_only || value.arrival_turnaround) && !scenario.surface_operations)
             throw ScenarioLoadError(std::format("arrival aircraft '{}' requires surface_operations", value.id));
         scenario.aircraft.emplace_back(AircraftId{static_cast<std::uint32_t>(index + 1)}, value.id,
             SimTime{value.arrival}, SimTime{value.departure}, gate_id, gate_it->node, std::move(tasks),
             value.turnaround_id, SimTime{value.target_off_block},
-            value.arrival_only ? AircraftOperationType::ArrivalOnly : AircraftOperationType::Turnaround,
-            value.arrival_only ? lookup(nodes, value.arrival_exit, std::format("aircraft '{}'.arrival_exit", value.id)) : NodeId{});
+            value.arrival_only ? AircraftOperationType::ArrivalOnly :
+                value.arrival_turnaround ? AircraftOperationType::ArrivalTurnaround : AircraftOperationType::Turnaround,
+            (value.arrival_only || value.arrival_turnaround)
+                ? lookup(nodes, value.arrival_exit, std::format("aircraft '{}'.arrival_exit", value.id)) : NodeId{});
     }
     for (const auto& [name, seconds] : document.service_durations) {
         const auto type = parse_service(name, "service_durations_seconds");

@@ -27,6 +27,7 @@ enum class SimulationEventType {
     SurfaceWaitingForPushback,
     RunwayRequest, RunwayGrant, RunwayOccupied, RunwayReleased,
     ArrivalRunwayExit, ArrivalTaxiInStarted, ArrivalAtGate,
+    GateWaitStarted, GateAssigned, AircraftLanded, TurnaroundStarted, PushbackTaxiOutStarted,
 };
 
 struct SimulationEventRecord {

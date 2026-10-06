@@ -93,6 +93,8 @@ The CMake build, CLI, and tests remain independent of Unreal Engine. This is the
 ```powershell
 .\build\Release\airside_cli.exe --scenario scenarios\baseline.yaml --seed 42
 .\build\Release\airside_cli.exe --scenario scenarios\high_capacity.yaml --seed 42
+.\build\Release\airside_cli.exe --scenario scenarios\turnaround_lifecycle.yaml --seed 42
+.\build\Release\airside_cli.exe --scenario scenarios\turnaround_lifecycle_disrupted.yaml --seed 42
 ```
 
 If `--seed` is omitted, the file's `default_seed` is used. A CLI seed always takes precedence. The default scenario path is `scenarios/baseline.yaml` relative to the current directory.

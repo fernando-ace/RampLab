@@ -52,6 +52,8 @@ def main():
                         help="also require a surface closure reroute")
     parser.add_argument("--require-mixed-traffic", action="store_true",
                         help="require the canonical arrivals, departures, and shared-runway event sequence")
+    parser.add_argument("--require-integrated-lifecycle", action="store_true",
+                        help="require an arrival_turnaround aircraft to complete taxi-in, gate service, taxi-out, and departure under one ID")
     args = parser.parse_args()
     rclpy.init()
     node = Probe()
@@ -151,6 +153,35 @@ def main():
                 "runway_grants": len(grants), "runway_owner_id": final_state.get("runway_owner_id"),
                 "runway_queue_ids": final_state.get("runway_queue_aircraft_ids", []),
             }
+        lifecycle_summary = None
+        if args.require_integrated_lifecycle:
+            integrated = [item for item in final_state.get("aircraft_operations", [])
+                          if item.get("operation_type") == "arrival_turnaround"]
+            complete = [item for item in integrated if item.get("surface_state") == "Departed" and
+                        item.get("actual_arrival_seconds") is not None and
+                        item.get("arrival_gate_time_seconds") is not None and
+                        item.get("actual_departure_seconds") is not None]
+            if not complete:
+                raise RuntimeError("no integrated arrival-turnaround aircraft completed arrival, gate, and departure")
+            aircraft_id = complete[0]["aircraft_id"]
+            lifecycle_types = [event.get("type") for event in node.events
+                               if event.get("aircraft_id") == aircraft_id]
+            required_lifecycle = ["ArrivalTaxiInStarted", "ArrivalAtGate", "TurnaroundStarted",
+                                  "TurnaroundReadyForDeparture", "PushbackTaxiOutStarted",
+                                  "SurfaceRunwayQueueEntered", "AircraftDeparted"]
+            cursor = 0
+            for event_type in lifecycle_types:
+                if cursor < len(required_lifecycle) and event_type == required_lifecycle[cursor]:
+                    cursor += 1
+            if cursor != len(required_lifecycle):
+                raise RuntimeError(f"aircraft {aircraft_id} lifecycle events were incomplete or out of order: {lifecycle_types}")
+            lifecycle_summary = {
+                "aircraft_id": aircraft_id,
+                "gate_id": complete[0].get("gate_id"),
+                "actual_arrival_seconds": complete[0]["actual_arrival_seconds"],
+                "arrival_gate_time_seconds": complete[0]["arrival_gate_time_seconds"],
+                "actual_departure_seconds": complete[0]["actual_departure_seconds"],
+            }
         sequences = [event["sequence"] for event in node.events]
         if sequences != sorted(set(sequences)):
             raise RuntimeError("turnaround event sequence was not strictly increasing")
@@ -213,6 +244,7 @@ def main():
             "outage_reassignment": outage_summary,
             "surface_operations": surface_summary,
             "mixed_traffic": mixed_summary,
+            "integrated_lifecycle": lifecycle_summary,
             "aircraft": [{
                 "turnaround_id": item["turnaround_id"],
                 "state": item["state"],

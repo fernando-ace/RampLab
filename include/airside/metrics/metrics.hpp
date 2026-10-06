@@ -42,7 +42,13 @@ struct AircraftMetrics {
     SimTime runway_occupancy{};
     SimTime arrival_taxi_time{};
     double arrival_taxi_distance_m{0.0};
+    SimTime departure_taxi_time{};
+    double departure_taxi_distance_m{0.0};
     std::optional<SimTime> gate_arrival_time;
+    SimTime gate_wait{};
+    SimTime gate_occupancy{};
+    std::optional<SimTime> pushback_start_time;
+    SimTime arrival_to_departure{};
     std::optional<SimTime> surface_departure_time;
     SimTime total_operational_delay{};
 
@@ -97,6 +103,10 @@ struct SimulationMetrics {
     std::size_t surface_aircraft_ground_collisions{0};
     double minimum_aircraft_ground_separation_m{0.0};
     std::size_t surface_arrived_aircraft{0};
+    std::size_t gate_assignments{0};
+    std::int64_t gate_wait_seconds{0};
+    std::int64_t gate_occupancy_seconds{0};
+    std::int64_t arrival_to_departure_seconds{0};
     std::size_t runway_operations_completed{0};
     std::size_t maximum_runway_queue_depth{0};
     std::int64_t arrival_runway_wait_seconds{0};

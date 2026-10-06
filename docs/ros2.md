@@ -53,7 +53,7 @@ The bridge imports the already-built RampLab autonomy libraries; this is an adap
 
 | Topic | Type | Contents |
 |---|---|---|
-| `/ramplab/turnaround/state` | `std_msgs/msg/String` | Transient-local JSON with simulation time; turnaround, aircraft, and gate IDs; state/failure; scheduled and actual arrival/departure; actual departure delay plus estimated-ready slack; pending/active/completed tasks; critical-path IDs; and per-task state, service, assigned resource/vehicle, latest desirable completion, and reassignment count. |
+| `/ramplab/turnaround/state` | `std_msgs/msg/String` | Transient-local JSON with simulation time; turnaround, aircraft, and gate IDs; state/failure; scheduled and actual arrival/departure; gate wait/occupancy and pushback timing; separate arrival/departure taxi timing and distance; separate arrival/departure runway request, clearance, wait, and release; pending/active/completed tasks; critical-path IDs; and per-task state, service, assigned resource/vehicle, latest desirable completion, and reassignment count. |
 | `/ramplab/turnaround/events` | `std_msgs/msg/String` | Reliable ordered JSON events with sequence, simulation timestamp, type, detail, turnaround, aircraft, gate, task, service, and vehicle IDs. |
 
 Build the ROS overlay after the normal Release core build, then launch the observer and probe from the activated ROS environment:
@@ -63,6 +63,8 @@ python .\ros2_ws\scripts\verify_turnaround_topics.py --duration 30 --min-aircraf
   --bridge-executable .\ros2_ws\install\lib\ramplab_ros2_bridge\ramplab_ros2_turnaround_bridge.exe `
   --scenario scenarios\turnaround_flight_bank_outage.yaml --seed 42 --require-outage-reassignment
 ```
+
+For the Goal 18 integrated arrival-to-departure bank, use the same observer with `--scenario scenarios\turnaround_lifecycle.yaml --seed 42 --require-integrated-lifecycle`. The live probe follows one aircraft ID through actual arrival, gate arrival, task completion, pushback, departure runway queue, and departure. The test remains observational; the C++ simulation owns all scheduling and state transitions. The bridge suite now checks the lifecycle timing fields in its state JSON.
 
 With `--bridge-executable`, the probe creates its subscriptions before launching the bridge, then checks three distinct aircraft, each aircraft's complete task list and departure, ordered events, and at least one mobile-resource service. `--require-outage-reassignment` additionally verifies the original assignment, outage, reassignment of that task, replacement start/completion, and matching final task state. The Goal 15 outage probe observed 3/3 departures, 18 completed task events, outage vehicle 2 and task 3 at simulation time 130, and reassignment to vehicle 3. The state schema reports simulator estimates only; service durations and operating policies remain synthetic assumptions.
 

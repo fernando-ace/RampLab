@@ -111,16 +111,42 @@ inline std::string turnaround_state_json(const airside::SimulationSnapshot& snap
     output += std::format(
         "{{\"aircraft_id\":{},\"flight_number\":\"{}\",\"operation_type\":\"{}\",\"surface_state\":\"{}\","
         "\"runway_request_time_seconds\":{},\"runway_clearance_time_seconds\":{},\"runway_wait_seconds\":{},"
-        "\"runway_release_time_seconds\":{},\"arrival_gate_time_seconds\":{},\"actual_departure_seconds\":{},"
-        "\"taxi_distance_m\":{},\"taxi_started_at_seconds\":{},\"taxi_completed_at_seconds\":{}}}",
+        "\"runway_release_time_seconds\":{},\"gate_id\":{},\"gate_assigned_at_seconds\":{},"
+        "\"actual_arrival_seconds\":{},\"arrival_gate_time_seconds\":{},\"gate_wait_seconds\":{},"
+        "\"gate_occupancy_seconds\":{},\"pushback_started_at_seconds\":{},\"pushback_completed_at_seconds\":{},"
+        "\"actual_departure_seconds\":{},\"arrival_taxi_started_at_seconds\":{},\"arrival_taxi_completed_at_seconds\":{},"
+        "\"arrival_taxi_distance_m\":{},\"departure_taxi_started_at_seconds\":{},\"departure_taxi_completed_at_seconds\":{},"
+        "\"departure_taxi_distance_m\":{},\"arrival_runway_request_time_seconds\":{},"
+        "\"arrival_runway_clearance_time_seconds\":{},\"arrival_runway_release_time_seconds\":{},"
+        "\"departure_runway_request_time_seconds\":{},\"departure_runway_clearance_time_seconds\":{},"
+        "\"departure_runway_release_time_seconds\":{},\"taxi_distance_m\":{},\"taxi_started_at_seconds\":{},"
+        "\"taxi_completed_at_seconds\":{}}}",
         aircraft.id.value(), json_escape(aircraft.flight_number), json_escape(aircraft.operation_type),
         json_escape(aircraft.surface_state),
         aircraft.runway_queue_entered_at ? std::to_string(aircraft.runway_queue_entered_at->count()) : "null",
         aircraft.runway_clearance_at ? std::to_string(aircraft.runway_clearance_at->count()) : "null",
         aircraft.runway_wait_duration.count(),
         aircraft.runway_release_at ? std::to_string(aircraft.runway_release_at->count()) : "null",
+        aircraft.assigned_gate.value(),
+        aircraft.gate_assigned_at ? std::to_string(aircraft.gate_assigned_at->count()) : "null",
+        aircraft.actual_arrival ? std::to_string(aircraft.actual_arrival->count()) : "null",
         aircraft.arrival_gate_at ? std::to_string(aircraft.arrival_gate_at->count()) : "null",
+        aircraft.gate_wait_duration.count(), aircraft.gate_occupancy_duration.count(),
+        aircraft.pushback_started_at ? std::to_string(aircraft.pushback_started_at->count()) : "null",
+        aircraft.pushback_completed_at ? std::to_string(aircraft.pushback_completed_at->count()) : "null",
         aircraft.actual_surface_departure ? std::to_string(aircraft.actual_surface_departure->count()) : "null",
+        aircraft.arrival_taxi_started_at ? std::to_string(aircraft.arrival_taxi_started_at->count()) : "null",
+        aircraft.arrival_taxi_completed_at ? std::to_string(aircraft.arrival_taxi_completed_at->count()) : "null",
+        aircraft.arrival_taxi_distance_m,
+        aircraft.departure_taxi_started_at ? std::to_string(aircraft.departure_taxi_started_at->count()) : "null",
+        aircraft.departure_taxi_completed_at ? std::to_string(aircraft.departure_taxi_completed_at->count()) : "null",
+        aircraft.departure_taxi_distance_m,
+        aircraft.arrival_runway_request_time ? std::to_string(aircraft.arrival_runway_request_time->count()) : "null",
+        aircraft.arrival_runway_clearance_time ? std::to_string(aircraft.arrival_runway_clearance_time->count()) : "null",
+        aircraft.arrival_runway_release_time ? std::to_string(aircraft.arrival_runway_release_time->count()) : "null",
+        aircraft.departure_runway_request_time ? std::to_string(aircraft.departure_runway_request_time->count()) : "null",
+        aircraft.departure_runway_clearance_time ? std::to_string(aircraft.departure_runway_clearance_time->count()) : "null",
+        aircraft.departure_runway_release_time ? std::to_string(aircraft.departure_runway_release_time->count()) : "null",
         aircraft.taxi_distance_m,
         aircraft.taxi_started_at ? std::to_string(aircraft.taxi_started_at->count()) : "null",
         aircraft.taxi_completed_at ? std::to_string(aircraft.taxi_completed_at->count()) : "null");

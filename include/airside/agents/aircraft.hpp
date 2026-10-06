@@ -16,7 +16,7 @@ enum class AircraftState {
     ReadyForPushback,
     Departed,
 };
-enum class AircraftOperationType { Turnaround, ArrivalOnly };
+enum class AircraftOperationType { Turnaround, ArrivalOnly, ArrivalTurnaround };
 
 enum class ServiceType {
     Fueling, Baggage, Deboarding, Catering, CabinCleaning, BaggageLoad, PushbackPreparation
@@ -83,6 +83,7 @@ public:
     void transition_to(AircraftState next);
     void arrive(SimTime now);
     void begin_surface_arrival();
+    void mark_landed(SimTime now);
     void mark_task_waiting(ServiceType type, SimTime now);
     void mark_task_waiting(TaskId id, SimTime now);
     void make_task_ready(TaskId id);

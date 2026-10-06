@@ -17,6 +17,7 @@
 #include "Widgets/Layout/SBox.h"
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
 
 namespace {
@@ -71,6 +72,7 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     bGoal13DispatchValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13DispatchValidation"));
     bGoal13ReassignmentValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13ReassignmentValidation"));
     bTurnaroundValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabTurnaroundValidation"));
+    bGoal18Validation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal18Validation"));
     if (FParse::Param(FCommandLine::Get(), TEXT("RampLabSurfaceTraffic"))) {
         SelectedScenarioKey = TEXT("surface_traffic");
         PlaybackSpeed = 10.0;
@@ -85,6 +87,7 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     }
     if(bGoal13ReassignmentValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_reassignment");PlaybackSpeed=60.0;}
     else if(bGoal13DispatchValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_dynamic");PlaybackSpeed=60.0;}
+    else if(bGoal18Validation){SelectedScenarioKey=TEXT("turnaround_lifecycle");PlaybackSpeed=20.0;}
     else if(bTurnaroundValidation){SelectedScenarioKey=TEXT("turnaround_flight_bank_outage");PlaybackSpeed=20.0;}
     else if(bGoal12RecoveryValidation){SelectedScenarioKey=TEXT("autonomy_fleet_deadlock");PlaybackSpeed=10.0;}
     else if(bGoal12ClosureValidation){SelectedScenarioKey=TEXT("autonomy_fleet_dynamic_closure");PlaybackSpeed=10.0;}
@@ -330,6 +333,44 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
                     OutageEvent != Result.events.end(), ReassignmentEvent != Result.events.end());
                 UE_LOG(LogRampLab, Display, TEXT("Turnaround Recent Events panel: %s"), *FString::Join(RecentEvents, TEXT(" | ")));
             }
+            if (bGoal18Validation) {
+                const std::array LifecycleTypes{
+                    airside::SimulationEventType::ArrivalTaxiInStarted,
+                    airside::SimulationEventType::ArrivalAtGate,
+                    airside::SimulationEventType::TurnaroundStarted,
+                    airside::SimulationEventType::TurnaroundReadyForDeparture,
+                    airside::SimulationEventType::PushbackTaxiOutStarted,
+                    airside::SimulationEventType::SurfaceRunwayQueueEntered,
+                    airside::SimulationEventType::AircraftDeparted};
+                std::size_t CompletedLifecycleAircraft = 0;
+                for (const auto& Aircraft : Result.aircraft) {
+                    if (Aircraft.operation_type() != airside::AircraftOperationType::ArrivalTurnaround) continue;
+                    auto EventCursor = Result.events.begin();
+                    bool bCompleteLifecycle = true;
+                    for (const auto Type : LifecycleTypes) {
+                        EventCursor = std::ranges::find_if(EventCursor, Result.events.end(), [&](const auto& Event) {
+                            return Event.type == Type && Event.aircraft == Aircraft.id();
+                        });
+                        if (EventCursor == Result.events.end()) { bCompleteLifecycle = false; break; }
+                        UE_LOG(LogRampLab, Display,
+                            TEXT("Goal 18 lifecycle: aircraft=%u sequence=%llu time=%lld type=%s"),
+                            Aircraft.id().value(), static_cast<unsigned long long>(EventCursor->sequence),
+                            EventCursor->timestamp.count(), UTF8_TO_TCHAR(airside::to_string(Type).data()));
+                        ++EventCursor;
+                    }
+                    if (bCompleteLifecycle && Aircraft.actual_departure()) ++CompletedLifecycleAircraft;
+                }
+                UE_LOG(LogRampLab, Display,
+                    TEXT("Goal 18 lifecycle validation: completed=%llu/%llu arrivals=%llu departures=%llu collisions=%llu minimum_separation_m=%.3f"),
+                    static_cast<unsigned long long>(CompletedLifecycleAircraft),
+                    static_cast<unsigned long long>(std::ranges::count_if(Result.aircraft, [](const auto& Aircraft) {
+                        return Aircraft.operation_type() == airside::AircraftOperationType::ArrivalTurnaround;
+                    })),
+                    static_cast<unsigned long long>(Result.metrics.surface_arrived_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_departed_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_aircraft_collisions +
+                        Result.metrics.surface_aircraft_ground_collisions), Result.metrics.minimum_aircraft_separation_m);
+            }
             bCompletionReported = true;
             FinalResultText = FormatResult(ScenarioName.ToUpper(), Result);
             if (Result.metrics.surface_total_aircraft > 0) {
@@ -422,7 +463,8 @@ void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
         ScenarioKey != TEXT("turnaround_normal") && ScenarioKey != TEXT("turnaround_contention") &&
         ScenarioKey != TEXT("turnaround_disrupted") && ScenarioKey != TEXT("turnaround_flight_bank") &&
         ScenarioKey != TEXT("turnaround_flight_bank_disrupted") &&
-        ScenarioKey != TEXT("mixed_runway_operations") && ScenarioKey != TEXT("mixed_runway_disrupted")) return;
+        ScenarioKey != TEXT("mixed_runway_operations") && ScenarioKey != TEXT("mixed_runway_disrupted") &&
+        ScenarioKey != TEXT("turnaround_lifecycle") && ScenarioKey != TEXT("turnaround_lifecycle_disrupted")) return;
     SelectedScenarioKey = ScenarioKey;
     LoadSelectedScenario();
 }

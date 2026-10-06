@@ -105,6 +105,121 @@ TEST(SurfaceTrafficTest, ControlCoordinatesPushbackTaxiContentionAndRunwayQueue)
     }));
 }
 
+TEST(SurfaceTrafficTest, ArrivalTurnaroundContinuesThroughPushbackAndDeparture) {
+    airside::Scenario scenario;
+    scenario.name = "arrival_turnaround_regression";
+    scenario.turnaround_orchestration = true;
+    const airside::NodeId runway{1}, exit{2}, gate_node{3}, handoff{4};
+    scenario.graph.add_node({runway, "runway", {0.0, 0.0}});
+    scenario.graph.add_node({exit, "exit", {100.0, 0.0}});
+    scenario.graph.add_node({gate_node, "gate", {200.0, 0.0}});
+    scenario.graph.add_node({handoff, "handoff", {300.0, 0.0}});
+    const airside::NodeId depot{5};
+    scenario.graph.add_node({depot, "depot", {1000.0, 1000.0}});
+    scenario.graph.add_edge({airside::EdgeId{1}, exit, gate_node, 100.0, airside::SimTime{1}, true, false});
+    scenario.graph.add_edge({airside::EdgeId{2}, gate_node, handoff, 100.0, airside::SimTime{1}, true, false});
+    const airside::GateId stand{1};
+    scenario.gates.emplace_back(stand, "A1", gate_node);
+    scenario.vehicles.emplace_back(airside::VehicleId{1}, "Fuel-1", airside::ServiceType::Fueling, depot);
+    scenario.vehicles.emplace_back(airside::VehicleId{2}, "Baggage-1", airside::ServiceType::Baggage, depot);
+    airside::ServiceTask deboard{airside::TaskId{1}, airside::ServiceType::Deboarding};
+    deboard.duration = airside::SimTime{2};
+    airside::ServiceTask prepare{airside::TaskId{2}, airside::ServiceType::PushbackPreparation};
+    prepare.duration = airside::SimTime{2};
+    prepare.prerequisites.push_back(deboard.id);
+    scenario.aircraft.emplace_back(airside::AircraftId{1}, "INB001", airside::SimTime{0},
+        airside::SimTime{10}, stand, gate_node, std::vector<airside::ServiceTask>{deboard, prepare},
+        "TO-INB001", airside::SimTime{8}, airside::AircraftOperationType::ArrivalTurnaround, exit);
+    airside::ServiceTask second_deboard{airside::TaskId{3}, airside::ServiceType::Deboarding};
+    second_deboard.duration = airside::SimTime{2};
+    airside::ServiceTask second_prepare{airside::TaskId{4}, airside::ServiceType::PushbackPreparation};
+    second_prepare.duration = airside::SimTime{2};
+    second_prepare.prerequisites.push_back(second_deboard.id);
+    scenario.aircraft.emplace_back(airside::AircraftId{2}, "INB002", airside::SimTime{1},
+        airside::SimTime{11}, stand, gate_node,
+        std::vector<airside::ServiceTask>{second_deboard, second_prepare}, "TO-INB002",
+        airside::SimTime{9}, airside::AircraftOperationType::ArrivalTurnaround, exit);
+    scenario.service_durations.emplace(airside::ServiceType::Fueling, airside::SimTime{1});
+    scenario.service_durations.emplace(airside::ServiceType::Baggage, airside::SimTime{1});
+    scenario.abstract_resource_capacity.emplace(airside::ServiceType::Deboarding, 1U);
+    scenario.abstract_resource_capacity.emplace(airside::ServiceType::PushbackPreparation, 1U);
+    scenario.surface_operations = airside::SurfaceOperationsConfig{
+        handoff, runway, exit, airside::SimTime{1}, airside::SimTime{3}, airside::SimTime{2}, 100.0, 100.0};
+
+    airside::Simulation simulation{std::move(scenario), 42};
+    std::size_t steps = 0;
+    while (!simulation.finished() && steps < 1000) {
+        try { (void)simulation.advance(); }
+        catch (const std::exception& error) {
+            const auto failed = simulation.snapshot();
+            for (const auto& item : failed.aircraft)
+                std::cerr << "integrated debug " << item.flight_number << " state=" << static_cast<int>(item.state)
+                          << " surface=" << item.surface_state << " time=" << failed.simulation_time.count()
+                          << " error=" << error.what() << '\n';
+            throw;
+        }
+        ++steps;
+    }
+    ASSERT_TRUE(simulation.finished()) << "integrated arrival remained in "
+        << simulation.snapshot().aircraft.front().surface_state << " at simulated second "
+        << simulation.current_time().count();
+    const auto result = simulation.result();
+    const auto snapshot = simulation.snapshot();
+    ASSERT_EQ(snapshot.aircraft.size(), 2U);
+    EXPECT_TRUE(std::ranges::all_of(snapshot.aircraft, [](const auto& item) {
+        return item.operation_type == "arrival_turnaround" && item.surface_state == "Departed" &&
+            item.state == airside::AircraftState::Departed && item.actual_arrival && item.actual_departure;
+    }));
+    EXPECT_EQ(snapshot.gates.front().occupying_aircraft, std::nullopt);
+    const auto find_event = [&](airside::SimulationEventType type) {
+        return std::ranges::find(result.events, type, &airside::SimulationEventRecord::type);
+    };
+    const auto taxi_in = find_event(airside::SimulationEventType::ArrivalTaxiInStarted);
+    const auto landed = find_event(airside::SimulationEventType::AircraftLanded);
+    const auto gate_assigned = find_event(airside::SimulationEventType::GateAssigned);
+    const auto gate_arrival = find_event(airside::SimulationEventType::ArrivalAtGate);
+    const auto turnaround = find_event(airside::SimulationEventType::TurnaroundStarted);
+    const auto pushback = find_event(airside::SimulationEventType::PushbackTaxiOutStarted);
+    const auto departed = find_event(airside::SimulationEventType::AircraftDeparted);
+    ASSERT_NE(taxi_in, result.events.end()); ASSERT_NE(gate_arrival, result.events.end());
+    ASSERT_NE(landed, result.events.end()); ASSERT_NE(gate_assigned, result.events.end());
+    ASSERT_NE(turnaround, result.events.end()); ASSERT_NE(pushback, result.events.end());
+    ASSERT_NE(departed, result.events.end());
+    const auto runway_queue = std::ranges::find_if(result.events, [&](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfaceRunwayQueueEntered &&
+            event.sequence > pushback->sequence;
+    });
+    ASSERT_NE(runway_queue, result.events.end());
+    EXPECT_LT(taxi_in->sequence, gate_arrival->sequence);
+    EXPECT_LT(landed->sequence, taxi_in->sequence);
+    EXPECT_LT(gate_assigned->sequence, gate_arrival->sequence);
+    EXPECT_NE(airside::format_event(*landed).find("landed"), std::string::npos);
+    EXPECT_NE(airside::format_event(*gate_assigned).find("Gate A"), std::string::npos);
+    EXPECT_LT(gate_arrival->sequence, turnaround->sequence);
+    EXPECT_LT(turnaround->sequence, pushback->sequence);
+    EXPECT_LT(pushback->sequence, runway_queue->sequence);
+    EXPECT_LT(runway_queue->sequence, departed->sequence);
+    EXPECT_EQ(result.metrics.surface_departed_aircraft, 2U);
+    EXPECT_EQ(result.metrics.surface_arrived_aircraft, 2U);
+    EXPECT_EQ(result.metrics.gate_assignments, 2U);
+    EXPECT_EQ(result.metrics.runway_operations_completed, 4U);
+    EXPECT_GT(result.metrics.gate_wait_seconds, 0);
+    EXPECT_GT(result.metrics.gate_occupancy_seconds, 0);
+    EXPECT_GT(result.metrics.arrival_to_departure_seconds, 0);
+    EXPECT_GT(result.metrics.arrival_taxi_distance_m, 0.0);
+    EXPECT_GT(result.metrics.departure_taxi_distance_m, 0.0);
+    EXPECT_EQ(result.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_aircraft_ground_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(result.metrics.surface_departed_aircraft, 2U);
+    EXPECT_EQ(std::ranges::count_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::GateWaitStarted;
+    }), 1);
+    EXPECT_EQ(std::ranges::count_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::AircraftDeparted;
+    }), 2);
+}
+
 TEST(SurfaceTrafficTest, ClosureInvalidatesRouteAndReroutesWithoutBlockingDeparture) {
     airside::Simulation simulation(airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml")), 42);
     std::size_t steps = 0;
@@ -231,6 +346,39 @@ TEST(SurfaceTrafficTest, MixedRunwaySeedsFortyTwoThroughFortyFourMatchSerialAndP
         EXPECT_EQ(a.surface_safe_failures, 0U);
         EXPECT_EQ(a.fleet_outstanding_reservations, 0U);
         EXPECT_EQ(a.fleet_collisions, 0U);
+    }
+}
+
+TEST(SurfaceTrafficTest, IntegratedLifecycleSeedsFortyTwoThroughFortyFourMatchSerialAndParallel) {
+    const auto definition = airside::experiment::load_experiment(
+        std::filesystem::path{AIRSIDE_SOURCE_DIR} / "experiments" / "turnaround_lifecycle_validation.yaml");
+    const auto cases = airside::experiment::generate_cases(definition);
+    const auto requests = airside::experiment::generate_runs(definition, cases);
+    const auto scenario = airside::load_scenario(definition.scenario_path);
+    const auto serial = airside::experiment::execute_runs(scenario, requests, 1);
+    const auto parallel = airside::experiment::execute_runs(scenario, requests, 3);
+    ASSERT_EQ(serial.runs.size(), 3U);
+    ASSERT_EQ(parallel.runs.size(), serial.runs.size());
+    for (std::size_t i = 0; i < serial.runs.size(); ++i) {
+        const auto& a = serial.runs[i];
+        const auto& b = parallel.runs[i];
+        EXPECT_EQ(a.seed, 42U + i);
+        EXPECT_EQ(a.seed, b.seed);
+        EXPECT_EQ(a.simulated_duration_seconds, b.simulated_duration_seconds);
+        EXPECT_EQ(a.completed_turnarounds, 3U);
+        EXPECT_EQ(a.completed_turnarounds, b.completed_turnarounds);
+        EXPECT_EQ(a.surface_arrived_aircraft, 2U);
+        EXPECT_EQ(a.surface_arrived_aircraft, b.surface_arrived_aircraft);
+        EXPECT_EQ(a.surface_departed_aircraft, 3U);
+        EXPECT_EQ(a.runway_operations_completed, 5U);
+        EXPECT_EQ(a.runway_operations_completed, b.runway_operations_completed);
+        EXPECT_EQ(a.gate_wait_seconds, b.gate_wait_seconds);
+        EXPECT_EQ(a.gate_occupancy_seconds, b.gate_occupancy_seconds);
+        EXPECT_EQ(a.arrival_to_departure_seconds, b.arrival_to_departure_seconds);
+        EXPECT_EQ(a.surface_aircraft_aircraft_collisions, 0U);
+        EXPECT_EQ(a.surface_aircraft_ground_collisions, 0U);
+        EXPECT_EQ(a.fleet_collisions, 0U);
+        EXPECT_EQ(a.minimum_aircraft_ground_separation_m, b.minimum_aircraft_ground_separation_m);
     }
 }
 

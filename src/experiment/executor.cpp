@@ -63,6 +63,10 @@ RunResult execute_one(const Scenario& base, const RunRequest& request) {
     result.fleet_requests_failed = simulation_result.metrics.fleet_requests_failed;
     result.surface_departed_aircraft = simulation_result.metrics.surface_departed_aircraft;
     result.surface_arrived_aircraft = simulation_result.metrics.surface_arrived_aircraft;
+    result.gate_assignments = simulation_result.metrics.gate_assignments;
+    result.gate_wait_seconds = static_cast<double>(simulation_result.metrics.gate_wait_seconds);
+    result.gate_occupancy_seconds = static_cast<double>(simulation_result.metrics.gate_occupancy_seconds);
+    result.arrival_to_departure_seconds = static_cast<double>(simulation_result.metrics.arrival_to_departure_seconds);
     result.surface_total_aircraft = simulation_result.metrics.surface_total_aircraft;
     result.runway_operations_completed = simulation_result.metrics.runway_operations_completed;
     result.maximum_runway_queue_depth = simulation_result.metrics.maximum_runway_queue_depth;

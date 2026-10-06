@@ -108,6 +108,8 @@ private:
     void handle_vehicle_return(VehicleId id);
     void handle_road_event(EdgeId id, bool available);
     void handle_departure(AircraftId id);
+    void complete_arrival_at_gate(AircraftId id);
+    void start_arrival_taxi_in(AircraftId id);
     void handle_abstract_service_completed(AircraftId id, TaskId task);
     void handle_task_eligibility(AircraftId id, TaskId task);
     void handle_task_duration_change(TaskId task, SimTime duration);
@@ -159,7 +161,7 @@ private:
     std::uint64_t task_reassignments_{0};
     std::uint64_t disruption_replans_{0};
     struct SurfaceAircraftState {
-        enum class Phase { None, ArrivalQueue, WaitingForPushback, Pushback, Taxiing, WaitingForTraffic, WaitingForRunway, Runway, Arrived, Departed, Failed };
+        enum class Phase { None, ArrivalQueue, WaitingForGate, WaitingForPushback, Pushback, Taxiing, WaitingForTraffic, WaitingForRunway, Runway, Arrived, Departed, Failed };
         Phase phase{Phase::None};
         NodeId node{};
         std::vector<NodeId> route_nodes;
@@ -182,8 +184,29 @@ private:
         std::optional<SimTime> runway_clearance_at;
         std::optional<SimTime> runway_release_at;
         std::optional<SimTime> arrival_gate_at;
+        std::optional<SimTime> gate_wait_started_at;
+        SimTime gate_wait_duration{};
+        SimTime gate_occupancy_duration{};
+        std::optional<SimTime> gate_released_at;
+        std::optional<SimTime> arrival_taxi_started_at;
+        std::optional<SimTime> arrival_taxi_completed_at;
+        double arrival_taxi_distance_m{};
+        std::optional<SimTime> departure_taxi_started_at;
+        std::optional<SimTime> departure_taxi_completed_at;
+        double departure_taxi_distance_m{};
+        std::optional<SimTime> gate_assigned_at;
         SimTime runway_wait{};
         SimTime runway_occupied{};
+        std::optional<SimTime> arrival_runway_request_time;
+        std::optional<SimTime> arrival_runway_clearance_time;
+        std::optional<SimTime> arrival_runway_release_time;
+        SimTime arrival_runway_wait{};
+        SimTime arrival_runway_occupied{};
+        std::optional<SimTime> departure_runway_request_time;
+        std::optional<SimTime> departure_runway_clearance_time;
+        std::optional<SimTime> departure_runway_release_time;
+        SimTime departure_runway_wait{};
+        SimTime departure_runway_occupied{};
         std::optional<SimTime> actual_surface_departure;
         double taxi_distance_m{};
         std::size_t reroutes{};
@@ -191,6 +214,7 @@ private:
     std::map<AircraftId, SurfaceAircraftState> surface_aircraft_;
     std::map<EdgeId, AircraftId> surface_edge_reservations_;
     std::map<NodeId, AircraftId> surface_node_reservations_;
+    std::map<GateId, AircraftId> gate_arrival_reservations_;
     SimTime runway_available_at_{};
     bool surface_tick_scheduled_{false};
     std::size_t maximum_simultaneous_taxiing_{};
