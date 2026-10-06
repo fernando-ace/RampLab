@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1719">
+  <title>RampLab · Operations</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail" aria-label="Primary navigation">
+      <a class="brand" href="#overview" aria-label="RampLab Operations home"><span class="brand-mark">R</span><span class="brand-name">RAMP<span>LAB</span></span></a>
+      <div class="rail-label">WORKSPACE</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="overview"><span class="nav-icon">◫</span>Operations overview</button>
+        <button class="nav-item" data-view="aircraft"><span class="nav-icon">✈</span>Aircraft &amp; tasks</button>
+        <button class="nav-item" data-view="disruptions"><span class="nav-icon">⌁</span>Disruptions</button>
+        <button class="nav-item" data-view="safety"><span class="nav-icon">◇</span>Safety review</button>
+        <button class="nav-item" data-view="replay"><span class="nav-icon">▷</span>Event replay</button>
+        <button class="nav-item" data-view="analysis"><span class="nav-icon">≋</span>Run analysis</button>
+      </nav>
+      <div class="rail-bottom"><span class="live-dot"></span><span>LOCAL SESSION</span><small>FILES STAY ON THIS MACHINE</small><div class="version">RAMPLAB / OPS 01</div></div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>RAMP OPERATIONS</span><b>/</b><strong id="crumb-title">OVERVIEW</strong></div>
+        <div class="top-actions"><span class="local-chip"><i></i> LOCAL WORKSPACE</span><button class="button button-quiet" id="load-files">＋ Load run files</button><input id="file-input" type="file" multiple accept=".json,.csv,.jsonl" hidden></div>
+      </header>
+
+      <section class="view active" id="view-overview">
+        <div class="page-heading"><div><div class="eyebrow">EXPERIMENT REVIEW <span class="eyebrow-line"></span></div><h1>Operations overview</h1><p class="subhead">Review a completed airport surface run and its operational footprint.</p></div><div class="heading-right"><span class="data-time" id="data-time">AWAITING RUN DATA</span><button class="button button-outline" id="add-comparison">＋ Add comparison</button></div></div>
+        <div class="demo-banner"><div class="demo-tag">DEMO ENVIRONMENT</div><span>Explore two synthetic seed-42 runs. The data is illustrative and does not represent a real airport.</span><div class="demo-actions"><button class="button button-demo" id="demo-control">Load control</button><button class="button button-demo" id="demo-disruption">Load disruption</button></div></div>
+        <div id="empty-state" class="empty-state"><div class="empty-glyph">⌁</div><h2>Load an experiment to begin</h2><p>Choose a synthetic demo or add RampLab JSON, CSV, and JSONL outputs from your machine.</p><button class="button button-primary" id="empty-load">＋ Load run files</button></div>
+        <div id="dashboard-content" hidden>
+          <div class="run-strip"><div class="run-selector"><span class="selector-label">SELECTED RUN</span><select id="run-select" aria-label="Selected run"></select><span class="run-id" id="run-identity">—</span></div><div class="run-status" id="run-status"><i></i><span>—</span></div><div class="compare-selector"><label for="comparison-select">COMPARE WITH</label><select id="comparison-select"><option value="">No comparison loaded</option></select></div></div>
+          <div id="comparison-context" class="comparison-context" hidden></div>
+          <div class="section-kicker"><span>RUN SNAPSHOT</span><span class="section-line"></span><span id="snapshot-name">—</span></div>
+          <div class="kpi-grid" id="kpi-grid"></div>
+          <div class="overview-grid">
+            <article class="panel activity-panel"><div class="panel-heading"><div><div class="eyebrow">OPERATIONAL PROFILE</div><h2>Run performance</h2></div><span class="panel-index">01 / 04</span></div><div id="performance-chart" class="performance-chart"></div><div class="chart-legend"><span><i class="legend-control"></i>Selected run</span><span id="comparison-legend" hidden><i class="legend-disruption"></i>Comparison run</span></div></article>
+            <article class="panel status-panel"><div class="panel-heading"><div><div class="eyebrow">OPERATIONAL STATUS</div><h2>Assessment</h2></div><span class="panel-index">02 / 04</span></div><div id="status-reasoning" class="status-reasoning"></div><div class="panel-foot">Status derives from the selected run’s exported measures.</div></article>
+          </div>
+          <article class="panel metric-ledger"><div class="panel-heading"><div><div class="eyebrow">EXPORTED MEASURES</div><h2>Available KPI inventory</h2></div><span class="panel-index">SOURCE VALUES ONLY</span></div><div id="metric-ledger"></div></article>
+          <div class="bottom-grid"><article class="panel"><div class="panel-heading"><div><div class="eyebrow">OPERATIONAL EVENTS</div><h2>Disruption activity</h2></div><button class="text-button" data-jump="disruptions">View all ↗</button></div><div id="disruption-preview"></div></article><article class="panel"><div class="panel-heading"><div><div class="eyebrow">DATA COVERAGE</div><h2>Run files</h2></div><span class="panel-index">03 / 04</span></div><div id="file-coverage"></div></article></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-aircraft"><div class="page-heading"><div><div class="eyebrow">ENTITY INSPECTION</div><h1>Aircraft &amp; tasks</h1><p class="subhead">Exported aircraft and operational entity records for this run.</p></div></div><div class="panel table-panel" id="aircraft-table"></div></section>
+      <section class="view" id="view-disruptions"><div class="page-heading"><div><div class="eyebrow">OPERATIONAL DEVIATIONS</div><h1>Disruption review</h1><p class="subhead">Closures, reroutes, reassignments, failures, and recovery details present in source data.</p></div></div><div class="panel table-panel" id="disruption-table"></div><div class="panel impact-panel" id="impact-panel"></div></section>
+      <section class="view" id="view-safety"><div class="page-heading"><div><div class="eyebrow">SAFETY EVIDENCE</div><h1>Safety review</h1><p class="subhead">Observed collision, separation, timeout, and completion measures.</p></div></div><div class="safety-hero panel" id="safety-hero"></div><div class="panel table-panel" id="safety-table"></div></section>
+      <section class="view" id="view-replay"><div class="page-heading"><div><div class="eyebrow">ORDERED EVENT HISTORY</div><h1>Event replay</h1><p class="subhead">Step through the recorded event stream. This view does not reconstruct aircraft motion.</p></div><div class="heading-right"><span class="replay-count" id="replay-count">0 EVENTS</span></div></div><div class="panel replay-panel"><div id="replay-unavailable" class="unavailable" hidden></div><div id="replay-current" class="replay-current"><span class="eyebrow">CURRENT EVENT</span><strong id="current-event-title">Ready to replay</strong><span id="current-event-time">—</span></div><div class="replay-controls"><button class="icon-button" id="restart-replay" aria-label="Restart replay">↺</button><button class="play-button" id="play-replay" aria-label="Play replay">▶</button><button class="icon-button" id="step-replay" aria-label="Step to next event">›</button><input type="range" id="event-scrubber" min="0" max="0" value="0" aria-label="Seek event"><label class="speed-control">SPEED <select id="replay-speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><span id="event-position">0 / 0</span></div><div class="timeline-ruler"><div class="timeline-track" id="timeline-track"></div><div class="timeline-labels"><span>START</span><span id="timeline-end">—</span></div></div><div class="event-list-heading"><span>EVENT LOG</span><span>SIMULATION TIME · ENTITY · EVENT</span></div><div id="event-list" class="event-list"></div></div></section>
+      <section class="view" id="view-analysis"><div class="page-heading"><div><div class="eyebrow">GOAL 19 TOOLKIT</div><h1>Run analysis</h1><p class="subhead">Operational impact ranked by the shared experiment-analysis module.</p></div><div class="heading-right"><label class="check-label"><input type="checkbox" id="determinism-check"> Check determinism</label><button class="button button-outline" id="refresh-analysis">↻ Recalculate</button></div></div><div id="analysis-empty" class="empty-state small-empty"><h2>Load two runs to compare</h2><p>The Goal 19 comparison report appears here when a baseline and comparison run are available.</p></div><div id="analysis-content" hidden><div class="analysis-summary" id="analysis-summary"></div><div class="analysis-grid"><article class="panel"><div class="panel-heading"><div><div class="eyebrow">RANKED KPI MOVEMENT</div><h2>Largest operational changes</h2></div><span class="panel-index">01 / RANKED</span></div><div id="ranked-impact"></div></article><article class="panel"><div class="panel-heading"><div><div class="eyebrow">REPEATABILITY</div><h2>Determinism</h2></div></div><div id="determinism-panel" class="determinism-panel">Select “Check determinism” and recalculate to inspect repeated-run equivalence.</div></article></div><article class="panel comparison-table-panel"><div class="panel-heading"><div><div class="eyebrow">SHARED METRICS</div><h2>Baseline against comparison</h2></div></div><div id="comparison-table"></div></article><article class="panel report-panel"><div class="panel-heading"><div><div class="eyebrow">HUMAN-READABLE REPORT</div><h2>Goal 19 analysis</h2></div><button class="text-button" id="copy-report">Copy report</button></div><pre id="markdown-report"></pre></article><details class="panel json-panel"><summary>Machine-readable JSON analysis</summary><pre id="json-report"></pre></details></div></section>
+
+      <footer class="page-footer"><span>RAMP OPERATIONS / SIMULATION REVIEW</span><span>DATA SCOPE · LOCAL FILES ONLY</span></footer>
+    </main>
+  </div>
+  <div id="toast" role="status" class="toast" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
