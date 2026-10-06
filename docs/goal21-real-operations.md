@@ -1,22 +1,22 @@
 # Real RampLab experiment and dashboard workflow
 
-This workflow runs the checked-in `baseline` airport-service simulation with seed 42, once with its scheduled road closure disabled (control) and once with the closure enabled (disruption). It uses the scenario's existing road-closure event; it does not add an airport system or synthesize taxi, runway, collision, or separation measures.
-
-The Goal 21 starting point is the latest merged default branch after Goal 20 PR #3. That base contains Goals 19 and 20 and the Goal 17 mixed-runway work, but does not contain the Goal 18 scenario work referenced by the original acceptance brief. This workflow therefore uses only the scenarios and event types available in the merged base. In particular, this comparison demonstrates service/road-closure integration, not the absent Goal 18 IROPS/taxi/runway capabilities.
+This workflow uses Goal 18's matched `mixed_runway_operations.yaml` and `mixed_runway_disrupted.yaml` scenarios with seed 42. The disruption disables the A4 merge-to-gate taxi edge at simulation time 760 seconds. The selected scenarios include five aircraft (three turnarounds and two arrival-only flights), actual taxi/runway operations, service tasks, event histories, and safety metrics.
 
 ## Data flow
 
 ```mermaid
 flowchart LR
-  S[baseline.yaml] --> R[airside_cli simulation]
-  R --> E[experiment.json, runs.csv, aircraft.csv, events.jsonl]
-  E --> A[Goal 19 analysis]
-  E --> D[Goal 20 local dashboard]
+  S[mixed runway control and disruption scenarios] --> R[airside_cli simulation]
+  R --> E[Native Goal 18 metrics, aircraft, and event exports]
+  E --> P[Goal 21 run-bundle adapter]
+  P --> C[experiment.json, runs.csv, aircraft.csv, events.jsonl]
+  C --> A[Goal 19 analysis]
+  C --> D[Goal 20 local dashboard]
   R --> ROS[Existing ROS 2 autonomy bridge]
   R --> UE[Existing Unreal scenario viewer]
 ```
 
-The ROS bridge and Unreal viewer are existing consumers of the simulation/autonomy APIs; the ROS package in this base is an autonomy tug bridge, not an aircraft-operation feed. Event replay in the dashboard is a timed record of emitted operational events and does not reconstruct physical positions or motion.
+The ROS bridge exposes the current turnaround/autonomy data through its existing topics; the Unreal viewer consumes the operational simulation snapshots. Event replay in the dashboard is a timed record of emitted operational events and does not reconstruct physical positions or motion.
 
 ## Generate and analyze
 
@@ -28,21 +28,28 @@ cmake --build build --target airside_cli
 python tools/ops_dashboard/run_real_experiment.py --build-dir build --seed 42
 ```
 
-Files are written beneath `results/goal21-real/` in `control/`, `disruption/`, `control-repeat/`, and `disruption-repeat/`. `analysis.md` and `analysis.json` contain the Goal 19 control/comparison results and repeat-run metric/event checks. Execution time and completion timestamp are observational metadata; normalized metrics and ordered event records are compared for determinism.
+Files are written beneath `results/goal21-real/` in `control/`, `disruption/`, `control-repeat/`, and `disruption-repeat/`. Each bundle preserves Goal 18's native metrics JSON/CSV and per-aircraft CSV, and adds a thin Goal 19/20 run projection plus the simulator's JSONL event stream. `analysis.md` and `analysis.json` contain the Goal 19 comparison and repeat-run metric/event checks. Normalized operational metrics and ordered event records are compared for determinism; wall-clock execution time is excluded.
 
 Each run bundle contains:
 
-- `experiment.json` and `runs.csv` with one real simulator run and the run-level KPIs the current engine exports;
-- `aircraft.csv` with the simulator's aircraft and completed service task state;
-- `events.jsonl` copied from the simulator's ordered event history.
+- `experiment.json` and `runs.csv` with normalized run-level KPIs from Goal 18's native exports;
+- `aircraft.csv` with aircraft surface state, taxi/runway measures, turnaround and task completion details;
+- `events.jsonl` copied from the simulator's ordered event history;
+- `simulator-metrics.json`, `simulator-metrics.csv`, and `simulator-metrics.aircraft.csv` preserved from the CLI.
 
-The bundle validator checks run identity and seed, aircraft totals/departures, per-aircraft service-task completion, closure event totals, event order, and required files. Run it on an individual bundle with:
+The bundle validator checks run identity and seed, aircraft/departure totals, per-aircraft service task completion, taxi distance, collision totals, minimum aircraft separation, closure events, event order, and agreement with native Goal 18 exports. Run it on an individual bundle with:
 
 ```powershell
 python tools/ops_dashboard/validate_real_bundle.py results/goal21-real/disruption
 ```
 
-The simulator in this base does not export aircraft taxi/runway KPIs, collision counts, or minimum separation. Those values remain absent. Goal 19 and the dashboard must report safety as unknown when collision information is missing.
+## Seed-42 acceptance observation
+
+The matched scenarios each completed 3/3 turnarounds and 3/3 departures; the two arrival-only aircraft also reached their assigned gates. Both had zero aircraft-aircraft and aircraft-ground collisions, with 18.6016 m minimum aircraft spacing and 80.0269 m minimum aircraft-ground spacing. Fleet vehicles recorded zero collisions and 22.1815 m minimum separation. Goal 19 reported no safety regression.
+
+The disrupted run emitted one `RoadClosed` event at 760 simulated seconds. Total aircraft taxi distance/time increased from 998 m / 1,946 s to 1,295 m / 2,243 s; the increase was on arrivals (326 m / 326 s to 623 m / 623 s). Departure delay, turnaround completion, departure taxi, and runway wait totals were unchanged. The simulator did not emit an aircraft reroute event for this path change; the workflow reports the native reroute count of zero and surfaces the changed taxi totals without inventing a reroute record.
+
+Both selected runs export aircraft and ground collision counts, plus minimum aircraft, aircraft-ground, and fleet separation. Goal 19 compares those real values and reports unknown whenever the relevant source fields are absent. The runner fails acceptance if the chosen disruption creates a collision/safety regression.
 
 ## Dashboard and replay
 
@@ -56,4 +63,4 @@ Open `http://127.0.0.1:8765`, choose **Load real runs**, then inspect overview, 
 
 ## Existing ROS and Unreal consumers
 
-ROS build, live-topic, fault, and scenario probes are documented in [ros2.md](ros2.md); they exercise the current autonomy vehicle/control surface. The Unreal project and supported scenario launch paths are in [unreal-development.md](unreal-development.md). The dashboard bundles are portable experiment artifacts and are not an input format for the current ROS or Unreal consumers. Validate those surfaces against the checked-in scenario and compare only state they actually expose; do not treat autonomy vehicle output as aircraft taxi or runway evidence.
+ROS build, live-topic, turnaround, fault, and scenario probes are documented in [ros2.md](ros2.md). The Unreal project and supported scenario launch paths are in [unreal-development.md](unreal-development.md). The dashboard bundles are portable experiment artifacts and are not an input format for the current ROS or Unreal consumers. Validate each surface against the same checked-in scenario and compare only state each surface actually exposes.

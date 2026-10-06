@@ -185,8 +185,8 @@ class Handler(BaseHTTPRequestHandler):
                                   "application/json; charset=utf-8")
             try:
                 data = []
-                for name, folder in (("Control · baseline without scheduled road closure", "control"),
-                                     ("Disruption · baseline with scheduled road closure", "disruption"),
+                for name, folder in (("Control · mixed runway operations", "control"),
+                                     ("Disruption · mixed runway operations", "disruption"),
                                      ("Control repeat · seed 42", "control-repeat"),
                                      ("Disruption repeat · seed 42", "disruption-repeat")):
                     bundle = REAL_DEMO_DIR / folder

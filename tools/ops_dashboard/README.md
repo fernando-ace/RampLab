@@ -48,7 +48,7 @@ The repository-level workflow [docs/goal21-real-operations.md](../../docs/goal21
 python tools/ops_dashboard/server.py --real-demo-dir results/goal21-real
 ```
 
-The **Real RampLab runs** banner loads the generated control and road-closure bundles. This acceptance pair uses the existing baseline scenario with its scheduled road closure enabled or disabled, seed 42. Replay uses the simulator's ordered operational event log, not physical-motion playback. The current merged simulation export has no aircraft taxi/runway or collision/separation measures; the dashboard leaves them unavailable and safety unknown.
+The **Real RampLab runs** banner loads the generated control and road-closure bundles. This acceptance pair uses Goal 18's `mixed_runway_operations` and `mixed_runway_disrupted` scenarios, seed 42. Goal 18 native metrics, aircraft records, and ordered events are preserved, with a thin adapter for Goal 19/20's `experiment.json`, `runs.csv`, and dashboard entity table. Replay uses the simulator's ordered operational event log, not physical-motion playback. The real bundles include aircraft taxi/runway, collision, and minimum-separation measures; missing values in other schemas remain unavailable and safety unknown.
 
 Validate a bundle independently with `python tools/ops_dashboard/validate_real_bundle.py results/goal21-real/disruption`. The runner emits repeated runs and Goal 19 metric/event determinism reports alongside the primary comparison.
 
