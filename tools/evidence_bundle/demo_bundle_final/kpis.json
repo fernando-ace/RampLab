@@ -1,0 +1,446 @@
+{
+  "comparison": {
+    "baseline": "control",
+    "comparison": "disruption",
+    "metrics": {
+      "aircraft_count": {
+        "absolute_change": 0.0,
+        "baseline": 3.0,
+        "comparison": 3.0,
+        "percent_change": 0.0
+      },
+      "arrival_runway_wait_seconds": {
+        "absolute_change": 34.0,
+        "baseline": 158.0,
+        "comparison": 192.0,
+        "percent_change": 21.518987341772153
+      },
+      "arrival_taxi_distance_m": {
+        "absolute_change": 137.0,
+        "baseline": 326.0,
+        "comparison": 463.0,
+        "percent_change": 42.02453987730061
+      },
+      "arrival_taxi_seconds": {
+        "absolute_change": 137.0,
+        "baseline": 326.0,
+        "comparison": 463.0,
+        "percent_change": 42.02453987730061
+      },
+      "average_runway_wait_seconds": {
+        "absolute_change": 11.199999999999996,
+        "baseline": 31.6,
+        "comparison": 42.8,
+        "percent_change": 35.44303797468353
+      },
+      "avg_departure_delay_minutes": {
+        "absolute_change": 2.4,
+        "baseline": 2.1,
+        "comparison": 4.5,
+        "percent_change": 114.28571428571428
+      },
+      "avg_service_waiting_minutes": {
+        "absolute_change": 1.4999999999999998,
+        "baseline": 0.8,
+        "comparison": 2.3,
+        "percent_change": 187.49999999999994
+      },
+      "avg_turnaround_minutes": {
+        "absolute_change": 4.400000000000002,
+        "baseline": 24.7,
+        "comparison": 29.1,
+        "percent_change": 17.813765182186245
+      },
+      "completed_turnarounds": {
+        "absolute_change": 0.0,
+        "baseline": 3.0,
+        "comparison": 3.0,
+        "percent_change": 0.0
+      },
+      "delayed_aircraft": {
+        "absolute_change": 1.0,
+        "baseline": 1.0,
+        "comparison": 2.0,
+        "percent_change": 100.0
+      },
+      "delayed_turnarounds": {
+        "absolute_change": 1.0,
+        "baseline": 1.0,
+        "comparison": 2.0,
+        "percent_change": 100.0
+      },
+      "departure_runway_wait_seconds": {
+        "absolute_change": 22.0,
+        "baseline": 0.0,
+        "comparison": 22.0,
+        "percent_change": null
+      },
+      "departure_taxi_distance_m": {
+        "absolute_change": 66.0,
+        "baseline": 406.0,
+        "comparison": 472.0,
+        "percent_change": 16.25615763546798
+      },
+      "departure_taxi_seconds": {
+        "absolute_change": 67.0,
+        "baseline": 409.0,
+        "comparison": 476.0,
+        "percent_change": 16.381418092909534
+      },
+      "disruption_triggered_replans": {
+        "absolute_change": 1.0,
+        "baseline": 0.0,
+        "comparison": 1.0,
+        "percent_change": null
+      },
+      "failed_or_timed_out_turnarounds": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "fleet_collisions": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "fleet_minimum_separation_m": {
+        "absolute_change": -5.888999999999999,
+        "baseline": 8.0,
+        "comparison": 2.111,
+        "percent_change": -73.6125
+      },
+      "fleet_outstanding_reservations": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "fleet_reassignments": {
+        "absolute_change": 1.0,
+        "baseline": 0.0,
+        "comparison": 1.0,
+        "percent_change": null
+      },
+      "fleet_requests_completed": {
+        "absolute_change": 0.0,
+        "baseline": 9.0,
+        "comparison": 9.0,
+        "percent_change": 0.0
+      },
+      "fleet_requests_created": {
+        "absolute_change": 0.0,
+        "baseline": 9.0,
+        "comparison": 9.0,
+        "percent_change": 0.0
+      },
+      "fleet_requests_failed": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "fleet_reservation_contentions": {
+        "absolute_change": 2.0,
+        "baseline": 2.0,
+        "comparison": 4.0,
+        "percent_change": 100.0
+      },
+      "fleet_unfinished_requests": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "max_simultaneous_taxiing_aircraft": {
+        "absolute_change": 1.0,
+        "baseline": 1.0,
+        "comparison": 2.0,
+        "percent_change": 100.0
+      },
+      "maximum_departure_delay_seconds": {
+        "absolute_change": 150.0,
+        "baseline": 126.0,
+        "comparison": 276.0,
+        "percent_change": 119.04761904761905
+      },
+      "maximum_runway_queue_depth": {
+        "absolute_change": 1.0,
+        "baseline": 1.0,
+        "comparison": 2.0,
+        "percent_change": 100.0
+      },
+      "maximum_service_task_wait_seconds": {
+        "absolute_change": 50.0,
+        "baseline": 24.0,
+        "comparison": 74.0,
+        "percent_change": 208.33333333333334
+      },
+      "maximum_turnaround_seconds": {
+        "absolute_change": 264.0,
+        "baseline": 1482.0,
+        "comparison": 1746.0,
+        "percent_change": 17.813765182186234
+      },
+      "mean_departure_delay_seconds": {
+        "absolute_change": 144.0,
+        "baseline": 126.0,
+        "comparison": 270.0,
+        "percent_change": 114.28571428571428
+      },
+      "mean_turnaround_duration_seconds": {
+        "absolute_change": 264.0,
+        "baseline": 1482.0,
+        "comparison": 1746.0,
+        "percent_change": 17.813765182186234
+      },
+      "minimum_aircraft_ground_separation_m": {
+        "absolute_change": 0.0,
+        "baseline": 80.083,
+        "comparison": 80.083,
+        "percent_change": 0.0
+      },
+      "minimum_aircraft_separation_m": {
+        "absolute_change": -2.3999999999999986,
+        "baseline": 30.0,
+        "comparison": 27.6,
+        "percent_change": -7.999999999999995
+      },
+      "on_time_departure_rate": {
+        "absolute_change": -0.334,
+        "baseline": 0.667,
+        "comparison": 0.333,
+        "percent_change": -50.07496251874063
+      },
+      "runway_operations_completed": {
+        "absolute_change": 0.0,
+        "baseline": 5.0,
+        "comparison": 5.0,
+        "percent_change": 0.0
+      },
+      "runway_queue_seconds": {
+        "absolute_change": 34.0,
+        "baseline": 10.0,
+        "comparison": 44.0,
+        "percent_change": 340.0
+      },
+      "runway_utilization": {
+        "absolute_change": -0.02749999999999997,
+        "baseline": 0.6295,
+        "comparison": 0.602,
+        "percent_change": -4.368546465448764
+      },
+      "simulated_duration_seconds": {
+        "absolute_change": 73.0,
+        "baseline": 1668.0,
+        "comparison": 1741.0,
+        "percent_change": 4.376498800959232
+      },
+      "surface_aircraft_aircraft_collisions": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "surface_aircraft_ground_collisions": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "surface_arrived_aircraft": {
+        "absolute_change": 0.0,
+        "baseline": 2.0,
+        "comparison": 2.0,
+        "percent_change": 0.0
+      },
+      "surface_departed_aircraft": {
+        "absolute_change": 0.0,
+        "baseline": 3.0,
+        "comparison": 3.0,
+        "percent_change": 0.0
+      },
+      "surface_reroutes": {
+        "absolute_change": 1.0,
+        "baseline": 0.0,
+        "comparison": 1.0,
+        "percent_change": null
+      },
+      "surface_safe_failures": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "surface_taxi_distance_m": {
+        "absolute_change": 263.0,
+        "baseline": 672.0,
+        "comparison": 935.0,
+        "percent_change": 39.13690476190476
+      },
+      "surface_taxi_seconds": {
+        "absolute_change": 204.0,
+        "baseline": 735.0,
+        "comparison": 939.0,
+        "percent_change": 27.755102040816325
+      },
+      "surface_total_aircraft": {
+        "absolute_change": 0.0,
+        "baseline": 3.0,
+        "comparison": 3.0,
+        "percent_change": 0.0
+      },
+      "surface_wait_events": {
+        "absolute_change": 3.0,
+        "baseline": 2.0,
+        "comparison": 5.0,
+        "percent_change": 150.0
+      },
+      "surface_wait_seconds": {
+        "absolute_change": 86.0,
+        "baseline": 95.0,
+        "comparison": 181.0,
+        "percent_change": 90.52631578947368
+      },
+      "task_reassignments": {
+        "absolute_change": 1.0,
+        "baseline": 0.0,
+        "comparison": 1.0,
+        "percent_change": null
+      },
+      "total_service_task_wait_seconds": {
+        "absolute_change": 90.0,
+        "baseline": 48.0,
+        "comparison": 138.0,
+        "percent_change": 187.5
+      },
+      "total_turnarounds": {
+        "absolute_change": 0.0,
+        "baseline": 3.0,
+        "comparison": 3.0,
+        "percent_change": 0.0
+      },
+      "unresolved_service_requests": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      }
+    }
+  },
+  "experiments": {
+    "control": {
+      "aircraft_count": 3.0,
+      "arrival_runway_wait_seconds": 158.0,
+      "arrival_taxi_distance_m": 326.0,
+      "arrival_taxi_seconds": 326.0,
+      "average_runway_wait_seconds": 31.6,
+      "avg_departure_delay_minutes": 2.1,
+      "avg_service_waiting_minutes": 0.8,
+      "avg_turnaround_minutes": 24.7,
+      "completed_turnarounds": 3.0,
+      "delayed_aircraft": 1.0,
+      "delayed_turnarounds": 1.0,
+      "departure_runway_wait_seconds": 0.0,
+      "departure_taxi_distance_m": 406.0,
+      "departure_taxi_seconds": 409.0,
+      "disruption_triggered_replans": 0.0,
+      "failed_or_timed_out_turnarounds": 0.0,
+      "fleet_collisions": 0.0,
+      "fleet_minimum_separation_m": 8.0,
+      "fleet_outstanding_reservations": 0.0,
+      "fleet_reassignments": 0.0,
+      "fleet_requests_completed": 9.0,
+      "fleet_requests_created": 9.0,
+      "fleet_requests_failed": 0.0,
+      "fleet_reservation_contentions": 2.0,
+      "fleet_unfinished_requests": 0.0,
+      "max_simultaneous_taxiing_aircraft": 1.0,
+      "maximum_departure_delay_seconds": 126.0,
+      "maximum_runway_queue_depth": 1.0,
+      "maximum_service_task_wait_seconds": 24.0,
+      "maximum_turnaround_seconds": 1482.0,
+      "mean_departure_delay_seconds": 126.0,
+      "mean_turnaround_duration_seconds": 1482.0,
+      "minimum_aircraft_ground_separation_m": 80.083,
+      "minimum_aircraft_separation_m": 30.0,
+      "on_time_departure_rate": 0.667,
+      "runway_operations_completed": 5.0,
+      "runway_queue_seconds": 10.0,
+      "runway_utilization": 0.6295,
+      "simulated_duration_seconds": 1668.0,
+      "surface_aircraft_aircraft_collisions": 0.0,
+      "surface_aircraft_ground_collisions": 0.0,
+      "surface_arrived_aircraft": 2.0,
+      "surface_departed_aircraft": 3.0,
+      "surface_reroutes": 0.0,
+      "surface_safe_failures": 0.0,
+      "surface_taxi_distance_m": 672.0,
+      "surface_taxi_seconds": 735.0,
+      "surface_total_aircraft": 3.0,
+      "surface_wait_events": 2.0,
+      "surface_wait_seconds": 95.0,
+      "task_reassignments": 0.0,
+      "total_service_task_wait_seconds": 48.0,
+      "total_turnarounds": 3.0,
+      "unresolved_service_requests": 0.0
+    },
+    "disruption": {
+      "aircraft_count": 3.0,
+      "arrival_runway_wait_seconds": 192.0,
+      "arrival_taxi_distance_m": 463.0,
+      "arrival_taxi_seconds": 463.0,
+      "average_runway_wait_seconds": 42.8,
+      "avg_departure_delay_minutes": 4.5,
+      "avg_service_waiting_minutes": 2.3,
+      "avg_turnaround_minutes": 29.1,
+      "completed_turnarounds": 3.0,
+      "delayed_aircraft": 2.0,
+      "delayed_turnarounds": 2.0,
+      "departure_runway_wait_seconds": 22.0,
+      "departure_taxi_distance_m": 472.0,
+      "departure_taxi_seconds": 476.0,
+      "disruption_triggered_replans": 1.0,
+      "failed_or_timed_out_turnarounds": 0.0,
+      "fleet_collisions": 0.0,
+      "fleet_minimum_separation_m": 2.111,
+      "fleet_outstanding_reservations": 0.0,
+      "fleet_reassignments": 1.0,
+      "fleet_requests_completed": 9.0,
+      "fleet_requests_created": 9.0,
+      "fleet_requests_failed": 0.0,
+      "fleet_reservation_contentions": 4.0,
+      "fleet_unfinished_requests": 0.0,
+      "max_simultaneous_taxiing_aircraft": 2.0,
+      "maximum_departure_delay_seconds": 276.0,
+      "maximum_runway_queue_depth": 2.0,
+      "maximum_service_task_wait_seconds": 74.0,
+      "maximum_turnaround_seconds": 1746.0,
+      "mean_departure_delay_seconds": 270.0,
+      "mean_turnaround_duration_seconds": 1746.0,
+      "minimum_aircraft_ground_separation_m": 80.083,
+      "minimum_aircraft_separation_m": 27.6,
+      "on_time_departure_rate": 0.333,
+      "runway_operations_completed": 5.0,
+      "runway_queue_seconds": 44.0,
+      "runway_utilization": 0.602,
+      "simulated_duration_seconds": 1741.0,
+      "surface_aircraft_aircraft_collisions": 0.0,
+      "surface_aircraft_ground_collisions": 0.0,
+      "surface_arrived_aircraft": 2.0,
+      "surface_departed_aircraft": 3.0,
+      "surface_reroutes": 1.0,
+      "surface_safe_failures": 0.0,
+      "surface_taxi_distance_m": 935.0,
+      "surface_taxi_seconds": 939.0,
+      "surface_total_aircraft": 3.0,
+      "surface_wait_events": 5.0,
+      "surface_wait_seconds": 181.0,
+      "task_reassignments": 1.0,
+      "total_service_task_wait_seconds": 138.0,
+      "total_turnarounds": 3.0,
+      "unresolved_service_requests": 0.0
+    }
+  }
+}

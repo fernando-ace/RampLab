@@ -1,0 +1,169 @@
+[
+  {
+    "event": {
+      "aircraft_name": "AR401",
+      "detail": "arrival runway exit",
+      "gate": "A4",
+      "sequence": 1,
+      "time_seconds": 0,
+      "type": "aircraft_arrived"
+    },
+    "experiment": "control",
+    "line": 1,
+    "sequence": 1,
+    "source": "evidence/control/events.jsonl",
+    "time_seconds": 0,
+    "type": "aircraft_arrived"
+  },
+  {
+    "event": {
+      "aircraft_name": "AR401",
+      "gate": "A4",
+      "sequence": 2,
+      "time_seconds": 158,
+      "type": "arrival_at_gate"
+    },
+    "experiment": "control",
+    "line": 2,
+    "sequence": 2,
+    "source": "evidence/control/events.jsonl",
+    "time_seconds": 158,
+    "type": "arrival_at_gate"
+  },
+  {
+    "event": {
+      "aircraft_name": "AX101",
+      "detail": "baggage unload",
+      "sequence": 3,
+      "time_seconds": 210,
+      "type": "turnaround_task_completed"
+    },
+    "experiment": "control",
+    "line": 3,
+    "sequence": 3,
+    "source": "evidence/control/events.jsonl",
+    "time_seconds": 210,
+    "type": "turnaround_task_completed"
+  },
+  {
+    "event": {
+      "aircraft_name": "AX202",
+      "detail": "departure clearance",
+      "sequence": 4,
+      "time_seconds": 480,
+      "type": "runway_occupied"
+    },
+    "experiment": "control",
+    "line": 4,
+    "sequence": 4,
+    "source": "evidence/control/events.jsonl",
+    "time_seconds": 480,
+    "type": "runway_occupied"
+  },
+  {
+    "event": {
+      "aircraft_name": "AX202",
+      "detail": "runway released",
+      "sequence": 5,
+      "time_seconds": 735,
+      "type": "aircraft_departed"
+    },
+    "experiment": "control",
+    "line": 5,
+    "sequence": 5,
+    "source": "evidence/control/events.jsonl",
+    "time_seconds": 735,
+    "type": "aircraft_departed"
+  },
+  {
+    "event": {
+      "aircraft_name": "AR401",
+      "gate": "A4",
+      "sequence": 1,
+      "time_seconds": 0,
+      "type": "aircraft_arrived"
+    },
+    "experiment": "disruption",
+    "line": 1,
+    "sequence": 1,
+    "source": "evidence/disruption/events.jsonl",
+    "time_seconds": 0,
+    "type": "aircraft_arrived"
+  },
+  {
+    "event": {
+      "aircraft_name": "AX101",
+      "detail": "outage at simulation time 130",
+      "sequence": 2,
+      "time_seconds": 130,
+      "type": "turnaround_vehicle_unavailable",
+      "vehicle_name": "BaggageCart-1"
+    },
+    "experiment": "disruption",
+    "line": 2,
+    "sequence": 2,
+    "source": "evidence/disruption/events.jsonl",
+    "time_seconds": 130,
+    "type": "turnaround_vehicle_unavailable"
+  },
+  {
+    "event": {
+      "aircraft_name": "AX101",
+      "detail": "task 3 reassigned to BaggageCart-Backup",
+      "sequence": 3,
+      "time_seconds": 130,
+      "type": "turnaround_task_reassigned"
+    },
+    "experiment": "disruption",
+    "line": 3,
+    "sequence": 3,
+    "source": "evidence/disruption/events.jsonl",
+    "time_seconds": 130,
+    "type": "turnaround_task_reassigned"
+  },
+  {
+    "event": {
+      "aircraft_name": "AR401",
+      "detail": "selected available taxi route",
+      "sequence": 4,
+      "time_seconds": 210,
+      "type": "surface_rerouted"
+    },
+    "experiment": "disruption",
+    "line": 4,
+    "sequence": 4,
+    "source": "evidence/disruption/events.jsonl",
+    "time_seconds": 210,
+    "type": "surface_rerouted"
+  },
+  {
+    "event": {
+      "aircraft_name": "AX101",
+      "detail": "baggage unload completed after reassignment",
+      "sequence": 5,
+      "time_seconds": 408,
+      "type": "turnaround_task_completed"
+    },
+    "experiment": "disruption",
+    "line": 5,
+    "sequence": 5,
+    "source": "evidence/disruption/events.jsonl",
+    "time_seconds": 408,
+    "type": "turnaround_task_completed"
+  },
+  {
+    "event": {
+      "aircraft_name": "AX202",
+      "detail": "runway released",
+      "sequence": 6,
+      "time_seconds": 939,
+      "type": "aircraft_departed"
+    },
+    "experiment": "disruption",
+    "line": 6,
+    "sequence": 6,
+    "source": "evidence/disruption/events.jsonl",
+    "time_seconds": 939,
+    "type": "aircraft_departed"
+  }
+]

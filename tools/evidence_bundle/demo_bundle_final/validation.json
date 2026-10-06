@@ -1,0 +1,149 @@
+{
+  "checks": [
+    {
+      "check": "run_count_consistency",
+      "detail": "Observed 1 run rows.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "seed_consistency",
+      "detail": "JSON=['42'], CSV=['42'], declared=['42'].",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "aircraft_totals",
+      "detail": "Aircraft rows 3; KPI 3.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "collision_evidence",
+      "detail": "Collision KPI(s): fleet_collisions, surface_aircraft_aircraft_collisions, surface_aircraft_ground_collisions",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "minimum_separation_evidence",
+      "detail": "Minimum separation KPI present.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "determinism_evidence",
+      "detail": "One experiment does not establish repeat-run determinism.",
+      "experiment": "control",
+      "status": "INSUFFICIENT DATA"
+    },
+    {
+      "check": "event_file_parseability",
+      "detail": "Parsed 5 ordered events.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "json_readability",
+      "detail": "Parsed experiment.json.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "scenario_identity",
+      "detail": "JSON source scenario scenarios/turnaround_flight_bank.yaml; CSV scenario values ['turnaround_flight_bank'].",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "run_count_consistency",
+      "detail": "Observed 1 run rows.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "seed_consistency",
+      "detail": "JSON=['42'], CSV=['42'], declared=['42'].",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "aircraft_totals",
+      "detail": "Aircraft rows 3; KPI 3.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "collision_evidence",
+      "detail": "Collision KPI(s): fleet_collisions, surface_aircraft_aircraft_collisions, surface_aircraft_ground_collisions",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "minimum_separation_evidence",
+      "detail": "Minimum separation KPI present.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "determinism_evidence",
+      "detail": "One experiment does not establish repeat-run determinism.",
+      "experiment": "disruption",
+      "status": "INSUFFICIENT DATA"
+    },
+    {
+      "check": "event_file_parseability",
+      "detail": "Parsed 6 ordered events.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "json_readability",
+      "detail": "Parsed experiment.json.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "scenario_identity",
+      "detail": "JSON source scenario scenarios/turnaround_flight_bank_outage.yaml; CSV scenario values ['turnaround_flight_bank_outage'].",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "scenario_identity",
+      "detail": "Scenarios differ: scenarios/turnaround_flight_bank.yaml vs scenarios/turnaround_flight_bank_outage.yaml.",
+      "experiment": "comparison",
+      "status": "WARNING"
+    }
+  ],
+  "hash_verification": {
+    "files_checked": 8,
+    "status": "PASS"
+  },
+  "missing_evidence": [
+    {
+      "artifact": "summary.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "disruption"
+    }
+  ],
+  "status": "WARNING"
+}

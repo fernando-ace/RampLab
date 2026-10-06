@@ -1,0 +1,5 @@
+{"sequence":1,"time_seconds":0,"type":"aircraft_arrived","aircraft_name":"AR401","gate":"A4","detail":"arrival runway exit"}
+{"sequence":2,"time_seconds":158,"type":"arrival_at_gate","aircraft_name":"AR401","gate":"A4"}
+{"sequence":3,"time_seconds":210,"type":"turnaround_task_completed","aircraft_name":"AX101","detail":"baggage unload"}
+{"sequence":4,"time_seconds":480,"type":"runway_occupied","aircraft_name":"AX202","detail":"departure clearance"}
+{"sequence":5,"time_seconds":735,"type":"aircraft_departed","aircraft_name":"AX202","detail":"runway released"}

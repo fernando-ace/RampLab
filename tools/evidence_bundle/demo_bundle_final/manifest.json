@@ -1,0 +1,149 @@
+{
+  "analysis_files": [
+    "kpis.json",
+    "validation.json",
+    "timeline.json"
+  ],
+  "creation_metadata": {
+    "created_at_utc": "2026-10-06T16:10:07+00:00"
+  },
+  "determinism_status": "INSUFFICIENT DATA",
+  "format_version": "1.0",
+  "generated_outputs": [
+    "README.md",
+    "manifest.json",
+    "index.html",
+    "kpis.json",
+    "validation.json",
+    "timeline.json"
+  ],
+  "input_files": [
+    {
+      "bundle_path": "evidence/control/experiment.json",
+      "experiment": "control",
+      "sha256": "141b12db56a0819d0983770c1aa2cfe8e3207168a79301c3d44c2753e5855db4",
+      "size_bytes": 4644,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\f521\\RampLab\\tools\\ops_dashboard\\fixtures\\control\\experiment.json"
+    },
+    {
+      "bundle_path": "evidence/control/runs.csv",
+      "experiment": "control",
+      "sha256": "99351bff03c52f4500438f22de8e03d76b5f74da43ae2a1a91c287713937f816",
+      "size_bytes": 1769,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\f521\\RampLab\\tools\\ops_dashboard\\fixtures\\control\\runs.csv"
+    },
+    {
+      "bundle_path": "evidence/control/aircraft.csv",
+      "experiment": "control",
+      "sha256": "aa459b5189685e07dddb9b9af94154e4f5e5d35c3fcf5de17df38da51bda9cd5",
+      "size_bytes": 529,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\f521\\RampLab\\tools\\ops_dashboard\\fixtures\\control\\aircraft.csv"
+    },
+    {
+      "bundle_path": "evidence/control/events.jsonl",
+      "experiment": "control",
+      "sha256": "22ccbeb8ece06b2e3d733c1632288e41a1367645fdf1c3af4a5dfbebfb9fa3c2",
+      "size_bytes": 570,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\f521\\RampLab\\tools\\ops_dashboard\\fixtures\\control\\events.jsonl"
+    },
+    {
+      "bundle_path": "evidence/disruption/experiment.json",
+      "experiment": "disruption",
+      "sha256": "fc6822867b74f235eaf897209206f0c61e7716d777ff780d4db5374f218a27d2",
+      "size_bytes": 4665,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\f521\\RampLab\\tools\\ops_dashboard\\fixtures\\disruption\\experiment.json"
+    },
+    {
+      "bundle_path": "evidence/disruption/runs.csv",
+      "experiment": "disruption",
+      "sha256": "462fc3fde68c755a8f4a3bd0632ffc7c2b21c24b7a8d968eabb72a1e2a948973",
+      "size_bytes": 1784,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\f521\\RampLab\\tools\\ops_dashboard\\fixtures\\disruption\\runs.csv"
+    },
+    {
+      "bundle_path": "evidence/disruption/aircraft.csv",
+      "experiment": "disruption",
+      "sha256": "0762fb57da63c441fec9c375df31f77a6b13bf1b1d6867be739eff48487aec6c",
+      "size_bytes": 533,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\f521\\RampLab\\tools\\ops_dashboard\\fixtures\\disruption\\aircraft.csv"
+    },
+    {
+      "bundle_path": "evidence/disruption/events.jsonl",
+      "experiment": "disruption",
+      "sha256": "37df8917b7b22b0f73aa4fdd74e9a60c1d04095d6f1b902ad62fd5fa8baa3502",
+      "size_bytes": 800,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\f521\\RampLab\\tools\\ops_dashboard\\fixtures\\disruption\\events.jsonl"
+    }
+  ],
+  "inputs": [
+    {
+      "completion_status": "COMPLETE",
+      "label": "control",
+      "name": "turnaround_flight_bank",
+      "run_count": 1,
+      "safety_status": "NO RECORDED COLLISIONS",
+      "scenario": "scenarios/turnaround_flight_bank.yaml",
+      "seeds": [
+        42
+      ]
+    },
+    {
+      "completion_status": "COMPLETE",
+      "label": "disruption",
+      "name": "turnaround_flight_bank",
+      "run_count": 1,
+      "safety_status": "NO RECORDED COLLISIONS",
+      "scenario": "scenarios/turnaround_flight_bank_outage.yaml",
+      "seeds": [
+        42
+      ]
+    }
+  ],
+  "missing_optional_artifacts": [
+    {
+      "artifact": "summary.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "disruption"
+    }
+  ],
+  "recognized_artifact_types": {
+    "control": [
+      "experiment.json",
+      "runs.csv",
+      "aircraft.csv",
+      "events.jsonl"
+    ],
+    "disruption": [
+      "experiment.json",
+      "runs.csv",
+      "aircraft.csv",
+      "events.jsonl"
+    ]
+  },
+  "safety_status": {
+    "control": "NO RECORDED COLLISIONS",
+    "disruption": "NO RECORDED COLLISIONS"
+  },
+  "warnings": [
+    "Scenarios differ: scenarios/turnaround_flight_bank.yaml vs scenarios/turnaround_flight_bank_outage.yaml."
+  ]
+}

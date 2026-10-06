@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "experiment_name": "turnaround_flight_bank",
+  "source_experiment": "synthetic-demo/turnaround_flight_bank.yaml",
+  "source_scenario": "scenarios/turnaround_flight_bank_outage.yaml",
+  "completed_at_utc": "2026-10-05T12:00:00Z",
+  "revision": "synthetic-demo",
+  "hardware_concurrency": 8,
+  "worker_count": 1,
+  "configuration_count": 1,
+  "seed_count": 1,
+  "replications": 1,
+  "run_count": 1,
+  "execution_seconds": 0.1,
+  "seeds": {
+    "values": [
+      42
+    ],
+    "replications": 1
+  },
+  "parameters": {},
+  "runs": [
+    {
+      "total_turnarounds": 3,
+      "completed_turnarounds": 3,
+      "delayed_turnarounds": 2,
+      "failed_or_timed_out_turnarounds": 0,
+      "maximum_turnaround_seconds": 1746,
+      "maximum_departure_delay_seconds": 276,
+      "on_time_departure_rate": 0.333,
+      "total_service_task_wait_seconds": 138,
+      "maximum_service_task_wait_seconds": 74,
+      "task_reassignments": 1,
+      "disruption_triggered_replans": 1,
+      "unresolved_service_requests": 0,
+      "fleet_collisions": 0,
+      "fleet_minimum_separation_m": 2.111,
+      "fleet_reservation_contentions": 4,
+      "fleet_outstanding_reservations": 0,
+      "fleet_unfinished_requests": 0,
+      "fleet_reassignments": 1,
+      "fleet_requests_created": 9,
+      "fleet_requests_completed": 9,
+      "fleet_requests_failed": 0,
+      "surface_departed_aircraft": 3,
+      "surface_arrived_aircraft": 2,
+      "surface_total_aircraft": 3,
+      "runway_operations_completed": 5,
+      "maximum_runway_queue_depth": 2,
+      "arrival_runway_wait_seconds": 192,
+      "departure_runway_wait_seconds": 22,
+      "average_runway_wait_seconds": 42.8,
+      "runway_utilization": 0.602,
+      "arrival_taxi_distance_m": 463,
+      "departure_taxi_distance_m": 472,
+      "arrival_taxi_seconds": 463,
+      "departure_taxi_seconds": 476,
+      "surface_reroutes": 1,
+      "surface_wait_events": 5,
+      "surface_wait_seconds": 181,
+      "surface_taxi_distance_m": 935,
+      "surface_taxi_seconds": 939,
+      "runway_queue_seconds": 44,
+      "surface_safe_failures": 0,
+      "max_simultaneous_taxiing_aircraft": 2,
+      "surface_aircraft_aircraft_collisions": 0,
+      "surface_aircraft_ground_collisions": 0,
+      "minimum_aircraft_separation_m": 27.6,
+      "minimum_aircraft_ground_separation_m": 80.083,
+      "ordinal": 1,
+      "case_id": "case_0001",
+      "seed": 42,
+      "mean_turnaround_duration_seconds": 1746.0,
+      "mean_departure_delay_seconds": 270.0,
+      "turnarounds": [
+        {
+          "turnaround_id": "AR401",
+          "aircraft": "AR401",
+          "completion_seconds": 687,
+          "turnaround_duration_seconds": 687,
+          "departure_delay_seconds": 0,
+          "estimated_ready_time_seconds": 660,
+          "schedule_slack_seconds": 0,
+          "critical_path_task_ids": "1,2",
+          "tasks": [
+            {
+              "task_id": 1,
+              "service_type": "baggage unload",
+              "state": "Completed",
+              "requested_at_seconds": 20,
+              "started_at_seconds": 30,
+              "completed_at_seconds": 170,
+              "waiting_seconds": 10,
+              "required_resource": "BaggageCart",
+              "assigned_resource": "BaggageCart-Backup"
+            }
+          ]
+        },
+        {
+          "turnaround_id": "AX101",
+          "aircraft": "AX101",
+          "completion_seconds": 1746,
+          "turnaround_duration_seconds": 1746,
+          "departure_delay_seconds": 276,
+          "estimated_ready_time_seconds": 1650,
+          "schedule_slack_seconds": -276,
+          "critical_path_task_ids": "3,4",
+          "tasks": [
+            {
+              "task_id": 3,
+              "service_type": "fueling",
+              "state": "Completed",
+              "requested_at_seconds": 300,
+              "started_at_seconds": 370,
+              "completed_at_seconds": 480,
+              "waiting_seconds": 70,
+              "required_resource": "FuelTruck",
+              "assigned_resource": "FuelTruck-1"
+            }
+          ]
+        },
+        {
+          "turnaround_id": "AX202",
+          "aircraft": "AX202",
+          "completion_seconds": 1260,
+          "turnaround_duration_seconds": 1240,
+          "departure_delay_seconds": 0,
+          "estimated_ready_time_seconds": 1250,
+          "schedule_slack_seconds": 0,
+          "critical_path_task_ids": "5",
+          "tasks": []
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    "runs.csv",
+    "summary.csv"
+  ]
+}
