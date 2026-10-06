@@ -1,0 +1,57 @@
+name: autonomy_fleet_congested_map
+airport:
+  nodes:
+    - { id: a_wh, name: Link A West Holding, x_m: 0.0, y_m: 20.0 }
+    - { id: a_w, name: Link A West, x_m: 0.0, y_m: 0.0 }
+    - { id: a_e, name: Link A East, x_m: 120.0, y_m: 0.0 }
+    - { id: a_eh, name: Link A East Holding, x_m: 120.0, y_m: 20.0 }
+    - { id: a_wx, name: Link A West Exit, x_m: -120.0, y_m: 0.0 }
+    - { id: a_ex, name: Link A East Exit, x_m: 240.0, y_m: 0.0 }
+    - { id: b_wh, name: Link B West Holding, x_m: 0.0, y_m: 520.0 }
+    - { id: b_w, name: Link B West, x_m: 0.0, y_m: 500.0 }
+    - { id: b_e, name: Link B East, x_m: 120.0, y_m: 500.0 }
+    - { id: b_eh, name: Link B East Holding, x_m: 120.0, y_m: 520.0 }
+    - { id: b_wx, name: Link B West Exit, x_m: -120.0, y_m: 500.0 }
+    - { id: b_ex, name: Link B East Exit, x_m: 240.0, y_m: 500.0 }
+    - { id: c_wh, name: Link C West Holding, x_m: 0.0, y_m: 1020.0 }
+    - { id: c_w, name: Link C West, x_m: 0.0, y_m: 1000.0 }
+    - { id: c_e, name: Link C East, x_m: 120.0, y_m: 1000.0 }
+    - { id: c_eh, name: Link C East Holding, x_m: 120.0, y_m: 1020.0 }
+    - { id: c_wx, name: Link C West Exit, x_m: -120.0, y_m: 1000.0 }
+    - { id: c_ex, name: Link C East Exit, x_m: 240.0, y_m: 1000.0 }
+    - { id: d_wh, name: Link D West Holding, x_m: 0.0, y_m: 1520.0 }
+    - { id: d_w, name: Link D West, x_m: 0.0, y_m: 1500.0 }
+    - { id: d_e, name: Link D East, x_m: 120.0, y_m: 1500.0 }
+    - { id: d_eh, name: Link D East Holding, x_m: 120.0, y_m: 1520.0 }
+    - { id: d_wx, name: Link D West Exit, x_m: -120.0, y_m: 1500.0 }
+    - { id: d_ex, name: Link D East Exit, x_m: 240.0, y_m: 1500.0 }
+  edges:
+    - { id: a_hold_w, from: a_wh, to: a_w, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: a_exit_w, from: a_wx, to: a_w, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: link_a, from: a_w, to: a_e, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: a_exit_e, from: a_e, to: a_ex, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: a_hold_e, from: a_e, to: a_eh, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: b_hold_w, from: b_wh, to: b_w, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: b_exit_w, from: b_wx, to: b_w, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: link_b, from: b_w, to: b_e, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: b_exit_e, from: b_e, to: b_ex, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: b_hold_e, from: b_e, to: b_eh, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: c_hold_w, from: c_wh, to: c_w, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: c_exit_w, from: c_wx, to: c_w, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: link_c, from: c_w, to: c_e, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: c_exit_e, from: c_e, to: c_ex, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: c_hold_e, from: c_e, to: c_eh, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: d_hold_w, from: d_wh, to: d_w, distance_m: 20.0, traversal_time_seconds: 10 }
+    - { id: d_exit_w, from: d_wx, to: d_w, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: link_d, from: d_w, to: d_e, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: d_exit_e, from: d_e, to: d_ex, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: d_hold_e, from: d_e, to: d_eh, distance_m: 20.0, traversal_time_seconds: 10 }
+gates:
+  - { id: TRAINING, node: a_wh }
+fleet:
+  vehicles:
+    - { id: fuel, name: FuelTruck, type: fueling, depot_node: a_wh, speed_mps: 5.0 }
+    - { id: baggage, name: BaggageCart, type: baggage, depot_node: a_wh, speed_mps: 5.0 }
+aircraft:
+  - { id: TRAINING, gate: TRAINING, scheduled_arrival_seconds: 0, scheduled_departure_seconds: 60, required_services: [fueling] }
+service_durations_seconds: { fueling: 1, baggage: 1 }

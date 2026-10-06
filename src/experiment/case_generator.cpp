@@ -89,9 +89,11 @@ std::vector<ServiceVehicle> rebuild_fleet(const Scenario& base, const ScenarioOv
         for (std::size_t index = 0; index < count; ++index) {
             const auto& source = *templates[index % templates.size()];
             const auto label = type == ServiceType::Fueling ? "FuelTruck" : "BaggageCart";
+            const auto name = index < templates.size() ? templates[index]->name() :
+                std::format("{}-{}", label, index + 1);
             result.emplace_back(VehicleId{static_cast<std::uint32_t>(result.size() + 1)},
-                std::format("{}-{}", label, index + 1), type, source.depot_node(),
-                requested_speed.value_or(source.speed_mps()));
+                name, type, source.depot_node(), requested_speed.value_or(source.speed_mps()),
+                source.outage_safe_node());
         }
     };
     add_type(ServiceType::Fueling, overrides.fuel_truck_count, overrides.fuel_vehicle_speed_mps);
@@ -110,9 +112,13 @@ std::vector<Aircraft> rebuild_aircraft(const Scenario& base, const ScenarioOverr
         }
         std::vector<ServiceTask> tasks;
         tasks.reserve(source.tasks().size());
-        for (const auto& task : source.tasks()) tasks.emplace_back(task.id, task.type);
+        // Turnaround plans are part of the scenario input. Preserve their DAG,
+        // timing windows, resource requirements, and any other task metadata
+        // when rebuilding aircraft for experiment overrides.
+        tasks = source.tasks();
         result.emplace_back(source.id(), source.flight_number(), arrival, departure,
-            source.gate(), source.gate_node(), std::move(tasks));
+            source.gate(), source.gate_node(), std::move(tasks), source.turnaround_id(), source.target_off_block(),
+            source.operation_type(), source.arrival_exit_node());
     }
     return result;
 }

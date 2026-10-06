@@ -1,0 +1,15 @@
+name: goal10_headless_sensor_matrix
+scenario: ../scenarios/autonomy_sensor_validation.yaml
+seed_start: 42
+fault_seed_start: 7019
+runs_per_case: 2
+workers: 1
+output_directory: ../results/autonomy_sensor_goal10
+cases:
+  - name: headless_sensor_validation
+  - name: headless_sensor_validation_gnss_outage
+    faults:
+      - {sensor: gnss, type: dropout, start_s: 5.0, duration_s: 3.0}
+  - name: headless_sensor_validation_lidar_obstruction
+    faults:
+      - {sensor: lidar, type: obstruction, start_s: 2.0, duration_s: 4.0, angle_min_deg: -10.0, angle_max_deg: 10.0}

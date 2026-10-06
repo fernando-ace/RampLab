@@ -63,5 +63,14 @@ TEST(AStarTest, EqualCostPathSelectionIsDeterministic) {
     EXPECT_EQ(first->nodes, (std::vector{NodeId{1}, NodeId{2}, NodeId{4}}));
 }
 
+TEST(AStarTest, OneWayEdgesCanOnlyBeTraversedFromTheirConfiguredOrigin) {
+    AirportGraph graph;
+    graph.add_node({NodeId{1}, "A", {0.0, 0.0}});
+    graph.add_node({NodeId{2}, "B", {100.0, 0.0}});
+    graph.add_edge({EdgeId{1}, NodeId{1}, NodeId{2}, 100.0, 10s, true, true});
+    ASSERT_TRUE(find_route(graph, NodeId{1}, NodeId{2}).has_value());
+    EXPECT_FALSE(find_route(graph, NodeId{2}, NodeId{1}).has_value());
+}
+
 }  // namespace
 }  // namespace airside

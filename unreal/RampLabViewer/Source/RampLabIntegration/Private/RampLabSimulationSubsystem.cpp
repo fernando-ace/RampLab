@@ -17,6 +17,7 @@
 #include "Widgets/Layout/SBox.h"
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
 
 namespace {
@@ -65,6 +66,32 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     Super::Initialize(Collection);
     double RequestedCaptureMultiplier = CaptureMultiplier;
     bCaptureQA = FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
+    bFleetValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabFleetValidation"));
+    bGoal12ClosureValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal12ClosureValidation"));
+    bGoal12RecoveryValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal12RecoveryValidation"));
+    bGoal13DispatchValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13DispatchValidation"));
+    bGoal13ReassignmentValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal13ReassignmentValidation"));
+    bTurnaroundValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabTurnaroundValidation"));
+    bGoal18Validation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal18Validation"));
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabSurfaceTraffic"))) {
+        SelectedScenarioKey = TEXT("surface_traffic");
+        PlaybackSpeed = 10.0;
+    } else if (FParse::Param(FCommandLine::Get(), TEXT("RampLabSurfaceDisruption"))) {
+        SelectedScenarioKey = TEXT("surface_traffic_disrupted");
+        PlaybackSpeed = 10.0;
+    }
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabMixedRunwayValidation"))) {
+        SelectedScenarioKey = TEXT("mixed_runway_operations"); PlaybackSpeed = 20.0;
+    } else if (FParse::Param(FCommandLine::Get(), TEXT("RampLabMixedRunwayDisruption"))) {
+        SelectedScenarioKey = TEXT("mixed_runway_disrupted"); PlaybackSpeed = 20.0;
+    }
+    if(bGoal13ReassignmentValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_reassignment");PlaybackSpeed=60.0;}
+    else if(bGoal13DispatchValidation){SelectedScenarioKey=TEXT("autonomy_dispatch_dynamic");PlaybackSpeed=60.0;}
+    else if(bGoal18Validation){SelectedScenarioKey=TEXT("turnaround_lifecycle");PlaybackSpeed=20.0;}
+    else if(bTurnaroundValidation){SelectedScenarioKey=TEXT("turnaround_flight_bank_outage");PlaybackSpeed=20.0;}
+    else if(bGoal12RecoveryValidation){SelectedScenarioKey=TEXT("autonomy_fleet_deadlock");PlaybackSpeed=10.0;}
+    else if(bGoal12ClosureValidation){SelectedScenarioKey=TEXT("autonomy_fleet_dynamic_closure");PlaybackSpeed=10.0;}
+    else if(bFleetValidation){SelectedScenarioKey=TEXT("autonomy_fleet");PlaybackSpeed=10.0;}
     if (bCaptureQA) {
         CaptureWarmupRemaining = 15.0;
         if (FParse::Value(FCommandLine::Get(), TEXT("RampLabCaptureMultiplier="), RequestedCaptureMultiplier)) {
@@ -74,6 +101,10 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
             PlaybackSpeed, CaptureMultiplier);
     }
     bControlCheck = FParse::Param(FCommandLine::Get(), TEXT("RampLabControlCheck"));
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabSensorValidation"))) {
+        SelectedScenarioKey = TEXT("autonomy_sensor_validation");
+        PlaybackSpeed = 1.0;
+    }
     bDemoMode = FParse::Param(FCommandLine::Get(), TEXT("RampLabDemo"))
         || FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
     BuildScenarioComparison();
@@ -89,6 +120,8 @@ void URampLabSimulationSubsystem::Deinitialize()
     Snapshot.Reset();
     AutonomySnapshot.Reset();
     AutonomySimulation.Reset();
+    FleetSimulation.Reset();
+    FleetSnapshots.clear();
     AutonomyController.Reset();
     Simulation.Reset();
     Super::Deinitialize();
@@ -99,6 +132,86 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
     if (bControlCheck) RunControlCheck(DeltaTime);
     if (CaptureWarmupRemaining > 0.0 && bViewerReady) {
         CaptureWarmupRemaining = FMath::Max(0.0, CaptureWarmupRemaining - DeltaTime);
+        return;
+    }
+    if (FleetSimulation != nullptr) {
+        if (!bPlaying || FleetSimulation->finished()) return;
+        const double FrameBudget=static_cast<double>(DeltaTime)*PlaybackSpeed*CaptureMultiplier;AutonomyAccumulator+=FrameBudget;constexpr double FixedStep=0.02;
+        while(AutonomyAccumulator+1e-9>=FixedStep&&!FleetSimulation->finished()){(void)FleetSimulation->advance();AutonomyAccumulator-=FixedStep;FleetSnapshots=FleetSimulation->snapshots();}
+        if(!FleetSnapshots.empty())PlaybackSeconds=FleetSnapshots.front().autonomy.timestamp_s;
+        FleetMetricsSnapshot=FleetSimulation->result();
+        while(FleetEventCount<FleetMetricsSnapshot.events.size()){
+            const auto& Event=FleetMetricsSnapshot.events[FleetEventCount++];
+            const FString Message=FString::Printf(TEXT("%6.2f  %s  %s%s%s"),Event.time_s,
+                UTF8_TO_TCHAR(airside::autonomy::to_string(Event.kind).c_str()),
+                UTF8_TO_TCHAR(Event.vehicle.value.c_str()),
+                Event.other.value.empty()?TEXT(""):TEXT(" -> "),
+                Event.other.value.empty()?TEXT(""):UTF8_TO_TCHAR(Event.other.value.c_str()));
+            FString RecoveryDetail;
+            if(Event.kind==airside::autonomy::TrafficEventKind::RetreatStarted)
+                RecoveryDetail=FString::Printf(TEXT("  target %.1f, %.1f"),Event.target.x_m,Event.target.y_m);
+            else if(Event.kind==airside::autonomy::TrafficEventKind::RetreatProgress||Event.kind==airside::autonomy::TrafficEventKind::RetreatCompleted)
+                RecoveryDetail=FString::Printf(TEXT("  %.1f m at %.1f, %.1f"),Event.progress_m,Event.position.x_m,Event.position.y_m);
+            RecentEvents.Add(Message+TEXT("  ")+UTF8_TO_TCHAR(Event.resource.c_str())+RecoveryDetail);
+            const bool bRecoveryLifecycle = Event.kind==airside::autonomy::TrafficEventKind::RetreatSelected
+                || Event.kind==airside::autonomy::TrafficEventKind::RetreatStarted
+                || Event.kind==airside::autonomy::TrafficEventKind::RetreatCompleted
+                || Event.kind==airside::autonomy::TrafficEventKind::RetreatResourceReleased
+                || Event.kind==airside::autonomy::TrafficEventKind::MissionResumed
+                || Event.kind==airside::autonomy::TrafficEventKind::RetreatFailed;
+            RecentEventIsRecoveryLifecycle.Add(bRecoveryLifecycle);
+            if(RecentEvents.Num()>8){
+                int32 EvictIndex=RecentEventIsRecoveryLifecycle.IndexOfByKey(false);
+                if(EvictIndex==INDEX_NONE)EvictIndex=0;
+                RecentEvents.RemoveAt(EvictIndex);RecentEventIsRecoveryLifecycle.RemoveAt(EvictIndex);
+            }
+        }
+        while(FleetDispatchEventCount<FleetMetricsSnapshot.dispatch.events.size()){
+            const auto& Event=FleetMetricsSnapshot.dispatch.events[FleetDispatchEventCount++];
+            if(Event.kind!=airside::autonomy::DispatchEventKind::RequestReleased&&
+               Event.kind!=airside::autonomy::DispatchEventKind::Assigned&&
+               Event.kind!=airside::autonomy::DispatchEventKind::Reassigned&&
+               Event.kind!=airside::autonomy::DispatchEventKind::Completed&&
+               Event.kind!=airside::autonomy::DispatchEventKind::AgingApplied&&
+               Event.kind!=airside::autonomy::DispatchEventKind::Failed)continue;
+            const FString Message=FString::Printf(TEXT("%6.2f  %s  %s%s%s  priority %lld  %s"),Event.time_s,
+                UTF8_TO_TCHAR(airside::autonomy::to_string(Event.kind).c_str()),
+                UTF8_TO_TCHAR(Event.request.value.c_str()),Event.vehicle.value.empty()?TEXT(""):TEXT(" -> "),
+                UTF8_TO_TCHAR(Event.vehicle.value.c_str()),static_cast<long long>(Event.effective_priority),
+                UTF8_TO_TCHAR(Event.detail.c_str()));
+            RecentEvents.Add(Message);RecentEventIsRecoveryLifecycle.Add(true);
+            if(RecentEvents.Num()>8){int32 EvictIndex=RecentEventIsRecoveryLifecycle.IndexOfByKey(false);if(EvictIndex==INDEX_NONE)EvictIndex=0;RecentEvents.RemoveAt(EvictIndex);RecentEventIsRecoveryLifecycle.RemoveAt(EvictIndex);}
+        }
+        if(FleetSimulation->finished()){
+            bPlaying=false;
+            const auto& M=FleetMetricsSnapshot;
+            FinalResultText=FString::Printf(
+                TEXT("FLEET %llu vehicles\nMissions %llu / %llu\nWaiting %.1f s\nReservations %llu / contention %llu / outstanding %llu\nDeadlocks %llu / resolved %llu\nRecoveries %llu / retreats %llu / reroutes %llu\nCollisions %llu\nMinimum separation %.2f m"),
+                static_cast<unsigned long long>(M.vehicle_count),static_cast<unsigned long long>(M.missions_completed),
+                static_cast<unsigned long long>(M.missions_attempted),M.traffic_waiting_time_s,
+                static_cast<unsigned long long>(M.reservation_requests),static_cast<unsigned long long>(M.reservation_contentions),
+                static_cast<unsigned long long>(M.outstanding_reservations),static_cast<unsigned long long>(M.deadlock_count),
+                static_cast<unsigned long long>(M.deadlocks_resolved),static_cast<unsigned long long>(M.recovery_attempts),
+                static_cast<unsigned long long>(M.retreat_count),static_cast<unsigned long long>(M.reroutes),
+                static_cast<unsigned long long>(M.collisions),M.minimum_separation_m);
+            StatusText=TEXT("Fleet scenario finished");
+            UE_LOG(LogRampLab,Display,TEXT("Fleet runtime validation: vehicles=%llu completed=%llu/%llu timeouts=%llu waiting_s=%.2f reservations=%llu contentions=%llu outstanding=%llu deadlocks=%llu resolved=%llu recoveries=%llu retreats=%llu reroutes=%llu collisions=%llu minimum_separation_m=%.3f digest=%llu"),
+                static_cast<unsigned long long>(M.vehicle_count),static_cast<unsigned long long>(M.missions_completed),
+                static_cast<unsigned long long>(M.missions_attempted),static_cast<unsigned long long>(M.safe_timeouts),
+                M.traffic_waiting_time_s,static_cast<unsigned long long>(M.reservation_requests),
+                static_cast<unsigned long long>(M.reservation_contentions),static_cast<unsigned long long>(M.outstanding_reservations),
+                static_cast<unsigned long long>(M.deadlock_count),static_cast<unsigned long long>(M.deadlocks_resolved),
+                static_cast<unsigned long long>(M.recovery_attempts),static_cast<unsigned long long>(M.retreat_count),
+                static_cast<unsigned long long>(M.reroutes),static_cast<unsigned long long>(M.collisions),M.minimum_separation_m,
+                static_cast<unsigned long long>(M.deterministic_digest));
+            if(bGoal12RecoveryValidation||bGoal13DispatchValidation||bGoal13ReassignmentValidation)UE_LOG(LogRampLab,Display,TEXT("Recent Events panel: %s"),*FString::Join(RecentEvents,TEXT(" | ")));
+            if(bGoal13DispatchValidation||bGoal13ReassignmentValidation)UE_LOG(LogRampLab,Display,TEXT("Dispatch runtime: requests=%llu completed=%llu failed=%llu assignments=%llu reassignments=%llu aging=%llu unfinished=%llu queue_wait_avg_s=%.3f queue_wait_max_s=%.3f"),
+                static_cast<unsigned long long>(M.dispatch.requests_created),static_cast<unsigned long long>(M.dispatch.requests_completed),
+                static_cast<unsigned long long>(M.dispatch.requests_failed),static_cast<unsigned long long>(M.dispatch.assignments),
+                static_cast<unsigned long long>(M.dispatch.reassignments),static_cast<unsigned long long>(M.dispatch.aging_activations),
+                static_cast<unsigned long long>(M.dispatch.unfinished_requests),M.dispatch.average_queue_wait_s,M.dispatch.maximum_queue_wait_s);
+            if(bFleetValidation||bGoal12ClosureValidation||bGoal12RecoveryValidation||bGoal13DispatchValidation||bGoal13ReassignmentValidation)FPlatformMisc::RequestExit(false);
+        }
         return;
     }
     if (AutonomySimulation != nullptr) {
@@ -176,8 +289,130 @@ void URampLabSimulationSubsystem::Tick(float DeltaTime)
                     Aircraft.departure_delay.count() / 60.0,
                     Aircraft.service_waiting.count() / 60.0);
             }
+            if (bTurnaroundValidation) {
+                UE_LOG(LogRampLab, Display,
+                    TEXT("Turnaround runtime validation: completed=%llu/%llu failed=%llu task_reassignments=%llu fleet_reassignments=%llu service_requests=%llu/%llu/%llu collisions=%llu minimum_separation_m=%.3f reservation_requests=%llu contentions=%llu outstanding=%llu unresolved=%llu"),
+                    static_cast<unsigned long long>(Result.metrics.completed_turnarounds),
+                    static_cast<unsigned long long>(Result.metrics.total_turnarounds),
+                    static_cast<unsigned long long>(Result.metrics.failed_or_timed_out_turnarounds),
+                    static_cast<unsigned long long>(Result.metrics.task_reassignments),
+                    static_cast<unsigned long long>(Result.metrics.fleet_reassignments),
+                    static_cast<unsigned long long>(Result.metrics.fleet_requests_created),
+                    static_cast<unsigned long long>(Result.metrics.fleet_requests_completed),
+                    static_cast<unsigned long long>(Result.metrics.fleet_requests_failed),
+                    static_cast<unsigned long long>(Result.metrics.fleet_collisions), Result.metrics.fleet_minimum_separation_m,
+                    static_cast<unsigned long long>(Result.metrics.fleet_reservation_requests),
+                    static_cast<unsigned long long>(Result.metrics.fleet_reservation_contentions),
+                    static_cast<unsigned long long>(Result.metrics.fleet_outstanding_reservations),
+                    static_cast<unsigned long long>(Result.metrics.unresolved_service_requests));
+                const auto OutageEvent = std::ranges::find_if(Result.events, [](const auto& Event) {
+                    return Event.type == airside::SimulationEventType::TurnaroundVehicleUnavailable;
+                });
+                const auto ReassignmentEvent = std::ranges::find_if(Result.events, [](const auto& Event) {
+                    return Event.type == airside::SimulationEventType::TurnaroundTaskReassigned;
+                });
+                if (OutageEvent != Result.events.end()) {
+                    UE_LOG(LogRampLab, Display, TEXT("Turnaround outage observed: time=%lld vehicle=%u task=%u"),
+                        OutageEvent->timestamp.count(), OutageEvent->vehicle ? OutageEvent->vehicle->value() : 0,
+                        OutageEvent->task ? OutageEvent->task->value() : 0);
+                }
+                if (ReassignmentEvent != Result.events.end()) {
+                    UE_LOG(LogRampLab, Display, TEXT("Turnaround reassignment observed: time=%lld replacement_vehicle=%u task=%u"),
+                        ReassignmentEvent->timestamp.count(), ReassignmentEvent->vehicle ? ReassignmentEvent->vehicle->value() : 0,
+                        ReassignmentEvent->task ? ReassignmentEvent->task->value() : 0);
+                }
+                const auto TaskCompletions = std::ranges::count_if(Result.events, [](const auto& Event) {
+                    return Event.type == airside::SimulationEventType::TurnaroundTaskCompleted;
+                });
+                const auto Departures = std::ranges::count_if(Result.events, [](const auto& Event) {
+                    return Event.type == airside::SimulationEventType::AircraftDeparted;
+                });
+                UE_LOG(LogRampLab, Display,
+                    TEXT("Turnaround event totals: task_completions=%llu departures=%llu outage_observed=%d reassignment_observed=%d"),
+                    static_cast<unsigned long long>(TaskCompletions), static_cast<unsigned long long>(Departures),
+                    OutageEvent != Result.events.end(), ReassignmentEvent != Result.events.end());
+                UE_LOG(LogRampLab, Display, TEXT("Turnaround Recent Events panel: %s"), *FString::Join(RecentEvents, TEXT(" | ")));
+            }
+            if (bGoal18Validation) {
+                const std::array LifecycleTypes{
+                    airside::SimulationEventType::ArrivalTaxiInStarted,
+                    airside::SimulationEventType::ArrivalAtGate,
+                    airside::SimulationEventType::TurnaroundStarted,
+                    airside::SimulationEventType::TurnaroundReadyForDeparture,
+                    airside::SimulationEventType::PushbackTaxiOutStarted,
+                    airside::SimulationEventType::SurfaceRunwayQueueEntered,
+                    airside::SimulationEventType::AircraftDeparted};
+                std::size_t CompletedLifecycleAircraft = 0;
+                for (const auto& Aircraft : Result.aircraft) {
+                    if (Aircraft.operation_type() != airside::AircraftOperationType::ArrivalTurnaround) continue;
+                    auto EventCursor = Result.events.begin();
+                    bool bCompleteLifecycle = true;
+                    for (const auto Type : LifecycleTypes) {
+                        EventCursor = std::ranges::find_if(EventCursor, Result.events.end(), [&](const auto& Event) {
+                            return Event.type == Type && Event.aircraft == Aircraft.id();
+                        });
+                        if (EventCursor == Result.events.end()) { bCompleteLifecycle = false; break; }
+                        UE_LOG(LogRampLab, Display,
+                            TEXT("Goal 18 lifecycle: aircraft=%u sequence=%llu time=%lld type=%s"),
+                            Aircraft.id().value(), static_cast<unsigned long long>(EventCursor->sequence),
+                            EventCursor->timestamp.count(), UTF8_TO_TCHAR(airside::to_string(Type).data()));
+                        ++EventCursor;
+                    }
+                    if (bCompleteLifecycle && Aircraft.actual_departure()) ++CompletedLifecycleAircraft;
+                }
+                UE_LOG(LogRampLab, Display,
+                    TEXT("Goal 18 lifecycle validation: completed=%llu/%llu arrivals=%llu departures=%llu collisions=%llu minimum_separation_m=%.3f"),
+                    static_cast<unsigned long long>(CompletedLifecycleAircraft),
+                    static_cast<unsigned long long>(std::ranges::count_if(Result.aircraft, [](const auto& Aircraft) {
+                        return Aircraft.operation_type() == airside::AircraftOperationType::ArrivalTurnaround;
+                    })),
+                    static_cast<unsigned long long>(Result.metrics.surface_arrived_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_departed_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_aircraft_collisions +
+                        Result.metrics.surface_aircraft_ground_collisions), Result.metrics.minimum_aircraft_separation_m);
+            }
             bCompletionReported = true;
             FinalResultText = FormatResult(ScenarioName.ToUpper(), Result);
+            if (Result.metrics.surface_total_aircraft > 0) {
+                UE_LOG(LogRampLab, Display,
+                    TEXT("Surface runtime validation: arrivals=%llu departures=%llu/%llu runway_operations=%llu queue_max=%llu arrival_wait_s=%lld departure_wait_s=%lld occupied_s=%lld utilization=%.3f arrival_taxi_s=%lld arrival_taxi_m=%.1f departure_taxi_s=%lld departure_taxi_m=%.1f throughput_per_hour=%.3f reroutes=%llu waits=%llu wait_seconds=%lld taxi_seconds=%lld taxi_distance_m=%.1f runway_queue_seconds=%lld safe_failures=%llu aircraft_collisions=%llu aircraft_ground_collisions=%llu minimum_aircraft_separation_m=%.3f minimum_aircraft_ground_separation_m=%.3f"),
+                    static_cast<unsigned long long>(Result.metrics.surface_arrived_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_departed_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_total_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.runway_operations_completed),
+                    static_cast<unsigned long long>(Result.metrics.maximum_runway_queue_depth),
+                    static_cast<long long>(Result.metrics.arrival_runway_wait_seconds),
+                    static_cast<long long>(Result.metrics.departure_runway_wait_seconds),
+                    static_cast<long long>(Result.metrics.runway_occupied_seconds), Result.metrics.runway_utilization,
+                    static_cast<long long>(Result.metrics.arrival_taxi_seconds), Result.metrics.arrival_taxi_distance_m,
+                    static_cast<long long>(Result.metrics.departure_taxi_seconds), Result.metrics.departure_taxi_distance_m,
+                    Result.metrics.surface_departure_throughput_per_hour,
+                    static_cast<unsigned long long>(Result.metrics.surface_reroutes),
+                    static_cast<unsigned long long>(Result.metrics.surface_wait_events),
+                    static_cast<long long>(Result.metrics.surface_wait_seconds),
+                    static_cast<long long>(Result.metrics.surface_taxi_seconds), Result.metrics.surface_taxi_distance_m,
+                    static_cast<long long>(Result.metrics.runway_queue_seconds),
+                    static_cast<unsigned long long>(Result.metrics.surface_safe_failures),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_aircraft_collisions),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_ground_collisions),
+                    Result.metrics.minimum_aircraft_separation_m,
+                    Result.metrics.minimum_aircraft_ground_separation_m);
+                FinalResultText += FString::Printf(
+                    TEXT("\n\nSURFACE OPERATIONS\nDeparted  %llu / %llu\nThroughput  %.2f departures/hour\nReroutes  %llu\nTraffic waits  %llu  /  %lld s\nTaxi  %lld s  /  %.1f m\nRunway queue  %lld s\nSafe failures  %llu\nAircraft collisions  %llu\nAircraft / vehicle collisions  %llu\nMinimum aircraft separation  %.2f m\nMinimum aircraft / vehicle separation  %.2f m"),
+                    static_cast<unsigned long long>(Result.metrics.surface_departed_aircraft),
+                    static_cast<unsigned long long>(Result.metrics.surface_total_aircraft),
+                    Result.metrics.surface_departure_throughput_per_hour,
+                    static_cast<unsigned long long>(Result.metrics.surface_reroutes),
+                    static_cast<unsigned long long>(Result.metrics.surface_wait_events),
+                    static_cast<long long>(Result.metrics.surface_wait_seconds),
+                    static_cast<long long>(Result.metrics.surface_taxi_seconds), Result.metrics.surface_taxi_distance_m,
+                    static_cast<long long>(Result.metrics.runway_queue_seconds),
+                    static_cast<unsigned long long>(Result.metrics.surface_safe_failures),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_aircraft_collisions),
+                    static_cast<unsigned long long>(Result.metrics.surface_aircraft_ground_collisions),
+                    Result.metrics.minimum_aircraft_separation_m,
+                    Result.metrics.minimum_aircraft_ground_separation_m);
+            }
         }
     }
 }
@@ -197,8 +432,12 @@ void URampLabSimulationSubsystem::on_event(const airside::SimulationEventRecord&
     try {
         const FString Message = UTF8_TO_TCHAR(airside::format_event(Event).c_str());
         RecentEvents.Add(Message);
+        RecentEventIsRecoveryLifecycle.Add(false);
         constexpr int32 MaxEvents = 8;
-        if (RecentEvents.Num() > MaxEvents) RecentEvents.RemoveAt(0, RecentEvents.Num() - MaxEvents);
+        if (RecentEvents.Num() > MaxEvents) {
+            RecentEvents.RemoveAt(0, RecentEvents.Num() - MaxEvents);
+            RecentEventIsRecoveryLifecycle.RemoveAt(0, RecentEventIsRecoveryLifecycle.Num() - MaxEvents);
+        }
         UE_LOG(LogRampLab, Log, TEXT("%s"), *Message);
     } catch (...) {
         UE_LOG(LogRampLab, Warning, TEXT("Failed to format simulation event %llu"), Event.sequence);
@@ -207,6 +446,7 @@ void URampLabSimulationSubsystem::on_event(const airside::SimulationEventRecord&
 
 void URampLabSimulationSubsystem::TogglePlaying()
 {
+    if (FleetSimulation != nullptr && !FleetSimulation->finished()) { bPlaying = !bPlaying; return; }
     if (AutonomySimulation != nullptr && !AutonomySimulation->finished()) { bPlaying = !bPlaying; return; }
     if (Simulation != nullptr && !Simulation->finished()) bPlaying = !bPlaying;
 }
@@ -218,7 +458,13 @@ void URampLabSimulationSubsystem::ResetSimulation()
 
 void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
 {
-    if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity") && ScenarioKey != TEXT("autonomy_tug")) return;
+    if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity") &&
+        ScenarioKey != TEXT("autonomy_tug") && ScenarioKey != TEXT("autonomy_sensor_validation") &&
+        ScenarioKey != TEXT("turnaround_normal") && ScenarioKey != TEXT("turnaround_contention") &&
+        ScenarioKey != TEXT("turnaround_disrupted") && ScenarioKey != TEXT("turnaround_flight_bank") &&
+        ScenarioKey != TEXT("turnaround_flight_bank_disrupted") &&
+        ScenarioKey != TEXT("mixed_runway_operations") && ScenarioKey != TEXT("mixed_runway_disrupted") &&
+        ScenarioKey != TEXT("turnaround_lifecycle") && ScenarioKey != TEXT("turnaround_lifecycle_disrupted")) return;
     SelectedScenarioKey = ScenarioKey;
     LoadSelectedScenario();
 }
@@ -274,6 +520,7 @@ void URampLabSimulationSubsystem::AttachControlPanel()
 
 bool URampLabSimulationSubsystem::IsFinished() const noexcept
 {
+    if (FleetSimulation != nullptr) return FleetSimulation->finished();
     if (AutonomySimulation != nullptr) return AutonomySimulation->finished();
     return Simulation != nullptr && Simulation->finished();
 }
@@ -293,10 +540,18 @@ const airside::autonomy::AutonomySnapshot* URampLabSimulationSubsystem::GetAuton
     return AutonomySnapshot.IsSet() ? &AutonomySnapshot.GetValue() : nullptr;
 }
 
+const airside::autonomy::AutonomyScenario* URampLabSimulationSubsystem::GetAutonomyScenario() const noexcept
+{
+    return AutonomySimulation == nullptr ? nullptr : &AutonomySimulation->scenario();
+}
+
 bool URampLabSimulationSubsystem::LoadSelectedScenario()
 {
     try {
         AutonomySimulation.Reset();
+        FleetSimulation.Reset(); FleetSnapshots.clear();
+        FleetMetricsSnapshot={};FleetEventCount=0;FleetDispatchEventCount=0;
+        RecentEventIsRecoveryLifecycle.Reset();
         AutonomyController.Reset();
         AutonomySnapshot.Reset();
         AutonomyAccumulator = 0.0;
@@ -307,7 +562,7 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
             return false;
         }
 
-        if (SelectedScenarioKey == TEXT("autonomy_tug")) {
+        if (SelectedScenarioKey == TEXT("autonomy_tug") || SelectedScenarioKey == TEXT("autonomy_sensor_validation")) {
             auto Scenario = airside::autonomy::load_scenario(std::filesystem::path{*Path});
             ScenarioName = UTF8_TO_TCHAR(Scenario.name.c_str());
             Seed = Scenario.default_seed;
@@ -318,15 +573,18 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
             AutonomySimulation = MakeUnique<airside::autonomy::AutonomySimulation>(std::move(Scenario), Seed);
             AutonomyController = MakeUnique<airside::autonomy::ReferenceController>(SafetyRange);
             AutonomySnapshot = AutonomySimulation->snapshot();
-            RecentEvents.Reset(); PlaybackSeconds = 0.0; bPlaying = true; bCompletionReported = false;
+            RecentEvents.Reset();RecentEventIsRecoveryLifecycle.Reset(); PlaybackSeconds = 0.0; bPlaying = true; bCompletionReported = false;
             FinalResultText.Reset(); StatusText = FString::Printf(TEXT("Loaded A* Depot to Gate A2 autonomy mission with seed %llu"), Seed);
             UE_LOG(LogRampLab, Display, TEXT("%s"), *StatusText);
             return true;
         }
+        if(SelectedScenarioKey==TEXT("autonomy_fleet")||SelectedScenarioKey==TEXT("autonomy_fleet_fault")||SelectedScenarioKey==TEXT("autonomy_fleet_dynamic_closure")||SelectedScenarioKey==TEXT("autonomy_fleet_deadlock")||SelectedScenarioKey==TEXT("autonomy_dispatch_dynamic")||SelectedScenarioKey==TEXT("autonomy_dispatch_fairness")||SelectedScenarioKey==TEXT("autonomy_dispatch_reassignment")){
+            auto Fleet=airside::autonomy::load_fleet_scenario(std::filesystem::path{*Path});ScenarioName=UTF8_TO_TCHAR(Fleet.name.c_str());Seed=Fleet.default_seed;auto Airport=Fleet.vehicle_scenario.airport;Simulation=MakeUnique<airside::Simulation>(std::move(Airport),Seed);ReconcileSnapshot();FleetSimulation=MakeUnique<airside::autonomy::FleetSimulation>(std::move(Fleet),Seed);FleetSnapshots=FleetSimulation->snapshots();FleetMetricsSnapshot=FleetSimulation->result();FleetEventCount=0;FleetDispatchEventCount=0;RecentEvents.Reset();RecentEventIsRecoveryLifecycle.Reset();PlaybackSeconds=0.0;bPlaying=true;bCompletionReported=false;FinalResultText.Reset();StatusText=FString::Printf(TEXT("Loaded %llu-vehicle deterministic fleet seed %llu"),static_cast<unsigned long long>(FleetSnapshots.size()),Seed);UE_LOG(LogRampLab,Display,TEXT("%s"),*StatusText);return true;
+        }
         auto Scenario = airside::load_scenario(std::filesystem::path{*Path});
         ScenarioName = UTF8_TO_TCHAR(Scenario.name.c_str());
         Seed = airside::resolve_seed(Scenario, std::nullopt);
-        RecentEvents.Reset();
+        RecentEvents.Reset();RecentEventIsRecoveryLifecycle.Reset();
         PlaybackSeconds = 0.0;
         bPlaying = true;
         bCompletionReported = false;
@@ -350,6 +608,7 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
         Simulation.Reset();
         Snapshot.Reset();
         AutonomySimulation.Reset();
+        FleetSimulation.Reset(); FleetSnapshots.clear();
         AutonomyController.Reset();
         AutonomySnapshot.Reset();
         StatusText = FString::Printf(TEXT("RampLab initialization failed: %s"), UTF8_TO_TCHAR(Error.what()));
@@ -423,7 +682,8 @@ FString URampLabSimulationSubsystem::GetSelectedEntityText() const
                     Route += Node == Value.road_nodes.end() ? TEXT("?") : UTF8_TO_TCHAR(Node->name.c_str());
                 }
             } else {
-                Route += TEXT("At depot");
+                Route += Match->fleet_status.empty()
+                    ? TEXT("At depot") : UTF8_TO_TCHAR(Match->fleet_status.c_str());
             }
             FString Assignment(TEXT("Unassigned"));
             if (Match->assigned_aircraft) {
@@ -433,7 +693,8 @@ FString URampLabSimulationSubsystem::GetSelectedEntityText() const
             return FString::Printf(TEXT("%s\n%s vehicle\n%s\nAssigned: %s\n%s"),
                 UTF8_TO_TCHAR(Match->name.c_str()),
                 Match->type == airside::ServiceType::Fueling ? TEXT("Fuel") : TEXT("Baggage"),
-                *VehicleStateText(Match->state), *Assignment, *Route);
+                Match->fleet_status.empty() ? *VehicleStateText(Match->state) : UTF8_TO_TCHAR(Match->fleet_status.c_str()),
+                *Assignment, *Route);
         }
     } else if (SelectedEntityKind == TEXT("gate")) {
         const auto Match = std::ranges::find(Value.gates, SelectedEntityId, [](const auto& Item) { return Item.id.value(); });

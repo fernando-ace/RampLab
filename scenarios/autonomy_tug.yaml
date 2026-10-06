@@ -37,6 +37,27 @@ sensors:
   lidar_min_range_m: 0.1
   lidar_max_range_m: 30.0
   lidar_sigma_m: 0.01
+estimator:
+  enabled: true
+  initial_position_variance_m2: 4.0
+  initial_heading_variance_rad2: 0.04
+  initial_speed_variance_m2ps2: 1.0
+  position_process_noise_m2ps: 0.04
+  heading_process_noise_rad2ps: 0.0025
+  speed_process_noise_m2ps3: 0.16
+  gnss_sigma_m: 0.5
+  imu_heading_sigma_rad: 0.02
+  imu_yaw_rate_sigma_radps: 0.02
+  odometry_speed_sigma_mps: 0.1
+  odometry_heading_sigma_rad: 0.05
+  gnss_nis_gate: 9.210340371976184
+  maximum_measurement_age_s: 0.5
+  degraded_position_sigma_m: 3.0
+  unsafe_position_sigma_m: 8.0
+  degraded_heading_sigma_rad: 0.5
+  unsafe_heading_sigma_rad: 1.2
+  unsafe_without_gnss_s: 6.0
+  unobserved_stop_deceleration_mps2: 1.5
 obstacles:
   - { id: parked_tug, x_m: 60.0, y_m: 48.0, radius_m: 1.0 }
   - { id: barricade, x_m: 190.0, y_m: 43.0, radius_m: 1.2 }

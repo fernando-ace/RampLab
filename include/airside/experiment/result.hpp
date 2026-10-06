@@ -9,11 +9,30 @@
 
 namespace airside::experiment {
 
+struct TaskRunMetrics {
+    std::uint32_t task_id{0};
+    std::string service_type;
+    std::string state;
+    std::int64_t requested_at_seconds{-1};
+    std::int64_t started_at_seconds{-1};
+    std::int64_t completed_at_seconds{-1};
+    std::int64_t waiting_seconds{0};
+    std::string required_resource;
+    std::string assigned_resource;
+    constexpr auto operator<=>(const TaskRunMetrics&) const = default;
+};
+
 struct AircraftRunMetrics {
     std::string flight_number;
     double turnaround_seconds{0.0};
     double departure_delay_seconds{0.0};
     double service_waiting_seconds{0.0};
+    std::string turnaround_id;
+    double estimated_ready_time_seconds{0.0};
+    double actual_completion_time_seconds{0.0};
+    double schedule_slack_seconds{0.0};
+    std::string critical_path_task_ids;
+    std::vector<TaskRunMetrics> tasks;
 
     constexpr auto operator<=>(const AircraftRunMetrics&) const = default;
 };
@@ -35,6 +54,60 @@ struct RunResult {
     std::size_t aircraft_count{0};
     double fuel_utilization{0.0};
     double baggage_utilization{0.0};
+    std::size_t total_turnarounds{0};
+    std::size_t completed_turnarounds{0};
+    std::size_t delayed_turnarounds{0};
+    std::size_t failed_or_timed_out_turnarounds{0};
+    double maximum_turnaround_seconds{0.0};
+    double maximum_departure_delay_seconds{0.0};
+    std::size_t on_time_departures{0};
+    double on_time_departure_rate{0.0};
+    double total_service_task_wait_seconds{0.0};
+    double maximum_service_task_wait_seconds{0.0};
+    std::size_t task_reassignments{0};
+    std::size_t disruption_triggered_replans{0};
+    std::size_t unresolved_service_requests{0};
+    std::size_t fleet_collisions{0};
+    double fleet_minimum_separation_m{0.0};
+    std::size_t fleet_reservation_requests{0};
+    std::size_t fleet_reservation_contentions{0};
+    std::size_t fleet_outstanding_reservations{0};
+    std::size_t fleet_unfinished_requests{0};
+    std::size_t fleet_reassignments{0};
+    std::size_t fleet_requests_created{0};
+    std::size_t fleet_requests_completed{0};
+    std::size_t fleet_requests_failed{0};
+    std::size_t surface_departed_aircraft{0};
+    std::size_t surface_arrived_aircraft{0};
+    std::size_t gate_assignments{0};
+    double gate_wait_seconds{0.0};
+    double gate_occupancy_seconds{0.0};
+    double arrival_to_departure_seconds{0.0};
+    std::size_t surface_total_aircraft{0};
+    std::size_t runway_operations_completed{0};
+    std::size_t maximum_runway_queue_depth{0};
+    double arrival_runway_wait_seconds{0.0};
+    double departure_runway_wait_seconds{0.0};
+    double average_runway_wait_seconds{0.0};
+    double runway_utilization{0.0};
+    double arrival_taxi_distance_m{0.0};
+    double departure_taxi_distance_m{0.0};
+    double arrival_taxi_seconds{0.0};
+    double departure_taxi_seconds{0.0};
+    double surface_departure_throughput_per_hour{0.0};
+    std::size_t surface_reroutes{0};
+    std::size_t surface_wait_events{0};
+    double surface_wait_seconds{0.0};
+    double surface_taxi_distance_m{0.0};
+    double surface_taxi_seconds{0.0};
+    double runway_queue_seconds{0.0};
+    std::size_t surface_safe_failures{0};
+    std::size_t max_simultaneous_taxiing_aircraft{0};
+    std::size_t surface_aircraft_aircraft_collisions{0};
+    std::size_t surface_aircraft_ground_collisions{0};
+    double minimum_aircraft_separation_m{0.0};
+    double minimum_aircraft_ground_separation_m{0.0};
+    std::vector<std::pair<std::string, double>> resource_utilization;
     std::vector<AircraftRunMetrics> aircraft;
 };
 

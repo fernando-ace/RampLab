@@ -1,0 +1,68 @@
+name: goal10_sensor_validation
+default_seed: 42
+map_scenario: baseline.yaml
+mission:
+  start_node: Service Depot
+  goal_node: Gate A2
+vehicle:
+  x_m: 0.0
+  y_m: 0.0
+  heading_rad: 0.7853981633974483
+simulation:
+  timestep_s: 0.02
+  timeout_s: 20.0
+  goal_tolerance_m: 2.0
+  stopped_speed_mps: 0.15
+  safety_stop_range_m: 2.2
+sensors:
+  gnss_hz: 10.0
+  gnss_sigma_m: 0.5
+  gnss_latency_s: 0.04
+  gnss_jitter_s: 0.005
+  gnss_packet_loss_probability: 0.01
+  gnss_stale_after_s: 0.5
+  gnss_extrinsic_x_m: 0.0
+  gnss_extrinsic_y_m: 0.0
+  gnss_extrinsic_z_m: 0.20
+  gnss_extrinsic_yaw_rad: 0.0
+  imu_hz: 50.0
+  imu_latency_s: 0.01
+  imu_jitter_s: 0.002
+  imu_packet_loss_probability: 0.0
+  imu_stale_after_s: 0.1
+  imu_extrinsic_x_m: 0.0
+  imu_extrinsic_y_m: 0.0
+  imu_extrinsic_z_m: 0.0
+  imu_extrinsic_yaw_rad: 0.0
+  odometry_hz: 50.0
+  odometry_latency_s: 0.01
+  odometry_jitter_s: 0.002
+  odometry_extrinsic_x_m: 0.0
+  odometry_extrinsic_y_m: 0.0
+  odometry_extrinsic_z_m: 0.0
+  odometry_extrinsic_yaw_rad: 0.0
+  lidar_hz: 10.0
+  lidar_fov_deg: 180.0
+  lidar_beams: 181
+  lidar_min_range_m: 0.1
+  lidar_max_range_m: 30.0
+  lidar_sigma_m: 0.01
+  lidar_latency_s: 0.05
+  lidar_jitter_s: 0.005
+  lidar_stale_after_s: 0.5
+  lidar_extrinsic_x_m: 3.40
+  lidar_extrinsic_y_m: 0.0
+  lidar_extrinsic_z_m: -0.30
+  lidar_extrinsic_yaw_rad: 0.0
+  camera_hz: 20.0
+  camera_latency_s: 0.0
+  camera_phase_s: 0.0
+  camera_jitter_s: 0.0
+  camera_packet_loss_probability: 0.0
+  camera_stale_after_s: 0.5
+  camera_extrinsic_x_m: 3.40
+  camera_extrinsic_y_m: 0.0
+  camera_extrinsic_z_m: 0.0
+  camera_extrinsic_yaw_rad: 0.0
+obstacles:
+  - {id: validation_cart, x_m: 60.0, y_m: 48.0, radius_m: 1.0}

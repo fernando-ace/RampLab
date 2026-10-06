@@ -1,0 +1,12 @@
+name: mixed_runway_operations_validation
+scenario: ../scenarios/mixed_runway_operations.yaml
+
+seeds:
+  values: [42, 43, 44]
+
+parameters: {}
+
+workers: 3
+
+outputs:
+  directory: ../results/mixed_runway_operations_validation

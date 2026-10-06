@@ -1,0 +1,14 @@
+name: turnaround_goal15
+scenario: ../scenarios/turnaround_flight_bank_outage.yaml
+
+seeds:
+  start: 42
+  count: 3
+
+parameters:
+  fleet.fuel_trucks: [1]
+
+workers: auto
+
+outputs:
+  directory: ../results/goal15/experiment

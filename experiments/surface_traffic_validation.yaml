@@ -1,0 +1,12 @@
+name: surface_traffic_validation
+scenario: ../scenarios/surface_traffic.yaml
+
+seeds:
+  values: [42, 43, 44]
+
+parameters: {}
+
+workers: 3
+
+outputs:
+  directory: ../results/surface_traffic_validation

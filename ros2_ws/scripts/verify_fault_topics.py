@@ -17,6 +17,9 @@ from rosgraph_msgs.msg import Clock
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 from sensor_msgs.msg import LaserScan, NavSatFix
+from std_msgs.msg import UInt8
+from std_msgs.msg import Float64MultiArray
+from tf2_msgs.msg import TFMessage
 
 
 def seconds(stamp: Time) -> float:
@@ -28,6 +31,8 @@ class Probe(Node):
         super().__init__("ramplab_fault_topic_probe")
         sensor_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
         reliable_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE)
+        static_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE,
+                                durability=DurabilityPolicy.TRANSIENT_LOCAL)
         command_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT,
                                  durability=DurabilityPolicy.VOLATILE)
         self.sim_time = 0.0
@@ -35,6 +40,12 @@ class Probe(Node):
         self.gnss = []
         self.scans = []
         self.odometry = []
+        self.filtered_odometry = []
+        self.estimator_health = []
+        self.estimator_diagnostics = []
+        self.dynamic_tf = set()
+        self.static_tf = set()
+        self.dynamic_tf_publishers = set()
         self.commands = []
         self.expected_speeds = []
         self.expected_speed = 0.0
@@ -43,6 +54,11 @@ class Probe(Node):
         self.create_subscription(NavSatFix, "/ramplab/tug1/gnss", self.on_gnss, sensor_qos)
         self.create_subscription(LaserScan, "/ramplab/tug1/scan", self.on_scan, sensor_qos)
         self.create_subscription(Odometry, "/ramplab/tug1/odom", self.on_odom, sensor_qos)
+        self.create_subscription(Odometry, "/ramplab/tug1/filtered_odom", self.on_filtered_odom, sensor_qos)
+        self.create_subscription(UInt8, "/ramplab/tug1/estimator_health", self.on_estimator_health, sensor_qos)
+        self.create_subscription(Float64MultiArray, "/ramplab/tug1/estimator_diagnostics", self.on_estimator_diagnostics, sensor_qos)
+        self.create_subscription(TFMessage, "/tf", self.on_tf, sensor_qos)
+        self.create_subscription(TFMessage, "/tf_static", self.on_static_tf, static_qos)
         self.create_subscription(Twist, "/ramplab/tug1/cmd_vel", self.on_command, command_qos)
 
     def on_clock(self, msg):
@@ -58,6 +74,24 @@ class Probe(Node):
     def on_odom(self, msg):
         self.odometry.append((seconds(msg.header.stamp), float(msg.pose.pose.position.x),
                               float(msg.pose.pose.position.y), float(msg.twist.twist.linear.x)))
+
+    def on_filtered_odom(self, msg):
+        self.filtered_odometry.append((seconds(msg.header.stamp), float(msg.pose.covariance[0]),
+                                       float(msg.pose.covariance[7]), float(msg.pose.covariance[35]),
+                                       float(msg.pose.pose.position.x), float(msg.pose.pose.position.y)))
+
+    def on_estimator_health(self, msg):
+        self.estimator_health.append((self.sim_time, int(msg.data)))
+
+    def on_estimator_diagnostics(self, msg):
+        if len(msg.data) >= 8:
+            self.estimator_diagnostics.append((self.sim_time, *map(float, msg.data[:18])))
+
+    def on_tf(self, msg):
+        self.dynamic_tf.update((tf.header.frame_id, tf.child_frame_id) for tf in msg.transforms)
+
+    def on_static_tf(self, msg):
+        self.static_tf.update((tf.header.frame_id, tf.child_frame_id) for tf in msg.transforms)
 
     def on_command(self, msg):
         now = self.sim_time
@@ -99,6 +133,10 @@ def main():
     parser.add_argument("--fault-seed", type=int, default=7019)
     parser.add_argument("--factor", type=float, default=1.0)
     parser.add_argument("--max-sim-seconds", type=float, default=34.0)
+    parser.add_argument("--clean-mission", action="store_true",
+                        help="verify a clean external-controller mission through completion")
+    parser.add_argument("--goal9", action="store_true",
+                        help="verify wheel degradation and safe GNSS reacquisition")
     parser.add_argument("--kill-controller-at", type=float,
                         help="stop the separate controller at this simulation time to verify the bridge watchdog")
     args = parser.parse_args()
@@ -125,6 +163,9 @@ def main():
         deadline = time.monotonic() + max(45.0, args.max_sim_seconds / args.factor * 3.0)
         while bridge.poll() is None and time.monotonic() < deadline:
             rclpy.spin_once(probe, timeout_sec=0.05)
+            probe.dynamic_tf_publishers.update(
+                endpoint.node_name for endpoint in probe.get_publishers_info_by_topic("/tf")
+                if endpoint.node_name != "_NODE_NAME_UNKNOWN_")
             if args.kill_controller_at is not None and not controller_killed and probe.sim_time >= args.kill_controller_at:
                 terminate_process_tree(controller)
                 controller_killed = True
@@ -157,7 +198,59 @@ def main():
         require(controller.poll() is None, "external ROS controller unexpectedly exited")
         require(len(probe.clock) > 100, "too few /clock messages received")
         require(all(a < b for a, b in zip(probe.clock, probe.clock[1:])), "/clock did not increase strictly")
-        require(max(probe.clock) >= args.max_sim_seconds - 0.05, "simulation clock did not reach requested limit")
+        if not args.clean_mission:
+            require(max(probe.clock) >= args.max_sim_seconds - 0.05, "simulation clock did not reach requested limit")
+        require(len(probe.filtered_odometry) > 100, "filtered odometry was not published")
+        require(all(a[0] < b[0] for a, b in zip(probe.filtered_odometry, probe.filtered_odometry[1:])),
+                "filtered odometry stamps did not increase monotonically")
+        require(any(x >= 0.0 and y >= 0.0 and yaw >= 0.0
+                    for _, x, y, yaw, _, _ in probe.filtered_odometry),
+                "filtered odometry covariance is missing or invalid")
+        if args.clean_mission:
+            require("Result: SUCCESS" in bridge_output and "Collisions: 0" in bridge_output,
+                    f"clean external mission did not complete safely:\n{bridge_output}")
+            require(not any("ground_truth" in name or "groundtruth" in name for name, _ in probe.get_topic_names_and_types()),
+                    "a ground-truth topic was visible in the ROS graph")
+            require(("odom", "base_link") in probe.dynamic_tf,
+                    "filtered odometry did not own the dynamic odom -> base_link transform")
+            require(("map", "odom") in probe.static_tf and ("base_link", "imu") in probe.static_tf and
+                    ("base_link", "lidar") in probe.static_tf,
+                    "static TF ownership is missing map/odom or sensor transforms")
+            require(len(probe.dynamic_tf_publishers) == 1,
+                    f"expected one dynamic TF publisher, got {sorted(probe.dynamic_tf_publishers)}")
+            print(f"ROS clean mission PASS: completion, collisions=0, filtered odometry={len(probe.filtered_odometry)}, "
+                  f"/clock={max(probe.clock):.3f} sim s, TF owner={sorted(probe.dynamic_tf_publishers)}")
+            print("Bridge summary:\n" + bridge_output.strip())
+            return
+        require(probe.estimator_diagnostics and all(len(sample) == 19 for sample in probe.estimator_diagnostics),
+                "estimator diagnostics did not publish the 18-value Goal 9 contract")
+        if args.goal9:
+            diagnostics = probe.estimator_diagnostics
+            require(any(sample[9] == 2.0 for sample in diagnostics), "wheel health never reached degraded")
+            require(any(sample[13] > 0 for sample in diagnostics), "GNSS reacquisition was never attempted")
+            require(any(sample[14] > 0 for sample in diagnostics), "GNSS reacquisition was never confirmed")
+            require(any(code >= 3 for _, code in probe.estimator_health),
+                    "controller never received unsafe localization health during recovery")
+            require("Collisions: 0" in bridge_output, "Goal 9 ROS fault probe collided")
+            require(not any(10.0 <= stamp < 22.0 for stamp in probe.gnss),
+                    "GNSS dropout interval unexpectedly published a fix")
+            require(not any("ground_truth" in name or "groundtruth" in name for name, _ in probe.get_topic_names_and_types()),
+                    "a ground-truth topic was visible in the ROS graph")
+            require(("odom", "base_link") in probe.dynamic_tf and len(probe.dynamic_tf_publishers) == 1,
+                    "bridge did not remain sole dynamic TF publisher")
+            print(f"ROS Goal 9 fault probe PASS: wheel health={int(max(s[9] for s in diagnostics))}, "
+                  f"GNSS reacquisitions={int(max(s[14] for s in diagnostics))}, "
+                  f"filtered odometry={len(probe.filtered_odometry)}, zero collisions in bridge observation")
+            print("Bridge summary:\n" + bridge_output.strip())
+            return
+        require(probe.estimator_health and any(code == 2 for _, code in probe.estimator_health),
+                "estimator did not report degraded health during injected faults")
+        before_loss = [v[1] for v in probe.estimator_diagnostics if 4.0 <= v[0] < 4.8]
+        during_loss = [v[1] for v in probe.estimator_diagnostics if 7.0 <= v[0] < 7.8]
+        require(before_loss and during_loss and statistics.median(during_loss) > statistics.median(before_loss),
+                "reported position covariance did not grow during GNSS loss")
+        require(any(v[7] > 0 for v in probe.estimator_diagnostics if 14.0 <= v[0] < 18.0),
+                "biased GNSS measurements did not trigger innovation rejection")
         require(not any(5.0 <= stamp < 8.0 for stamp in probe.gnss), "GNSS dropout interval published a fix")
         degraded_scans = [r for stamp, r in probe.scans if 8.0 <= stamp < 11.0]
         require(degraded_scans and all(abs(r - 12.0) < 0.02 for r in degraded_scans),
@@ -187,7 +280,19 @@ def main():
         topics = {name for name, _ in probe.get_topic_names_and_types()}
         require(not any("ground_truth" in name or "groundtruth" in name for name in topics),
                 "a ground-truth topic was visible in the ROS graph")
+        require(("odom", "base_link") in probe.dynamic_tf,
+                "filtered odometry did not own the dynamic odom -> base_link transform")
+        require(("map", "odom") in probe.static_tf and ("base_link", "imu") in probe.static_tf and
+                ("base_link", "lidar") in probe.static_tf,
+                "static TF ownership is missing map/odom or sensor transforms")
+        require(len(probe.dynamic_tf_publishers) == 1,
+                f"expected one dynamic TF publisher, got {sorted(probe.dynamic_tf_publishers)}")
         print(f"ROS fault validation PASS: /clock {min(probe.clock):.3f}..{max(probe.clock):.3f} sim s; "
+              f"filtered odometry={len(probe.filtered_odometry)} samples, health states="
+              f"{sorted(set(code for _, code in probe.estimator_health))}, "
+              f"covariance growth={statistics.median(before_loss):.3f}->{statistics.median(during_loss):.3f}, "
+              f"GNSS gates={max((int(v[7]) for v in probe.estimator_diagnostics), default=0)}; "
+              "TF map->odom static, odom->base_link dynamic from bridge; "
               f"GNSS dropout fixes={sum(5.0 <= t < 8.0 for t in probe.gnss)}; "
               f"LiDAR range={min(degraded_scans):.1f} m; odometry measured/command-model speed="
               f"{statistics.median(slip_ratio):.3f} vs nominal {statistics.median(nominal_ratio):.3f}; "

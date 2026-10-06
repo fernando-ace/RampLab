@@ -1,0 +1,12 @@
+name: turnaround_lifecycle_validation
+scenario: ../scenarios/turnaround_lifecycle.yaml
+
+seeds:
+  values: [42, 43, 44]
+
+parameters: {}
+
+workers: 3
+
+outputs:
+  directory: ../results/turnaround_lifecycle_validation
