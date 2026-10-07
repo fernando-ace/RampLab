@@ -1,0 +1,2 @@
+flight_id,operation,scheduled_time,aircraft_id,gate_id
+F1,arrival,2026-01-01T10:00:00Z,AC1,G1
