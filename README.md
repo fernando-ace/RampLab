@@ -8,6 +8,8 @@ RampLab is a portable C++23 discrete-event simulation engine for airport ramp op
 - Strongly typed entity IDs and guarded aircraft/vehicle state machines.
 - Airport graph, deterministic A* routing, closures, and rerouting.
 - Concurrent service workflows with FIFO resource contention.
+- Integrated multi-aircraft turnaround lifecycles with task dependencies, shared service fleets, gate occupancy, arrivals, and departures.
+- Shared taxiway reservations and coordinated arrival/departure runway queues, with deterministic rerouting and disruption handling.
 - Versioned, retained-by-value simulation snapshots.
 - Structured event records delivered to zero or more read-only sinks.
 - Stepwise `finished()` / `advance()` execution for external consumers.
@@ -19,6 +21,7 @@ RampLab is a portable C++23 discrete-event simulation engine for airport ramp op
 - Optional Unreal 5.8/Cesium digital twin anchored at Auburn University Regional Airport, with entity inspection and actual scenario comparison.
 - Optional Unreal autonomy mode with the closed-loop tug, A* route, obstacles, GNSS estimate, and LiDAR overlays.
 - Optional native Windows ROS 2 bridge and separately running external controller for the tug autonomy simulation.
+- Optional local operator dashboard for loading, comparing, and replaying exported runs and reviewing available operational metrics.
 
 ## Architecture
 
@@ -64,6 +67,7 @@ scenarios/                Human-authored YAML scenarios
 src/                      Library implementations
 tests/                    GoogleTest suites
 docs/                     Architecture and integration contracts
+tools/ops_dashboard/      Local run comparison and event replay dashboard
 unreal/RampLabViewer/     Optional Unreal Engine 5.8 visualization
 ```
 
@@ -137,6 +141,16 @@ The viewer starts with `scenarios/baseline.yaml` and its configured seed. Its co
 ```
 
 Each completed experiment writes `runs.csv`, `summary.csv`, and `experiment.json`. The batch path discards per-event history and snapshots while retaining final run metrics. See [experiments.md](docs/experiments.md) for the schema, supported typed overrides, seed rules, statistics, output contracts, worker policy, and development benchmark.
+
+## Operator dashboard
+
+The local dashboard loads simulator and experiment exports, compares two runs, inspects aircraft records, and replays supplied JSONL events. It uses the Goal 19 analysis module and runs without a database, cloud service, or front-end build step. Start it from the repository root with Python 3.10 or newer:
+
+```powershell
+python tools/ops_dashboard/server.py
+```
+
+Then open [http://127.0.0.1:8765](http://127.0.0.1:8765). The dashboard binds to loopback by default. See [the dashboard guide](tools/ops_dashboard/README.md) for supported files, analysis limits, and the synthetic demo.
 
 ## Ground-vehicle autonomy
 
@@ -243,6 +257,6 @@ For a fixed validated scenario and seed, event history, final snapshot, and metr
 - The flat operational overlay is visually tuned to the KAUO demo area but does not conform each mesh vertex to terrain elevation.
 - Playback and mirroring run on the game thread; a copied-snapshot worker handoff is a later scaling concern.
 
-## Next milestone
+## Integrated lifecycle details
 
-Evaluate a ROS2 bridge, simulated sensors, and closed-loop ground-vehicle autonomy against the measured experiment-runner scaling results. Keep the deterministic engine authoritative, use the experiment subsystem for repeatable validation, and add more local performance work first only if profiling identifies an actual scaling constraint.
+The `turnaround_lifecycle` scenarios exercise arrivals, gate assignment and occupancy, concurrent turnaround tasks, shared vehicle dispatch, taxiway reservations, runway coordination, and departures in one deterministic simulation. The disrupted variant includes operational disruptions and recovery behavior. Run both from the headless CLI with the commands in [Run scenarios](#run-scenarios); see [turnaround operations](docs/turnaround-operations.md) for the task, fleet, and export contracts.
