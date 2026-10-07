@@ -1,0 +1,301 @@
+{
+  "airport": {
+    "edges": [
+      {
+        "distance_m": 128.0,
+        "from": "depot",
+        "id": "depot_north",
+        "to": "north",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 128.0,
+        "from": "depot",
+        "id": "depot_south",
+        "to": "south",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 120.0,
+        "from": "north",
+        "id": "north_a1",
+        "to": "gate_a1",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 120.0,
+        "from": "south",
+        "id": "south_a2",
+        "to": "gate_a2",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 128.0,
+        "from": "north",
+        "id": "north_depot",
+        "to": "depot",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 160.0,
+        "from": "north",
+        "id": "north_south_taxi",
+        "to": "south",
+        "traversal_time_seconds": 90
+      },
+      {
+        "distance_m": 128.0,
+        "from": "south",
+        "id": "south_depot",
+        "to": "depot",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 120.0,
+        "from": "gate_a1",
+        "id": "a1_north",
+        "to": "north",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 120.0,
+        "from": "gate_a2",
+        "id": "a2_south",
+        "to": "south",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 121.7,
+        "from": "north",
+        "id": "north_baggage_a1",
+        "to": "baggage_stand_a1",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 121.7,
+        "from": "south",
+        "id": "south_baggage_a2",
+        "to": "baggage_stand_a2",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 272.0,
+        "from": "north",
+        "id": "north_a3",
+        "to": "gate_a3",
+        "traversal_time_seconds": 120
+      },
+      {
+        "distance_m": 272.0,
+        "from": "gate_a3",
+        "id": "a3_north",
+        "to": "north",
+        "traversal_time_seconds": 120
+      },
+      {
+        "distance_m": 241.7,
+        "from": "north",
+        "id": "north_baggage_a3",
+        "to": "baggage_stand_a3",
+        "traversal_time_seconds": 120
+      },
+      {
+        "distance_m": 184.4,
+        "from": "north",
+        "id": "north_fuel_a1",
+        "to": "fuel_stand_a1",
+        "traversal_time_seconds": 100
+      },
+      {
+        "distance_m": 184.4,
+        "from": "south",
+        "id": "south_fuel_a2",
+        "to": "fuel_stand_a2",
+        "traversal_time_seconds": 100
+      },
+      {
+        "distance_m": 300.0,
+        "from": "north",
+        "id": "north_fuel_a3",
+        "to": "fuel_stand_a3",
+        "traversal_time_seconds": 160
+      },
+      {
+        "distance_m": 85.0,
+        "from": "arrival_exit_a4",
+        "id": "arrival_exit_a4_merge",
+        "to": "a4_taxi_merge",
+        "traversal_time_seconds": 52
+      },
+      {
+        "distance_m": 85.0,
+        "from": "a4_taxi_merge",
+        "id": "a4_merge_gate",
+        "to": "arrival_gate_a4",
+        "traversal_time_seconds": 52
+      },
+      {
+        "distance_m": 170.0,
+        "from": "a4_taxi_merge",
+        "id": "a4_merge_detour",
+        "to": "a4_taxi_detour",
+        "traversal_time_seconds": 100
+      },
+      {
+        "distance_m": 212.0,
+        "from": "a4_taxi_detour",
+        "id": "a4_detour_gate",
+        "to": "arrival_gate_a4",
+        "traversal_time_seconds": 125
+      },
+      {
+        "distance_m": 156.0,
+        "from": "arrival_exit_a5",
+        "id": "arrival_exit_a5_gate",
+        "to": "arrival_gate_a5",
+        "traversal_time_seconds": 95
+      }
+    ],
+    "nodes": [
+      {
+        "id": "depot",
+        "name": "Service Depot",
+        "x_m": 0.0,
+        "y_m": 0.0
+      },
+      {
+        "id": "north",
+        "name": "North Junction",
+        "x_m": 100.0,
+        "y_m": 80.0
+      },
+      {
+        "id": "south",
+        "name": "South Junction",
+        "x_m": 100.0,
+        "y_m": -80.0
+      },
+      {
+        "id": "gate_a1",
+        "name": "Gate A1",
+        "x_m": 220.0,
+        "y_m": 80.0
+      },
+      {
+        "id": "gate_a2",
+        "name": "Gate A2",
+        "x_m": 220.0,
+        "y_m": -80.0
+      },
+      {
+        "id": "gate_a3",
+        "name": "Gate A3",
+        "x_m": 340.0,
+        "y_m": 0.0
+      },
+      {
+        "id": "baggage_stand_a1",
+        "name": "Gate A1 Baggage Stand",
+        "x_m": 220.0,
+        "y_m": 160.0
+      },
+      {
+        "id": "baggage_stand_a2",
+        "name": "Gate A2 Baggage Stand",
+        "x_m": 220.0,
+        "y_m": -160.0
+      },
+      {
+        "id": "baggage_stand_a3",
+        "name": "Gate A3 Baggage Stand",
+        "x_m": 340.0,
+        "y_m": 80.0
+      },
+      {
+        "id": "fuel_stand_a1",
+        "name": "Gate A1 Fuel Stand",
+        "x_m": 220.0,
+        "y_m": 220.0
+      },
+      {
+        "id": "fuel_stand_a2",
+        "name": "Gate A2 Fuel Stand",
+        "x_m": 220.0,
+        "y_m": -220.0
+      },
+      {
+        "id": "fuel_stand_a3",
+        "name": "Gate A3 Fuel Stand",
+        "x_m": 400.0,
+        "y_m": 80.0
+      },
+      {
+        "id": "arrival_gate_a4",
+        "name": "Arrival Gate A4",
+        "x_m": 620.0,
+        "y_m": -320.0
+      },
+      {
+        "id": "arrival_gate_a5",
+        "name": "Arrival Gate A5",
+        "x_m": 620.0,
+        "y_m": 320.0
+      },
+      {
+        "id": "arrival_exit_a4",
+        "name": "Runway Exit A4",
+        "x_m": 500.0,
+        "y_m": -220.0
+      },
+      {
+        "id": "arrival_exit_a5",
+        "name": "Runway Exit A5",
+        "x_m": 500.0,
+        "y_m": 220.0
+      },
+      {
+        "id": "a4_taxi_merge",
+        "name": "A4 Taxi Merge",
+        "x_m": 560.0,
+        "y_m": -270.0
+      },
+      {
+        "id": "a4_taxi_detour",
+        "name": "A4 Taxi Detour",
+        "x_m": 700.0,
+        "y_m": -220.0
+      }
+    ]
+  },
+  "gates": [
+    {
+      "id": "A1",
+      "node": "gate_a1"
+    },
+    {
+      "id": "A2",
+      "node": "gate_a2"
+    },
+    {
+      "id": "A3",
+      "node": "gate_a3"
+    },
+    {
+      "id": "A4",
+      "node": "arrival_gate_a4"
+    },
+    {
+      "id": "A5",
+      "node": "arrival_gate_a5"
+    }
+  ],
+  "surface_operations": {
+    "aircraft_speed_mps": 1.0,
+    "arrival_exit": "south",
+    "arrival_rollout_seconds": 270,
+    "departure_handoff": "north",
+    "pushback_seconds": 30,
+    "runway_node": "north",
+    "runway_occupancy_seconds": 170
+  }
+}

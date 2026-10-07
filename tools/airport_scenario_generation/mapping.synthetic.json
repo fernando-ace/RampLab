@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "geometry_file": "simulator_geometry.json",
+  "gate_ids": {"A1": "A1", "A2": "A2", "R1": "A3"},
+  "route_ids": {"TAXI-A": "north_south_taxi"},
+  "equipment_types": {
+    "fuel_vehicle": {"type": "fueling", "initial_node": "depot"},
+    "baggage_vehicle": {"type": "baggage", "initial_node": "south"},
+    "catering_vehicle": {"type": "catering", "initial_node": "gate_a3"}
+  },
+  "service_types": {
+    "fueling": "fueling",
+    "baggage": "baggage",
+    "catering": "catering",
+    "pushback": "pushback_preparation"
+  },
+  "arrival_exit_node": "north",
+  "departure_handoff_node": "north",
+  "runway_node": "north",
+  "seed": 42
+}
