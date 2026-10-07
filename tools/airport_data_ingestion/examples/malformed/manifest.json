@@ -1,0 +1,1 @@
+{"schema_version":"1.0","airport":{"airport_id":"BAD","timezone":"UTC"},"files":{"flights":"flights.json","aircraft":"aircraft.json","gates":"gates.json","equipment":"equipment.json","turnaround_requirements":"turnaround.json","disruptions":"disruptions.json"}}

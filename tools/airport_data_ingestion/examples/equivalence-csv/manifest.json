@@ -1,0 +1,1 @@
+{"schema_version":"1.0","dataset_id":"format-equivalence","airport":{"airport_id":"TEST","timezone":"UTC"},"files":{"flights":"flights.csv","aircraft":"aircraft.csv","gates":"gates.csv"}}

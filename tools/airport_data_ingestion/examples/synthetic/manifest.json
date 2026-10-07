@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "synthetic-small-airport-operations-2026-10-07",
+  "description": "Synthetic training example; not actual airport operations.",
+  "airport": {"airport_id": "SYN1", "name": "Synthetic Field", "iata": "SYN", "icao": "KSYN", "timezone": "UTC"},
+  "files": {"flights": "flights.json", "aircraft": "aircraft.json", "gates": "gates.json", "equipment": "equipment.json", "turnaround_requirements": "turnaround.json", "disruptions": "disruptions.json"}
+}

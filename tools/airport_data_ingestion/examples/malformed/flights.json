@@ -1,0 +1,1 @@
+[{"flight_id":" F1 ","operation":"arrival","scheduled_time":"not-a-time","aircraft_id":"MISSING","gate_id":"NO_GATE"},{"flight_id":"F1","operation":"bogus","scheduled_time":"2026-01-01T10:00:00Z","aircraft_id":"MISSING"}]

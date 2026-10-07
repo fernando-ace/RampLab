@@ -1,0 +1,1 @@
+[{"equipment_id":"TUG-1","type":"tug","status":"available","initial_location":"A1","capabilities":"pushback"},{"equipment_id":"BAG-1","type":"baggage_vehicle","status":"available"},{"equipment_id":"FUEL-1","type":"fuel_vehicle","status":"available"},{"equipment_id":"CAT-1","type":"catering_vehicle","status":"available"}]
