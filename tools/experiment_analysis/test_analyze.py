@@ -36,6 +36,15 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual(wait["percent_difference"], -50)
         self.assertTrue(report["compatibility"]["comparable"])
 
+    def test_road_closure_event_metric_is_compared_as_a_disruption(self):
+        left = load_run(write_json(self.root / "control.json", {"road_closure_events": 0}))
+        right = load_run(write_json(self.root / "disruption.json", {"road_closure_events": 1}))
+        closure = next(metric for metric in compare(left, right)["metrics"]
+                       if metric["key"] == "road_closure_events")
+        self.assertEqual(closure["category"], "disruptions")
+        self.assertEqual(closure["difference"], 1)
+        self.assertEqual(closure["impact"], "regression")
+
     def test_safety_regression_and_missing_collision_unknown(self):
         left = load_run(write_json(self.root / "left.json", {"fleet_collisions": 0, "minimum_aircraft_separation_m": 4,
                                                                     "failed_or_timed_out_turnarounds": 0}))

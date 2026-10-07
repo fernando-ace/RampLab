@@ -246,3 +246,4 @@ For a fixed validated scenario and seed, event history, final snapshot, and metr
 ## Next milestone
 
 Evaluate a ROS2 bridge, simulated sensors, and closed-loop ground-vehicle autonomy against the measured experiment-runner scaling results. Keep the deterministic engine authoritative, use the experiment subsystem for repeatable validation, and add more local performance work first only if profiling identifies an actual scaling constraint.
+For the local simulator-to-analysis-to-dashboard workflow, see [real operational experiment](docs/goal21-real-operations.md).

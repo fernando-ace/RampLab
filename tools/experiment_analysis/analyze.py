@@ -76,6 +76,7 @@ METRICS = {
     "total_turnarounds": Metric("Total turnarounds", "count", "throughput", False),
     "completed_turnarounds": Metric("Completed turnarounds", "count", "throughput", False),
     "delayed_turnarounds": Metric("Delayed turnarounds", "count"),
+    "road_closure_events": Metric("Road closure events", "count", "disruptions"),
     "failed_or_timed_out_turnarounds": Metric("Failed or timed out turnarounds", "count", "safety"),
     "on_time_departure_rate": Metric("On-time departure rate", "ratio", "throughput", False),
     "simulated_duration_seconds": Metric("Simulation duration", "s"),
