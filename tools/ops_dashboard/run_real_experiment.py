@@ -82,7 +82,8 @@ def _normalized_metrics(source: dict[str, Any], events: list[dict[str, Any]]) ->
     return row
 
 
-def _package_run(cli: Path, scenario: str, output: Path, name: str, seed: int) -> None:
+def _package_run(cli: Path, scenario: str, output: Path, name: str, seed: int,
+                 experiment_name: str) -> None:
     output.mkdir(parents=True, exist_ok=True)
     metrics_path = output / "simulator-metrics.json"
     metrics_csv = output / "simulator-metrics.csv"
@@ -95,7 +96,7 @@ def _package_run(cli: Path, scenario: str, output: Path, name: str, seed: int) -
     events = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines() if line.strip()]
     row = {"ordinal": 1, "case_id": "case_0001", "seed": seed, "replication": 1,
            "scenario": scenario, **_normalized_metrics(source, events)}
-    metadata = {"schema_version": 1, "experiment_name": "goal21_mixed_runway_acceptance",
+    metadata = {"schema_version": 1, "experiment_name": experiment_name,
                 "scenario_name": scenario, "source_scenario": f"scenarios/{scenario}.yaml",
                 "seed": seed, "run_count": 1, "runs": [row], "outputs": [
                     "runs.csv", "aircraft.csv", "events.jsonl", "simulator-metrics.json",
@@ -147,15 +148,18 @@ def _package_run(cli: Path, scenario: str, output: Path, name: str, seed: int) -
     (output / "simulator-metrics.aircraft.csv").write_bytes(native_aircraft.read_bytes())
 
 
-def generate(cli: Path, output: Path, seed: int) -> dict[str, Any]:
+def generate(cli: Path, output: Path, seed: int,
+             control_scenario: str = "mixed_runway_operations",
+             disruption_scenario: str = "mixed_runway_disrupted",
+             experiment_name: str = "goal21_mixed_runway_acceptance") -> dict[str, Any]:
     cli = cli.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    scenarios = {"control": "mixed_runway_operations", "disruption": "mixed_runway_disrupted",
-                 "control-repeat": "mixed_runway_operations", "disruption-repeat": "mixed_runway_disrupted"}
+    scenarios = {"control": control_scenario, "disruption": disruption_scenario,
+                 "control-repeat": control_scenario, "disruption-repeat": disruption_scenario}
     summaries = {}
     for name, scenario in scenarios.items():
         destination = output / name
-        _package_run(cli, scenario, destination, name, seed)
+        _package_run(cli, scenario, destination, name, seed, experiment_name)
         summaries[name] = validate_bundle(destination)
 
     control = ANALYZER.load_run(output / "control" / "experiment.json")
@@ -192,6 +196,7 @@ def generate(cli: Path, output: Path, seed: int) -> dict[str, Any]:
               "event_comparison": {"control_reroute_events": len(control_reroutes),
                                    "disruption_reroute_events": len(disruption_reroutes)},
               "bundle_validation": summaries}
+    report = f"# RampLab run comparison: {control_scenario} vs {disruption_scenario}\n\n" + report
     (output / "analysis.md").write_text(report, encoding="utf-8")
     (output / "analysis.json").write_text(json.dumps(result, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     if comparison["safety"]["status"] == "regression":
@@ -208,6 +213,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--build-dir", type=Path, default=ROOT / "build", help="CMake build directory.")
     parser.add_argument("--output", type=Path, default=ROOT / "results" / "goal21-real")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--control-scenario", default="mixed_runway_operations")
+    parser.add_argument("--disruption-scenario", default="mixed_runway_disrupted")
+    parser.add_argument("--experiment-name", default="goal21_mixed_runway_acceptance")
     args = parser.parse_args(argv)
     cli = args.cli
     if cli is None:
@@ -215,7 +223,8 @@ def main(argv: list[str] | None = None) -> int:
                       args.build_dir / "airside_cli")
         cli = next((path for path in candidates if path.is_file()), candidates[0])
     try:
-        result = generate(cli, args.output.resolve(), args.seed)
+        result = generate(cli, args.output.resolve(), args.seed, args.control_scenario,
+                          args.disruption_scenario, args.experiment_name)
         print(json.dumps({"output": str(args.output.resolve()),
                           "kpis": result["comparison"]["metrics"],
                           "safety": result["comparison"]["safety"],

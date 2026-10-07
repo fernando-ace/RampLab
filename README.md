@@ -261,3 +261,5 @@ For a fixed validated scenario and seed, event history, final snapshot, and metr
 
 The `turnaround_lifecycle` scenarios exercise arrivals, gate assignment and occupancy, concurrent turnaround tasks, shared vehicle dispatch, taxiway reservations, runway coordination, and departures in one deterministic simulation. The disrupted variant includes operational disruptions and recovery behavior. Run both from the headless CLI with the commands in [Run scenarios](#run-scenarios); see [turnaround operations](docs/turnaround-operations.md) for the task, fleet, and export contracts.
 For the local simulator-to-analysis-to-dashboard workflow, see [real operational experiment](docs/goal21-real-operations.md).
+
+For the integrated release-candidate workflow, curated scenario library, seed-42 golden demo, and real-output evidence bundle, see [the Goal 23 release guide](docs/goal23-release.md). The single entry point is `python tools/release/ramplab.py demo`.

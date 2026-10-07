@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "scenarios": {
+    "normal": {
+      "scenario": "turnaround_flight_bank",
+      "description": "Three aircraft share a two-vehicle service fleet through concurrent turnaround and departure operations.",
+      "watch_for": "Task progress, fleet dispatch, shared-resource waits, taxi, and runway queueing.",
+      "kpis": ["completed_turnarounds", "completed_service_tasks", "surface_wait_seconds", "runway_queue_seconds", "departure_delay_seconds", "collisions"]
+    },
+    "vehicle-outage": {
+      "scenario": "turnaround_flight_bank_outage",
+      "description": "A service vehicle becomes unavailable during an active flight bank and its work is reassigned.",
+      "watch_for": "Vehicle outage, request requeue, replacement dispatch, task completion, and departure impact.",
+      "kpis": ["fleet_reassignments", "fleet_requests_completed", "completed_service_tasks", "departure_delay_seconds", "collisions", "minimum_separation_m"]
+    },
+    "taxiway-closure": {
+      "scenario": "mixed_runway_disrupted",
+      "description": "A taxiway link closes before arrival routing, increasing the A4 arrival path while retaining safe completion.",
+      "watch_for": "Closure event, alternate route selection, arrival taxi distance and time, runway completion.",
+      "kpis": ["surface_taxi_distance_m", "surface_taxi_seconds", "surface_reroutes", "surface_departed_aircraft", "collisions", "minimum_aircraft_separation_m"]
+    },
+    "turnaround-disruption": {
+      "scenario": "turnaround_lifecycle_disrupted",
+      "description": "A task-level disruption changes turnaround readiness and downstream operation timing.",
+      "watch_for": "Task dependency state, readiness, task recovery, departure delay, and recorded events.",
+      "kpis": ["completed_turnarounds", "delayed_turnarounds", "task_reassignments", "completed_service_tasks", "departure_delay_seconds"]
+    },
+    "flight-bank-contention": {
+      "scenario": "turnaround_contention",
+      "description": "Multiple aircraft compete for constrained service capacity and shared operational resources.",
+      "watch_for": "Service waits, utilization, task sequencing, turnaround completion, and delays.",
+      "kpis": ["completed_turnarounds", "fleet_utilization", "service_wait_seconds", "departure_delay_seconds", "collisions"]
+    }
+  },
+  "golden_demo": {
+    "control": "mixed_runway_operations",
+    "disruption": "mixed_runway_disrupted",
+    "seed": 42,
+    "unreal_mode": "RampLabMixedRunwayDisruption"
+  }
+}

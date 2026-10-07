@@ -9,7 +9,10 @@ from run_real_experiment import generate
 from validate_real_bundle import validate_bundle
 
 ROOT = Path(__file__).resolve().parents[2]
-CLI = ROOT / "build" / "airside_cli.exe"
+CLI_CANDIDATES = (ROOT / "build" / "Release" / "airside_cli.exe",
+                  ROOT / "build" / "airside_cli.exe",
+                  ROOT / "build-final-msvc" / "Release" / "airside_cli.exe")
+CLI = next((path for path in CLI_CANDIDATES if path.is_file()), CLI_CANDIDATES[1])
 
 
 class RealBundleValidationTests(unittest.TestCase):

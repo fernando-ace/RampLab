@@ -175,10 +175,26 @@ def render_html(runs,checks,det,copied,kpis) -> str:
     head="".join(f"<th>{esc(r['label'])}</th>" for r in runs)+("<th>Absolute change</th><th>Percent change</th>" if len(runs)==2 else "")
     return f"""<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>RampLab Evidence Bundle</title><style>body{{font:16px/1.5 system-ui,sans-serif;max-width:1100px;margin:2rem auto;padding:0 1rem;color:#17212b}}h1,h2{{color:#123c5a}}table{{border-collapse:collapse;width:100%;margin:1rem 0}}th,td{{border:1px solid #ccd5dc;padding:.55rem;text-align:left}}th{{background:#eef3f6}}code{{overflow-wrap:anywhere}}.status{{padding:.8rem;background:#eef3f6;border-left:4px solid #3278a6}}</style><body><h1>RampLab Engineering Evidence Bundle</h1><p class="status">Validation: <b>{overall(checks)}</b> · Determinism: <b>{det['status']}</b></p><h2>Experiment identity and outcomes</h2><table><tr><th>Name</th><th>Scenario</th><th>Seeds</th><th>Runs</th><th>Completion</th><th>Safety</th></tr>{rows}</table><h2>KPI summary</h2><table><tr><th>KPI</th>{head}</tr>{''.join(kp)}</table><p><a href="kpis.json">Machine-readable KPI changes</a></p><h2>Recorded disruptions</h2><ul>{disruption_html}</ul><h2>Validation status</h2><table><tr><th>Check</th><th>Status</th><th>Detail</th></tr>{checkrows}</table><h2>Artifact inventory and provenance</h2><ul>{evidence}</ul><p>Source files are copied byte-for-byte. No external resources are required.</p></body></html>"""
 
-def build(inputs: list[tuple[str,Path]], output: Path) -> dict[str,Any]:
+def build(inputs: list[tuple[str,Path]], output: Path,
+          determinism_report: Path | None = None) -> dict[str,Any]:
     if len(inputs) not in (1,2): raise ValueError("Provide one experiment or a control/disruption pair")
     runs=[inspect(label,path) for label,path in inputs]
     checks=[c|{"experiment":r["label"]} for r in runs for c in r["findings"]]
+    det={"status":"INSUFFICIENT DATA","detail":"No independent repeat-run pair was supplied; scenario comparison is not determinism evidence."}
+    determinism_source = None
+    if determinism_report is not None:
+        determinism_source = determinism_report.expanduser().resolve()
+        source = json.loads(determinism_source.read_text(encoding="utf-8"))
+        results = source.get("determinism") if isinstance(source, dict) else None
+        statuses = [item.get("status") for item in results.values() if isinstance(item, dict)] if isinstance(results, dict) else []
+        passed = len(statuses) >= 4 and all(status in {"equivalent", "byte_identical"} for status in statuses)
+        det = {"status":"PASS" if passed else "FAIL",
+               "detail":f"Repeated-run report contains {len(statuses)} checks: " + ", ".join(statuses)}
+        for check in checks:
+            if check["check"] == "determinism_evidence":
+                check["status"] = det["status"]
+                check["detail"] = f"Independent repeat-run evidence supplied; see determinism.json. {det['detail']}"
+        checks.append({"check":"repeat_run_determinism","status":det["status"],"detail":det["detail"],"experiment":"comparison"})
     if len(runs)==2:
         for r in runs:
             if r["scenario"] is None: checks.append({"check":"scenario_identity","status":"INSUFFICIENT DATA","detail":f"{r['label']} scenario unavailable.","experiment":r["label"]})
@@ -197,12 +213,16 @@ def build(inputs: list[tuple[str,Path]], output: Path) -> dict[str,Any]:
             copied.append({"experiment":r["label"],"source_path":str(src),"bundle_path":target.relative_to(output).as_posix(),"sha256":digest(target),"size_bytes":target.stat().st_size})
             recognized[r["label"]].append(name)
     kpis,timeline=make_kpis(runs),make_timeline(runs)
-    det={"status":"INSUFFICIENT DATA","detail":"No independent repeat-run pair was supplied; scenario comparison is not determinism evidence."}
+    if determinism_source is not None:
+        det_target = output / "determinism.json"
+        shutil.copyfile(determinism_source, det_target)
+        copied.append({"experiment":"comparison","source_path":str(determinism_source),"bundle_path":"determinism.json",
+                       "sha256":digest(det_target),"size_bytes":det_target.stat().st_size})
     validation={"status":overall(checks),"checks":checks,"hash_verification":{"status":"PASS" if all(digest(output/f["bundle_path"])==f["sha256"] for f in copied) else "FAIL","files_checked":len(copied)},"missing_evidence":missing}
     manifest={"format_version":FORMAT_VERSION,"creation_metadata":{"created_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds")},
       "inputs":[{"name":r["name"],"label":r["label"],"scenario":r["scenario"],"seeds":r["seeds"],"run_count":r["run_count"],"completion_status":r["completion"],"safety_status":r["safety"]} for r in runs],
       "input_files":copied,"recognized_artifact_types":recognized,"missing_optional_artifacts":missing,"analysis_files":["kpis.json","validation.json","timeline.json"],
-      "generated_outputs":["README.md","manifest.json","index.html","kpis.json","validation.json","timeline.json"],
+      "generated_outputs":["README.md","manifest.json","index.html","kpis.json","validation.json","timeline.json"] + (["determinism.json"] if determinism_source else []),
       "safety_status":{r["label"]:r["safety"] for r in runs},"determinism_status":det["status"],
       "warnings":[c["detail"] for c in checks if c["status"] in ("WARNING","FAIL")]}
     payload={"README.md":render_readme(runs,kpis,checks,timeline,det),"kpis.json":json.dumps(kpis,indent=2,sort_keys=True,ensure_ascii=False)+"\n",
@@ -218,11 +238,12 @@ def main(argv: list[str] | None=None) -> int:
     group.add_argument("--control",type=Path,help="Control directory (requires --disruption)")
     parser.add_argument("--disruption",type=Path,help="Disruption output directory")
     parser.add_argument("--output",required=True,type=Path,help="New or empty bundle directory")
+    parser.add_argument("--determinism-report",type=Path,help="Independent repeat-run analysis JSON to include and validate")
     args=parser.parse_args(argv)
     if bool(args.control)!=bool(args.disruption): parser.error("--control and --disruption must be supplied together")
     try:
         sources=[("experiment",args.input)] if args.input else [("control",args.control),("disruption",args.disruption)]
-        result=build(sources,args.output)
+        result=build(sources,args.output,args.determinism_report)
         print(f"Bundle written to {result['output']}")
         print(f"Validation: {result['validation']['status']}; determinism: {result['manifest']['determinism_status']}")
         return 0

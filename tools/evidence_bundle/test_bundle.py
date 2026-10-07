@@ -43,6 +43,17 @@ class EvidenceBundleTests(unittest.TestCase):
         self.assertFalse(parsed.external)
         self.assertTrue(all((self.out/link).is_file() for link in parsed.links))
         self.assertEqual(result["manifest"]["determinism_status"],"INSUFFICIENT DATA")
+    def test_repeat_run_report_is_copied_hashed_and_validated(self):
+        report=self.root/"analysis.json"
+        report.write_text(json.dumps({"determinism":{
+            "control":{"status":"equivalent"},"disruption":{"status":"equivalent"},
+            "control_events":{"status":"byte_identical"},"disruption_events":{"status":"byte_identical"}}}))
+        result=build([("control",self.control),("disruption",self.disruption)],self.out,report)
+        self.assertEqual(result["manifest"]["determinism_status"],"PASS")
+        self.assertTrue((self.out/"determinism.json").is_file())
+        self.assertEqual(result["validation"]["hash_verification"]["status"],"PASS")
+        self.assertEqual(next(c["status"] for c in result["validation"]["checks"]
+                              if c["check"]=="repeat_run_determinism"),"PASS")
     def test_missing_optional_files_and_safety(self):
         (self.control/"aircraft.csv").unlink(); (self.control/"events.jsonl").unlink()
         p=self.control/"experiment.json"; data=json.loads(p.read_text())
