@@ -220,6 +220,50 @@ TEST(SurfaceTrafficTest, ArrivalTurnaroundContinuesThroughPushbackAndDeparture) 
     }), 2);
 }
 
+TEST(SurfaceTrafficTest, StationaryDepartureQueueSkipsToNextScheduledOperation) {
+    airside::Scenario scenario;
+    scenario.name = "stationary_departure_queue";
+    scenario.turnaround_orchestration = true;
+    const airside::NodeId runway{1}, exit{2}, gate_node{3}, handoff{4};
+    scenario.graph.add_node({runway, "runway", {300.0, 0.0}});
+    scenario.graph.add_node({exit, "exit", {100.0, 0.0}});
+    scenario.graph.add_node({gate_node, "gate", {200.0, 0.0}});
+    scenario.graph.add_node({handoff, "handoff", {400.0, 0.0}});
+    const airside::NodeId depot{5};
+    scenario.graph.add_node({depot, "depot", {1000.0, 1000.0}});
+    scenario.graph.add_edge({airside::EdgeId{1}, exit, gate_node, 100.0, airside::SimTime{1}, true, false});
+    scenario.graph.add_edge({airside::EdgeId{2}, gate_node, handoff, 100.0, airside::SimTime{1}, true, false});
+    const airside::GateId stand{1};
+    scenario.gates.emplace_back(stand, "A1", gate_node);
+    scenario.vehicles.emplace_back(airside::VehicleId{1}, "Fuel-1", airside::ServiceType::Fueling, depot);
+    scenario.vehicles.emplace_back(airside::VehicleId{2}, "Baggage-1", airside::ServiceType::Baggage, depot);
+    airside::ServiceTask deboard{airside::TaskId{1}, airside::ServiceType::Deboarding};
+    deboard.duration = airside::SimTime{1};
+    airside::ServiceTask prepare{airside::TaskId{2}, airside::ServiceType::PushbackPreparation};
+    prepare.duration = airside::SimTime{1};
+    prepare.prerequisites.push_back(deboard.id);
+    scenario.aircraft.emplace_back(airside::AircraftId{1}, "LONG001", airside::SimTime{0},
+        airside::SimTime{10000}, stand, gate_node, std::vector<airside::ServiceTask>{deboard, prepare},
+        "TO-LONG001", airside::SimTime{10000}, airside::AircraftOperationType::ArrivalTurnaround, exit);
+    scenario.service_durations.emplace(airside::ServiceType::Fueling, airside::SimTime{1});
+    scenario.service_durations.emplace(airside::ServiceType::Baggage, airside::SimTime{1});
+    scenario.abstract_resource_capacity.emplace(airside::ServiceType::Deboarding, 1U);
+    scenario.abstract_resource_capacity.emplace(airside::ServiceType::PushbackPreparation, 1U);
+    scenario.surface_operations = airside::SurfaceOperationsConfig{
+        handoff, runway, exit, airside::SimTime{1}, airside::SimTime{2}, airside::SimTime{2}, 100.0, 100.0};
+
+    airside::Simulation simulation{std::move(scenario), 42};
+    std::size_t steps = 0;
+    while (!simulation.finished() && steps < 100U) {
+        (void)simulation.advance();
+        ++steps;
+    }
+    ASSERT_TRUE(simulation.finished()) << "stationary queue did not jump to its next scheduled event";
+    EXPECT_LT(steps, 100U);
+    EXPECT_EQ(simulation.result().metrics.surface_departed_aircraft, 1U);
+    EXPECT_GE(simulation.current_time().count(), 10000);
+}
+
 TEST(SurfaceTrafficTest, ClosureInvalidatesRouteAndReroutesWithoutBlockingDeparture) {
     airside::Simulation simulation(airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml")), 42);
     std::size_t steps = 0;

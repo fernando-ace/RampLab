@@ -84,6 +84,7 @@ private:
     TSharedPtr<SWidget> ControlPanel;
     FString ScenarioName;
     FString SelectedScenarioKey{TEXT("baseline")};
+    FString ScenarioFileOverride;
     FString StatusText;
     FString ComparisonText;
     FString FinalResultText;

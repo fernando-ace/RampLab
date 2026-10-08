@@ -1,0 +1,17 @@
+{
+  "canonical_airport_and_dataset": {"status": "metadata only", "reason": "Airport metadata is preserved; synthetic geometry is resolved by the mapping document."},
+  "flight_arrival_and_departure": {"status": "supported with transformation", "reason": "Paired legs for one canonical aircraft become the existing RampLab arrival-turnaround operation; IDs remain in identity-map.json."},
+  "flight_schedule": {"status": "supported with transformation", "reason": "UTC timestamps are converted to integer simulator seconds from the earliest canonical operational event."},
+  "aircraft_type_and_dimensions": {"status": "metadata only", "reason": "The existing simulator does not vary movement behavior by canonical model, dimensions, or category."},
+  "gates": {"status": "supported with transformation", "reason": "Canonical gate IDs resolve to explicit existing gate resources in the mapping."},
+  "fuel_vehicle_and_baggage_vehicle": {"status": "supported with transformation", "reason": "These canonical equipment types map to existing fueling and baggage fleet capabilities."},
+  "catering_vehicle": {"status": "supported with transformation", "reason": "The generated native vehicle retains its catering label and is available to the current simulator, but dispatch treats non-fueling vehicles through generic baggage-delivery behavior; there is no distinct catering capability."},
+  "tug_service_cart_and_generic_vehicle": {"status": "metadata only", "reason": "No validated tug, pushback vehicle, or generic fleet behavior exists; equipment is retained in the identity map and warning summary."},
+  "turnaround_requirements": {"status": "supported with transformation", "reason": "Mapped service types generate existing RampLab turnaround tasks; fueling uses fueling dispatch, while other mobile services including baggage, catering, and pushback preparation use generic baggage-delivery dispatch. Unmapped required service types block generation."},
+  "equipment_outage": {"status": "supported with transformation", "reason": "An indefinite outage on a targeted mapped vehicle uses the existing vehicle outage event; finite outage windows are unsupported because the simulator cannot restore the vehicle at an end time."},
+  "route_closure": {"status": "supported with transformation", "reason": "Canonical route IDs must map to an existing edge and use the existing road event mechanism."},
+  "delayed_service": {"status": "supported with transformation", "reason": "A requirement target maps to its generated aircraft task and uses existing task duration disruption behavior."},
+  "flight_delay": {"status": "supported with transformation", "reason": "Delay minutes adjust the targeted scheduled time before conversion to simulation seconds."},
+  "gate_unavailability": {"status": "unsupported", "reason": "RampLab has no safe validated gate-resource outage behavior."},
+  "raw_source_provenance": {"status": "supported", "reason": "Goal 24A source filenames and hashes are copied by reference into the generated manifest."}
+}

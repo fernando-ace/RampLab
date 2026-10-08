@@ -1765,7 +1765,24 @@ void Simulation::handle_surface_tick() {
     });
     if (active && !surface_tick_scheduled_) {
         surface_tick_scheduled_ = true;
-        [[maybe_unused]] const auto sequence = events_.schedule(now_ + SimTime{1}, EventType::SurfaceTick);
+        auto next_tick = now_ + SimTime{1};
+        const bool stationary_departure_queue = std::ranges::all_of(surface_aircraft_, [](const auto& item) {
+            const auto phase = item.second.phase;
+            return phase == Phase::None || phase == Phase::Departed || phase == Phase::Arrived || phase == Phase::Failed ||
+                (phase == Phase::WaitingForRunway && !item.second.arrival_operation);
+        });
+        if (stationary_departure_queue) {
+            std::optional<SimTime> next_departure;
+            for (const auto& [id, state] : surface_aircraft_) {
+                if (state.phase != Phase::WaitingForRunway) continue;
+                const auto eligible = std::max(aircraft(id).scheduled_departure(), runway_available_at_);
+                if (eligible > now_ && (!next_departure || eligible < *next_departure)) next_departure = eligible;
+            }
+            if (const auto queued_event = next_event_time(); queued_event && *queued_event > now_ &&
+                (!next_departure || *queued_event < *next_departure)) next_departure = queued_event;
+            if (next_departure) next_tick = *next_departure;
+        }
+        [[maybe_unused]] const auto sequence = events_.schedule(next_tick, EventType::SurfaceTick);
     }
 }
 

@@ -65,6 +65,8 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
 {
     Super::Initialize(Collection);
     double RequestedCaptureMultiplier = CaptureMultiplier;
+    FParse::Value(FCommandLine::Get(), TEXT("RampLabScenarioFile="), ScenarioFileOverride);
+    if (!ScenarioFileOverride.IsEmpty()) PlaybackSpeed = 60.0;
     bCaptureQA = FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
     bFleetValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabFleetValidation"));
     bGoal12ClosureValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabGoal12ClosureValidation"));
@@ -555,7 +557,9 @@ bool URampLabSimulationSubsystem::LoadSelectedScenario()
         AutonomyController.Reset();
         AutonomySnapshot.Reset();
         AutonomyAccumulator = 0.0;
-        const FString Path = FindScenarioPath(SelectedScenarioKey + TEXT(".yaml"));
+        const FString Path = ScenarioFileOverride.IsEmpty()
+            ? FindScenarioPath(SelectedScenarioKey + TEXT(".yaml"))
+            : FPaths::ConvertRelativePathToFull(ScenarioFileOverride);
         if (Path.IsEmpty()) {
             StatusText = SelectedScenarioKey + TEXT(".yaml was not found");
             UE_LOG(LogRampLab, Error, TEXT("%s"), *StatusText);

@@ -26,13 +26,14 @@ struct Options {
     std::optional<std::filesystem::path> metrics_csv;
     bool verbose{true};
     bool dump_snapshots{false};
+    bool progress{false};
 };
 
 void print_usage() {
     std::cout
         << "Usage: airside_cli [--scenario FILE] [--seed NUMBER] [--quiet]\n"
         << "                   [--dump-snapshots] [--record-events FILE]\n"
-        << "                   [--metrics-json FILE] [--metrics-csv FILE] [--help]\n";
+        << "                   [--metrics-json FILE] [--metrics-csv FILE] [--progress] [--help]\n";
 }
 
 Options parse_options(int argc, char* argv[]) {
@@ -42,6 +43,7 @@ Options parse_options(int argc, char* argv[]) {
         if (argument == "--help") { print_usage(); std::exit(0); }
         if (argument == "--quiet") { result.verbose = false; continue; }
         if (argument == "--dump-snapshots") { result.dump_snapshots = true; continue; }
+        if (argument == "--progress") { result.progress = true; continue; }
         if (argument == "--scenario" || argument == "--record-events" || argument == "--seed" ||
             argument == "--metrics-json" || argument == "--metrics-csv") {
             if (++index >= argc) throw std::invalid_argument(std::format("{} requires a value", argument));
@@ -402,6 +404,7 @@ public:
                 output_ << ']';
             }
             output_ << "}\n";
+            output_.flush();
             if (!output_) failed_ = true;
         } catch (...) { failed_ = true; }
     }
@@ -581,7 +584,18 @@ int main(int argc, char* argv[]) {
         }
 
         const auto started = std::chrono::steady_clock::now();
+        std::uint64_t step = 0;
         while (simulation.advance()) {
+            ++step;
+            if (options.progress) {
+                const auto next = simulation.next_event_time();
+                std::clog << "PROGRESS step=" << step
+                          << " time_seconds=" << simulation.current_time().count()
+                          << " next_event_seconds=";
+                if (next) std::clog << next->count();
+                else std::clog << "none";
+                std::clog << " events=" << simulation.event_history().size() << std::endl;
+            }
             if (options.dump_snapshots) print_snapshot(simulation.snapshot());
         }
         const auto result = simulation.result();

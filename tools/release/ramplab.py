@@ -15,7 +15,9 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / "tools" / "release" / "scenario_catalog.json"
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools" / "ops_dashboard"))
+from tools.airport_scenario_generation.run_artifacts import write_goal19_artifacts
 import run_real_experiment
 
 
@@ -70,29 +72,48 @@ def fresh_output(path: Path) -> Path:
     return path
 
 
-def run_scenario(cli: Path, key: str, mode: str, seed: int, output: Path) -> dict[str, Any]:
+def run_scenario(cli: Path, key: str | None, mode: str, seed: int, output: Path,
+                 scenario_file: Path | None = None) -> dict[str, Any]:
     catalog = load_catalog()
     scenarios = catalog["scenarios"]
-    if key not in scenarios:
-        raise ValueError(f"Unknown scenario '{key}'. Choices: {', '.join(scenarios)}")
-    selected = scenarios[key]["scenario"]
-    actual = selected
-    if mode == "control" and key == "taxiway-closure":
-        actual = "mixed_runway_operations"
-    elif mode == "control" and key == "vehicle-outage":
-        actual = "turnaround_flight_bank"
-    path = (ROOT / "scenarios" / f"{actual}.yaml").resolve()
-    if not path.is_relative_to((ROOT / "scenarios").resolve()) or not path.is_file():
-        raise ValueError(f"Scenario file is unavailable: {path}")
+    selected: dict[str, Any] = {}
+    if scenario_file is not None:
+        path = scenario_file.resolve()
+        if not path.is_file():
+            raise ValueError(f"Scenario file is unavailable: {path}")
+        actual = path.stem
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(document, dict) and isinstance(document.get("name"), str) and document["name"].strip():
+                actual = document["name"].strip()
+        except (OSError, json.JSONDecodeError):
+            pass
+        description = "Generated RampLab scenario"
+        watch_for, kpis = [], []
+    else:
+        if key not in scenarios:
+            raise ValueError(f"Unknown scenario '{key}'. Choices: {', '.join(scenarios)}")
+        selected = scenarios[key]
+        actual = selected["scenario"]
+        if mode == "control" and key == "taxiway-closure":
+            actual = "mixed_runway_operations"
+        elif mode == "control" and key == "vehicle-outage":
+            actual = "turnaround_flight_bank"
+        path = (ROOT / "scenarios" / f"{actual}.yaml").resolve()
+        if not path.is_relative_to((ROOT / "scenarios").resolve()) or not path.is_file():
+            raise ValueError(f"Scenario file is unavailable: {path}")
+        description = selected["description"]
+        watch_for, kpis = selected["watch_for"], selected["kpis"]
     output = fresh_output(output)
     metrics_json = output / "simulator-metrics.json"
     metrics_csv = output / "simulator-metrics.csv"
     events = output / "events.jsonl"
     command([str(cli), "--scenario", str(path), "--seed", str(seed), "--quiet", "--metrics-json", str(metrics_json),
              "--metrics-csv", str(metrics_csv), "--record-events", str(events)])
+    write_goal19_artifacts(output, metrics_json, actual, path)
     metadata = {"scenario_key": key, "scenario": actual, "mode": mode, "seed": seed,
-                "description": scenarios[key]["description"], "watch_for": scenarios[key]["watch_for"],
-                "kpis_to_review": scenarios[key]["kpis"], "artifacts": [p.name for p in output.iterdir()]}
+                "description": description, "watch_for": watch_for,
+                "kpis_to_review": kpis, "artifacts": [p.name for p in output.iterdir()]}
     (output / "release-run.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     return metadata
 
@@ -115,7 +136,7 @@ def demo(args: argparse.Namespace) -> None:
     summary = {"scenario": "mixed_runway_disrupted", "control_scenario": "mixed_runway_operations",
                "seed": args.seed, "analysis_status": analysis["safety"]["status"],
                "determinism": {key: value["status"] for key, value in result["determinism"].items()},
-               "validation": {"cpp_ctest": "skipped" if args.skip_tests else "179/179 passed",
+               "validation": {"cpp_ctest": "skipped" if args.skip_tests else "180/180 passed",
                               "python_suites": "skipped" if args.skip_tests else "37 passed"},
                "measured": {"control": control_native, "disruption": disruption_native, "analysis": analysis},
                "bundle": str(bundle), "runs": {"control": str(control), "disruption": str(disruption)}}
@@ -128,7 +149,7 @@ def demo(args: argparse.Namespace) -> None:
         launch_dashboard(comparison_dir)
 
 
-def launch_unreal(output: Path) -> None:
+def launch_unreal(output: Path, scenario_file: Path | None = None) -> None:
     catalog = load_catalog()
     mode = catalog["golden_demo"]["unreal_mode"]
     editor = Path(os.environ.get("UE_EDITOR", r"C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe"))
@@ -148,9 +169,18 @@ def launch_unreal(output: Path) -> None:
     command([str(build_batch), "RampLabViewerEditor", "Win64", "Development", f"-Project={project}",
              "-WaitMutex", "-NoHotReload"])
     log = output / "unreal-windowed.log"
+    scenario_argument = f"-RampLabScenarioFile={scenario_file.resolve()}" if scenario_file else f"-{mode}"
     process = subprocess.Popen([str(editor), str(project), "-game", "-windowed", "-ResX=1600", "-ResY=900", "-NoSplash",
-                                 f"-{mode}", f"-abslog={log}"], cwd=ROOT)
+                                 scenario_argument, f"-abslog={log}"], cwd=ROOT)
     print(f"Visible Unreal demo launched (PID {process.pid}); runtime log: {log}")
+
+
+def scenario_path_for_unreal(scenario_name: str, scenario_file: Path | None = None) -> Path:
+    """Resolve the same scenario file selected for the native run."""
+    path = (scenario_file if scenario_file is not None else ROOT / "scenarios" / f"{scenario_name}.yaml").resolve()
+    if not path.is_file():
+        raise ValueError(f"Scenario file is unavailable for Unreal: {path}")
+    return path
 
 
 def launch_dashboard(directory: Path) -> None:
@@ -209,12 +239,15 @@ def main() -> int:
     sub.add_parser("list", help="List curated release scenarios.")
     doctor = sub.add_parser("doctor", help="Check local release prerequisites and installed Unreal/ROS tools.")
     doctor.add_argument("--build-dir", type=Path, default=ROOT / "build-goal23")
-    run = sub.add_parser("run", help="Run one packaged simulator scenario and export native artifacts.")
-    run.add_argument("--scenario", required=True, choices=load_catalog()["scenarios"])
+    run = sub.add_parser("run", help="Run one packaged or generated simulator scenario and export native artifacts.")
+    scenario_choice = run.add_mutually_exclusive_group(required=True)
+    scenario_choice.add_argument("--scenario", choices=load_catalog()["scenarios"])
+    scenario_choice.add_argument("--scenario-file", type=Path, help="Run a generated scenario file with the existing simulator and output schema.")
     run.add_argument("--mode", choices=("control", "disruption"), default="disruption")
     run.add_argument("--seed", type=int, default=42)
     run.add_argument("--output", type=Path, default=None)
     run.add_argument("--build-dir", type=Path, default=ROOT / "build-goal23")
+    run.add_argument("--unreal", action="store_true", help="Build and launch the visible Unreal viewer with the selected scenario.")
     demo_parser = sub.add_parser("demo", help="Build, validate, run the seed-42 taxiway-closure comparison, and generate evidence.")
     demo_parser.add_argument("--seed", type=int, default=42)
     demo_parser.add_argument("--output", type=Path, default=None)
@@ -240,8 +273,12 @@ def main() -> int:
                 cli = prepare(args.build_dir.resolve(), run_tests=False)
             catalog = load_catalog()
             actual_key = args.scenario
-            output = args.output or (ROOT / "results" / "goal23" / args.scenario / args.mode / f"seed-{args.seed}")
-            print(json.dumps(run_scenario(cli, actual_key, args.mode, args.seed, output), indent=2))
+            label = actual_key or args.scenario_file.stem
+            output = args.output or (ROOT / "results" / "goal23" / label / args.mode / f"seed-{args.seed}")
+            metadata = run_scenario(cli, actual_key, args.mode, args.seed, output, args.scenario_file)
+            print(json.dumps(metadata, indent=2))
+            if args.unreal:
+                launch_unreal(output, scenario_path_for_unreal(metadata["scenario"], args.scenario_file))
         elif args.action == "demo":
             args.output = args.output or (ROOT / "results" / "goal23" / datetime.now().strftime("%Y%m%d-%H%M%S"))
             demo(args)
