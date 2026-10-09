@@ -30,8 +30,10 @@ FVector FRampLabAirportPlacement::ToUnreal(airside::Vec2 LocalMeters, float Addi
 {
     const FVector2D Scaled{LocalMeters.x_m * Scale, LocalMeters.y_m * Scale};
     const double Radians = FMath::DegreesToRadians(SimulationHeadingDegrees);
-    // Heading is the clockwise-from-true-north bearing of RampLab local +X.
-    const double East = Scaled.X * FMath::Sin(Radians) + Scaled.Y * FMath::Cos(Radians) + OriginOffsetMeters.X;
-    const double North = Scaled.X * FMath::Cos(Radians) - Scaled.Y * FMath::Sin(Radians) + OriginOffsetMeters.Y;
+    // Simulation Vec2 is right-handed east/north. Rotate it by the configured
+    // clockwise-from-true-north bearing of local +X, then map north to the
+    // viewer's south-positive Unreal Y axis.
+    const double East = Scaled.X * FMath::Sin(Radians) - Scaled.Y * FMath::Cos(Radians) + OriginOffsetMeters.X;
+    const double North = Scaled.X * FMath::Cos(Radians) + Scaled.Y * FMath::Sin(Radians) + OriginOffsetMeters.Y;
     return FVector(East * 100.0, -North * 100.0, OperationalLayerHeightCm + AdditionalHeightCm);
 }

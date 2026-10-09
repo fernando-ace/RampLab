@@ -1,0 +1,65 @@
+{
+  "airport": {
+    "features": {
+      "kauo_calibrated": true,
+      "runways": [
+        {"identifier":"18/36","length_m":1604.5,"width_m":30.5,"true_heading_degrees_from_runway18":185.7,"center_local_m":{"x":-260,"y":-283}},
+        {"identifier":"11/29","length_m":1219.2,"width_m":22.9,"true_heading_degrees_from_runway11":112.0,"center_local_m":{"x":150,"y":313}}
+      ],
+      "apron_center_local_m": {"x":30,"y":-125},
+      "apron_size_m": {"x":150,"y":145},
+      "buildings": [
+        {"name":"KAUO terminal/FBO","center_local_m":{"x":50,"y":-140},"size_m":{"x":82,"y":28},"heading_degrees":5.7},
+        {"name":"KAUO north hangar complex","center_local_m":{"x":160,"y":571},"size_m":{"x":170,"y":85},"heading_degrees":5.7},
+        {"name":"KAUO college aviation hangar area","center_local_m":{"x":-626,"y":-653},"size_m":{"x":160,"y":90},"heading_degrees":5.7}
+      ]
+    },
+    "nodes": [
+      {"id":"rwy18_36_mid","name":"Runway 18/36 reference midpoint (approximate FAA-diagram anchor)","x_m":-260.0,"y_m":-283.0},
+      {"id":"rwy36_hold","name":"Runway 36 end / departure queue reference (approximate FAA-diagram anchor)","x_m":-174.0,"y_m":-1144.0},
+      {"id":"twy_a_south","name":"Taxiway A south connector (approximate chart anchor)","x_m":-346.0,"y_m":-661.0},
+      {"id":"twy_a_mid","name":"Taxiway A arrival exit reference (approximate chart anchor)","x_m":-390.0,"y_m":-165.0},
+      {"id":"twy_a_north","name":"Taxiway A north connector (approximate chart anchor)","x_m":-442.0,"y_m":401.0},
+      {"id":"fbo_apron_junction","name":"East-side terminal/FBO apron access via Taxiway C (approximate chart anchor)","x_m":-101.0,"y_m":-89.0},
+      {"id":"fbo_apron_detour","name":"North Taxiway C apron-side detour (approximate chart anchor)","x_m":-211.0,"y_m":412.0},
+      {"id":"ga_parking_stand","name":"Illustrative GA parking point on the east-side terminal/FBO apron","x_m":27.0,"y_m":-138.0},
+      {"id":"self_serve_fuel_farm","name":"Charted west-side self-serve fuel farm area (approximate chart anchor)","x_m":-600.0,"y_m":-272.0}
+    ],
+    "edges": [
+      {"id":"runway36_hold_twy_a_south","from":"rwy36_hold","to":"twy_a_south","distance_m":512.7,"traversal_time_seconds":103},
+      {"id":"twy_a_south_mid","from":"twy_a_south","to":"twy_a_mid","distance_m":497.9,"traversal_time_seconds":100},
+      {"id":"twy_a_mid_north","from":"twy_a_mid","to":"twy_a_north","distance_m":568.4,"traversal_time_seconds":114},
+      {"id":"twy_a_mid_fbo_primary","from":"twy_a_mid","to":"fbo_apron_junction","distance_m":298.8,"traversal_time_seconds":60},
+      {"id":"twy_a_north_fbo_detour","from":"twy_a_north","to":"fbo_apron_detour","distance_m":231.3,"traversal_time_seconds":46},
+      {"id":"twy_c_fbo_detour","from":"fbo_apron_detour","to":"fbo_apron_junction","distance_m":512.9,"traversal_time_seconds":103},
+      {"id":"fbo_junction_parking","from":"fbo_apron_junction","to":"ga_parking_stand","distance_m":137.1,"traversal_time_seconds":27},
+      {"id":"fbo_junction_fuel_farm","from":"fbo_apron_junction","to":"self_serve_fuel_farm","distance_m":531.5,"traversal_time_seconds":106}
+    ]
+  },
+  "gates": [
+    {"id":"GA-PARK-01","node":"ga_parking_stand"}
+  ],
+  "surface_operations": {
+    "aircraft_speed_mps": 5.0,
+    "arrival_exit": "twy_a_mid",
+    "arrival_rollout_seconds": 90,
+    "departure_handoff": "rwy36_hold",
+    "pushback_seconds": 20,
+    "runway_node": "rwy36_hold",
+    "runway_occupancy_seconds": 90
+  },
+  "calibration": {
+    "airport_reference_latitude": 32.6151667,
+    "airport_reference_longitude": -85.4340000,
+    "runway_18_36_length_m": 1604.5,
+    "runway_18_36_width_m": 30.5,
+    "runway_11_29_length_m": 1219.2,
+    "runway_11_29_width_m": 22.9,
+    "runway_features": [
+      {"id":"runway_18_36","identifier":"18/36","length_m":1604.5,"width_m":30.5,"surface":"asphalt, grooved","true_heading_degrees_approx":[185.7,5.7],"center_local_m_approx":{"x":-260,"y":-283}},
+      {"id":"runway_11_29","identifier":"11/29","length_m":1219.2,"width_m":22.9,"surface":"asphalt","true_heading_degrees_approx":[112,292],"center_local_m_approx":{"x":150,"y":313}}
+    ],
+    "simulator_local_axis_note": "Core airport-local coordinates are right-handed +X east/+Y north. The FAA diagram latitude/longitude graticule was used to estimate feature offsets from its published airport reference point; those east/north offsets were inverted through the existing Unreal placement heading and east offset. Geometry coordinates are approximate chart-digitized offsets, not surveyed points.",
+    "geometry_status": "Runway facts are authoritative chart values; taxiway/apron nodes and stand coordinates are approximate digitized graph anchors for scenario routing."
+  }
+}

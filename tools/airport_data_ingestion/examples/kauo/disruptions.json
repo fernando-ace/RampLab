@@ -1,0 +1,10 @@
+[
+  {
+    "disruption_id": "KAUO-ILLUSTRATIVE-TWY-A-CLOSURE",
+    "type": "route_closure",
+    "resource_id": "KAUO-TWY-A-RAMP-CONNECTOR",
+    "start_time": "2026-10-09T14:00:15Z",
+    "end_time": "2026-10-09T14:45:00Z",
+    "reason": "Controlled scenario stress case only; no claim that this closure occurred at KAUO."
+  }
+]

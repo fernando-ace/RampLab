@@ -121,7 +121,7 @@ ScenarioDocument parse_document(const YAML::Node& root) {
     }
 
     const auto vehicles = required(required(root, "fleet", "scenario"), "vehicles", "fleet");
-    require_sequence(vehicles, "fleet.vehicles");
+    if (!vehicles.IsSequence()) throw ScenarioLoadError("fleet.vehicles must be a sequence");
     for (std::size_t index = 0; index < vehicles.size(); ++index) {
         const auto item = vehicles[index];
         const auto context = std::format("fleet.vehicles[{}]", index);
@@ -326,25 +326,17 @@ Scenario validate_and_build(const ScenarioDocument& document) {
             lookup(nodes, value.node, std::format("gate '{}'.node", value.id)), value.enabled);
     }
 
-    bool has_fuel = false;
-    bool has_baggage = false;
     for (std::size_t index = 0; index < document.vehicles.size(); ++index) {
         const auto& value = document.vehicles[index];
         if (value.speed <= 0.0) {
             throw ScenarioLoadError(std::format("vehicle '{}' speed_mps must be positive", value.id));
         }
         const auto type = parse_service(value.type, std::format("vehicle '{}'", value.id));
-        has_fuel = has_fuel || type == ServiceType::Fueling;
-        has_baggage = has_baggage || type == ServiceType::Baggage;
         scenario.vehicles.emplace_back(VehicleId{static_cast<std::uint32_t>(index + 1)}, value.name,
             type, lookup(nodes, value.depot, std::format("vehicle '{}'.depot_node", value.id)), value.speed,
             value.outage_safe_node ? std::optional<NodeId>{lookup(nodes, *value.outage_safe_node,
                 std::format("vehicle '{}'.outage_safe_node", value.id))} : std::nullopt);
     }
-    if (!has_fuel || !has_baggage) {
-        throw ScenarioLoadError("fleet requires at least one fueling and one baggage vehicle");
-    }
-
     std::uint32_t next_task = 1;
     std::unordered_map<std::string, TaskId> task_ids;
     std::unordered_map<std::string, std::unordered_map<std::string, TaskId>> aircraft_task_ids;

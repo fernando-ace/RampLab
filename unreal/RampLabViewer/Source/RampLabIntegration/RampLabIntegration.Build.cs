@@ -11,7 +11,7 @@ public class RampLabIntegration : ModuleRules
 
         PublicDependencyModuleNames.AddRange(new[] {
             "Core", "CoreUObject", "Engine", "CesiumRuntime", "InputCore", "Slate", "SlateCore",
-            "Sockets", "Networking"
+            "Sockets", "Networking", "Json"
         });
 
         string RepositoryRoot = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", ".."));
