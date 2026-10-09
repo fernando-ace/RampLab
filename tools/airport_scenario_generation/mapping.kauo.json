@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "geometry_file": "kauo.geometry.json",
+  "gate_ids": {
+    "GA-PARK-ILLUSTRATIVE": "GA-PARK-01"
+  },
+  "route_ids": {
+    "KAUO-TWY-A-RAMP-CONNECTOR": "twy_a_mid_fbo_primary"
+  },
+  "equipment_types": {
+    "fuel_vehicle": {
+      "type": "fueling",
+      "initial_node": "self_serve_fuel_farm"
+    }
+  },
+  "service_types": {
+    "fueling": "fueling",
+    "pushback_preparation": "pushback_preparation"
+  },
+  "arrival_exit_node": "twy_a_mid",
+  "departure_handoff_node": "rwy36_hold",
+  "runway_node": "rwy36_hold",
+  "seed": 42
+}

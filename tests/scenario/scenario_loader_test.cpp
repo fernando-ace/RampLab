@@ -75,6 +75,35 @@ TEST(ScenarioLoaderTest, LoadsExternalBaselineAndDefaultSeed) {
     EXPECT_EQ(scenario.road_events.size(), 1U);
 }
 
+TEST(ScenarioLoaderTest, AllowsOnlyCapabilitiesUsedByTheScenario) {
+    auto contents = replaced(std::string{kValidScenario},
+        "    - { id: bag, name: Bag-1, type: baggage, depot_node: depot, speed_mps: 8 }\n", "");
+    contents = replaced(std::move(contents),
+        "required_services: [fueling, baggage]", "required_services: [fueling]");
+    const TemporaryScenario file{std::move(contents)};
+    const auto scenario = load_scenario(file.path());
+    ASSERT_EQ(scenario.vehicles.size(), 1U);
+    EXPECT_EQ(scenario.vehicles.front().capability(), ServiceType::Fueling);
+}
+
+TEST(ScenarioLoaderTest, AllowsArrivalOnlyScenarioWithoutServiceVehicles) {
+    auto contents = replaced(std::string{kValidScenario},
+        "    - { id: fuel, name: Fuel-1, type: fueling, depot_node: depot, speed_mps: 10 }\n", "");
+    contents = replaced(std::move(contents),
+        "    - { id: bag, name: Bag-1, type: baggage, depot_node: depot, speed_mps: 8 }\n", "");
+    contents = replaced(std::move(contents), "fleet:\n  vehicles:\n", "fleet:\n  vehicles: []\n");
+    contents = replaced(std::move(contents),
+        "    gate: A1\n    scheduled_arrival_seconds: 0\n    scheduled_departure_seconds: 1200\n    required_services: [fueling, baggage]",
+        "    operation_type: arrival\n    arrival_exit: depot\n    gate: A1\n    scheduled_arrival_seconds: 0");
+    contents = replaced(std::move(contents), "service_durations_seconds:",
+        "surface_operations: { departure_handoff: depot, runway_node: depot, arrival_exit: depot }\nservice_durations_seconds:");
+    const TemporaryScenario file{std::move(contents)};
+    const auto scenario = load_scenario(file.path());
+    EXPECT_TRUE(scenario.vehicles.empty());
+    ASSERT_EQ(scenario.aircraft.size(), 1U);
+    EXPECT_EQ(scenario.aircraft.front().operation_type(), AircraftOperationType::ArrivalOnly);
+}
+
 TEST(ScenarioLoaderTest, LoadsIntegratedArrivalTurnaroundOperation) {
     auto contents = replaced(std::string{kValidScenario},
         "    gate: A1\n", "    operation_type: arrival_turnaround\n    arrival_exit: depot\n    gate: A1\n");

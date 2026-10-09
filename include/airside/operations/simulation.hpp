@@ -142,8 +142,8 @@ private:
     std::mt19937_64 random_;
     EventQueue events_;
     SimTime now_{};
-    ResourcePool fuel_pool_;
-    ResourcePool baggage_pool_;
+    std::optional<ResourcePool> fuel_pool_;
+    std::optional<ResourcePool> baggage_pool_;
     std::vector<std::string> log_;
     std::vector<SimulationEventRecord> event_history_;
     std::vector<ISimulationEventSink*> event_sinks_;

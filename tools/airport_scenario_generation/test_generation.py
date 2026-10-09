@@ -113,6 +113,19 @@ class AirportScenarioGenerationTests(unittest.TestCase):
         with self.assertRaisesRegex(GenerationError, "shares simulator spawn node 'depot'"):
             generate(self.package, self.mapping, self.root / "duplicate-spawn")
 
+    def test_fuel_only_airport_does_not_require_synthetic_baggage_fleet(self):
+        package = copy.deepcopy(self.package_data)
+        package["turnaround_requirements"] = [
+            row for row in package["turnaround_requirements"] if row["service_type"] == "fueling"
+        ]
+        package["equipment"] = [row for row in package["equipment"] if row["type"] == "fuel_vehicle"]
+        self.write_package(package)
+        mapping = copy.deepcopy(self.mapping_data)
+        mapping["equipment_types"] = {"fuel_vehicle": mapping["equipment_types"]["fuel_vehicle"]}
+        self.write_mapping(mapping)
+        result = generate(self.package, self.mapping, self.root / "fuel-only")
+        self.assertEqual([vehicle["type"] for vehicle in result["scenario"]["fleet"]["vehicles"]], ["fueling"])
+
     def test_unsupported_metadata_and_outage_warning_are_explicit(self):
         result = generate(self.package, self.mapping, self.root / "generated")
         warnings = result["manifest"]["warnings"]

@@ -1,0 +1,24 @@
+[
+  {
+    "flight_id": "KAUO-ILLUSTRATIVE-ARR",
+    "flight_number": "ILLUSTRATIVE-ARR",
+    "operation": "arrival",
+    "scheduled_time": "2026-10-09T14:00:00Z",
+    "aircraft_id": "KAUO-REP-GA-01",
+    "gate_id": "GA-PARK-ILLUSTRATIVE",
+    "origin": "UNSPECIFIED",
+    "occupancy_start": "2026-10-09T14:00:00Z",
+    "occupancy_end": "2026-10-09T15:00:00Z"
+  },
+  {
+    "flight_id": "KAUO-ILLUSTRATIVE-DEP",
+    "flight_number": "ILLUSTRATIVE-DEP",
+    "operation": "departure",
+    "scheduled_time": "2026-10-09T15:00:00Z",
+    "aircraft_id": "KAUO-REP-GA-01",
+    "gate_id": "GA-PARK-ILLUSTRATIVE",
+    "destination": "UNSPECIFIED",
+    "occupancy_start": "2026-10-09T15:00:00Z",
+    "occupancy_end": "2026-10-09T15:15:00Z"
+  }
+]

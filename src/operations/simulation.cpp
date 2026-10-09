@@ -23,6 +23,12 @@ std::vector<VehicleId> vehicle_ids(const Scenario& scenario, ServiceType type) {
     return ids;
 }
 
+std::optional<ResourcePool> make_resource_pool(const Scenario& scenario, ServiceType type) {
+    auto ids = vehicle_ids(scenario, type);
+    if (ids.empty()) return std::nullopt;
+    return ResourcePool(std::move(ids));
+}
+
 SimulationEventRecord vehicle_event(
     SimulationEventType type, const ServiceVehicle& vehicle, const Aircraft* aircraft,
     std::optional<Route> route = std::nullopt) {
@@ -53,8 +59,8 @@ bool uses_mobile_fleet(ServiceType type) {
 
 Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryPolicy history_policy)
     : scenario_(std::move(scenario)), seed_(seed), random_(seed),
-      fuel_pool_(vehicle_ids(scenario_, ServiceType::Fueling)),
-      baggage_pool_(vehicle_ids(scenario_, ServiceType::Baggage)), history_policy_(history_policy) {
+      fuel_pool_(make_resource_pool(scenario_, ServiceType::Fueling)),
+      baggage_pool_(make_resource_pool(scenario_, ServiceType::Baggage)), history_policy_(history_policy) {
     for (const auto type : {ServiceType::Fueling, ServiceType::Baggage}) {
         if (!scenario_.service_durations.contains(type) || duration(type) <= SimTime::zero()) {
             throw std::invalid_argument("scenario requires positive service durations");
@@ -105,7 +111,10 @@ Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryP
         }
         autonomy_fleet_ = std::make_unique<autonomy::FleetSimulation>(std::move(fleet_scenario), seed_);
     }
-    if (scenario_.surface_operations && !scenario_.turnaround_orchestration)
+    if (scenario_.surface_operations && !scenario_.turnaround_orchestration &&
+        std::ranges::any_of(scenario_.aircraft, [](const auto& aircraft) {
+            return aircraft.operation_type() != AircraftOperationType::ArrivalOnly;
+        }))
         throw std::invalid_argument("surface operations require turnaround orchestration");
 }
 
@@ -459,7 +468,8 @@ SimulationResult Simulation::result() const {
         std::ranges::sort(metrics.resource_utilization, {}, [](const auto& item) { return item.first; });
         metrics.task_reassignments = task_reassignments_;
         metrics.disruption_triggered_replans = disruption_replans_;
-        metrics.unresolved_service_requests = fuel_pool_.outstanding_count() + baggage_pool_.outstanding_count();
+        metrics.unresolved_service_requests = (fuel_pool_ ? fuel_pool_->outstanding_count() : 0)
+            + (baggage_pool_ ? baggage_pool_->outstanding_count() : 0);
         metrics.failed_or_timed_out_turnarounds = static_cast<std::size_t>(std::ranges::count_if(
             scenario_.aircraft, [](const Aircraft& flight) { return flight.turnaround_state() == TurnaroundState::Failed; }));
         if (autonomy_fleet_) {
@@ -1828,7 +1838,9 @@ ServiceVehicle& Simulation::vehicle(VehicleId id) {
 }
 
 ResourcePool& Simulation::pool(ServiceType type) {
-    return type == ServiceType::Fueling ? fuel_pool_ : baggage_pool_;
+    auto& resource_pool = type == ServiceType::Fueling ? fuel_pool_ : baggage_pool_;
+    if (!resource_pool) throw std::logic_error("scenario has no mobile resource pool for required service");
+    return *resource_pool;
 }
 
 SimTime Simulation::duration(ServiceType type) const { return scenario_.service_durations.at(type); }

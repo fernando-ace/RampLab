@@ -1,0 +1,9 @@
+[
+  {
+    "requirement_id": "PUSHBACK-PREP-ILLUSTRATIVE-01",
+    "aircraft_id": "KAUO-REP-GA-01",
+    "service_type": "pushback_preparation",
+    "duration_minutes": 2,
+    "description": "Assumed abstract pushback-preparation task; no vehicle resource or measured KAUO duration is claimed."
+  }
+]

@@ -236,10 +236,16 @@ def generate(package_path: Path, mapping_path: Path, output: Path, *, seed: int 
         vehicle_id = ident
         equipment_identity[ident] = vehicle_id
         equipment_rows.append({"id": vehicle_id, "name": ident, "type": adapter["type"], "depot_node": node, "speed_mps": 8.0})
-    if not any(v["type"] == "fueling" for v in equipment_rows):
-        raise GenerationError("generated fleet needs at least one mapped active fuel_vehicle")
-    if not any(v["type"] == "baggage" for v in equipment_rows):
-        raise GenerationError("generated fleet needs at least one mapped active baggage_vehicle")
+    required_vehicle_types = {
+        mapping["service_types"][str(requirement["service_type"])]
+        for requirement in data["turnaround_requirements"]
+        if str(requirement["service_type"]) in mapping["service_types"]
+        and mapping["service_types"][str(requirement["service_type"])] != "pushback_preparation"
+    }
+    available_vehicle_types = {str(vehicle["type"]) for vehicle in equipment_rows}
+    missing_vehicle_types = sorted(required_vehicle_types - available_vehicle_types)
+    if missing_vehicle_types:
+        raise GenerationError("generated fleet is missing required service capabilities: " + ", ".join(missing_vehicle_types))
 
     flights = sorted(data["flights"], key=lambda x: (timestamp(x["scheduled_time"], "flight time"), str(x["flight_id"])))
     canonical_disruptions = sorted(data["disruptions"], key=lambda x: str(x["disruption_id"]))
@@ -326,11 +332,14 @@ def generate(package_path: Path, mapping_path: Path, output: Path, *, seed: int 
             arr_time = dep_time
         if dep_time < arr_time:
             raise GenerationError(f"aircraft {aircraft_id!r} departure time precedes its arrival")
-        simulator_aircraft.append({"id": aircraft_id, "operation_type": operation_type, "gate": gate_resource_id,
+        simulator_flight = {"id": aircraft_id, "operation_type": operation_type, "gate": gate_resource_id,
             "arrival_exit": mapping["arrival_exit_node"], "turnaround_id": aircraft_id,
             "scheduled_arrival_seconds": int(round((arr_time - epoch).total_seconds())),
             "scheduled_departure_seconds": int(round((dep_time - epoch).total_seconds())),
-            "target_off_block_seconds": int(round((dep_time - epoch).total_seconds())), "service_tasks": task_rows})
+            "target_off_block_seconds": int(round((dep_time - epoch).total_seconds()))}
+        if task_rows:
+            simulator_flight["service_tasks"] = task_rows
+        simulator_aircraft.append(simulator_flight)
         for leg in legs:
             identity_flights[str(leg["flight_id"])] = {"simulator_aircraft_id": aircraft_id, "operation": leg["operation"],
                 "canonical_aircraft_id": aircraft_id, "canonical_gate_id": gate_id, "simulator_gate_id": gate_resource_id}
@@ -448,7 +457,7 @@ def generate(package_path: Path, mapping_path: Path, output: Path, *, seed: int 
         "geometry_configuration_sha256": geometry_hash, "generated_scenario_id": scenario_id,
         "scenario_name": scenario_name, "seed": seed, "scenario_epoch_utc": epoch.isoformat().replace("+00:00", "Z"),
         "entities": {"flights": len(identity_flights), "aircraft": len(simulator_aircraft), "gates": len(identity_map["gates"]),
-                     "ground_vehicles": len(equipment_rows), "turnaround_tasks": sum(len(x["service_tasks"]) for x in simulator_aircraft)},
+                     "ground_vehicles": len(equipment_rows), "turnaround_tasks": sum(len(x.get("service_tasks", [])) for x in simulator_aircraft)},
         "generated_disruptions": {"route_closures": sum(1 for x in road_events if not x["enabled"]), "equipment_outages": len(vehicle_outages),
                                   "delayed_services": len(turnaround_disruptions), "flight_delays": len(flight_delays)},
         "warnings": warnings_list, "unsupported_metadata": unsupported_metadata,
@@ -476,8 +485,8 @@ def validate_generated(output: Path) -> dict[str, Any]:
     gate_ids = {str(x["id"]) for x in scenario.get("gates", [])}
     vehicle_ids = {str(x["id"]) for x in scenario.get("fleet", {}).get("vehicles", [])}
     aircraft_ids = {str(x["id"]) for x in scenario["aircraft"]}
-    if not node_ids or not edge_ids or not gate_ids or not vehicle_ids:
-        raise GenerationError("generated scenario is missing simulator geometry, gates, or vehicles")
+    if not node_ids or not edge_ids or not gate_ids:
+        raise GenerationError("generated scenario is missing simulator geometry or gates")
     if any(str(x.get("gate")) not in gate_ids for x in scenario["aircraft"]):
         raise GenerationError("generated aircraft references unknown gate")
     for vehicle in scenario["fleet"]["vehicles"]:

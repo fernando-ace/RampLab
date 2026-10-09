@@ -168,7 +168,7 @@ def launch_unreal(output: Path, scenario_file: Path | None = None) -> None:
         raise RuntimeError(f"Unreal Build.bat was not found next to UE_EDITOR: {build_batch}")
     command([str(build_batch), "RampLabViewerEditor", "Win64", "Development", f"-Project={project}",
              "-WaitMutex", "-NoHotReload"])
-    log = output / "unreal-windowed.log"
+    log = (output / "unreal-windowed.log").resolve()
     scenario_argument = f"-RampLabScenarioFile={scenario_file.resolve()}" if scenario_file else f"-{mode}"
     process = subprocess.Popen([str(editor), str(project), "-game", "-windowed", "-ResX=1600", "-ResY=900", "-NoSplash",
                                  scenario_argument, f"-abslog={log}"], cwd=ROOT)
