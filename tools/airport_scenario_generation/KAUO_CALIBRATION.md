@@ -8,7 +8,7 @@ Read [source provenance](../airport_data_ingestion/examples/kauo/PROVENANCE.md) 
 
 Goal 25's alignment error came from treating diagram-digitized runway centers and bearings as if they were geodetic control points. The approximate chart coordinates were combined with a nonzero 80 m east origin offset and a 95.7° local-grid heading, so geometry values no longer represented airport-local ENU directly. The transforms were individually valid for that declared legacy grid, but the runway centers and headings were estimates rather than measured endpoints. Against the FAA's surveyed runway-end records, the old geometry's four threshold errors range from 36.648 m to 66.832 m. Its runway headings were 185.7° and 112.0°, while the FAA endpoint-derived bearings are 181.040149° and 107.310813°.
 
-The Cesium longitude/latitude ordering, negative-west longitude sign, Unreal north-to-negative-Y mapping, and meters-to-centimeters scale were not the source of the measured endpoint miss. The root problem was the chart-derived runway anchors and their headings, with the hidden origin correction making the data frame harder to audit. The post-correction geometry uses the four FAA NASR runway-end coordinates directly.
+The Cesium longitude/latitude ordering, negative-west longitude sign, Unreal north-to-negative-Y mapping, and meters-to-centimeters scale were not the source of the measured Goal 25 endpoint miss. That numerical miss came from chart-derived runway anchors and headings, with a hidden origin correction making the data frame harder to audit. The post-correction geometry uses the four FAA NASR runway-end coordinates directly. A separate Cesium runtime binding defect that affected what terrain appeared beneath the overlay is documented below.
 
 | Goal 25 runway end | Error against FAA NASR endpoint |
 |---|---:|
@@ -34,6 +34,21 @@ WGS 84 latitude / longitude / ellipsoid height
 ```
 
 The Cesium georeference receives `FVector(longitude, latitude, ellipsoid height)` as required by its longitude/latitude/height API. The viewer origin now matches the FAA airport reference point. `SimulationHeadingDegrees=90` expresses that local +X is east; origin offsets are zero and scale is one. No KAUO-specific correction is applied in an actor. The runway overlay derives its segment direction from the FAA endpoint-derived true bearing.
+
+## Unreal/Cesium visual registration verification
+
+The runtime terrain tileset was originally spawned without an explicit georeference assignment. Cesium then used its default georeference resolution path, and the baseline validation view showed an unrelated terrain patch beneath the KAUO overlay. The airport environment now assigns its KAUO `ACesiumGeoreference` directly to the tileset before finishing its spawn. The runtime log checks and records that the resolved georeference is the expected actor and that its origin is `lon=-85.4340000, lat=32.6151111, height=208.22 m`. This removes reliance on choosing the first discovered georeference at runtime. Cesium documents that an unassigned tileset resolves the first georeference in the level or creates one if necessary ([Cesium georeference API](https://cesium.com/learn/cesium-unreal/ref-doc/classACesiumGeoreference.html)).
+
+With the explicit binding, the Cesium imagery shows KAUO. In the final overhead and intersection captures, both generated runway boundaries follow the corresponding visible pavement, including the crossing. The apron outline falls within the visible terminal/FBO apron area. Its center and dimensions remain APPROXIMATE; this visual check does not upgrade them to surveyed coordinates. Taxiway paths remain chart-derived approximations and are not claimed to be pixel-accurate centerlines. No airport actor was moved manually in Unreal.
+
+`-RampLabGeospatialWireframe` is a display-only capture option: it draws runway boundaries and the apron outline so the source imagery remains visible. It does not change scenario coordinates, actor placement, or simulation state. Camera capture presets are `KAUOOverview`, `KAUORunways`, `KAUOIntersection`, and `KAUOApron`.
+
+| Capture | Evidence |
+|---|---|
+| Baseline entire airport overhead | [baseline-overview-final.png](../../results/goal26/kauo/unreal/baseline-overview-final.png) · [runtime log](../../results/goal26/kauo/unreal/baseline-overview-final.log) |
+| Baseline runway crossing | [baseline-intersection-final.png](../../results/goal26/kauo/unreal/baseline-intersection-final.png) · [runtime log](../../results/goal26/kauo/unreal/baseline-intersection-final.log) |
+| Baseline apron and taxiway | [baseline-apron-final.png](../../results/goal26/kauo/unreal/baseline-apron-final.png) · [runtime log](../../results/goal26/kauo/unreal/baseline-apron-final.log) |
+| Disruption entire airport overhead | [disruption-overview-final.png](../../results/goal26/kauo/unreal/disruption-overview-final.png) · [runtime log](../../results/goal26/kauo/unreal/disruption-overview-final.log) |
 
 FAA lists field elevation as 776.8 ft MSL. The configured 208.22 m ellipsoid height is derived using an approximate GEOID18 separation of -28.56 m; the FAA NASR horizontal coordinate is authoritative, while this ellipsoid height is approximate. Local feature registration is evaluated horizontally.
 
