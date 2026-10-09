@@ -722,8 +722,14 @@ void ARampLabWorldActor::UpdateCamera(float DeltaSeconds)
 void ARampLabWorldActor::ApplyCameraPreset(const FString& Preset)
 {
     AppliedCameraPreset = Preset;
-    if (Preset == TEXT("KAUO Overview")) {
+    if (Preset == TEXT("KAUO Overview") || Preset == TEXT("KAUOOverview")) {
         CameraFocus = ToWorld({0.0, 10.0}); CameraDistance = 220000.0f; CameraYaw = -42.0f; CameraPitch = -68.0f;
+    } else if (Preset == TEXT("KAUORunways")) {
+        CameraFocus = ToWorld({0.0, 0.0}); CameraDistance = 105000.0f; CameraYaw = 0.0f; CameraPitch = -88.0f;
+    } else if (Preset == TEXT("KAUOIntersection")) {
+        CameraFocus = ToWorld({-193.0, 458.0}); CameraDistance = 48000.0f; CameraYaw = 0.0f; CameraPitch = -86.0f;
+    } else if (Preset == TEXT("KAUOApron")) {
+        CameraFocus = ToWorld({100.0, -120.0}); CameraDistance = 34000.0f; CameraYaw = 0.0f; CameraPitch = -82.0f;
     } else if (Preset == TEXT("Ramp")) {
         CameraFocus = ToWorld({120.0, 0.0}); CameraDistance = 40000.0f; CameraYaw = -42.0f; CameraPitch = -55.0f;
     } else if (Preset == TEXT("Gate A2")) {

@@ -10,6 +10,7 @@
 #include "CesiumIonServer.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -71,15 +72,17 @@ void ARampLabAirportEnvironment::BeginPlay()
     BuildOperationalContext();
 
     FString ScreenshotPath;
+    FString ScreenshotCameraPreset = TEXT("KAUO Overview");
+    FParse::Value(FCommandLine::Get(), TEXT("RampLabCameraPreset="), ScreenshotCameraPreset);
     if (FParse::Value(FCommandLine::Get(), TEXT("RampLabScreenshot="), ScreenshotPath) && !ScreenshotPath.IsEmpty()) {
         const FString ScreenshotDirectory = FPaths::GetPath(ScreenshotPath);
         if (!ScreenshotDirectory.IsEmpty()) IFileManager::Get().MakeDirectory(*ScreenshotDirectory, true);
         FTimerHandle ScreenshotTimer;
-        GetWorld()->GetTimerManager().SetTimer(ScreenshotTimer, FTimerDelegate::CreateLambda([ScreenshotPath]() {
+        GetWorld()->GetTimerManager().SetTimer(ScreenshotTimer, FTimerDelegate::CreateLambda([ScreenshotPath, ScreenshotCameraPreset]() {
             if (auto* World = GEngine == nullptr ? nullptr : GEngine->GetCurrentPlayWorld()) {
                 if (auto* GameInstance = World->GetGameInstance()) {
                     if (auto* Subsystem = GameInstance->GetSubsystem<URampLabSimulationSubsystem>())
-                        Subsystem->SetCameraPreset(TEXT("KAUO Overview"));
+                        Subsystem->SetCameraPreset(ScreenshotCameraPreset);
                 }
                 FTimerHandle CaptureTimer;
                 World->GetTimerManager().SetTimer(CaptureTimer, FTimerDelegate::CreateLambda([ScreenshotPath]() {
@@ -122,6 +125,7 @@ void ARampLabAirportEnvironment::BuildGeographicContext()
     // default asset ID before RampLab applies the configured terrain asset.
     Terrain = GetWorld()->SpawnActorDeferred<ACesium3DTileset>(
         ACesium3DTileset::StaticClass(), FTransform::Identity);
+    Terrain->SetGeoreference(Georeference);
     Terrain->SetCesiumIonServer(IonServer);
     Terrain->SetIonAssetID(Placement.TerrainAssetId);
     Terrain->SetIonAccessToken(Token);
@@ -129,6 +133,15 @@ void ARampLabAirportEnvironment::BuildGeographicContext()
     Terrain->MaximumCachedBytes = 256LL * 1024LL * 1024LL;
     Terrain->ShowCreditsOnScreen = true;
     Terrain->FinishSpawning(FTransform::Identity);
+
+    const ACesiumGeoreference* ResolvedGeoreference = Terrain->ResolveGeoreference();
+    const FVector ResolvedOrigin = ResolvedGeoreference == nullptr
+        ? FVector::ZeroVector
+        : ResolvedGeoreference->GetOriginLongitudeLatitudeHeight();
+    UE_LOG(LogRampLab, Display,
+        TEXT("Cesium tileset georeference: resolved=%s origin=(lon=%.7f lat=%.7f height=%.2fm) explicit_binding=true"),
+        ResolvedGeoreference == Georeference ? TEXT("expected") : TEXT("unexpected"),
+        ResolvedOrigin.X, ResolvedOrigin.Y, ResolvedOrigin.Z);
 
     auto* Imagery = NewObject<URampLabIonRasterOverlay>(Terrain, TEXT("AuburnAerialImagery"));
     Imagery->IonAssetID = Placement.ImageryAssetId;
@@ -171,6 +184,7 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
     if (Features.IsValid()) Features->TryGetBoolField(TEXT("kauo_calibrated"), bKauoCalibration);
 
     if (bKauoCalibration) {
+        const bool bGeospatialWireframe = FParse::Param(FCommandLine::Get(), TEXT("RampLabGeospatialWireframe"));
         const FRampLabAirportPlacement Placement = FRampLabAirportPlacement::Load();
         const auto ToOverlay = [&Placement](double X, double Y) {
             return Placement.ToUnreal({X, Y}, -Placement.OperationalLayerHeightCm);
@@ -195,7 +209,7 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
                 || !Center->TryGetNumberField(TEXT("y"), CenterY)
                 || !RunwayInfo->TryGetNumberField(TEXT("length_m"), Length)
                 || !RunwayInfo->TryGetNumberField(TEXT("width_m"), Width)
-                || !RunwayInfo->TryGetNumberField(TEXT("true_heading_degrees_from_runway18"), Bearing)) continue;
+                || !RunwayInfo->TryGetNumberField(TEXT("true_heading_degrees_from_first_threshold"), Bearing)) continue;
 
             // Convert the true bearing to a unit vector in the simulator's XY frame.
             const double LocalBearing = FMath::DegreesToRadians(Bearing - (Placement.SimulationHeadingDegrees - 90.0));
@@ -204,11 +218,23 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
             const FString Identifier = RunwayInfo->GetStringField(TEXT("identifier"));
             const FString RunwayName = TEXT("KAUO_Runway_") + Identifier.Replace(TEXT("/"), TEXT("_"));
             const double HalfLength = Length * 0.5;
-            AddSegment(RunwayName, CenterX - AxisX * HalfLength, CenterY - AxisY * HalfLength,
-                CenterX + AxisX * HalfLength, CenterY + AxisY * HalfLength, Width, RunwayMaterial);
+            if (bGeospatialWireframe) {
+                const double HalfWidth = Width * 0.5;
+                for (const double Side : {-1.0, 1.0}) {
+                    const double OffsetX = -AxisY * HalfWidth * Side;
+                    const double OffsetY = AxisX * HalfWidth * Side;
+                    AddSegment(RunwayName + (Side < 0.0 ? TEXT("_EdgeA") : TEXT("_EdgeB")),
+                        CenterX - AxisX * HalfLength + OffsetX, CenterY - AxisY * HalfLength + OffsetY,
+                        CenterX + AxisX * HalfLength + OffsetX, CenterY + AxisY * HalfLength + OffsetY,
+                        1.2, Marking);
+                }
+            } else {
+                AddSegment(RunwayName, CenterX - AxisX * HalfLength, CenterY - AxisY * HalfLength,
+                    CenterX + AxisX * HalfLength, CenterY + AxisY * HalfLength, Width, RunwayMaterial);
+            }
             AddSegment(RunwayName + TEXT("_Centerline"), CenterX - AxisX * HalfLength * 0.95,
                 CenterY - AxisY * HalfLength * 0.95, CenterX + AxisX * HalfLength * 0.95,
-                CenterY + AxisY * HalfLength * 0.95, 0.4, Marking);
+                CenterY + AxisY * HalfLength * 0.95, bGeospatialWireframe ? 0.6 : 0.4, Marking);
         }
 
         const auto ApronCenter = Features->GetObjectField(TEXT("apron_center_local_m"));
@@ -217,8 +243,21 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
             double X = 0.0, Y = 0.0, Width = 0.0, Length = 0.0;
             if (ApronCenter->TryGetNumberField(TEXT("x"), X) && ApronCenter->TryGetNumberField(TEXT("y"), Y)
                 && ApronSize->TryGetNumberField(TEXT("x"), Width) && ApronSize->TryGetNumberField(TEXT("y"), Length)) {
-                AddBox(TEXT("KAUO_TerminalFboApron"), ToOverlay(X, Y), FVector(Width, Length, 0.25),
-                    Placement.SimulationHeadingDegrees - 90.0f, Apron);
+                if (bGeospatialWireframe) {
+                    const double HalfWidth = Width * 0.5;
+                    const double HalfLength = Length * 0.5;
+                    AddSegment(TEXT("KAUO_TerminalFboApron_North"), X - HalfWidth, Y + HalfLength,
+                        X + HalfWidth, Y + HalfLength, 1.2, Marking);
+                    AddSegment(TEXT("KAUO_TerminalFboApron_South"), X - HalfWidth, Y - HalfLength,
+                        X + HalfWidth, Y - HalfLength, 1.2, Marking);
+                    AddSegment(TEXT("KAUO_TerminalFboApron_East"), X + HalfWidth, Y - HalfLength,
+                        X + HalfWidth, Y + HalfLength, 1.2, Marking);
+                    AddSegment(TEXT("KAUO_TerminalFboApron_West"), X - HalfWidth, Y - HalfLength,
+                        X - HalfWidth, Y + HalfLength, 1.2, Marking);
+                } else {
+                    AddBox(TEXT("KAUO_TerminalFboApron"), ToOverlay(X, Y), FVector(Width, Length, 0.25),
+                        Placement.SimulationHeadingDegrees - 90.0f, Apron);
+                }
             }
         }
 

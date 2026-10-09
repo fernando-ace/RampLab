@@ -22,8 +22,8 @@ In the dashboard at `http://127.0.0.1:8765`, load each run's `experiment.json`, 
 
 The Goal 19 comparison reports control-versus-disruption impact. The Goal 24B determinism command separately compares both repeated metric files and both ordered event logs in the four-check format Goal 22 validates. Each release run preserves native outputs and writes `experiment.json`, `runs.csv`, and `aircraft.csv`; generated runs embed the scenario document, manifest, identity map, and support matrix in `experiment.json`, which Goal 22 copies byte-for-byte into the evidence bundle.
 
-## Limits and future Goal 25 work
+## Limits and future calibration work
 
 The fixture deliberately contains a tug outage that cannot be modeled because Goal 24B has no validated tug vehicle class. The manifest reports that unsupported outage. Its route closure does resolve to a real geometry edge and is recorded as a native road event. A route event occurring after the fixture's flight operations may not change a flight's path; the event is represented honestly and no effect is claimed unless measured in the simulator output.
 
-Before using a real KAUO dataset, Goal 25 still needs surveyed gate/stand and taxiway geometry, route identity mapping, a real schedule source, verified equipment inventory and spawn locations, realistic turnaround durations and dependencies, aircraft movement calibration, and operational validation against observed data. This synthetic mapping is not KAUO calibration or real-airport fidelity.
+Goal 26 calibrates the KAUO runway layer to FAA NASR runway-end coordinates. Surveyed taxiway centerlines, pavement/apron boundaries, stand coordinates, route identity mapping, a real schedule source, verified equipment inventory and spawn locations, realistic turnaround durations and dependencies, aircraft movement calibration, and operational validation against observed data remain unavailable. This Goal 24B synthetic mapping remains synthetic and is not KAUO calibration or real-airport fidelity.
