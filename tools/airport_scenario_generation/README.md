@@ -18,6 +18,8 @@ The release `run` command also retains its five catalog choices. `--scenario-fil
 
 The `tools.airport_scenario_generation.determinism` command compares control metrics, control events, disruption metrics, and disruption events from two seeded runs of each generated scenario. Its report uses the repeat-run contract expected by Goal 22.
 
+For geospatial inputs, `geospatial.py` converts WGS-84 geographic coordinates to and from airport-local ENU meters. Scenario XY uses the same ENU convention; Unreal maps meters to centimeters and negates north for its south-positive Y axis. KAUO's FAA runway-end calibration and numerical report are reproducibly rebuilt with `python -m tools.airport_scenario_generation.calibrate_kauo`. See [KAUO_CALIBRATION.md](KAUO_CALIBRATION.md) for CRS, source classification, measured errors, and the limits of approximate taxiway/apron geometry.
+
 When UE 5.8 is available, add `--unreal` to the release `run --scenario-file ...` command to build and open the existing viewer with `-RampLabScenarioFile=<generated scenario path>`. The viewer uses the same C++ scenario loader and advances the generated scenario at an accelerated 60x operator playback speed.
 
 The output directory contains:

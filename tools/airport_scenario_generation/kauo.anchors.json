@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "airport_id": "KAUO",
+  "coordinate_reference_system": "WGS 84 geographic 3D (EPSG:4979); horizontal outputs use airport-local ENU meters",
+  "origin": {
+    "latitude_degrees": 32.61511111,
+    "longitude_degrees": -85.434,
+    "ellipsoid_height_m": 208.22,
+    "field_elevation_ft_msl": 776.8,
+    "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+    "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+    "source_record": {"file": "APT_BASE.csv", "EFF_DATE": "2026/10/01", "ARPT_ID": "AUO", "ICAO_ID": "KAUO", "ARPT_PSN_SOURCE": "3RD PARTY SURVEY", "POSITION_SRC_DATE": "2006/05/22"}
+  },
+  "runways": [
+    {
+      "identifier": "18/36",
+      "published_length_m": 1604.4672,
+      "published_width_m": 30.48,
+      "surface": "asphalt, grooved",
+      "source": "FAA 28 Day NASR APT_RWY and APT_RWY_END, effective 2026-10-01; RWY_LEN_SOURCE and RWY_END_PSN_SOURCE=3RD PARTY SURVEY, source date 2006/05/22.",
+      "source_record": {"file": "APT_RWY.csv", "EFF_DATE": "2026/10/01", "ARPT_ID": "AUO", "RWY_ID": "18/36", "RWY_LEN_SOURCE": "3RD PARTY SURVEY", "LENGTH_SOURCE_DATE": "2006/05/22"},
+      "thresholds": {
+        "18": {"latitude_degrees": 32.6202013, "longitude_degrees": -85.43603569, "elevation_ft_msl": 776.8, "classification": "AUTHORITATIVE", "source_record": {"file": "APT_RWY_END.csv", "EFF_DATE": "2026/10/01", "ARPT_ID": "AUO", "SITE_NO": "00146.", "RWY_ID": "18/36", "RWY_END_ID": "18", "RWY_END_PSN_SOURCE": "3RD PARTY SURVEY", "RWY_END_PSN_DATE": "2006/05/22"}},
+        "36": {"latitude_degrees": 32.60573677, "longitude_degrees": -85.43634563, "elevation_ft_msl": 731.1, "classification": "AUTHORITATIVE", "source_record": {"file": "APT_RWY_END.csv", "EFF_DATE": "2026/10/01", "ARPT_ID": "AUO", "SITE_NO": "00146.", "RWY_ID": "18/36", "RWY_END_ID": "36", "RWY_END_PSN_SOURCE": "3RD PARTY SURVEY", "RWY_END_PSN_DATE": "2006/05/22"}}
+      }
+    },
+    {
+      "identifier": "11/29",
+      "published_length_m": 1219.2,
+      "published_width_m": 22.86,
+      "surface": "asphalt",
+      "source": "FAA 28 Day NASR APT_RWY and APT_RWY_END, effective 2026-10-01; RWY_LEN_SOURCE and RWY_END_PSN_SOURCE=3RD PARTY SURVEY, source date 2006/05/22.",
+      "source_record": {"file": "APT_RWY.csv", "EFF_DATE": "2026/10/01", "ARPT_ID": "AUO", "RWY_ID": "11/29", "RWY_LEN_SOURCE": "3RD PARTY SURVEY", "LENGTH_SOURCE_DATE": "2006/05/22"},
+      "thresholds": {
+        "11": {"latitude_degrees": 32.61958108, "longitude_degrees": -85.4373513, "elevation_ft_msl": 774.9, "classification": "AUTHORITATIVE", "source_record": {"file": "APT_RWY_END.csv", "EFF_DATE": "2026/10/01", "ARPT_ID": "AUO", "SITE_NO": "00146.", "RWY_ID": "11/29", "RWY_END_ID": "11", "RWY_END_PSN_SOURCE": "3RD PARTY SURVEY", "RWY_END_PSN_DATE": "2006/05/22"}},
+        "29": {"latitude_degrees": 32.61630966, "longitude_degrees": -85.42495, "elevation_ft_msl": 766.3, "classification": "AUTHORITATIVE", "source_record": {"file": "APT_RWY_END.csv", "EFF_DATE": "2026/10/01", "ARPT_ID": "AUO", "SITE_NO": "00146.", "RWY_ID": "11/29", "RWY_END_ID": "29", "RWY_END_PSN_SOURCE": "3RD PARTY SURVEY", "RWY_END_PSN_DATE": "2006/05/22"}}
+      }
+    }
+  ],
+  "derived_anchors": {
+    "classification": "DERIVED",
+    "definition": "Runway centerline intersection calculated from the FAA runway-end line segments in local ENU.",
+    "source": "Computed from AUTHORITATIVE FAA NASR runway-end coordinates above."
+  },
+  "approximation_policy": {
+    "taxiway_apron_parking": "APPROXIMATE: Goal 25 chart-graticule digitized features; no public surveyed centerlines, pavement polygons, or stand coordinates were obtained.",
+    "legacy_frame": {
+      "origin_latitude_degrees": 32.6151667,
+      "origin_longitude_degrees": -85.434,
+      "origin_ellipsoid_height_m": 208.27,
+      "positive_x_true_bearing_degrees": 95.7,
+      "offset_east_m": 80.0,
+      "offset_north_m": 0.0,
+      "description": "Explicitly declared Goal 25 grid used only to migrate its chart-digitized approximate features into the new ENU frame. It is not retained as a viewer correction."
+    }
+  },
+  "goal25_baseline_runways": [
+    {"identifier": "18/36", "center_local_m": {"x": -260.0, "y": -283.0}, "length_m": 1604.5, "true_heading_degrees_from_runway18": 185.7},
+    {"identifier": "11/29", "center_local_m": {"x": 150.0, "y": 313.0}, "length_m": 1219.2, "true_heading_degrees_from_runway18": 112.0}
+  ],
+  "position_tolerance_m": 5.0,
+  "tolerance_note": "The NASR coordinates are sourced from third-party surveys but FAA does not publish a horizontal accuracy estimate in these fields. 5 m is a project-level overlay tolerance, not a claim about the source survey's absolute accuracy. Numerical round-trip residuals are reported separately."
+}

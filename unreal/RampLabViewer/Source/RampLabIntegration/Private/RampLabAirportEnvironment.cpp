@@ -195,7 +195,7 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
                 || !Center->TryGetNumberField(TEXT("y"), CenterY)
                 || !RunwayInfo->TryGetNumberField(TEXT("length_m"), Length)
                 || !RunwayInfo->TryGetNumberField(TEXT("width_m"), Width)
-                || !RunwayInfo->TryGetNumberField(TEXT("true_heading_degrees_from_runway18"), Bearing)) continue;
+                || !RunwayInfo->TryGetNumberField(TEXT("true_heading_degrees_from_first_threshold"), Bearing)) continue;
 
             // Convert the true bearing to a unit vector in the simulator's XY frame.
             const double LocalBearing = FMath::DegreesToRadians(Bearing - (Placement.SimulationHeadingDegrees - 90.0));

@@ -1,0 +1,219 @@
+{
+  "schema_version": "1.0",
+  "airport_id": "KAUO",
+  "coordinate_reference_system": "WGS 84 geographic 3D (EPSG:4979); horizontal outputs use airport-local ENU meters",
+  "origin": {
+    "latitude_degrees": 32.61511111,
+    "longitude_degrees": -85.434,
+    "ellipsoid_height_m": 208.22,
+    "field_elevation_ft_msl": 776.8,
+    "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+    "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+    "source_record": {
+      "file": "APT_BASE.csv",
+      "EFF_DATE": "2026/10/01",
+      "ARPT_ID": "AUO",
+      "ICAO_ID": "KAUO",
+      "ARPT_PSN_SOURCE": "3RD PARTY SURVEY",
+      "POSITION_SRC_DATE": "2006/05/22"
+    }
+  },
+  "tolerance_m": 5.0,
+  "tolerance_note": "The NASR coordinates are sourced from third-party surveys but FAA does not publish a horizontal accuracy estimate in these fields. 5 m is a project-level overlay tolerance, not a claim about the source survey's absolute accuracy. Numerical round-trip residuals are reported separately.",
+  "scenario_axis_convention": "+X east, +Y north, meters; Unreal uses +X east and -Y north in centimeters.",
+  "authoritative_runway_thresholds": [
+    {
+      "id": "rwy18_threshold",
+      "runway": "18/36",
+      "classification": "AUTHORITATIVE",
+      "source_latitude_degrees": 32.6202013,
+      "source_longitude_degrees": -85.43603569,
+      "source_record": {
+        "file": "APT_RWY_END.csv",
+        "EFF_DATE": "2026/10/01",
+        "ARPT_ID": "AUO",
+        "SITE_NO": "00146.",
+        "RWY_ID": "18/36",
+        "RWY_END_ID": "18",
+        "RWY_END_PSN_SOURCE": "3RD PARTY SURVEY",
+        "RWY_END_PSN_DATE": "2006/05/22"
+      },
+      "generated_enu_m": {
+        "x": -191.058895,
+        "y": 564.510565
+      },
+      "generated_latitude_degrees": 32.6202013,
+      "generated_longitude_degrees": -85.43603569,
+      "position_error_m": 2e-06,
+      "tolerance_m": 5.0,
+      "status": "PASS"
+    },
+    {
+      "id": "rwy36_threshold",
+      "runway": "18/36",
+      "classification": "AUTHORITATIVE",
+      "source_latitude_degrees": 32.60573677,
+      "source_longitude_degrees": -85.43634563,
+      "source_record": {
+        "file": "APT_RWY_END.csv",
+        "EFF_DATE": "2026/10/01",
+        "ARPT_ID": "AUO",
+        "SITE_NO": "00146.",
+        "RWY_ID": "18/36",
+        "RWY_END_ID": "36",
+        "RWY_END_PSN_SOURCE": "3RD PARTY SURVEY",
+        "RWY_END_PSN_DATE": "2006/05/22"
+      },
+      "generated_enu_m": {
+        "x": -220.183588,
+        "y": -1039.622948
+      },
+      "generated_latitude_degrees": 32.6057367701,
+      "generated_longitude_degrees": -85.43634563,
+      "position_error_m": 1.5e-05,
+      "tolerance_m": 5.0,
+      "status": "PASS"
+    },
+    {
+      "id": "rwy11_threshold",
+      "runway": "11/29",
+      "classification": "AUTHORITATIVE",
+      "source_latitude_degrees": 32.61958108,
+      "source_longitude_degrees": -85.4373513,
+      "source_record": {
+        "file": "APT_RWY_END.csv",
+        "EFF_DATE": "2026/10/01",
+        "ARPT_ID": "AUO",
+        "SITE_NO": "00146.",
+        "RWY_ID": "11/29",
+        "RWY_END_ID": "11",
+        "RWY_END_PSN_SOURCE": "3RD PARTY SURVEY",
+        "RWY_END_PSN_DATE": "2006/05/22"
+      },
+      "generated_enu_m": {
+        "x": -314.53713,
+        "y": 495.730459
+      },
+      "generated_latitude_degrees": 32.61958108,
+      "generated_longitude_degrees": -85.4373513,
+      "position_error_m": 2e-06,
+      "tolerance_m": 5.0,
+      "status": "PASS"
+    },
+    {
+      "id": "rwy29_threshold",
+      "runway": "11/29",
+      "classification": "AUTHORITATIVE",
+      "source_latitude_degrees": 32.61630966,
+      "source_longitude_degrees": -85.42495,
+      "source_record": {
+        "file": "APT_RWY_END.csv",
+        "EFF_DATE": "2026/10/01",
+        "ARPT_ID": "AUO",
+        "SITE_NO": "00146.",
+        "RWY_ID": "11/29",
+        "RWY_END_ID": "29",
+        "RWY_END_PSN_SOURCE": "3RD PARTY SURVEY",
+        "RWY_END_PSN_DATE": "2006/05/22"
+      },
+      "generated_enu_m": {
+        "x": 849.420982,
+        "y": 132.956881
+      },
+      "generated_latitude_degrees": 32.61630966,
+      "generated_longitude_degrees": -85.4249500001,
+      "position_error_m": 8e-06,
+      "tolerance_m": 5.0,
+      "status": "PASS"
+    }
+  ],
+  "generated_runway_geometry_endpoint_errors": [
+    {
+      "runway": "18/36",
+      "threshold": "18",
+      "generated_geometry_enu_m": {
+        "x": -191.058901,
+        "y": 564.510566
+      },
+      "geometry_endpoint_error_m": 6e-06,
+      "tolerance_m": 5.0,
+      "status": "PASS"
+    },
+    {
+      "runway": "18/36",
+      "threshold": "36",
+      "generated_geometry_enu_m": {
+        "x": -220.183581,
+        "y": -1039.622948
+      },
+      "geometry_endpoint_error_m": 7e-06,
+      "tolerance_m": 5.0,
+      "status": "PASS"
+    },
+    {
+      "runway": "11/29",
+      "threshold": "11",
+      "generated_geometry_enu_m": {
+        "x": -314.537131,
+        "y": 495.730455
+      },
+      "geometry_endpoint_error_m": 4e-06,
+      "tolerance_m": 5.0,
+      "status": "PASS"
+    },
+    {
+      "runway": "11/29",
+      "threshold": "29",
+      "generated_geometry_enu_m": {
+        "x": 849.420983,
+        "y": 132.956885
+      },
+      "geometry_endpoint_error_m": 4e-06,
+      "tolerance_m": 5.0,
+      "status": "PASS"
+    }
+  ],
+  "derived_runway_intersection": {
+    "classification": "DERIVED",
+    "local_enu_m": {
+      "x": -192.99544,
+      "y": 457.849273
+    },
+    "geographic": {
+      "latitude_degrees": 32.61923953231716,
+      "longitude_degrees": -85.43605630146493,
+      "ellipsoid_height_m": 208.23941210936755
+    },
+    "source": "Computed from AUTHORITATIVE FAA NASR runway-end coordinates above."
+  },
+  "baseline_goal25_threshold_errors": [
+    {
+      "runway": "18/36",
+      "threshold": "18",
+      "error_m": 65.85
+    },
+    {
+      "runway": "18/36",
+      "threshold": "36",
+      "error_m": 66.832
+    },
+    {
+      "runway": "11/29",
+      "threshold": "11",
+      "error_m": 36.648
+    },
+    {
+      "runway": "11/29",
+      "threshold": "29",
+      "error_m": 63.271
+    }
+  ],
+  "baseline_maximum_threshold_error_m": 66.832,
+  "registration_maximum_threshold_error_m": 7e-06,
+  "classification_summary": {
+    "AUTHORITATIVE": "FAA NASR runway-end coordinates and runway dimensions.",
+    "DERIVED": "Runway midpoint, heading, and centerline intersection computed from FAA runway-end coordinates.",
+    "APPROXIMATE": "Taxiway graph, apron, terminal/hangar, and parking references migrated from Goal 25 FAA chart-graticule digitization.",
+    "ASSUMED": "Operational scenario timing, aircraft archetype, task duration, taxi/rollout/occupancy speeds and times remain the Goal 25 assumptions."
+  }
+}
