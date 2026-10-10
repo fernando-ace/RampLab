@@ -95,6 +95,9 @@ public:
     [[nodiscard]] bool finished() const noexcept;
     [[nodiscard]] std::optional<SimTime> next_event_time() const noexcept;
     [[nodiscard]] bool advance();
+    // Runtime commands enter the same deterministic event queue as scenario events.
+    void schedule_surface_availability(EdgeId edge, bool available);
+    void schedule_vehicle_outage(VehicleId vehicle);
     [[nodiscard]] SimulationResult run();
     [[nodiscard]] SimulationResult result() const;
     [[nodiscard]] SimTime current_time() const noexcept;

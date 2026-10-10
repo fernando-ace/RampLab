@@ -58,6 +58,7 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::AircraftLanded: return "AircraftLanded";
     case SimulationEventType::TurnaroundStarted: return "TurnaroundStarted";
     case SimulationEventType::PushbackTaxiOutStarted: return "PushbackTaxiOutStarted";
+    case SimulationEventType::OperatorIntervention: return "OperatorIntervention";
     }
     return "Unknown";
 }

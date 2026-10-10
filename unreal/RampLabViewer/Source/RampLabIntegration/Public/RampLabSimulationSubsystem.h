@@ -85,6 +85,7 @@ private:
     FString ScenarioName;
     FString SelectedScenarioKey{TEXT("baseline")};
     FString ScenarioFileOverride;
+    FString LiveStateFileOverride;
     FString StatusText;
     FString ComparisonText;
     FString FinalResultText;
@@ -118,4 +119,7 @@ private:
     double ControlCheckWallSeconds{0.0};
     double ControlCheckPausedTime{0.0};
     double DemoTransitionWallSeconds{0.0};
+    double LiveStatePollAccumulator{0.0};
+    uint64 LiveStateLastEventSequence{0};
+    bool bLiveStateConnectionLogged{false};
 };

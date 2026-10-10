@@ -13,6 +13,9 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Layout/SBox.h"
 
@@ -66,6 +69,7 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     Super::Initialize(Collection);
     double RequestedCaptureMultiplier = CaptureMultiplier;
     FParse::Value(FCommandLine::Get(), TEXT("RampLabScenarioFile="), ScenarioFileOverride);
+    FParse::Value(FCommandLine::Get(), TEXT("RampLabLiveStateFile="), LiveStateFileOverride);
     if (!ScenarioFileOverride.IsEmpty()) PlaybackSpeed = 60.0;
     bCaptureQA = FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
     bFleetValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabFleetValidation"));
@@ -140,6 +144,107 @@ void URampLabSimulationSubsystem::Deinitialize()
 
 void URampLabSimulationSubsystem::Tick(float DeltaTime)
 {
+    if (!LiveStateFileOverride.IsEmpty()) {
+        LiveStatePollAccumulator += DeltaTime;
+        if (LiveStatePollAccumulator < 0.1) return;
+        LiveStatePollAccumulator = 0.0;
+        FString StateText;
+        if (!FFileHelper::LoadFileToString(StateText, *LiveStateFileOverride)) return;
+        TSharedPtr<FJsonObject> Root;
+        const auto Reader = TJsonReaderFactory<>::Create(StateText);
+        if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid() || !Snapshot.IsSet()) return;
+        auto& Current = Snapshot.GetValue();
+        double SimulatedTime = 0.0;
+        if (Root->TryGetNumberField(TEXT("simulated_time_seconds"), SimulatedTime)) PlaybackSeconds = SimulatedTime;
+        const auto AircraftStates = Root->GetArrayField(TEXT("aircraft"));
+        for (const auto& Value : AircraftStates) {
+            const auto Item = Value->AsObject(); if (!Item.IsValid()) continue;
+            const auto Id = static_cast<uint32>(Item->GetIntegerField(TEXT("id")));
+            const auto Found = std::ranges::find(Current.aircraft, Id, [](const auto& Row) { return Row.id.value(); });
+            if (Found == Current.aircraft.end()) continue;
+            Found->surface_state = TCHAR_TO_UTF8(*Item->GetStringField(TEXT("surface_state")));
+            Found->taxi_distance_m = Item->GetNumberField(TEXT("taxi_distance_m"));
+            double X = 0.0, Y = 0.0;
+            if (Item->TryGetNumberField(TEXT("x_m"), X) && Item->TryGetNumberField(TEXT("y_m"), Y))
+                Found->surface_position_m = airside::Vec2{X, Y};
+            const FString State = Item->GetStringField(TEXT("state"));
+            if (State == TEXT("Scheduled")) Found->state = airside::AircraftState::Scheduled;
+            else if (State == TEXT("Arriving")) Found->state = airside::AircraftState::Arriving;
+            else if (State == TEXT("AtGate")) Found->state = airside::AircraftState::AtGate;
+            else if (State == TEXT("WaitingForServices")) Found->state = airside::AircraftState::WaitingForServices;
+            else if (State == TEXT("ReadyForPushback")) Found->state = airside::AircraftState::ReadyForPushback;
+            else if (State == TEXT("Departed")) Found->state = airside::AircraftState::Departed;
+        }
+        const auto VehicleStates = Root->GetArrayField(TEXT("vehicles"));
+        for (const auto& Value : VehicleStates) {
+            const auto Item = Value->AsObject(); if (!Item.IsValid()) continue;
+            const auto Id = static_cast<uint32>(Item->GetIntegerField(TEXT("id")));
+            const auto Found = std::ranges::find(Current.vehicles, Id, [](const auto& Row) { return Row.id.value(); });
+            if (Found == Current.vehicles.end()) continue;
+            Found->fleet_status = TCHAR_TO_UTF8(*Item->GetStringField(TEXT("fleet_status")));
+            Found->current_node = airside::NodeId{static_cast<uint32>(Item->GetIntegerField(TEXT("current_node")))};
+            double X = 0.0, Y = 0.0;
+            if (Item->TryGetNumberField(TEXT("x_m"), X) && Item->TryGetNumberField(TEXT("y_m"), Y))
+                Found->observed_position_m = airside::Vec2{X, Y};
+            const FString State = Item->GetStringField(TEXT("state"));
+            if (State == TEXT("Idle")) Found->state = airside::VehicleState::Idle;
+            else if (State == TEXT("Assigned")) Found->state = airside::VehicleState::Assigned;
+            else if (State == TEXT("TravelingToAircraft")) Found->state = airside::VehicleState::TravelingToAircraft;
+            else if (State == TEXT("Servicing")) Found->state = airside::VehicleState::Servicing;
+            else if (State == TEXT("ReturningToDepot")) Found->state = airside::VehicleState::ReturningToDepot;
+        }
+        const auto RoadStates = Root->GetArrayField(TEXT("roads"));
+        for (const auto& Value : RoadStates) {
+            const auto Item = Value->AsObject(); if (!Item.IsValid()) continue;
+            const auto Id = static_cast<uint32>(Item->GetIntegerField(TEXT("id")));
+            const auto Found = std::ranges::find(Current.roads, Id, [](const auto& Row) { return Row.id.value(); });
+            if (Found != Current.roads.end()) Found->enabled = Item->GetBoolField(TEXT("enabled"));
+        }
+        const auto TaskStates = Root->GetArrayField(TEXT("tasks"));
+        for (const auto& Value : TaskStates) {
+            const auto Item = Value->AsObject(); if (!Item.IsValid()) continue;
+            const auto TaskId = airside::TaskId{static_cast<uint32>(Item->GetIntegerField(TEXT("id")))};
+            const auto AircraftId = airside::AircraftId{static_cast<uint32>(Item->GetIntegerField(TEXT("aircraft_id")))};
+            const auto Aircraft = std::ranges::find(Current.turnarounds, AircraftId, &airside::TurnaroundSnapshot::aircraft);
+            if (Aircraft == Current.turnarounds.end()) continue;
+            const auto Task = std::ranges::find(Aircraft->tasks, TaskId, &airside::ServiceTaskSnapshot::id);
+            if (Task == Aircraft->tasks.end()) continue;
+            const FString Status = Item->GetStringField(TEXT("status"));
+            if (Status == TEXT("Blocked")) Task->status = airside::TaskStatus::Blocked;
+            else if (Status == TEXT("Ready")) Task->status = airside::TaskStatus::Pending;
+            else if (Status == TEXT("Waiting")) Task->status = airside::TaskStatus::Waiting;
+            else if (Status == TEXT("Dispatched")) Task->status = airside::TaskStatus::Assigned;
+            else if (Status == TEXT("InProgress")) Task->status = airside::TaskStatus::InProgress;
+            else if (Status == TEXT("Completed")) Task->status = airside::TaskStatus::Completed;
+            else if (Status == TEXT("Failed")) Task->status = airside::TaskStatus::Failed;
+        }
+        Current.simulation_time = airside::SimTime{static_cast<airside::SimTime::rep>(SimulatedTime)};
+        if (const auto Events = Root->GetArrayField(TEXT("events")); !Events.IsEmpty()) {
+            for (const auto& Value : Events) {
+                const auto Item = Value->AsObject(); if (!Item.IsValid()) continue;
+                const uint64 Sequence = static_cast<uint64>(Item->GetIntegerField(TEXT("sequence")));
+                if (Sequence < LiveStateLastEventSequence) continue;
+                LiveStateLastEventSequence = Sequence + 1;
+                const FString Type = Item->GetStringField(TEXT("type"));
+                FString Detail; Item->TryGetStringField(TEXT("detail"), Detail);
+                RecentEvents.Add(FString::Printf(TEXT("%6.0f  %s  %s"), Item->GetNumberField(TEXT("time_seconds")), *Type, *Detail));
+                if (RecentEvents.Num() > 16) RecentEvents.RemoveAt(0);
+            }
+        }
+        const FString SessionState = Root->GetStringField(TEXT("session_state"));
+        bPlaying = SessionState == TEXT("running");
+        bool bFinished = false; Root->TryGetBoolField(TEXT("finished"), bFinished);
+        bCompletionReported = bFinished;
+        if (!bLiveStateConnectionLogged) {
+            bLiveStateConnectionLogged = true;
+            UE_LOG(LogRampLab, Display,
+                TEXT("Live state mirror synchronized: scenario=%s seed=%d sim_time=%.0f s session=%s; dashboard stream 10 Hz"),
+                *Root->GetStringField(TEXT("scenario")), Root->GetIntegerField(TEXT("seed")), SimulatedTime, *SessionState);
+        }
+        StatusText = FString::Printf(TEXT("KAUO live session · %s · seed 42 · %.0f s · dashboard state stream 10 Hz"),
+            *SessionState, SimulatedTime);
+        return;
+    }
     if (bControlCheck) RunControlCheck(DeltaTime);
     if (CaptureWarmupRemaining > 0.0 && bViewerReady) {
         CaptureWarmupRemaining = FMath::Max(0.0, CaptureWarmupRemaining - DeltaTime);

@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools" / "experiment_analysis"))
 import analyze as goal19
 FORMAT_VERSION = "1.0"
-ARTIFACTS = ("experiment.json", "summary.json", "metrics.json", "runs.csv", "summary.csv", "aircraft.csv", "events.jsonl")
+ARTIFACTS = ("experiment.json", "summary.json", "metrics.json", "runs.csv", "summary.csv", "aircraft.csv", "events.jsonl", "interventions.json", "unreal-live.png", "unreal-live.log")
 COLLISION_KEYS = ("fleet_collisions", "surface_aircraft_aircraft_collisions", "surface_aircraft_ground_collisions")
 SEPARATION_KEYS = ("fleet_minimum_separation_m", "minimum_aircraft_separation_m", "minimum_aircraft_ground_separation_m")
 FAILURE_KEYS = ("surface_safe_failures", "failed_or_timed_out_turnarounds", "fleet_requests_failed", "unresolved_service_requests")
@@ -141,7 +141,8 @@ def render_readme(runs,kpis,checks,timeline,det) -> str:
         lines.append(f"| {label} ({k}) | "+" | ".join(map(fmt,vals))+tail+" |")
     lines += ["","## Safety and determinism","","Safety: "+"; ".join(f"{r['label']}: {r['safety']}" for r in runs),"",f"Determinism: {det['status']} — {det['detail']}","","## Validation","",f"Overall: **{overall(checks)}**","","| Check | Status | Detail |","|---|---|---|"]
     lines += [f"| {c['check']} | {c['status']} | {c['detail']} |" for c in checks]
-    disruptions = [e for e in timeline if any(word in str(e["type"]).lower() for word in ("outage","unavailable","rerout","reassign","timeout","failure","closure","replan"))]
+    disruptions = [e for e in timeline if any(word in str(e["type"]).lower() for word in
+        ("operatorintervention", "outage", "unavailable", "rerout", "reassign", "timeout", "failure", "closure", "roadclosed", "replan"))]
     lines += ["","## Recorded disruptions",""]
     lines += [f"- {e['experiment']} event line {e['line']} (sequence {e['sequence'] if e['sequence'] is not None else 'unavailable'}): {e['type']}" for e in disruptions] or ["No disruption event types were recorded. Operational reroutes and reassignments remain listed in the KPI table."]
     lines += ["","## Event timeline",""]

@@ -21,6 +21,8 @@ enum class EventType {
     TaskDurationChanged,
     FleetTick,
     VehicleOutage,
+    OperatorSurfaceAvailability,
+    OperatorVehicleOutage,
     SurfaceTick,
 };
 

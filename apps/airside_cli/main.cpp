@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <iostream>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -27,6 +28,7 @@ struct Options {
     bool verbose{true};
     bool dump_snapshots{false};
     bool progress{false};
+    bool live_control{false};
 };
 
 void print_usage() {
@@ -44,6 +46,7 @@ Options parse_options(int argc, char* argv[]) {
         if (argument == "--quiet") { result.verbose = false; continue; }
         if (argument == "--dump-snapshots") { result.dump_snapshots = true; continue; }
         if (argument == "--progress") { result.progress = true; continue; }
+        if (argument == "--live-control") { result.live_control = true; result.verbose = false; continue; }
         if (argument == "--scenario" || argument == "--record-events" || argument == "--seed" ||
             argument == "--metrics-json" || argument == "--metrics-csv") {
             if (++index >= argc) throw std::invalid_argument(std::format("{} requires a value", argument));
@@ -472,6 +475,70 @@ void print_snapshot(const airside::SimulationSnapshot& snapshot) {
     }
 }
 
+void write_live_state(const airside::Simulation& simulation, std::string_view scenario_name,
+                      std::uint64_t seed, std::size_t& event_offset, bool finished) {
+    const auto snapshot = simulation.snapshot();
+    const auto& history = simulation.event_history();
+    std::cout << "{\"scenario\":\"" << json_escape(scenario_name) << "\",\"seed\":" << seed
+              << ",\"simulated_time_seconds\":" << snapshot.simulation_time.count()
+              << ",\"next_event_time_seconds\":";
+    if (simulation.next_event_time()) std::cout << simulation.next_event_time()->count(); else std::cout << "null";
+    std::cout
+              << ",\"finished\":" << (finished ? "true" : "false") << ",\"aircraft\":[";
+    for (std::size_t i = 0; i < snapshot.aircraft.size(); ++i) {
+        const auto& item = snapshot.aircraft[i]; if (i) std::cout << ',';
+        std::cout << "{\"id\":" << item.id.value() << ",\"flight\":\"" << json_escape(item.flight_number)
+                  << "\",\"state\":\"" << airside::to_string(item.state) << "\",\"surface_state\":\""
+                  << json_escape(item.surface_state) << "\",\"gate_id\":" << item.assigned_gate.value()
+                  << ",\"taxi_distance_m\":" << item.taxi_distance_m;
+        if (item.surface_position_m) std::cout << ",\"x_m\":" << item.surface_position_m->x_m << ",\"y_m\":" << item.surface_position_m->y_m;
+        if (item.actual_departure) std::cout << ",\"actual_departure_seconds\":" << item.actual_departure->count();
+        std::cout << '}';
+    }
+    std::cout << "],\"vehicles\":[";
+    for (std::size_t i = 0; i < snapshot.vehicles.size(); ++i) {
+        const auto& item = snapshot.vehicles[i]; if (i) std::cout << ',';
+        std::cout << "{\"id\":" << item.id.value() << ",\"name\":\"" << json_escape(item.name)
+                  << "\",\"type\":\"" << airside::to_string(item.type) << "\",\"state\":\""
+                  << airside::to_string(item.state) << "\",\"current_node\":" << item.current_node.value()
+                  << ",\"fleet_status\":\"" << json_escape(item.fleet_status) << '"';
+        if (item.assigned_aircraft) std::cout << ",\"assigned_aircraft_id\":" << item.assigned_aircraft->value();
+        if (item.observed_position_m) std::cout << ",\"x_m\":" << item.observed_position_m->x_m << ",\"y_m\":" << item.observed_position_m->y_m;
+        std::cout << '}';
+    }
+    std::cout << "],\"roads\":[";
+    for (std::size_t i = 0; i < snapshot.roads.size(); ++i) {
+        const auto& item = snapshot.roads[i]; if (i) std::cout << ',';
+        std::cout << "{\"id\":" << item.id.value() << ",\"enabled\":" << (item.enabled ? "true" : "false") << '}';
+    }
+    std::cout << "],\"tasks\":[";
+    bool first_task = true;
+    for (const auto& turnaround : snapshot.turnarounds) for (const auto& task : turnaround.tasks) {
+        if (!first_task) std::cout << ','; first_task = false;
+        std::cout << "{\"id\":" << task.id.value() << ",\"aircraft_id\":" << turnaround.aircraft.value()
+                  << ",\"type\":\"" << airside::to_string(task.type) << "\",\"status\":\""
+                  << airside::to_string(task.status) << '"';
+        if (task.assigned_vehicle) std::cout << ",\"vehicle_id\":" << task.assigned_vehicle->value();
+        std::cout << '}';
+    }
+    std::cout << "],\"runway_queue\":[";
+    for (std::size_t i = 0; i < snapshot.runway_queue.size(); ++i) { if (i) std::cout << ','; std::cout << snapshot.runway_queue[i].value(); }
+    std::cout << "],\"runway_owner_id\":";
+    if (snapshot.runway_owner) std::cout << snapshot.runway_owner->value(); else std::cout << "null";
+    std::cout << ",\"events\":[";
+    for (std::size_t i = event_offset; i < history.size(); ++i) {
+        const auto& event = history[i]; if (i != event_offset) std::cout << ',';
+        std::cout << "{\"sequence\":" << event.sequence << ",\"time_seconds\":" << event.timestamp.count()
+                  << ",\"type\":\"" << airside::to_string(event.type) << '"';
+        if (event.edge) std::cout << ",\"edge_id\":" << event.edge->value();
+        if (event.vehicle) std::cout << ",\"vehicle_id\":" << event.vehicle->value();
+        if (!event.detail.empty()) std::cout << ",\"detail\":\"" << json_escape(event.detail) << '"';
+        std::cout << '}';
+    }
+    event_offset = history.size();
+    std::cout << "]}\n" << std::flush;
+}
+
 double minutes(airside::SimTime value) { return static_cast<double>(value.count()) / 60.0; }
 
 std::uint64_t turnaround_event_digest(const std::vector<airside::SimulationEventRecord>& events) {
@@ -584,6 +651,61 @@ int main(int argc, char* argv[]) {
         }
 
         const auto started = std::chrono::steady_clock::now();
+        if (options.live_control) {
+            std::size_t event_offset = 0;
+            write_live_state(simulation, scenario_name, seed, event_offset, simulation.finished());
+            std::string line;
+            while (std::getline(std::cin, line)) {
+                try {
+                    std::istringstream command{line};
+                    std::string action; command >> action;
+                    if (action == "advance") {
+                        (void)simulation.advance();
+                    } else if (action == "closure") {
+                        std::uint32_t id{}; int available{};
+                        if (!(command >> id >> available) || (available != 0 && available != 1))
+                            throw std::invalid_argument("closure requires edge ID and availability 0 or 1");
+                        const auto event_count = simulation.event_history().size();
+                        simulation.schedule_surface_availability(airside::EdgeId{id}, available != 0);
+                        while (simulation.advance() && !std::ranges::any_of(
+                            simulation.event_history().begin() + static_cast<std::ptrdiff_t>(event_count),
+                            simulation.event_history().end(), [](const auto& event) {
+                                return event.type == airside::SimulationEventType::OperatorIntervention;
+                            })) {}
+                    } else if (action == "outage") {
+                        std::uint32_t id{};
+                        if (!(command >> id)) throw std::invalid_argument("outage requires vehicle ID");
+                        const auto event_count = simulation.event_history().size();
+                        simulation.schedule_vehicle_outage(airside::VehicleId{id});
+                        while (simulation.advance() && !std::ranges::any_of(
+                            simulation.event_history().begin() + static_cast<std::ptrdiff_t>(event_count),
+                            simulation.event_history().end(), [](const auto& event) {
+                                return event.type == airside::SimulationEventType::OperatorIntervention;
+                            })) {}
+                    } else if (action == "finish") {
+                        while (simulation.advance()) {}
+                    } else if (action == "snapshot") {
+                        // Emit current authoritative state without advancing simulated time.
+                    } else if (action == "quit") {
+                        break;
+                    } else {
+                        throw std::invalid_argument("unknown live command");
+                    }
+                    const bool finished = simulation.finished();
+                    if (finished && (action == "finish")) {
+                        const auto result = simulation.result();
+                        if (options.metrics_json || options.metrics_csv)
+                            write_metrics(options.metrics_json.value_or(std::filesystem::path{}),
+                                options.metrics_csv.value_or(std::filesystem::path{}), result, simulation.snapshot());
+                    }
+                    write_live_state(simulation, scenario_name, seed, event_offset, finished);
+                    if (finished && action == "finish") return 0;
+                } catch (const std::exception& error) {
+                    std::cout << "{\"error\":\"" << json_escape(error.what()) << "\"}\n" << std::flush;
+                }
+            }
+            return 0;
+        }
         std::uint64_t step = 0;
         while (simulation.advance()) {
             ++step;

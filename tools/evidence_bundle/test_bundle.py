@@ -43,6 +43,34 @@ class EvidenceBundleTests(unittest.TestCase):
         self.assertFalse(parsed.external)
         self.assertTrue(all((self.out/link).is_file() for link in parsed.links))
         self.assertEqual(result["manifest"]["determinism_status"],"INSUFFICIENT DATA")
+    def test_runtime_operator_closure_is_listed_as_recorded_disruption(self):
+        events = self.control / "events.jsonl"
+        with events.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"sequence": 6, "time_seconds": 15, "type": "OperatorIntervention",
+                                     "edge_id": 7, "detail": "surface_closure target=edge:7 result=accepted"}) + "\n")
+            handle.write(json.dumps({"sequence": 7, "time_seconds": 15, "type": "RoadClosed", "edge_id": 7}) + "\n")
+        build([("interactive", self.control)], self.out)
+        readme = (self.out / "README.md").read_text(encoding="utf-8")
+        self.assertIn("OperatorIntervention", readme)
+        self.assertIn("RoadClosed", readme)
+        self.assertNotIn("No disruption event types were recorded.", readme)
+    def test_unreal_live_capture_is_copied_and_hashed(self):
+        capture = self.disruption / "unreal-live.png"
+        runtime_log = self.disruption / "unreal-live.log"
+        capture.write_bytes(b"PNG capture fixture")
+        runtime_log.write_text("Live state mirror synchronized at 15 s.\n", encoding="utf-8")
+        result = build([("interactive", self.disruption)], self.out)
+        bundled = self.out / "evidence" / "interactive" / "unreal-live.png"
+        bundled_log = self.out / "evidence" / "interactive" / "unreal-live.log"
+        self.assertEqual(bundled.read_bytes(), capture.read_bytes())
+        self.assertEqual(bundled_log.read_text(encoding="utf-8"), runtime_log.read_text(encoding="utf-8"))
+        record = next(item for item in result["manifest"]["input_files"]
+                      if item["bundle_path"].endswith("unreal-live.png"))
+        self.assertEqual(record["sha256"], digest(bundled))
+        log_record = next(item for item in result["manifest"]["input_files"]
+                          if item["bundle_path"].endswith("unreal-live.log"))
+        self.assertEqual(log_record["sha256"], digest(bundled_log))
+        self.assertEqual(result["validation"]["hash_verification"]["status"], "PASS")
     def test_repeat_run_report_is_copied_hashed_and_validated(self):
         report=self.root/"analysis.json"
         report.write_text(json.dumps({"determinism":{

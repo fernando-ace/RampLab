@@ -75,5 +75,36 @@ TEST(SimulationTest, RoadClosureReroutesLaterVehicleDispatch) {
     EXPECT_NE(assignment->find("route 1->3->5"), std::string::npos);
 }
 
+TEST(SimulationTest, RuntimeSurfaceClosureIsOrderedAndDeterministic) {
+    auto first_scenario = test::baseline_scenario();
+    auto second_scenario = test::baseline_scenario();
+    const auto edge = first_scenario.graph.edges().front().id;
+    Simulation first{std::move(first_scenario), 42};
+    Simulation second{std::move(second_scenario), 42};
+    first.schedule_surface_availability(edge, false);
+    second.schedule_surface_availability(edge, false);
+    const auto first_result = first.run();
+    const auto second_result = second.run();
+    EXPECT_EQ(first_result.events, second_result.events);
+    EXPECT_EQ(first_result.metrics, second_result.metrics);
+    const auto intervention = std::ranges::find_if(first_result.events, [](const auto& event) {
+        return event.type == SimulationEventType::OperatorIntervention;
+    });
+    ASSERT_NE(intervention, first_result.events.end());
+    EXPECT_EQ(intervention->timestamp, 0s);
+    EXPECT_EQ(intervention->edge, edge);
+    EXPECT_NE(intervention->detail.find("surface_closure"), std::string::npos);
+    const auto closure = std::ranges::find_if(first_result.events, [](const auto& event) {
+        return event.type == SimulationEventType::RoadClosed;
+    });
+    ASSERT_NE(closure, first_result.events.end());
+    EXPECT_LT(intervention->sequence, closure->sequence);
+}
+
+TEST(SimulationTest, RuntimeSurfaceClosureRejectsUnknownEdges) {
+    Simulation simulation{test::baseline_scenario(), 42};
+    EXPECT_THROW(simulation.schedule_surface_availability(EdgeId{999999}, false), std::out_of_range);
+}
+
 }  // namespace
 }  // namespace airside

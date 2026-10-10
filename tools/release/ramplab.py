@@ -153,7 +153,8 @@ def demo(args: argparse.Namespace) -> None:
 
 def launch_unreal(output: Path, scenario_file: Path | None = None, *, screenshot_path: Path | None = None,
                   camera_preset: str | None = None, screenshot_delay_seconds: float | None = None,
-                  playback_speed: float | None = None, build: bool = True) -> None:
+                  playback_speed: float | None = None, live_state_file: Path | None = None,
+                  build: bool = True) -> int:
     catalog = load_catalog()
     mode = catalog["golden_demo"]["unreal_mode"]
     editor = Path(os.environ.get("UE_EDITOR", r"C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe"))
@@ -190,8 +191,11 @@ def launch_unreal(output: Path, scenario_file: Path | None = None, *, screenshot
             arguments.append(f"-RampLabScreenshotDelaySeconds={screenshot_delay_seconds}")
     if playback_speed is not None:
         arguments.append(f"-RampLabPlaybackSpeed={playback_speed}")
+    if live_state_file is not None:
+        arguments.append(f"-RampLabLiveStateFile={live_state_file.resolve()}")
     process = subprocess.Popen(arguments, cwd=ROOT)
     print(f"Visible Unreal demo launched (PID {process.pid}); runtime log: {log}")
+    return process.pid
 
 
 def scenario_path_for_unreal(scenario_name: str, scenario_file: Path | None = None) -> Path:
