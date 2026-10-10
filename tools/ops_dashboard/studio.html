@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Scenario Studio · RampLab</title>
+  <link rel="stylesheet" href="/studio.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/studio" aria-label="RampLab Scenario Studio home"><span class="brand-mark">↗</span><span>RampLab</span></a>
+      <div class="top-divider"></div>
+      <div class="airport-heading"><strong id="airport-code">KAUO</strong><span id="airport-name">Auburn University Regional Airport</span></div>
+      <div class="scenario-picker"><label for="airport-select">Airport data</label><select id="airport-select" aria-label="Choose airport dataset"></select></div>
+      <div class="scenario-name"><label for="scenario-name">Scenario</label><input id="scenario-name" value="KAUO baseline" maxlength="80"></div>
+      <div class="top-actions"><button id="new-variant" class="button quiet">＋ Create variant</button><button id="save-scenario" class="button primary">Save scenario</button><button id="export-scenario" class="icon-button" title="Export RampLab files" aria-label="Export RampLab files">⇩</button></div>
+    </header>
+    <aside class="sidebar" aria-label="Scenario sections">
+      <div class="side-caption">WORKSPACE</div>
+      <nav id="main-nav">
+        <button class="nav-item active" data-view="airport"><span>⌖</span>Airport</button>
+        <button class="nav-item" data-view="flights"><span>✈</span>Flights</button>
+        <button class="nav-item" data-view="fleet"><span>▣</span>Fleet</button>
+        <button class="nav-item" data-view="turnarounds"><span>↻</span>Turnarounds</button>
+        <button class="nav-item" data-view="environment"><span>◷</span>Environment</button>
+        <button class="nav-item" data-view="disruptions"><span>△</span>Disruptions</button>
+        <button class="nav-item" data-view="validation"><span>✓</span>Validation & changes</button>
+        <button class="nav-item" data-view="results"><span>▥</span>Results & compare</button>
+      </nav>
+      <div class="sidebar-bottom"><div class="status-dot"></div><div><strong>Local workspace</strong><small>Scenarios stay on this computer</small></div></div>
+    </aside>
+    <main class="main-content">
+      <section class="workspace-heading">
+        <div><p class="eyebrow" id="airport-subtitle">AIRPORT OPERATIONS</p><h1 id="view-title">Airport overview</h1><p id="view-description">Inspect the runway and taxiway network, then select a supported route to configure a closure.</p></div>
+        <div class="heading-actions"><span id="mode-tag" class="badge blue">Baseline</span><span class="dataset-tag" id="dataset-tag">FAA runway references · approximate taxiways</span><button class="button outline" id="open-saved">Open saved</button></div>
+      </section>
+      <section id="view-airport" class="view active">
+        <div class="map-toolbar"><div class="map-toolbar-title"><span class="live-dot"></span><strong id="map-title">KAUO operational map</strong><span class="quiet-label">Scenario geometry</span></div><div class="map-toolbar-actions"><button class="button small" id="fit-map">Fit airport</button><button class="button small" id="map-disruptions">Disruptions <span id="map-disruption-count" class="count">0</span></button></div></div>
+        <div class="map-layout">
+          <div class="map-column">
+            <div id="airport-map" class="airport-map" role="img" aria-label="Interactive airport map. Select a highlighted taxiway edge to inspect it."></div>
+            <div class="map-legend"><span><i class="legend-runway"></i>Runway</span><span><i class="legend-edge"></i>Taxiway</span><span><i class="legend-gate"></i>Stand</span><span><i class="legend-closed"></i>Closed route</span><span class="provenance-note">Approximate taxiway and stand positions</span></div>
+          </div>
+          <aside class="inspector" id="map-inspector" aria-live="polite">
+            <div class="inspector-head"><div><span class="section-label">MAP SELECTION</span><h2 id="inspector-title">Airport details</h2></div><span class="inspector-status" id="inspector-type">KAUO</span></div>
+            <div id="inspector-body" class="inspector-body"></div>
+          </aside>
+        </div>
+        <div class="bottom-bar"><div class="bottom-summary"><span class="summary-item"><strong id="flight-count">0</strong> flights</span><span class="summary-item"><strong id="vehicle-count">0</strong> vehicles</span><span class="summary-item"><strong id="stand-count">0</strong> stands</span><span class="summary-item"><strong id="disruption-count">0</strong> active changes</span></div><div class="bottom-actions"><button class="button outline" id="validate-button">✓ Validate scenario</button><button class="button primary" id="run-button">▶ Run simulation</button></div></div>
+      </section>
+      <section id="view-flights" class="view"></section>
+      <section id="view-fleet" class="view"></section>
+      <section id="view-turnarounds" class="view"></section>
+      <section id="view-environment" class="view"></section>
+      <section id="view-disruptions" class="view"></section>
+      <section id="view-validation" class="view"></section>
+      <section id="view-results" class="view"></section>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </main>
+  </div>
+  <dialog id="saved-dialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><span class="section-label">SAVED SCENARIOS</span><h2>Open a scenario</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div><div id="saved-list" class="saved-list"></div></form></dialog>
+  <dialog id="confirm-dialog" class="dialog compact"><form method="dialog"><div class="dialog-head"><div><span class="section-label">SCENARIO STUDIO</span><h2 id="confirm-title">Confirm action</h2></div></div><p id="confirm-copy"></p><div class="dialog-actions"><button class="button outline" value="cancel">Cancel</button><button id="confirm-accept" class="button primary" value="accept">Continue</button></div></form></dialog>
+  <script src="/studio.js" defer></script>
+</body>
+</html>

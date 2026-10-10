@@ -75,7 +75,7 @@ def fresh_output(path: Path) -> Path:
 
 
 def run_scenario(cli: Path, key: str | None, mode: str, seed: int, output: Path,
-                 scenario_file: Path | None = None) -> dict[str, Any]:
+                 scenario_file: Path | None = None, *, capture_output: bool = False) -> dict[str, Any]:
     catalog = load_catalog()
     scenarios = catalog["scenarios"]
     selected: dict[str, Any] = {}
@@ -110,8 +110,23 @@ def run_scenario(cli: Path, key: str | None, mode: str, seed: int, output: Path,
     metrics_json = output / "simulator-metrics.json"
     metrics_csv = output / "simulator-metrics.csv"
     events = output / "events.jsonl"
-    command([str(cli), "--scenario", str(path), "--seed", str(seed), "--quiet", "--metrics-json", str(metrics_json),
-             "--metrics-csv", str(metrics_csv), "--record-events", str(events)])
+    arguments = [str(cli), "--scenario", str(path), "--seed", str(seed), "--quiet", "--metrics-json", str(metrics_json),
+                 "--metrics-csv", str(metrics_csv), "--record-events", str(events)]
+    if capture_output:
+        completed = subprocess.run(arguments, cwd=ROOT, check=True, capture_output=True, text=True, timeout=1800)
+        limit = 512 * 1024
+        stdout = completed.stdout or ""
+        stderr = completed.stderr or ""
+        truncated = len(stdout) + len(stderr) > limit
+        log = (stdout + ("\n" if stdout and stderr else "") + stderr).encode("utf-8")
+        if len(log) > limit:
+            log = log[-limit:]
+        (output / "simulator-process.log").write_bytes(log)
+        if truncated:
+            with (output / "simulator-process.log").open("a", encoding="utf-8") as handle:
+                handle.write("\n[Earlier process output was omitted after the 512 KiB limit.]\n")
+    else:
+        command(arguments)
     write_goal19_artifacts(output, metrics_json, actual, path)
     metadata = {"scenario_key": key, "scenario": actual, "mode": mode, "seed": seed,
                 "description": description, "watch_for": watch_for,
