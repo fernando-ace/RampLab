@@ -6,6 +6,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import mimetypes
+import subprocess
 import sys
 import tempfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -13,8 +14,10 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 try:
     from .live_session import LiveSession, LiveSessionError
+    from . import scenario_studio
 except ImportError:  # Direct `python tools/ops_dashboard/server.py` launch.
     from live_session import LiveSession, LiveSessionError
+    import scenario_studio
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
@@ -205,6 +208,52 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = unquote(urlparse(self.path).path)
+        parsed_url = urlparse(self.path)
+        if path in {"/", "/studio", "/studio/", "/studio.html"}:
+            target = (ROOT / "studio.html").resolve()
+            return self._send(200, target.read_bytes(), "text/html; charset=utf-8")
+        if path == "/dashboard":
+            target = (ROOT / "index.html").resolve()
+            return self._send(200, target.read_bytes(), "text/html; charset=utf-8")
+        if path == "/api/studio/bootstrap":
+            from urllib.parse import parse_qs
+            try:
+                key = parse_qs(parsed_url.query).get("airport", ["kauo"])[0]
+                payload = scenario_studio.bootstrap(key)
+                payload["runs"] = scenario_studio.RunManagerSingleton.list()
+                return self._send(200, json.dumps(payload, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+            except (ValueError, OSError, KeyError, TypeError) as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+        if path == "/api/studio/scenarios":
+            payload = {"scenarios": scenario_studio.ScenarioStoreSingleton.list()}
+            return self._send(200, json.dumps(payload, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/scenarios/"):
+            try:
+                saved = scenario_studio.ScenarioStoreSingleton.get(path.rsplit("/", 1)[-1])
+                return self._send(200, json.dumps({"scenario": saved}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+            except (ValueError, FileNotFoundError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+        if path == "/api/studio/runs":
+            return self._send(200, json.dumps({"runs": scenario_studio.RunManagerSingleton.list()}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/runs/") and path.endswith("/export"):
+            try:
+                data = scenario_studio.export_run(path.split("/")[-2])
+                self.send_response(200)
+                self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Disposition", 'attachment; filename="ramplab-run-artifacts.zip"')
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            except (ValueError, FileNotFoundError, OSError) as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/runs/"):
+            try:
+                run = scenario_studio.RunManagerSingleton.get(path.rsplit("/", 1)[-1])
+                return self._send(200, json.dumps({"run": run}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+            except (ValueError, FileNotFoundError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
         if path == "/api/session":
             return self._send(200, json.dumps(LIVE_SESSION.state()).encode(), "application/json; charset=utf-8")
         if path == "/api/session/artifacts":
@@ -245,6 +294,56 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(200, target.read_bytes(), f"{mime}; charset=utf-8")
 
     def do_POST(self):
+        if self.path.startswith("/api/studio/"):
+            length = int(self.headers.get("Content-Length", "0"))
+            if length <= 0 or length > 2 * 1024 * 1024:
+                return self._send(413, b'{"error":"Studio requests must be between 1 byte and 2 MB."}', "application/json; charset=utf-8")
+            try:
+                body = json.loads(self.rfile.read(length))
+                if not isinstance(body, dict):
+                    raise ValueError("Studio request must be an object.")
+                if self.path == "/api/studio/validate":
+                    scenario = body.get("scenario")
+                    if not isinstance(scenario, dict):
+                        raise ValueError("Choose a scenario before validating it.")
+                    payload = scenario_studio.validate_scenario(scenario)
+                    baseline = scenario_studio.new_scenario(str(scenario.get("airport_key", "kauo")))
+                    payload["changes"] = scenario_studio.scenario_diff(baseline, scenario)
+                elif self.path == "/api/studio/save":
+                    scenario = body.get("scenario")
+                    if not isinstance(scenario, dict):
+                        raise ValueError("Choose a scenario before saving it.")
+                    payload = {"scenario": scenario_studio.ScenarioStoreSingleton.save(scenario)}
+                elif self.path == "/api/studio/run":
+                    scenario = body.get("scenario")
+                    if not isinstance(scenario, dict):
+                        raise ValueError("Choose a scenario before running it.")
+                    payload = {"run": scenario_studio.RunManagerSingleton.launch(scenario)}
+                elif self.path == "/api/studio/export":
+                    scenario = body.get("scenario")
+                    if not isinstance(scenario, dict):
+                        raise ValueError("Choose a scenario before exporting it.")
+                    data = scenario_studio.export_generated(scenario)
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/zip")
+                    self.send_header("Content-Disposition", 'attachment; filename="ramplab-scenario-files.zip"')
+                    self.send_header("Content-Length", str(len(data)))
+                    self.send_header("Cache-Control", "no-store")
+                    self.end_headers()
+                    self.wfile.write(data)
+                    return
+                elif self.path == "/api/studio/compare":
+                    payload = {"comparison": scenario_studio.compare_runs(str(body.get("baseline_id", "")), str(body.get("variant_id", "")))}
+                elif self.path == "/api/studio/viewer":
+                    payload = scenario_studio.launch_viewer(str(body.get("run_id", "")))
+                else:
+                    return self._send(404, b'{"error":"Not found"}', "application/json; charset=utf-8")
+                return self._send(200, json.dumps(payload, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+            except subprocess.CalledProcessError as exc:
+                message = f"The Unreal viewer build failed with exit code {exc.returncode}. Check the local server output for the missing dependency or build error."
+                return self._send(400, json.dumps({"error": message}).encode(), "application/json; charset=utf-8")
+            except (ValueError, TypeError, KeyError, OSError, RuntimeError) as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
         session_actions = {"/api/session/start", "/api/session/pause", "/api/session/resume",
                            "/api/session/reset", "/api/session/speed", "/api/session/intervention",
                            "/api/session/advance", "/api/session/finish"}

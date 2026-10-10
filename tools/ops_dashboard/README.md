@@ -1,4 +1,10 @@
-# RampLab Operator Experiment Dashboard
+# RampLab Scenario Studio and Operator Experiment Dashboard
+
+The local server opens **Scenario Studio** at [http://127.0.0.1:8765](http://127.0.0.1:8765). It is a no-code workspace for editing supported Goal 24A airport packages, validating Goal 24B mappings, generating native RampLab runs, comparing Goal 19 results, and exporting the generated scenario package. Scenario drafts and runs are stored under the current user's local application data directory. The server binds to loopback by default.
+
+The original Goal 20 run inspection dashboard remains at [http://127.0.0.1:8765/dashboard](http://127.0.0.1:8765/dashboard); its upload, analysis, replay, and synthetic demo workflows are unchanged.
+
+The Studio offers the canonical KAUO package, the Goal 27 KAUO prototype, and the Goal 24A synthetic example as source datasets. It does not expose the full Goal 23 scenario catalog as editable templates: those packages use different inputs and mappings. Airport and simulator controls are intentionally limited to fields consumed by the selected Goal 24B generator. In particular, the KAUO map's FAA runway references are authoritative while taxiway, apron, stand placement, and the illustrative service assumption are approximate. The Studio is a scenario-planning prototype, not a live airport operations system or digital twin.
 
 A small local control-room interface for inspecting RampLab outputs, comparing two runs, and stepping through recorded events. It runs on the local machine, uses no database or cloud services, and does not modify source experiment files.
 
