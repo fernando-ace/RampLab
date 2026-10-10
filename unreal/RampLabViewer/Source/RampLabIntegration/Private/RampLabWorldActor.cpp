@@ -1,6 +1,7 @@
 #include "RampLabWorldActor.h"
 
 #include "RampLabIntegration.h"
+#include "RampLabAirportEnvironment.h"
 #include "RampLabSimulationSubsystem.h"
 #include "RampLabSensors.h"
 #include "airside/integration/visualization.hpp"
@@ -108,7 +109,7 @@ void ARampLabWorldActor::BeginPlay()
     FuelMaterial = CreateMaterial(FLinearColor(0.42f, 0.075f, 0.004f));
     BaggageMaterial = CreateMaterial(FLinearColor(0.005f, 0.16f, 0.30f));
     bCaptureRun = FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
-    ApplyCameraPreset(TEXT("Overview"));
+    ApplyCameraPreset(TEXT("KAUO Overview"));
 }
 
 void ARampLabWorldActor::Tick(float DeltaSeconds)
@@ -116,6 +117,8 @@ void ARampLabWorldActor::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
     RuntimeWallSeconds += DeltaSeconds;
     ++RuntimeFrames;
+    MaximumFrameDeltaSeconds = FMath::Max(MaximumFrameDeltaSeconds, DeltaSeconds);
+    if (DeltaSeconds > 0.5f) ++StreamingStallFrames;
     UpdateCamera(DeltaSeconds);
     if (auto* Controller = GetWorld()->GetFirstPlayerController();
         Controller != nullptr && Controller->GetViewTarget() != this) {
@@ -125,6 +128,20 @@ void ARampLabWorldActor::Tick(float DeltaSeconds)
     auto* Subsystem = GameInstance == nullptr ? nullptr : GameInstance->GetSubsystem<URampLabSimulationSubsystem>();
     const auto* Snapshot = Subsystem == nullptr ? nullptr : Subsystem->GetSnapshot();
     if (Snapshot == nullptr) return;
+    if (RuntimeWallSeconds >= NextPerformanceReportSeconds) {
+        const double ApproximateFps = RuntimeWallSeconds > 0.0 ? static_cast<double>(RuntimeFrames) / RuntimeWallSeconds : 0.0;
+        FString CesiumState(TEXT("not initialized"));
+        for (TActorIterator<ARampLabAirportEnvironment> It(GetWorld()); It; ++It) {
+            CesiumState = It->GetCesiumStatus();
+            break;
+        }
+        UE_LOG(LogRampLab, Display,
+            TEXT("Goal29 runtime telemetry: approximate_fps=%.1f synchronized_aircraft=%d synchronized_vehicles=%d total_entities=%d mirror_rate_hz=10 cesium_status=\"%s\" frames_over_500ms=%u maximum_frame_delta_seconds=%.3f"),
+            ApproximateFps, static_cast<int32>(Snapshot->aircraft.size()), static_cast<int32>(Snapshot->vehicles.size()),
+            static_cast<int32>(Snapshot->aircraft.size() + Snapshot->vehicles.size()), *CesiumState,
+            StreamingStallFrames, MaximumFrameDeltaSeconds);
+        NextPerformanceReportSeconds += 10.0;
+    }
     if (BuiltScenario != Subsystem->GetScenarioName()) {
         ClearTopology();
         BuiltScenario = Subsystem->GetScenarioName();
@@ -702,6 +719,24 @@ void ARampLabWorldActor::UpdateCamera(float DeltaSeconds)
     const auto* Subsystem = GetGameInstance() == nullptr ? nullptr : GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>();
     if (Subsystem != nullptr && AppliedCameraPreset != Subsystem->GetCameraPreset()) ApplyCameraPreset(Subsystem->GetCameraPreset());
 
+    if (Subsystem != nullptr && (AppliedCameraPreset == TEXT("Follow Aircraft") || AppliedCameraPreset == TEXT("Follow Vehicle"))) {
+        const auto* Snapshot = Subsystem->GetSnapshot();
+        if (Snapshot != nullptr && AppliedCameraPreset == TEXT("Follow Aircraft")) {
+            const auto Aircraft = std::ranges::find_if(Snapshot->aircraft, [](const auto& Item) {
+                return Item.state != airside::AircraftState::Scheduled && Item.state != airside::AircraftState::Departed;
+            });
+            if (Aircraft != Snapshot->aircraft.end()) {
+                const auto Gate = std::ranges::find(Snapshot->gates, Aircraft->assigned_gate, &airside::GateSnapshot::id);
+                const auto Position = Aircraft->surface_position_m.value_or(Gate == Snapshot->gates.end() ? airside::Vec2{} : Gate->position_m);
+                CameraFocus = FMath::VInterpTo(CameraFocus, ToWorld(Position, 180.0f), DeltaSeconds, 3.0f);
+            }
+        } else if (Snapshot != nullptr && AppliedCameraPreset == TEXT("Follow Vehicle")) {
+            const auto Vehicle = std::ranges::find_if(Snapshot->vehicles, [](const auto& Item) { return Item.observed_position_m.has_value(); });
+            if (Vehicle != Snapshot->vehicles.end())
+                CameraFocus = FMath::VInterpTo(CameraFocus, ToWorld(*Vehicle->observed_position_m, 160.0f), DeltaSeconds, 3.0f);
+        }
+    }
+
     if (auto* Controller = GetWorld()->GetFirstPlayerController()) {
         const float Move = 18000.0f * DeltaSeconds;
         const FVector Forward = FRotationMatrix(FRotator(0.0f, CameraYaw, 0.0f)).GetUnitAxis(EAxis::X);
@@ -722,20 +757,24 @@ void ARampLabWorldActor::UpdateCamera(float DeltaSeconds)
 void ARampLabWorldActor::ApplyCameraPreset(const FString& Preset)
 {
     AppliedCameraPreset = Preset;
-    if (Preset == TEXT("KAUO Overview") || Preset == TEXT("KAUOOverview")) {
+    if (Preset == TEXT("Overview") || Preset == TEXT("KAUO Overview") || Preset == TEXT("KAUOOverview")) {
         CameraFocus = ToWorld({0.0, 10.0}); CameraDistance = 220000.0f; CameraYaw = -42.0f; CameraPitch = -68.0f;
-    } else if (Preset == TEXT("KAUORunways")) {
+    } else if (Preset == TEXT("Runway") || Preset == TEXT("KAUORunways")) {
         CameraFocus = ToWorld({0.0, 0.0}); CameraDistance = 105000.0f; CameraYaw = 0.0f; CameraPitch = -88.0f;
+    } else if (Preset == TEXT("Apron") || Preset == TEXT("KAUOApron")) {
+        CameraFocus = ToWorld({115.0, -138.0}); CameraDistance = 29000.0f; CameraYaw = -38.0f; CameraPitch = -52.0f;
     } else if (Preset == TEXT("KAUOIntersection")) {
         CameraFocus = ToWorld({-193.0, 458.0}); CameraDistance = 48000.0f; CameraYaw = 0.0f; CameraPitch = -86.0f;
-    } else if (Preset == TEXT("KAUOApron")) {
-        CameraFocus = ToWorld({100.0, -120.0}); CameraDistance = 34000.0f; CameraYaw = 0.0f; CameraPitch = -82.0f;
     } else if (Preset == TEXT("Ramp")) {
         CameraFocus = ToWorld({120.0, 0.0}); CameraDistance = 40000.0f; CameraYaw = -42.0f; CameraPitch = -55.0f;
     } else if (Preset == TEXT("Gate A2")) {
         CameraFocus = ToWorld({240.0, 0.0}); CameraDistance = 18500.0f; CameraYaw = -60.0f; CameraPitch = -43.0f;
     } else if (Preset == TEXT("Service Roads")) {
         CameraFocus = ToWorld({120.0, 0.0}); CameraDistance = 36000.0f; CameraYaw = -18.0f; CameraPitch = -62.0f;
+    } else if (Preset == TEXT("Follow Aircraft")) {
+        CameraFocus = ToWorld({115.0, -138.0}, 180.0f); CameraDistance = 15000.0f; CameraYaw = -50.0f; CameraPitch = -30.0f;
+    } else if (Preset == TEXT("Follow Vehicle")) {
+        CameraFocus = ToWorld({115.0, -138.0}, 160.0f); CameraDistance = 9000.0f; CameraYaw = -35.0f; CameraPitch = -25.0f;
     } else {
         CameraFocus = FVector(15000.0f, 0.0f, 0.0f); CameraDistance = 82000.0f; CameraYaw = -38.0f; CameraPitch = -54.0f;
     }

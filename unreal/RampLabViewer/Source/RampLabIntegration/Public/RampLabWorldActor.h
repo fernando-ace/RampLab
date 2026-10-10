@@ -99,6 +99,9 @@ private:
     FString BuiltScenario;
     double RuntimeWallSeconds{0.0};
     uint64 RuntimeFrames{0};
+    double NextPerformanceReportSeconds{5.0};
+    uint32 StreamingStallFrames{0};
+    float MaximumFrameDeltaSeconds{0.0f};
     bool bPerformanceReported{false};
     bool bAutonomyTopologyBuilt{false};
     double LastAutonomyTrailSampleTime{-1.0};

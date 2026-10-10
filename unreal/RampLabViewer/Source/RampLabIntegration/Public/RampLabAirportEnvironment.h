@@ -13,6 +13,7 @@ class UMaterialInterface;
 class USceneComponent;
 class UStaticMesh;
 class UStaticMeshComponent;
+class UTextRenderComponent;
 
 UCLASS()
 class RAMPLABINTEGRATION_API URampLabIonRasterOverlay final : public UCesiumIonRasterOverlay
@@ -36,6 +37,8 @@ public:
     [[nodiscard]] FString GetCesiumStatus() const { return CesiumStatus; }
 
 private:
+    UFUNCTION()
+    void HandleTerrainLoaded();
     void BuildGeographicContext();
     void BuildOperationalContext();
     void AddBox(const FString& Name, FVector LocationCm, FVector SizeMeters, float YawDegrees, UMaterialInstanceDynamic* Material);
@@ -48,6 +51,7 @@ private:
     UPROPERTY() TObjectPtr<UCesiumIonServer> IonServer;
     UPROPERTY() TObjectPtr<ACesium3DTileset> Terrain;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> StaticGeometry;
+    UPROPERTY() TArray<TObjectPtr<UTextRenderComponent>> AirportMarkings;
     bool bCesiumConnected{false};
     FString CesiumStatus{TEXT("Not initialized")};
 };

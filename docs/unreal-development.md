@@ -18,7 +18,7 @@ powershell -ExecutionPolicy Bypass -File .\unreal\RampLabViewer\Scripts\InstallC
 
 Cesium 2.29.1's official `57` archive supports UE 5.7/5.8 but declares 5.7 in its descriptor. After verifying the archive checksum, the installer normalizes only the ignored project-local descriptor to 5.8 so unattended launches do not reject the plugin at the compatibility prompt. It does not modify the Unreal installation.
 
-Copy `unreal/RampLabViewer/.env.example` to `.env.local`, then replace the placeholder with an ion token authorized for Cesium World Terrain (asset 1) and Bing Maps Aerial (asset 2). `.env.local` is ignored by Git. Do not pass the token on the command line or commit it.
+For a fresh primary checkout, keep the authorized ion token in an ignored local environment file or an inherited process environment variable. A linked worktree can resolve the primary checkout's existing local environment file without copying it. Never pass the token on the command line or commit it. Use `Scripts/ValidateCesiumAccess.ps1` to verify discovery and permissions safely and `Scripts/LaunchRampLabViewer.ps1` for the reproducible startup path.
 
 The script configures `build-unreal-core-v143` with Visual Studio 18 2026, x64, Release, tests disabled, and toolset v143 14.44 to match Unreal's linker runtime. `RampLabIntegration.Build.cs` links the operations, autonomy, scenario, and yaml-cpp libraries from that tree.
 

@@ -116,13 +116,19 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                 [
                     SNew(SHorizontalBox)
                     + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 5, 0)
-                    [ SNew(SButton).Text(FText::FromString(TEXT("Overview"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Overview"))) ]
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Overview"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("KAUO Overview"))) ]
                     + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 5, 0)
-                    [ SNew(SButton).Text(FText::FromString(TEXT("Ramp"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Ramp"))) ]
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Apron"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Apron"))) ]
                     + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 5, 0)
-                    [ SNew(SButton).Text(FText::FromString(TEXT("Gate A2"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Gate A2"))) ]
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Runway"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Runway"))) ]
+                ]
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [
+                    SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 5, 0)
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Follow Aircraft"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Follow Aircraft"))) ]
                     + SHorizontalBox::Slot().AutoWidth()
-                    [ SNew(SButton).Text(FText::FromString(TEXT("Roads"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Service Roads"))) ]
+                    [ SNew(SButton).Text(FText::FromString(TEXT("Follow Vehicle"))).OnClicked(this, &SRampLabControlPanel::SetCamera, FString(TEXT("Follow Vehicle"))) ]
                 ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [ SNew(SSeparator) ]

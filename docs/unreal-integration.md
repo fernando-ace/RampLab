@@ -22,7 +22,7 @@ The Unreal 5.8 project is `unreal/RampLabViewer`. Its `RampLabIntegration` modul
 
 ## Auburn digital-twin placement
 
-The viewer anchors its Cesium georeference at the FAA-published airport reference point for Auburn University Regional Airport (KAUO): latitude `32.6151667` and longitude `-85.4340000`. The FAA field elevation is `236.83 m`; NOAA NGS GEOID18 reports `-28.561 m` geoid height at the airport reference point, so the configured approximate ellipsoid height is `208.27 m`. `OperationalLayerHeightCm` remains tunable for small mesh/terrain separation and is visually checked against streamed terrain.
+The viewer anchors its Cesium georeference at the FAA-published airport reference point for Auburn University Regional Airport (KAUO): latitude `32.61511111` and longitude `-85.4340000`. The FAA field elevation is `776.8 ft` MSL; with the approximate NOAA NGS GEOID18 separation used by the calibration, the configured approximate ellipsoid height is `208.22 m`. `OperationalLayerHeightCm` remains tunable for small mesh/terrain separation. See the Goal 27 calibration and Goal 29 visual twin documents for provenance and visual alignment limitations.
 
 The transform is deliberately outside the simulation engine:
 
@@ -48,7 +48,7 @@ The simulation engine remains authoritative for time, state, routes, closures, r
 
 The project enables the official project-local Cesium plugin. `Scripts/InstallCesium.ps1` downloads version 2.29.1 from CesiumGS and checks the pinned SHA-256 before installation. The installed package is ignored by Git.
 
-At runtime, `ARampLabAirportEnvironment` creates the georeference, Cesium World Terrain (ion asset 1), and Bing Maps Aerial overlay (ion asset 2). It reads `RAMPLAB_CESIUM_ION_TOKEN` from the process environment first, then from ignored `unreal/RampLabViewer/.env.local`. Tokens are never logged. Without a token, the viewer still renders the synthetic operational layer and emits an explicit geospatial-status warning rather than pretending that streamed context exists.
+At runtime, `ARampLabAirportEnvironment` creates the georeference, Cesium World Terrain (ion asset 1), and Bing Maps Aerial overlay (ion asset 2), with an explicit georeference binding. It resolves `RAMPLAB_CESIUM_ION_TOKEN` from the current checkout `.local.env`, primary checkout `.local.env` in a linked worktree, the process environment, then the existing secure project-local environment/config files. The credential is never logged or copied into a worktree. Terrain is reported connected only after tiles load; the viewer reports missing credentials explicitly while retaining the approximate operational layer. See [Goal 29](goal29-kauo-visual-digital-twin.md) for the launch and access validation scripts.
 
 The terrain uses Cesium's default 16-pixel maximum screen-space error and a 256 MiB tile cache. Cesium OSM Buildings are intentionally not loaded: they add global streaming work but little value to the focused general-aviation ramp view, where lightweight synthetic terminal/hangar massing is enough to orient the demonstration. Required Cesium/data-provider credits remain enabled on the terrain and imagery overlay.
 

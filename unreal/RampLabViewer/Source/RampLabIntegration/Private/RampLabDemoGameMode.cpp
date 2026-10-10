@@ -13,6 +13,8 @@
 #include "Engine/SkyLight.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/WorldSettings.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 ARampLabDemoGameMode::ARampLabDemoGameMode()
 {
@@ -33,15 +35,17 @@ void ARampLabDemoGameMode::BeginPlay()
         auto* SunComponent = CastChecked<UDirectionalLightComponent>(Sun->GetLightComponent());
         SunComponent->SetMobility(EComponentMobility::Movable);
         SunComponent->SetIntensity(3.0f);
+        SunComponent->SetCastShadows(true);
         SunComponent->SetAtmosphereSunLight(true);
     }
     if (auto* Sky = GetWorld()->SpawnActor<ASkyLight>()) {
         Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);
-        Sky->GetLightComponent()->SetIntensity(0.75f);
+        Sky->GetLightComponent()->SetIntensity(1.1f);
         Sky->GetLightComponent()->SetRealTimeCapture(true);
     }
     if (auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>()) {
-        Subsystem->AttachControlPanel();
+        if (!FParse::Param(FCommandLine::Get(), TEXT("RampLabHideControlPanel")))
+            Subsystem->AttachControlPanel();
     }
 
     if (auto* Controller = GetWorld()->GetFirstPlayerController()) {
