@@ -50,6 +50,7 @@ struct SurfaceOperationsConfig {
     SimTime arrival_rollout{SimTime{90}};
     double aircraft_speed_mps{5.0};
     double departure_queue_spacing_m{30.0};
+    bool return_service_vehicles_to_depot_after_task{false};
 };
 
 struct Scenario {
@@ -122,6 +123,7 @@ private:
     void complete_turnaround_task(Aircraft& aircraft, TaskId task);
     void update_turnaround_estimate(const Aircraft& aircraft);
     void queue_mobile_task(Aircraft& aircraft, ServiceTask& task, std::int64_t priority);
+    void queue_vehicle_return(VehicleId vehicle, NodeId origin, AircraftId aircraft, TaskId completed_task);
     void synchronize_fleet_state();
     void schedule_fleet_tick();
     void request_service(Aircraft& aircraft, ServiceType type);
@@ -151,6 +153,7 @@ private:
     SimulationHistoryPolicy history_policy_{SimulationHistoryPolicy::Retain};
     std::unique_ptr<autonomy::FleetSimulation> autonomy_fleet_;
     std::map<std::string, std::pair<AircraftId, TaskId>> fleet_task_requests_;
+    std::map<std::string, std::pair<VehicleId, AircraftId>> fleet_return_requests_;
     bool fleet_tick_scheduled_{false};
     std::unordered_map<ServiceType, std::size_t> abstract_resources_in_use_;
     std::unordered_map<ServiceType, std::uint64_t> task_replan_counts_;

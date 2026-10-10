@@ -1,0 +1,385 @@
+{
+  "airport": {
+    "features": {
+      "kauo_calibrated": true,
+      "runways": [
+        {
+          "identifier": "18/36",
+          "length_m": 1604.397886,
+          "width_m": 30.48,
+          "true_heading_degrees_from_first_threshold": 181.040149,
+          "center_local_m": {
+            "x": -205.621241,
+            "y": -237.556191
+          },
+          "published_length_m": 1604.4672,
+          "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading"
+        },
+        {
+          "identifier": "11/29",
+          "length_m": 1219.181346,
+          "width_m": 22.86,
+          "true_heading_degrees_from_first_threshold": 107.310813,
+          "center_local_m": {
+            "x": 267.441926,
+            "y": 314.34367
+          },
+          "published_length_m": 1219.2,
+          "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading"
+        }
+      ],
+      "apron_center_local_m": {
+        "x": 97.436698,
+        "y": -121.196537
+      },
+      "apron_size_m": {
+        "x": 150,
+        "y": 145
+      },
+      "buildings": [
+        {
+          "name": "KAUO terminal/FBO",
+          "center_local_m": {
+            "x": 115.848014,
+            "y": -138.108766
+          },
+          "size_m": {
+            "x": 82,
+            "y": 28
+          },
+          "heading_degrees": 5.7
+        },
+        {
+          "name": "KAUO north hangar complex",
+          "center_local_m": {
+            "x": 295.920468,
+            "y": 558.450572
+          },
+          "size_m": {
+            "x": 170,
+            "y": 85
+          },
+          "heading_degrees": 5.7
+        },
+        {
+          "name": "KAUO college aviation hangar area",
+          "center_local_m": {
+            "x": -607.760583,
+            "y": -581.432122
+          },
+          "size_m": {
+            "x": 160,
+            "y": 90
+          },
+          "heading_degrees": 5.7
+        }
+      ],
+      "runway_intersection_local_m": {
+        "x": -192.99544,
+        "y": 457.849273
+      },
+      "runway_intersection_classification": "DERIVED from authoritative FAA NASR runway-end coordinates",
+      "apron_classification": "APPROXIMATE chart-graticule reference; not surveyed",
+      "geometry_status": "FAA surveyed runway ends; centerlines and intersection derived from those ends; taxiway/apron/parking nodes remain approximate chart-digitized ENU references."
+    },
+    "nodes": [
+      {
+        "id": "rwy18_36_mid",
+        "name": "Runway 18/36 reference midpoint (approximate FAA-diagram anchor)",
+        "x_m": -205.621241,
+        "y_m": -237.556191
+      },
+      {
+        "id": "rwy36_hold",
+        "name": "Runway 36 end / departure queue reference (approximate FAA-diagram anchor)",
+        "x_m": -220.183588,
+        "y_m": -1039.622948
+      },
+      {
+        "id": "twy_a_south",
+        "name": "Taxiway A south connector (approximate chart anchor)",
+        "x_m": -329.939582,
+        "y_m": -617.202097
+      },
+      {
+        "id": "twy_a_mid",
+        "name": "Taxiway A arrival exit reference (approximate chart anchor)",
+        "x_m": -324.459431,
+        "y_m": -119.284465
+      },
+      {
+        "id": "twy_a_north",
+        "name": "Taxiway A north connector (approximate chart anchor)",
+        "x_m": -319.987342,
+        "y_m": 449.081614
+      },
+      {
+        "id": "fbo_apron_junction",
+        "name": "East-side terminal/FBO apron access via Taxiway C (approximate chart anchor)",
+        "x_m": -29.34007,
+        "y_m": -72.36365
+      },
+      {
+        "id": "fbo_apron_detour",
+        "name": "North Taxiway C apron-side detour (approximate chart anchor)",
+        "x_m": -89.036988,
+        "y_m": 437.084363
+      },
+      {
+        "id": "ga_parking_stand",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron",
+        "x_m": 93.160375,
+        "y_m": -133.834301
+      },
+      {
+        "id": "self_serve_fuel_farm",
+        "name": "Charted west-side self-serve fuel farm area (approximate chart anchor)",
+        "x_m": -544.048314,
+        "y_m": -204.898264
+      },
+      {
+        "id": "ga_parking_stand_02",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron",
+        "x_m": 170.0,
+        "y_m": -85.0,
+        "classification": "APPROXIMATE / ASSUMED FOR SIMULATION; no surveyed stand position is available"
+      },
+      {
+        "id": "fbo_service_staging_west",
+        "name": "Approximate baggage vehicle staging point southwest of illustrative GA stand 01",
+        "x_m": 30.0,
+        "y_m": -178.0,
+        "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance"
+      },
+      {
+        "id": "fbo_service_staging_east",
+        "name": "Approximate load cart staging point south of illustrative GA stand 02",
+        "x_m": 170.0,
+        "y_m": -129.0,
+        "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance"
+      },
+      {
+        "id": "fbo_service_staging_fuel",
+        "name": "Approximate fuel vehicle staging point south of illustrative GA stand 01",
+        "x_m": 93.160375,
+        "y_m": -207.834301,
+        "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance"
+      },
+      {
+        "id": "rwy18_threshold",
+        "name": "Runway 18 FAA NASR surveyed runway end",
+        "x_m": -191.058895,
+        "y_m": 564.510565
+      },
+      {
+        "id": "rwy11_threshold",
+        "name": "Runway 11 FAA NASR surveyed runway end",
+        "x_m": -314.53713,
+        "y_m": 495.730459
+      },
+      {
+        "id": "rwy29_threshold",
+        "name": "Runway 29 FAA NASR surveyed runway end",
+        "x_m": 849.420982,
+        "y_m": 132.956881
+      },
+      {
+        "id": "runway_intersection",
+        "name": "Derived runway centerline intersection",
+        "x_m": -192.99544,
+        "y_m": 457.849273
+      }
+    ],
+    "edges": [
+      {
+        "id": "runway36_hold_twy_a_south",
+        "from": "rwy36_hold",
+        "to": "twy_a_south",
+        "distance_m": 436.447,
+        "traversal_time_seconds": 88
+      },
+      {
+        "id": "twy_a_south_mid",
+        "from": "twy_a_south",
+        "to": "twy_a_mid",
+        "distance_m": 497.948,
+        "traversal_time_seconds": 100
+      },
+      {
+        "id": "twy_a_mid_north",
+        "from": "twy_a_mid",
+        "to": "twy_a_north",
+        "distance_m": 568.384,
+        "traversal_time_seconds": 114
+      },
+      {
+        "id": "twy_a_mid_fbo_primary",
+        "from": "twy_a_mid",
+        "to": "fbo_apron_junction",
+        "distance_m": 298.826,
+        "traversal_time_seconds": 60
+      },
+      {
+        "id": "twy_a_north_fbo_detour",
+        "from": "twy_a_north",
+        "to": "fbo_apron_detour",
+        "distance_m": 231.262,
+        "traversal_time_seconds": 47
+      },
+      {
+        "id": "twy_c_fbo_detour",
+        "from": "fbo_apron_detour",
+        "to": "fbo_apron_junction",
+        "distance_m": 512.934,
+        "traversal_time_seconds": 103
+      },
+      {
+        "id": "fbo_junction_parking",
+        "from": "fbo_apron_junction",
+        "to": "ga_parking_stand",
+        "distance_m": 137.058,
+        "traversal_time_seconds": 28
+      },
+      {
+        "id": "fbo_junction_fuel_farm",
+        "from": "fbo_apron_junction",
+        "to": "self_serve_fuel_farm",
+        "distance_m": 531.498,
+        "traversal_time_seconds": 107
+      },
+      {
+        "id": "fbo_apron_parking_02",
+        "from": "fbo_apron_junction",
+        "to": "ga_parking_stand_02",
+        "distance_m": 199.74,
+        "traversal_time_seconds": 40,
+        "classification": "APPROXIMATE connector to an illustrative parking position"
+      },
+      {
+        "id": "fbo_service_staging_fuel_link",
+        "from": "ga_parking_stand",
+        "to": "fbo_service_staging_fuel",
+        "distance_m": 74.0,
+        "traversal_time_seconds": 15,
+        "classification": "ASSUMED FOR SIMULATION short service staging spur"
+      },
+      {
+        "id": "fbo_service_staging_west_link",
+        "from": "ga_parking_stand",
+        "to": "fbo_service_staging_west",
+        "distance_m": 77.07,
+        "traversal_time_seconds": 16,
+        "classification": "ASSUMED FOR SIMULATION short service staging spur"
+      },
+      {
+        "id": "fbo_service_staging_east_link",
+        "from": "ga_parking_stand_02",
+        "to": "fbo_service_staging_east",
+        "distance_m": 44.0,
+        "traversal_time_seconds": 9,
+        "classification": "ASSUMED FOR SIMULATION short service staging spur"
+      }
+    ],
+    "calibration": {
+      "coordinate_reference_system": "WGS 84 geographic 3D (EPSG:4979); horizontal outputs use airport-local ENU meters",
+      "origin": {
+        "latitude_degrees": 32.61511111,
+        "longitude_degrees": -85.434,
+        "ellipsoid_height_m": 208.22,
+        "field_elevation_ft_msl": 776.8,
+        "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+        "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+        "source_record": {
+          "file": "APT_BASE.csv",
+          "EFF_DATE": "2026/10/01",
+          "ARPT_ID": "AUO",
+          "ICAO_ID": "KAUO",
+          "ARPT_PSN_SOURCE": "3RD PARTY SURVEY",
+          "POSITION_SRC_DATE": "2006/05/22"
+        }
+      },
+      "scenario_axis_convention": "+X east, +Y north, meters; these are airport-local ENU coordinates.",
+      "runway_thresholds": {
+        "18": {
+          "x": -191.058895,
+          "y": 564.510565
+        },
+        "36": {
+          "x": -220.183588,
+          "y": -1039.622948
+        },
+        "11": {
+          "x": -314.53713,
+          "y": 495.730459
+        },
+        "29": {
+          "x": 849.420982,
+          "y": 132.956881
+        }
+      },
+      "source_classification": "Runway-end coordinates AUTHORITATIVE; runway centers/headings and intersection DERIVED; taxiway/apron/parking features APPROXIMATE."
+    }
+  },
+  "gates": [
+    {
+      "id": "GA-PARK-01",
+      "node": "ga_parking_stand"
+    },
+    {
+      "id": "GA-PARK-02",
+      "node": "ga_parking_stand_02"
+    }
+  ],
+  "surface_operations": {
+    "return_service_vehicles_to_depot_after_task": true,
+    "aircraft_speed_mps": 5.0,
+    "arrival_exit": "twy_a_mid",
+    "arrival_rollout_seconds": 90,
+    "departure_handoff": "rwy36_hold",
+    "pushback_seconds": 20,
+    "runway_node": "rwy36_hold",
+    "runway_occupancy_seconds": 90
+  },
+  "calibration": {
+    "coordinate_reference_system": "WGS 84 geographic 3D (EPSG:4979); horizontal outputs use airport-local ENU meters",
+    "airport_reference_latitude": 32.61511111,
+    "airport_reference_longitude": -85.434,
+    "airport_reference_ellipsoid_height_m_approx": 208.22,
+    "runway_18_36_length_m": 1604.4672,
+    "runway_18_36_width_m": 30.48,
+    "runway_11_29_length_m": 1219.2,
+    "runway_11_29_width_m": 22.86,
+    "runway_features": [
+      {
+        "id": "runway_18_36",
+        "identifier": "18/36",
+        "length_m": 1604.4672,
+        "endpoint_distance_m": 1604.397886,
+        "width_m": 30.48,
+        "surface": "asphalt, grooved",
+        "true_heading_degrees_from_first_threshold": 181.040149,
+        "center_local_m": {
+          "x": -205.621241,
+          "y": -237.556191
+        },
+        "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading"
+      },
+      {
+        "id": "runway_11_29",
+        "identifier": "11/29",
+        "length_m": 1219.2,
+        "endpoint_distance_m": 1219.181346,
+        "width_m": 22.86,
+        "surface": "asphalt",
+        "true_heading_degrees_from_first_threshold": 107.310813,
+        "center_local_m": {
+          "x": 267.441926,
+          "y": 314.34367
+        },
+        "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading"
+      }
+    ],
+    "simulator_local_axis_note": "RampLab scenario XY is airport-local ENU in meters (+X east, +Y north). The Cesium origin is the FAA NASR airport reference point; Unreal maps east to +X centimeters and north to -Y centimeters. No KAUO actor offset or rotation correction is applied.",
+    "geometry_status": "FAA NASR runway ends are authoritative; runway centers, headings, and intersection are derived; taxiway/apron/parking nodes remain approximate chart-digitized references."
+  }
+}

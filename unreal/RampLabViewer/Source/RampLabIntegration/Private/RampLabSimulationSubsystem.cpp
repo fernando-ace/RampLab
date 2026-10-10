@@ -94,6 +94,15 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     else if(bGoal12RecoveryValidation){SelectedScenarioKey=TEXT("autonomy_fleet_deadlock");PlaybackSpeed=10.0;}
     else if(bGoal12ClosureValidation){SelectedScenarioKey=TEXT("autonomy_fleet_dynamic_closure");PlaybackSpeed=10.0;}
     else if(bFleetValidation){SelectedScenarioKey=TEXT("autonomy_fleet");PlaybackSpeed=10.0;}
+    double RequestedPlaybackSpeed = PlaybackSpeed;
+    if (FParse::Value(FCommandLine::Get(), TEXT("RampLabPlaybackSpeed="), RequestedPlaybackSpeed)) {
+        if (FMath::IsFinite(RequestedPlaybackSpeed) && RequestedPlaybackSpeed > 0.0) {
+            PlaybackSpeed = FMath::Clamp(RequestedPlaybackSpeed, 0.1, 60.0);
+            UE_LOG(LogRampLab, Display, TEXT("Scenario playback speed override: %.1fx"), PlaybackSpeed);
+        } else {
+            UE_LOG(LogRampLab, Warning, TEXT("Ignoring invalid RampLabPlaybackSpeed override: %.3f"), RequestedPlaybackSpeed);
+        }
+    }
     if (bCaptureQA) {
         CaptureWarmupRemaining = 15.0;
         if (FParse::Value(FCommandLine::Get(), TEXT("RampLabCaptureMultiplier="), RequestedCaptureMultiplier)) {

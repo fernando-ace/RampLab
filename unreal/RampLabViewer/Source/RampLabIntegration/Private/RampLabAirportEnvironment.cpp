@@ -73,7 +73,13 @@ void ARampLabAirportEnvironment::BeginPlay()
 
     FString ScreenshotPath;
     FString ScreenshotCameraPreset = TEXT("KAUO Overview");
+    double ScreenshotDelaySeconds = 35.0;
     FParse::Value(FCommandLine::Get(), TEXT("RampLabCameraPreset="), ScreenshotCameraPreset);
+    FParse::Value(FCommandLine::Get(), TEXT("RampLabScreenshotDelaySeconds="), ScreenshotDelaySeconds);
+    if (!FMath::IsFinite(ScreenshotDelaySeconds) || ScreenshotDelaySeconds < 0.0) {
+        UE_LOG(LogRampLab, Warning, TEXT("Ignoring invalid RampLabScreenshotDelaySeconds override: %.3f"), ScreenshotDelaySeconds);
+        ScreenshotDelaySeconds = 35.0;
+    }
     if (FParse::Value(FCommandLine::Get(), TEXT("RampLabScreenshot="), ScreenshotPath) && !ScreenshotPath.IsEmpty()) {
         const FString ScreenshotDirectory = FPaths::GetPath(ScreenshotPath);
         if (!ScreenshotDirectory.IsEmpty()) IFileManager::Get().MakeDirectory(*ScreenshotDirectory, true);
@@ -90,7 +96,7 @@ void ARampLabAirportEnvironment::BeginPlay()
                     UE_LOG(LogRampLab, Display, TEXT("Requested delayed KAUO validation screenshot: %s"), *ScreenshotPath);
                 }), 2.0f, false);
             }
-        }), 35.0f, false);
+        }), static_cast<float>(ScreenshotDelaySeconds), false);
     }
 }
 

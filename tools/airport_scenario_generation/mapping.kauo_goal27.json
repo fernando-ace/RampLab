@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "geometry_file": "kauo_goal27.geometry.json",
+  "gate_ids": {
+    "GA-PARK-ILLUSTRATIVE-01": "GA-PARK-01",
+    "GA-PARK-ILLUSTRATIVE-02": "GA-PARK-02"
+  },
+  "route_ids": {
+    "KAUO-TWY-A-RAMP-CONNECTOR": "twy_a_mid_fbo_primary"
+  },
+  "equipment_types": {
+    "fuel_vehicle": {
+      "type": "fueling",
+      "initial_node": "fbo_service_staging_fuel"
+    },
+    "baggage_vehicle": {
+      "type": "baggage",
+      "initial_node": "fbo_service_staging_west"
+    },
+    "service_cart": {
+      "type": "baggage_load",
+      "initial_node": "fbo_service_staging_east"
+    }
+  },
+  "service_types": {
+    "fueling": "fueling",
+    "baggage": "baggage",
+    "baggage_load": "baggage_load",
+    "pushback_preparation": "pushback_preparation"
+  },
+  "arrival_exit_node": "twy_a_mid",
+  "departure_handoff_node": "rwy36_hold",
+  "runway_node": "rwy36_hold",
+  "seed": 42
+}

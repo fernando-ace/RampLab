@@ -1,0 +1,50 @@
+[
+  {
+    "flight_id": "KAUO-SIM-GA-01-ARR",
+    "flight_number": "SIM-GA-01-ARR",
+    "operation": "arrival",
+    "scheduled_time": "2026-10-09T14:00:00Z",
+    "aircraft_id": "KAUO-SIM-GA-01",
+    "gate_id": "GA-PARK-ILLUSTRATIVE-01",
+    "origin": "UNSPECIFIED",
+    "occupancy_start": "2026-10-09T14:00:00Z",
+    "occupancy_end": "2026-10-09T14:12:00Z",
+    "classification": "ASSUMED FOR SIMULATION; not an observed or forecast flight"
+  },
+  {
+    "flight_id": "KAUO-SIM-GA-01-DEP",
+    "flight_number": "SIM-GA-01-DEP",
+    "operation": "departure",
+    "scheduled_time": "2026-10-09T14:12:00Z",
+    "aircraft_id": "KAUO-SIM-GA-01",
+    "gate_id": "GA-PARK-ILLUSTRATIVE-01",
+    "destination": "UNSPECIFIED",
+    "occupancy_start": "2026-10-09T14:12:00Z",
+    "occupancy_end": "2026-10-09T14:26:00Z",
+    "classification": "ASSUMED FOR SIMULATION; not an observed or forecast flight"
+  },
+  {
+    "flight_id": "KAUO-SIM-GA-02-ARR",
+    "flight_number": "SIM-GA-02-ARR",
+    "operation": "arrival",
+    "scheduled_time": "2026-10-09T14:04:00Z",
+    "aircraft_id": "KAUO-SIM-GA-02",
+    "gate_id": "GA-PARK-ILLUSTRATIVE-02",
+    "origin": "UNSPECIFIED",
+    "occupancy_start": "2026-10-09T14:04:00Z",
+    "occupancy_end": "2026-10-09T14:16:00Z",
+    "classification": "ASSUMED FOR SIMULATION; not an observed or forecast flight"
+  },
+  {
+    "flight_id": "KAUO-SIM-GA-02-DEP",
+    "flight_number": "SIM-GA-02-DEP",
+    "operation": "departure",
+    "scheduled_time": "2026-10-09T14:16:00Z",
+    "aircraft_id": "KAUO-SIM-GA-02",
+    "gate_id": "GA-PARK-ILLUSTRATIVE-02",
+    "destination": "UNSPECIFIED",
+    "occupancy_start": "2026-10-09T14:16:00Z",
+    "occupancy_end": "2026-10-09T14:30:00Z",
+    "classification": "ASSUMED FOR SIMULATION; not an observed or forecast flight"
+  }
+]

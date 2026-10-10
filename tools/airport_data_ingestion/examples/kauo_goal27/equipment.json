@@ -1,0 +1,23 @@
+[
+  {
+    "equipment_id": "KAUO-SIM-FUEL-01",
+    "type": "fuel_vehicle",
+    "status": "available",
+    "initial_location": "fbo_service_staging_fuel",
+    "classification": "ASSUMED FOR SIMULATION; no KAUO equipment inventory or dispatch point was obtained"
+  },
+  {
+    "equipment_id": "KAUO-SIM-BAG-01",
+    "type": "baggage_vehicle",
+    "status": "available",
+    "initial_location": "fbo_service_staging_west",
+    "classification": "ASSUMED FOR SIMULATION; no KAUO equipment inventory or dispatch point was obtained"
+  },
+  {
+    "equipment_id": "KAUO-SIM-LOAD-01",
+    "type": "service_cart",
+    "status": "available",
+    "initial_location": "fbo_service_staging_east",
+    "classification": "ASSUMED FOR SIMULATION; no KAUO equipment inventory or dispatch point was obtained"
+  }
+]

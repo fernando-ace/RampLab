@@ -1,0 +1,14 @@
+[
+  {
+    "aircraft_id": "KAUO-SIM-GA-01",
+    "type": "representative_single_engine_general_aviation",
+    "category": "assumed simulator archetype",
+    "classification": "ASSUMED FOR SIMULATION; not an observed registration or aircraft assignment"
+  },
+  {
+    "aircraft_id": "KAUO-SIM-GA-02",
+    "type": "representative_single_engine_general_aviation",
+    "category": "assumed simulator archetype",
+    "classification": "ASSUMED FOR SIMULATION; not an observed registration or aircraft assignment"
+  }
+]
