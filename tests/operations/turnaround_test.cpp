@@ -268,6 +268,32 @@ TEST(TurnaroundTest, FlightBankReassignsOutagedVehicleSafelyAndDeterministically
     EXPECT_EQ(outage_delay_delta, 73);
 }
 
+TEST(TurnaroundTest, RuntimeVehicleOutageEntersDeterministicEventStream) {
+    auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
+    scenario.vehicle_outages.clear();
+    const auto vehicle = scenario.vehicles.front().id();
+    Simulation first{scenario, 42};
+    Simulation second{scenario, 42};
+    first.schedule_vehicle_outage(vehicle);
+    second.schedule_vehicle_outage(vehicle);
+    const auto a = first.run();
+    const auto b = second.run();
+    EXPECT_EQ(a.events, b.events);
+    EXPECT_EQ(a.metrics, b.metrics);
+    const auto action = std::ranges::find_if(a.events, [](const auto& event) {
+        return event.type == SimulationEventType::OperatorIntervention;
+    });
+    ASSERT_NE(action, a.events.end());
+    EXPECT_EQ(action->timestamp, SimTime::zero());
+    EXPECT_EQ(action->vehicle, vehicle);
+    EXPECT_NE(action->detail.find("equipment_outage"), std::string::npos);
+}
+
+TEST(TurnaroundTest, RuntimeVehicleOutageRejectsUnknownVehicle) {
+    Simulation simulation{load_scenario(scenario_path("turnaround_flight_bank_outage.yaml")), 42};
+    EXPECT_THROW(simulation.schedule_vehicle_outage(VehicleId{999999}), std::invalid_argument);
+}
+
 TEST(TurnaroundTest, DisruptionReplansAndChangesEstimatedReadyTimeWithoutReset) {
     Simulation simulation{load_scenario(scenario_path("turnaround_disrupted.yaml")), 42};
     SimTime before_disruption{};

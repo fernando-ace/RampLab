@@ -11,10 +11,15 @@ import tempfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+try:
+    from .live_session import LiveSession, LiveSessionError
+except ImportError:  # Direct `python tools/ops_dashboard/server.py` launch.
+    from live_session import LiveSession, LiveSessionError
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
 REAL_DEMO_DIR: Path | None = None
+LIVE_SESSION = LiveSession()
 ANALYZER_PATH = REPO / "tools" / "experiment_analysis" / "analyze.py"
 spec = importlib.util.spec_from_file_location("ramplab_experiment_analysis", ANALYZER_PATH)
 if spec is None or spec.loader is None:
@@ -200,6 +205,13 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = unquote(urlparse(self.path).path)
+        if path == "/api/session":
+            return self._send(200, json.dumps(LIVE_SESSION.state()).encode(), "application/json; charset=utf-8")
+        if path == "/api/session/artifacts":
+            try:
+                return self._send(200, json.dumps(LIVE_SESSION.artifacts()).encode(), "application/json; charset=utf-8")
+            except LiveSessionError as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
         if path == "/api/health":
             return self._send(200, b'{"status":"ok"}', "application/json; charset=utf-8")
         if path == "/api/real-demo":
@@ -233,6 +245,47 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(200, target.read_bytes(), f"{mime}; charset=utf-8")
 
     def do_POST(self):
+        session_actions = {"/api/session/start", "/api/session/pause", "/api/session/resume",
+                           "/api/session/reset", "/api/session/speed", "/api/session/intervention",
+                           "/api/session/advance", "/api/session/finish"}
+        session_actions.add("/api/session/unreal")
+        session_actions.add("/api/session/replay")
+        if self.path in session_actions:
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length > 64 * 1024:
+                    raise LiveSessionError("Session command is too large.")
+                body = json.loads(self.rfile.read(length) or b"{}")
+                if not isinstance(body, dict):
+                    raise LiveSessionError("Session command must be a JSON object.")
+                if self.path.endswith("/start"):
+                    state = LIVE_SESSION.start()
+                elif self.path.endswith("/pause"):
+                    state = LIVE_SESSION.pause()
+                elif self.path.endswith("/resume"):
+                    state = LIVE_SESSION.resume()
+                elif self.path.endswith("/reset"):
+                    state = LIVE_SESSION.reset()
+                elif self.path.endswith("/speed"):
+                    state = LIVE_SESSION.set_speed(body.get("speed"))
+                elif self.path.endswith("/advance"):
+                    state = LIVE_SESSION.advance()
+                elif self.path.endswith("/finish"):
+                    state = LIVE_SESSION.finish()
+                elif self.path.endswith("/unreal"):
+                    state = LIVE_SESSION.launch_unreal()
+                elif self.path.endswith("/replay"):
+                    state = LIVE_SESSION.replay(body.get("interventions"))
+                else:
+                    kind, target = body.get("type"), body.get("target")
+                    if kind not in {"surface_closure", "equipment_outage"}:
+                        raise LiveSessionError("Intervention type must be surface_closure or equipment_outage.")
+                    if not isinstance(target, int) or isinstance(target, bool) or target < 1:
+                        raise LiveSessionError("Intervention target must be a positive simulator ID.")
+                    state = LIVE_SESSION.intervene(kind, target, body.get("available", False) is True)
+                return self._send(200, json.dumps(state).encode(), "application/json; charset=utf-8")
+            except (LiveSessionError, ValueError, TypeError, OSError, json.JSONDecodeError) as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
         if self.path != "/api/analyze":
             return self._send(404, b'{"error":"Not found"}', "application/json; charset=utf-8")
         length = int(self.headers.get("Content-Length", "0"))
@@ -284,9 +337,13 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--real-demo-dir", type=Path,
                         help="Load generated control/ and disruption/ bundles from this local run directory.")
+    parser.add_argument("--live-cli", type=Path, help="Path to Release airside_cli for live KAUO sessions.")
+    parser.add_argument("--live-root", type=Path, help="Directory for live KAUO run artifacts.")
     args = parser.parse_args()
     global REAL_DEMO_DIR
     REAL_DEMO_DIR = args.real_demo_dir.resolve() if args.real_demo_dir else None
+    global LIVE_SESSION
+    LIVE_SESSION = LiveSession(cli=args.live_cli, root=args.live_root)
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"RampLab Operator Experiment Dashboard: http://{args.host}:{args.port}", flush=True)
     try:

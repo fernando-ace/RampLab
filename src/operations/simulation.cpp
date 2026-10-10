@@ -599,6 +599,20 @@ SimulationResult Simulation::result() const {
 SimTime Simulation::current_time() const noexcept { return now_; }
 const std::vector<SimulationEventRecord>& Simulation::event_history() const noexcept { return event_history_; }
 
+void Simulation::schedule_surface_availability(EdgeId edge, bool available) {
+    (void)scenario_.graph.edge(edge);
+    (void)events_.schedule(now_, EventType::OperatorSurfaceAvailability,
+        {EntityKind::Edge, edge.value()}, available ? 1 : 0);
+}
+
+void Simulation::schedule_vehicle_outage(VehicleId id) {
+    if (!autonomy_fleet_) throw std::logic_error("vehicle outages require turnaround fleet orchestration");
+    const auto found = std::ranges::find(scenario_.vehicles, id, &ServiceVehicle::id);
+    if (found == scenario_.vehicles.end()) throw std::invalid_argument("operator outage references unknown vehicle");
+    (void)events_.schedule(now_, EventType::OperatorVehicleOutage,
+        {EntityKind::Vehicle, id.value()});
+}
+
 void Simulation::process(const Event& event) {
     switch (event.type) {
     case EventType::AircraftArrival: handle_aircraft_arrival(AircraftId{event.entity.value}); break;
@@ -619,6 +633,24 @@ void Simulation::process(const Event& event) {
         handle_fleet_tick(); break;
     case EventType::VehicleOutage:
         handle_vehicle_outage(VehicleId{event.entity.value}); break;
+    case EventType::OperatorSurfaceAvailability: {
+        SimulationEventRecord intervention{SimulationEventType::OperatorIntervention};
+        intervention.edge = EdgeId{event.entity.value};
+        intervention.detail = std::format("surface_closure target=edge:{} available={} result=accepted",
+            event.entity.value, event.data != 0 ? "true" : "false");
+        emit(std::move(intervention));
+        handle_road_event(EdgeId{event.entity.value}, event.data != 0);
+        break;
+    }
+    case EventType::OperatorVehicleOutage: {
+        SimulationEventRecord intervention{SimulationEventType::OperatorIntervention};
+        intervention.vehicle = VehicleId{event.entity.value};
+        intervention.vehicle_name = vehicle(VehicleId{event.entity.value}).name();
+        intervention.detail = std::format("equipment_outage target=vehicle:{} result=accepted", event.entity.value);
+        emit(std::move(intervention));
+        handle_vehicle_outage(VehicleId{event.entity.value});
+        break;
+    }
     case EventType::SurfaceTick:
         surface_tick_scheduled_ = false; handle_surface_tick(); break;
     }

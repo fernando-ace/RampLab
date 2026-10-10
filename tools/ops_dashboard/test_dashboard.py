@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 from http.server import ThreadingHTTPServer
 
 ROOT = Path(__file__).resolve().parent
@@ -139,6 +140,27 @@ class DashboardHttpTests(unittest.TestCase):
             self.assertIn("ranked change(s)", payload["markdown"])
             self.assertIn("## Event-stream determinism", payload["markdown"])
             self.assertEqual(payload["event_determinism"]["status"], "different")
+        finally:
+            server_instance.shutdown()
+            server_instance.server_close()
+            thread.join(timeout=2)
+
+    def test_live_session_status_and_invalid_intervention_api(self):
+        server_instance = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
+        thread = threading.Thread(target=server_instance.serve_forever, daemon=True)
+        thread.start()
+        try:
+            base = f"http://127.0.0.1:{server_instance.server_port}"
+            with urlopen(base + "/api/session", timeout=5) as response:
+                state = json.loads(response.read())
+            self.assertIn(state["session_state"], {"idle", "paused", "running", "completed"})
+            body = json.dumps({"type": "fake_state", "target": 1}).encode()
+            req = Request(base + "/api/session/intervention", data=body,
+                          headers={"Content-Type": "application/json"}, method="POST")
+            with self.assertRaises(HTTPError) as caught:
+                urlopen(req, timeout=5)
+            self.assertEqual(caught.exception.code, 400)
+            self.assertIn("Intervention type", caught.exception.read().decode())
         finally:
             server_instance.shutdown()
             server_instance.server_close()

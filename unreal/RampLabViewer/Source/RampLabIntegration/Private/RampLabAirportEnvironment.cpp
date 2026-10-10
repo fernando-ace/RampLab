@@ -10,6 +10,7 @@
 #include "CesiumIonServer.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
 #include "Engine/StaticMesh.h"
@@ -31,23 +32,75 @@
 
 namespace {
 
-FString LoadCesiumToken()
-{
-    FString Token = FPlatformMisc::GetEnvironmentVariable(TEXT("RAMPLAB_CESIUM_ION_TOKEN"));
-    if (!Token.IsEmpty()) return Token;
+struct FCesiumTokenResolution { FString Token; FString Source; };
 
+FString ReadTokenFromFile(const FString& Path)
+{
     TArray<FString> Lines;
-    const FString LocalEnvironment = FPaths::Combine(FPaths::ProjectDir(), TEXT(".env.local"));
-    if (!FFileHelper::LoadFileToStringArray(Lines, *LocalEnvironment)) return {};
-    constexpr TCHAR Prefix[] = TEXT("RAMPLAB_CESIUM_ION_TOKEN=");
+    if (!FFileHelper::LoadFileToStringArray(Lines, *Path)) return {};
     for (FString Line : Lines) {
         Line.TrimStartAndEndInline();
-        if (!Line.StartsWith(Prefix)) continue;
-        Token = Line.RightChop(UE_ARRAY_COUNT(Prefix) - 1).TrimStartAndEnd();
-        if (Token.StartsWith(TEXT("\"")) && Token.EndsWith(TEXT("\"")) && Token.Len() >= 2) {
-            Token = Token.Mid(1, Token.Len() - 2);
+        if (Line.StartsWith(TEXT("export "))) Line.RightChopInline(7);
+        const int32 Separator = Line.Find(TEXT("="));
+        if (Separator == INDEX_NONE || Line.Left(Separator).TrimStartAndEnd() != TEXT("RAMPLAB_CESIUM_ION_TOKEN")) continue;
+        FString Value = Line.RightChop(Separator + 1).TrimStartAndEnd();
+        if (Value.StartsWith(TEXT("\"")) || Value.StartsWith(TEXT("'"))) {
+            const TCHAR Quote = Value[0];
+            const int32 Closing = Value.Find(FString::Chr(Quote), ESearchCase::CaseSensitive, ESearchDir::FromEnd);
+            if (Closing > 0) Value = Value.Mid(1, Closing - 1);
+        } else {
+            const int32 Comment = Value.Find(TEXT("#"));
+            if (Comment != INDEX_NONE) Value.LeftInline(Comment);
+            Value.TrimStartAndEndInline();
         }
-        return Token;
+        if (Value.IsEmpty() || Value.Equals(TEXT("your_token_here"), ESearchCase::IgnoreCase)
+            || Value.Equals(TEXT("<your-token>"), ESearchCase::IgnoreCase)) return {};
+        return Value;
+    }
+    return {};
+}
+
+FString GetPrimaryCheckoutRoot(const FString& CurrentRoot)
+{
+    const FString GitMarker = FPaths::Combine(CurrentRoot, TEXT(".git"));
+    if (IFileManager::Get().DirectoryExists(*GitMarker)) return CurrentRoot;
+    FString Marker;
+    if (!FFileHelper::LoadFileToString(Marker, *GitMarker)) return {};
+    Marker.TrimStartAndEndInline();
+    if (!Marker.StartsWith(TEXT("gitdir: "))) return {};
+    FString GitDir = Marker.RightChop(8).TrimStartAndEnd();
+    if (FPaths::IsRelative(GitDir)) GitDir = FPaths::Combine(CurrentRoot, GitDir);
+    GitDir = FPaths::ConvertRelativePathToFull(GitDir);
+    FString CommonDir;
+    if (!FFileHelper::LoadFileToString(CommonDir, *FPaths::Combine(GitDir, TEXT("commondir")))) return {};
+    CommonDir.TrimStartAndEndInline();
+    if (FPaths::IsRelative(CommonDir)) CommonDir = FPaths::Combine(GitDir, CommonDir);
+    return FPaths::GetPath(FPaths::ConvertRelativePathToFull(CommonDir));
+}
+
+FCesiumTokenResolution LoadCesiumToken()
+{
+    const FString ProjectRoot = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectDir(), TEXT(".."), TEXT("..")));
+    const FString PrimaryRoot = GetPrimaryCheckoutRoot(ProjectRoot);
+    const TPair<FString, FString> RootCandidates[] = {
+        {FPaths::Combine(ProjectRoot, TEXT(".local.env")), TEXT("current checkout local environment")},
+        {PrimaryRoot.IsEmpty() ? FString() : FPaths::Combine(PrimaryRoot, TEXT(".local.env")), TEXT("primary checkout local environment")},
+    };
+    for (const auto& Candidate : RootCandidates) {
+        FString Token = Candidate.Key.IsEmpty() ? FString() : ReadTokenFromFile(Candidate.Key);
+        if (!Token.IsEmpty()) return {MoveTemp(Token), Candidate.Value};
+    }
+    FString Token = FPlatformMisc::GetEnvironmentVariable(TEXT("RAMPLAB_CESIUM_ION_TOKEN"));
+    if (!Token.IsEmpty()) return {MoveTemp(Token), TEXT("process environment")};
+    const TPair<FString, FString> SecureCandidates[] = {
+        {FPaths::Combine(FPaths::ProjectDir(), TEXT(".env.local")), TEXT("current project local environment")},
+        {FPaths::Combine(FPaths::ProjectConfigDir(), TEXT("CesiumIon.local.ini")), TEXT("current secure Cesium configuration")},
+        {PrimaryRoot.IsEmpty() ? FString() : FPaths::Combine(PrimaryRoot, TEXT("unreal"), TEXT("RampLabViewer"), TEXT(".env.local")), TEXT("primary checkout local environment")},
+        {PrimaryRoot.IsEmpty() ? FString() : FPaths::Combine(PrimaryRoot, TEXT("unreal"), TEXT("RampLabViewer"), TEXT("Config"), TEXT("CesiumIon.local.ini")), TEXT("primary secure Cesium configuration")},
+    };
+    for (const auto& Candidate : SecureCandidates) {
+        FString CandidateToken = Candidate.Key.IsEmpty() ? FString() : ReadTokenFromFile(Candidate.Key);
+        if (!CandidateToken.IsEmpty()) return {MoveTemp(CandidateToken), Candidate.Value};
     }
     return {};
 }
@@ -100,6 +153,15 @@ void ARampLabAirportEnvironment::BeginPlay()
     }
 }
 
+void ARampLabAirportEnvironment::HandleTerrainLoaded()
+{
+    bCesiumConnected = true;
+    CesiumStatus = TEXT("Cesium terrain connected; aerial imagery overlay configured for KAUO");
+    if (auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>())
+        Subsystem->SetGeospatialStatus(CesiumStatus);
+    UE_LOG(LogRampLab, Display, TEXT("Cesium terrain: connected; aerial imagery: configured; georeference: KAUO"));
+}
+
 void ARampLabAirportEnvironment::BuildGeographicContext()
 {
     const FRampLabAirportPlacement Placement = FRampLabAirportPlacement::Load();
@@ -110,13 +172,14 @@ void ARampLabAirportEnvironment::BuildGeographicContext()
         Placement.Latitude, Placement.Longitude, Placement.HeightMeters, Placement.SimulationHeadingDegrees,
         Placement.OriginOffsetMeters.X, Placement.OriginOffsetMeters.Y, Placement.Scale);
 
-    FString Token = LoadCesiumToken();
-    if (Token.IsEmpty()) {
+    FCesiumTokenResolution TokenResolution = LoadCesiumToken();
+    if (TokenResolution.Token.IsEmpty()) {
         CesiumStatus = TEXT("Georeferenced at KAUO; set RAMPLAB_CESIUM_ION_TOKEN for terrain and aerial imagery");
         if (auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>()) Subsystem->SetGeospatialStatus(CesiumStatus);
         UE_LOG(LogRampLab, Warning, TEXT("%s"), *CesiumStatus);
         return;
     }
+    UE_LOG(LogRampLab, Display, TEXT("Cesium ion token: loaded; source: %s"), *TokenResolution.Source);
 
     // A transient server avoids the editor-only default-server asset creation
     // path during `-game` runs. It contains public endpoint configuration only;
@@ -134,10 +197,11 @@ void ARampLabAirportEnvironment::BuildGeographicContext()
     Terrain->SetGeoreference(Georeference);
     Terrain->SetCesiumIonServer(IonServer);
     Terrain->SetIonAssetID(Placement.TerrainAssetId);
-    Terrain->SetIonAccessToken(Token);
+    Terrain->SetIonAccessToken(TokenResolution.Token);
     Terrain->SetMaximumScreenSpaceError(16.0);
     Terrain->MaximumCachedBytes = 256LL * 1024LL * 1024LL;
     Terrain->ShowCreditsOnScreen = true;
+    Terrain->OnTilesetLoaded.AddDynamic(this, &ARampLabAirportEnvironment::HandleTerrainLoaded);
     Terrain->FinishSpawning(FTransform::Identity);
 
     const ACesiumGeoreference* ResolvedGeoreference = Terrain->ResolveGeoreference();
@@ -151,16 +215,16 @@ void ARampLabAirportEnvironment::BuildGeographicContext()
 
     auto* Imagery = NewObject<URampLabIonRasterOverlay>(Terrain, TEXT("AuburnAerialImagery"));
     Imagery->IonAssetID = Placement.ImageryAssetId;
-    Imagery->IonAccessToken = Token;
+    Imagery->IonAccessToken = TokenResolution.Token;
     Imagery->CesiumIonServer = IonServer;
     Imagery->EnableOnScreenCredits();
     Terrain->AddInstanceComponent(Imagery);
     Imagery->RegisterComponent();
     Terrain->ResolveCreditSystem();
 
-    Token.Reset();
-    bCesiumConnected = true;
-    CesiumStatus = TEXT("Cesium World Terrain and aerial imagery requested for KAUO");
+    TokenResolution.Token.Reset();
+    bCesiumConnected = false;
+    CesiumStatus = TEXT("Cesium token loaded; terrain and aerial imagery configured for KAUO and awaiting streamed tiles");
     if (auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>()) Subsystem->SetGeospatialStatus(CesiumStatus);
     UE_LOG(LogRampLab, Display, TEXT("%s (credits visible)"), *CesiumStatus);
 }
@@ -170,11 +234,13 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
     // The basic-shape material is lit in linear space. Keep the base values
     // deliberately restrained so automatic exposure does not wash the overlay
     // out against darker aerial imagery.
-    auto* RunwayMaterial = CreateMaterial(FLinearColor(0.0025f, 0.0035f, 0.0050f));
-    auto* Taxiway = CreateMaterial(FLinearColor(0.006f, 0.008f, 0.010f));
-    auto* Apron = CreateMaterial(FLinearColor(0.012f, 0.015f, 0.017f));
-    auto* Marking = CreateMaterial(FLinearColor(0.32f, 0.21f, 0.015f));
-    auto* Building = CreateMaterial(FLinearColor(0.018f, 0.024f, 0.030f));
+    auto* RunwayMaterial = CreateMaterial(FLinearColor(0.055f, 0.062f, 0.067f));
+    auto* Taxiway = CreateMaterial(FLinearColor(0.075f, 0.082f, 0.078f));
+    auto* Apron = CreateMaterial(FLinearColor(0.12f, 0.13f, 0.13f));
+    auto* Marking = CreateMaterial(FLinearColor(0.84f, 0.84f, 0.78f));
+    auto* TaxiMarking = CreateMaterial(FLinearColor(0.92f, 0.62f, 0.08f));
+    auto* Building = CreateMaterial(FLinearColor(0.32f, 0.35f, 0.36f));
+    auto* BuildingRoof = CreateMaterial(FLinearColor(0.19f, 0.22f, 0.23f));
 
     FString ScenarioPath;
     FParse::Value(FCommandLine::Get(), TEXT("RampLabScenarioFile="), ScenarioPath);
@@ -197,8 +263,8 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
         };
         const auto AddSegment = [this, &ToOverlay](const FString& Name, double X1, double Y1, double X2, double Y2,
             double WidthMeters, UMaterialInstanceDynamic* Material) {
-            const FVector A = ToOverlay(X1, Y1);
-            const FVector B = ToOverlay(X2, Y2);
+            const FVector A = ToOverlay(X1, Y1) + FVector(0.0, 0.0, 25.0);
+            const FVector B = ToOverlay(X2, Y2) + FVector(0.0, 0.0, 25.0);
             const FVector Delta = B - A;
             const FVector Center = (A + B) * 0.5f;
             const float Yaw = FMath::RadiansToDegrees(FMath::Atan2(Delta.Y, Delta.X));
@@ -238,9 +304,56 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
                 AddSegment(RunwayName, CenterX - AxisX * HalfLength, CenterY - AxisY * HalfLength,
                     CenterX + AxisX * HalfLength, CenterY + AxisY * HalfLength, Width, RunwayMaterial);
             }
-            AddSegment(RunwayName + TEXT("_Centerline"), CenterX - AxisX * HalfLength * 0.95,
-                CenterY - AxisY * HalfLength * 0.95, CenterX + AxisX * HalfLength * 0.95,
-                CenterY + AxisY * HalfLength * 0.95, bGeospatialWireframe ? 0.6 : 0.4, Marking);
+            if (!bGeospatialWireframe) {
+                const double HalfWidth = Width * 0.5;
+                for (const double Side : {-1.0, 1.0}) {
+                    const double OffsetX = -AxisY * (HalfWidth - 1.0) * Side;
+                    const double OffsetY = AxisX * (HalfWidth - 1.0) * Side;
+                    AddSegment(RunwayName + (Side < 0.0 ? TEXT("_EdgeA") : TEXT("_EdgeB")),
+                        CenterX - AxisX * HalfLength + OffsetX, CenterY - AxisY * HalfLength + OffsetY,
+                        CenterX + AxisX * HalfLength + OffsetX, CenterY + AxisY * HalfLength + OffsetY, 0.75, Marking);
+                }
+                for (double Along = -HalfLength + 45.0; Along < HalfLength - 30.0; Along += 60.0) {
+                    AddSegment(RunwayName + TEXT("_CenterlineDash"), CenterX + AxisX * Along, CenterY + AxisY * Along,
+                        CenterX + AxisX * FMath::Min(Along + 30.0, HalfLength - 20.0),
+                        CenterY + AxisY * FMath::Min(Along + 30.0, HalfLength - 20.0), 0.45, Marking);
+                }
+                const int32 StripeCount = Width > 25.0 ? 6 : 4;
+                for (const double End : {-1.0, 1.0}) {
+                    const double ThresholdAlong = End * (HalfLength - 8.0);
+                    for (int32 Stripe = 0; Stripe < StripeCount; ++Stripe) {
+                        const double Across = (static_cast<double>(Stripe) - (StripeCount - 1) * 0.5) * (Width - 5.0) / StripeCount;
+                        const double OffsetX = -AxisY * Across;
+                        const double OffsetY = AxisX * Across;
+                        AddSegment(RunwayName + TEXT("_Threshold"), CenterX + AxisX * ThresholdAlong + OffsetX,
+                            CenterY + AxisY * ThresholdAlong + OffsetY,
+                            CenterX + AxisX * (ThresholdAlong + End * 1.5) + OffsetX,
+                            CenterY + AxisY * (ThresholdAlong + End * 1.5) + OffsetY, 1.0, Marking);
+                    }
+                }
+                FString FirstDesignation, SecondDesignation;
+                if (Identifier.Split(TEXT("/"), &FirstDesignation, &SecondDesignation)) {
+                    const double TextOffset = HalfLength - 72.0;
+                    for (const auto& Designation : {TPair<FString, double>(FirstDesignation, -1.0), TPair<FString, double>(SecondDesignation, 1.0)}) {
+                        const double Along = Designation.Value * TextOffset;
+                        const FVector TextPosition = ToOverlay(CenterX + AxisX * Along, CenterY + AxisY * Along) + FVector(0.0, 0.0, 65.0);
+                        const FVector TextAhead = ToOverlay(CenterX + AxisX * (Along + Designation.Value), CenterY + AxisY * (Along + Designation.Value));
+                        const FVector TextDirection = TextAhead - TextPosition;
+                        auto* Number = NewObject<UTextRenderComponent>(this, *FString::Printf(TEXT("KAUO_RunwayDesignation_%s"), *Designation.Key));
+                        Number->SetupAttachment(SceneRoot);
+                        Number->SetText(FText::FromString(Designation.Key));
+                        Number->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+                        Number->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
+                        Number->SetWorldSize(520.0f);
+                        Number->SetTextRenderColor(FColor(245, 244, 231));
+                        Number->SetWorldLocation(TextPosition);
+                        Number->SetWorldRotation(FRotator(0.0f, FMath::RadiansToDegrees(FMath::Atan2(TextDirection.Y, TextDirection.X)), 0.0f));
+                        Number->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+                        Number->RegisterComponent();
+                        AirportMarkings.Add(Number);
+                    }
+                }
+            }
         }
 
         const auto ApronCenter = Features->GetObjectField(TEXT("apron_center_local_m"));
@@ -249,21 +362,19 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
             double X = 0.0, Y = 0.0, Width = 0.0, Length = 0.0;
             if (ApronCenter->TryGetNumberField(TEXT("x"), X) && ApronCenter->TryGetNumberField(TEXT("y"), Y)
                 && ApronSize->TryGetNumberField(TEXT("x"), Width) && ApronSize->TryGetNumberField(TEXT("y"), Length)) {
-                if (bGeospatialWireframe) {
-                    const double HalfWidth = Width * 0.5;
-                    const double HalfLength = Length * 0.5;
-                    AddSegment(TEXT("KAUO_TerminalFboApron_North"), X - HalfWidth, Y + HalfLength,
-                        X + HalfWidth, Y + HalfLength, 1.2, Marking);
-                    AddSegment(TEXT("KAUO_TerminalFboApron_South"), X - HalfWidth, Y - HalfLength,
-                        X + HalfWidth, Y - HalfLength, 1.2, Marking);
-                    AddSegment(TEXT("KAUO_TerminalFboApron_East"), X + HalfWidth, Y - HalfLength,
-                        X + HalfWidth, Y + HalfLength, 1.2, Marking);
-                    AddSegment(TEXT("KAUO_TerminalFboApron_West"), X - HalfWidth, Y - HalfLength,
-                        X - HalfWidth, Y + HalfLength, 1.2, Marking);
-                } else {
-                    AddBox(TEXT("KAUO_TerminalFboApron"), ToOverlay(X, Y), FVector(Width, Length, 0.25),
-                        Placement.SimulationHeadingDegrees - 90.0f, Apron);
-                }
+                // Keep the source imagery visible: the chart-graticule apron
+                // bounds are approximate, so draw an outline rather than an
+                // opaque slab that could imply a surveyed pavement boundary.
+                const double HalfWidth = Width * 0.5;
+                const double HalfLength = Length * 0.5;
+                AddSegment(TEXT("KAUO_TerminalFboApron_North"), X - HalfWidth, Y + HalfLength,
+                    X + HalfWidth, Y + HalfLength, 0.8, Marking);
+                AddSegment(TEXT("KAUO_TerminalFboApron_South"), X - HalfWidth, Y - HalfLength,
+                    X + HalfWidth, Y - HalfLength, 0.8, Marking);
+                AddSegment(TEXT("KAUO_TerminalFboApron_East"), X + HalfWidth, Y - HalfLength,
+                    X + HalfWidth, Y + HalfLength, 0.8, Marking);
+                AddSegment(TEXT("KAUO_TerminalFboApron_West"), X - HalfWidth, Y - HalfLength,
+                    X - HalfWidth, Y + HalfLength, 0.8, Marking);
             }
         }
 
@@ -279,8 +390,14 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
                 || !Size->TryGetNumberField(TEXT("y"), Length)
                 || !BuildingInfo->TryGetNumberField(TEXT("heading_degrees"), Heading)) continue;
             const FString Name = BuildingInfo->GetStringField(TEXT("name"));
-            AddBox(TEXT("KAUO_Building_") + FString::FromInt(Index), ToOverlay(X, Y), FVector(Width, Length, 12.0),
+            const FString BuildingName = Name.Contains(TEXT("hangar"), ESearchCase::IgnoreCase) ? TEXT("Hangar") : TEXT("FBO");
+            AddBox(TEXT("KAUO_Building_") + FString::FromInt(Index), ToOverlay(X, Y) + FVector(0.0, 0.0, 375.0), FVector(Width, Length, 7.5),
                 Heading - 90.0f, Building);
+            AddBox(TEXT("KAUO_BuildingRoof_") + FString::FromInt(Index), ToOverlay(X, Y) + FVector(0.0, 0.0, 820.0), FVector(Width + 1.5, Length + 1.5, 1.4),
+                Heading - 90.0f, BuildingRoof);
+            const FVector FacadeOffset = ToOverlay(X, Y - Length * 0.27) + FVector(0.0, 0.0, 400.0);
+            AddBox(TEXT("KAUO_BuildingFacade_") + FString::FromInt(Index), FacadeOffset, FVector(Width * 0.74, 0.5, 3.0),
+                Heading - 90.0f, CreateMaterial(BuildingName == TEXT("FBO") ? FLinearColor(0.10f, 0.25f, 0.29f) : FLinearColor(0.26f, 0.29f, 0.30f)));
             UE_LOG(LogRampLab, Verbose, TEXT("KAUO approximate landmark: %s"), *Name);
         }
 
@@ -302,7 +419,31 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
             if (!Edge->TryGetStringField(TEXT("from"), From) || !Edge->TryGetStringField(TEXT("to"), To)
                 || !Edge->TryGetStringField(TEXT("id"), Id) || !NodePositions.Contains(From) || !NodePositions.Contains(To)) continue;
             const FVector2D A = NodePositions[From], B = NodePositions[To];
-            AddSegment(TEXT("KAUO_Taxi_") + Id, A.X, A.Y, B.X, B.Y, 13.0, Taxiway);
+            // The graph is an approximate operational route network. Render
+            // its centerline only so it reads as guidance without inventing
+            // pavement edges over the aerial basemap.
+            AddSegment(TEXT("KAUO_TaxiCenter_") + Id, A.X, A.Y, B.X, B.Y, 0.65, TaxiMarking);
+        }
+        for (const auto& Node : NodePositions) {
+            if (!Node.Key.Contains(TEXT("hold"), ESearchCase::IgnoreCase)) continue;
+            for (const auto& EdgeValue : Edges) {
+                const auto Edge = EdgeValue->AsObject();
+                if (!Edge.IsValid()) continue;
+                FString From, To;
+                if (!Edge->TryGetStringField(TEXT("from"), From) || !Edge->TryGetStringField(TEXT("to"), To)) continue;
+                const FString Other = From == Node.Key ? To : To == Node.Key ? From : FString();
+                if (Other.IsEmpty() || !NodePositions.Contains(Other)) continue;
+                FVector2D Direction = NodePositions[Other] - Node.Value;
+                if (!Direction.Normalize()) continue;
+                const FVector2D Across(-Direction.Y, Direction.X);
+                for (int32 Bar = 0; Bar < 4; ++Bar) {
+                    const FVector2D Center = Node.Value + Direction * (static_cast<double>(Bar) * 0.65);
+                    const FVector2D A = Center - Across * 6.0;
+                    const FVector2D B = Center + Across * 6.0;
+                    AddSegment(TEXT("KAUO_HoldShort_") + Node.Key, A.X, A.Y, B.X, B.Y, 0.45, TaxiMarking);
+                }
+                break;
+            }
         }
         UE_LOG(LogRampLab, Display, TEXT("KAUO airport overlay built from generated scenario geometry: runways=%d graph_edges=%d approximate_features=true"),
             Runways.Num(), Edges.Num());
