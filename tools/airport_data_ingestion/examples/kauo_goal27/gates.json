@@ -1,0 +1,18 @@
+[
+  {
+    "gate_id": "GA-PARK-ILLUSTRATIVE-01",
+    "terminal": "approximate terminal/FBO apron",
+    "status": "available",
+    "remote": true,
+    "description": "Illustrative parking position 01 on the chart-informed apron; not a published stand ID or surveyed coordinate.",
+    "classification": "APPROXIMATE / ASSUMED FOR SIMULATION"
+  },
+  {
+    "gate_id": "GA-PARK-ILLUSTRATIVE-02",
+    "terminal": "approximate terminal/FBO apron",
+    "status": "available",
+    "remote": true,
+    "description": "Illustrative parking position 02 added for safe two-aircraft simulation; not a published stand ID or surveyed coordinate.",
+    "classification": "APPROXIMATE / ASSUMED FOR SIMULATION"
+  }
+]

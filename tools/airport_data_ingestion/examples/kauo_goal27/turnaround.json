@@ -1,0 +1,72 @@
+[
+  {
+    "requirement_id": "KAUO-GA01-FUEL",
+    "aircraft_id": "KAUO-SIM-GA-01",
+    "service_type": "fueling",
+    "duration_minutes": 2,
+    "description": "Illustrative vehicle-serviced fueling duration; not an observed KAUO value.",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "requirement_id": "KAUO-GA01-UNLOAD",
+    "aircraft_id": "KAUO-SIM-GA-01",
+    "service_type": "baggage",
+    "duration_minutes": 2,
+    "description": "Illustrative unload after fueling so service vehicles do not occupy one stand simultaneously; not an observed KAUO procedure.",
+    "classification": "ASSUMED FOR SIMULATION",
+    "depends_on": "KAUO-GA01-FUEL"
+  },
+  {
+    "requirement_id": "KAUO-GA01-LOAD",
+    "aircraft_id": "KAUO-SIM-GA-01",
+    "service_type": "baggage_load",
+    "duration_minutes": 2,
+    "depends_on": "KAUO-GA01-UNLOAD",
+    "description": "Illustrative load-after-unload task dependency; not an observed KAUO value.",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "requirement_id": "KAUO-GA01-PUSH",
+    "aircraft_id": "KAUO-SIM-GA-01",
+    "service_type": "pushback_preparation",
+    "duration_minutes": 1,
+    "depends_on": "KAUO-GA01-LOAD",
+    "description": "Abstract pushback preparation task; no vehicle resource or measured KAUO duration is claimed.",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "requirement_id": "KAUO-GA02-FUEL",
+    "aircraft_id": "KAUO-SIM-GA-02",
+    "service_type": "fueling",
+    "duration_minutes": 2,
+    "description": "Illustrative vehicle-serviced fueling duration; not an observed KAUO value.",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "requirement_id": "KAUO-GA02-UNLOAD",
+    "aircraft_id": "KAUO-SIM-GA-02",
+    "service_type": "baggage",
+    "duration_minutes": 2,
+    "description": "Illustrative unload after fueling so service vehicles do not occupy one stand simultaneously; not an observed KAUO procedure.",
+    "classification": "ASSUMED FOR SIMULATION",
+    "depends_on": "KAUO-GA02-FUEL"
+  },
+  {
+    "requirement_id": "KAUO-GA02-LOAD",
+    "aircraft_id": "KAUO-SIM-GA-02",
+    "service_type": "baggage_load",
+    "duration_minutes": 2,
+    "depends_on": "KAUO-GA02-UNLOAD",
+    "description": "Illustrative load-after-unload task dependency; not an observed KAUO value.",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "requirement_id": "KAUO-GA02-PUSH",
+    "aircraft_id": "KAUO-SIM-GA-02",
+    "service_type": "pushback_preparation",
+    "duration_minutes": 1,
+    "depends_on": "KAUO-GA02-LOAD",
+    "description": "Abstract pushback preparation task; no vehicle resource or measured KAUO duration is claimed.",
+    "classification": "ASSUMED FOR SIMULATION"
+  }
+]

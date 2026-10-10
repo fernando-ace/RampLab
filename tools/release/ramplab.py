@@ -17,7 +17,9 @@ ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / "tools" / "release" / "scenario_catalog.json"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools" / "ops_dashboard"))
-from tools.airport_scenario_generation.run_artifacts import write_goal19_artifacts
+from tools.airport_scenario_generation.run_artifacts import write_goal19_artifacts, write_determinism_report
+from tools.airport_scenario_generation.generator import generate as generate_airport_scenario
+from tools.airport_data_ingestion.core import canonical_bytes, load_dataset
 import run_real_experiment
 
 
@@ -149,7 +151,9 @@ def demo(args: argparse.Namespace) -> None:
         launch_dashboard(comparison_dir)
 
 
-def launch_unreal(output: Path, scenario_file: Path | None = None) -> None:
+def launch_unreal(output: Path, scenario_file: Path | None = None, *, screenshot_path: Path | None = None,
+                  camera_preset: str | None = None, screenshot_delay_seconds: float | None = None,
+                  playback_speed: float | None = None, build: bool = True) -> None:
     catalog = load_catalog()
     mode = catalog["golden_demo"]["unreal_mode"]
     editor = Path(os.environ.get("UE_EDITOR", r"C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe"))
@@ -158,20 +162,35 @@ def launch_unreal(output: Path, scenario_file: Path | None = None) -> None:
         raise RuntimeError(f"Unreal Editor 5.8 was not found at {editor}. Set UE_EDITOR to its full path.")
     if not project.is_file():
         raise RuntimeError(f"Unreal project is missing: {project}")
-    powershell = shutil.which("powershell") or shutil.which("pwsh")
-    if not powershell:
-        raise RuntimeError("PowerShell is required to build the Unreal-linked C++ core.")
-    command([powershell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
-             str(ROOT / "unreal" / "RampLabViewer" / "Scripts" / "BuildRampLabCore.ps1")])
     build_batch = editor.parents[2] / "Build" / "BatchFiles" / "Build.bat"
     if not build_batch.is_file():
         raise RuntimeError(f"Unreal Build.bat was not found next to UE_EDITOR: {build_batch}")
-    command([str(build_batch), "RampLabViewerEditor", "Win64", "Development", f"-Project={project}",
-             "-WaitMutex", "-NoHotReload"])
-    log = (output / "unreal-windowed.log").resolve()
+    if build:
+        powershell = shutil.which("powershell") or shutil.which("pwsh")
+        if not powershell:
+            raise RuntimeError("PowerShell is required to build the Unreal-linked C++ core.")
+        command([powershell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                 str(ROOT / "unreal" / "RampLabViewer" / "Scripts" / "BuildRampLabCore.ps1")])
+        command([str(build_batch), "RampLabViewerEditor", "Win64", "Development", f"-Project={project}",
+                 "-WaitMutex", "-NoHotReload"])
+    if screenshot_path is not None:
+        screenshot_path = screenshot_path.resolve()
+        screenshot_path.parent.mkdir(parents=True, exist_ok=True)
+        log = screenshot_path.with_suffix(".log")
+    else:
+        log = (output / "unreal-windowed.log").resolve()
     scenario_argument = f"-RampLabScenarioFile={scenario_file.resolve()}" if scenario_file else f"-{mode}"
-    process = subprocess.Popen([str(editor), str(project), "-game", "-windowed", "-ResX=1600", "-ResY=900", "-NoSplash",
-                                 scenario_argument, f"-abslog={log}"], cwd=ROOT)
+    arguments = [str(editor), str(project), "-game", "-windowed", "-ResX=1600", "-ResY=900", "-NoSplash",
+                 scenario_argument, f"-abslog={log}"]
+    if screenshot_path is not None:
+        arguments.append(f"-RampLabScreenshot={screenshot_path}")
+        if camera_preset:
+            arguments.append(f"-RampLabCameraPreset={camera_preset}")
+        if screenshot_delay_seconds is not None:
+            arguments.append(f"-RampLabScreenshotDelaySeconds={screenshot_delay_seconds}")
+    if playback_speed is not None:
+        arguments.append(f"-RampLabPlaybackSpeed={playback_speed}")
+    process = subprocess.Popen(arguments, cwd=ROOT)
     print(f"Visible Unreal demo launched (PID {process.pid}); runtime log: {log}")
 
 
@@ -190,6 +209,73 @@ def launch_dashboard(directory: Path) -> None:
     if process.poll() is not None:
         raise RuntimeError(f"Dashboard server exited during startup with code {process.returncode}.")
     print(f"Dashboard launched at http://127.0.0.1:8765 (PID {process.pid})")
+
+
+def kauo_vertical(args: argparse.Namespace) -> None:
+    """Generate and run the source-backed KAUO operational vertical."""
+    output = fresh_output(args.output.resolve())
+    cli = resolve_cli(args.build_dir.resolve())
+    if not cli.is_file():
+        cli = prepare(args.build_dir.resolve(), run_tests=False)
+
+    manifest = ROOT / "tools" / "airport_data_ingestion" / "examples" / "kauo_goal27" / "manifest.json"
+    mapping = ROOT / "tools" / "airport_scenario_generation" / "mapping.kauo_goal27.json"
+    canonical_path = output / "canonical.json"
+    dataset, findings, _ = load_dataset(manifest)
+    errors = [item for item in findings if item["severity"] == "error"]
+    if errors:
+        raise RuntimeError(f"KAUO source validation reported {len(errors)} blocking errors: {errors}")
+    canonical_path.write_bytes(canonical_bytes(dataset))
+
+    generated_root = output / "generated"
+    required_modes = ("control", "disruption") if args.mode == "pair" else (args.mode,)
+    for mode in required_modes:
+        generate_airport_scenario(canonical_path, mapping, generated_root / mode,
+                                  seed=args.seed, without_disruptions=(mode == "control"))
+        command([sys.executable, "-m", "tools.airport_scenario_generation", "validate", "--generated",
+                 str(generated_root / mode), "--mapping", str(mapping)])
+
+    cli = cli.resolve()
+    for mode in required_modes:
+        run_scenario(cli, None, mode, args.seed, output / mode,
+                     generated_root / mode / "scenario.json")
+
+    if args.mode == "pair":
+        for mode in ("control", "disruption"):
+            run_scenario(cli, None, mode, args.seed, output / f"{mode}-repeat",
+                         generated_root / mode / "scenario.json")
+        command([sys.executable, str(ROOT / "tools" / "experiment_analysis" / "analyze.py"),
+                 str(output / "control" / "experiment.json"),
+                 str(output / "disruption" / "experiment.json"),
+                 "--output", str(output / "analysis.md"), "--json", str(output / "analysis.json")])
+        determinism_path = output / "determinism.json"
+        write_determinism_report(output / "control", output / "control-repeat",
+                                 output / "disruption", output / "disruption-repeat", determinism_path)
+        command([sys.executable, "-m", "tools.evidence_bundle",
+                 "--control", str(output / "control"), "--disruption", str(output / "disruption"),
+                 "--determinism-report", str(determinism_path), "--output", str(output / "evidence")])
+
+    print(json.dumps({"airport": "KAUO", "mode": args.mode, "seed": args.seed,
+                      "output": str(output), "runs": [str(output / mode) for mode in required_modes],
+                      "repeat_seed42": args.mode == "pair" and args.seed == 42,
+                      "analysis": str(output / "analysis.json") if args.mode == "pair" else None,
+                      "determinism": str(output / "determinism.json") if args.mode == "pair" else None,
+                      "evidence_bundle": str(output / "evidence") if args.mode == "pair" else None}, indent=2))
+    if args.unreal:
+        captures = []
+        if args.mode in ("control", "pair"):
+            captures.append(("control", "control-runway.png", "KAUOOverview", 35.0, 1.0))
+        if args.mode in ("disruption", "pair"):
+            captures.append(("disruption", "disruption-activity.png", "KAUOApron", 48.0, 5.0))
+            captures.append(("disruption", "disruption-completion.png", "KAUOOverview", 35.0, 60.0))
+        for index, (mode, filename, preset, delay, speed) in enumerate(captures):
+            launch_unreal(output, (generated_root / mode / "scenario.json").resolve(),
+                          screenshot_path=output / "unreal" / filename, camera_preset=preset,
+                          screenshot_delay_seconds=delay, playback_speed=speed, build=(index == 0))
+    if args.dashboard:
+        if args.mode != "pair":
+            raise ValueError("--dashboard requires --mode pair so control, disruption, and repeat outputs are available")
+        launch_dashboard(output)
 
 
 def write_summary_markdown(path: Path, summary: dict[str, Any]) -> None:
@@ -255,6 +341,13 @@ def main() -> int:
     demo_parser.add_argument("--skip-tests", action="store_true", help="Skip test suites (not recommended for release review).")
     demo_parser.add_argument("--unreal", action="store_true", help="Launch the visible Unreal outage validation run after packaging.")
     demo_parser.add_argument("--dashboard", action="store_true", help="Start the local dashboard with the generated real runs.")
+    kauo = sub.add_parser("kauo", help="Generate and run the Goal 27 KAUO control/disruption vertical.")
+    kauo.add_argument("--mode", choices=("control", "disruption", "pair"), default="pair")
+    kauo.add_argument("--seed", type=int, default=42)
+    kauo.add_argument("--output", type=Path, default=None)
+    kauo.add_argument("--build-dir", type=Path, default=ROOT / "build-goal27")
+    kauo.add_argument("--unreal", action="store_true", help="Build and launch visible Unreal runs for the selected mode.")
+    kauo.add_argument("--dashboard", action="store_true", help="Launch Goal 20 with real KAUO control/disruption and repeat runs.")
     args = parser.parse_args()
     try:
         if args.action == "list":
@@ -282,6 +375,9 @@ def main() -> int:
         elif args.action == "demo":
             args.output = args.output or (ROOT / "results" / "goal23" / datetime.now().strftime("%Y%m%d-%H%M%S"))
             demo(args)
+        elif args.action == "kauo":
+            args.output = args.output or (ROOT / "results" / "goal27" / "kauo" / f"seed-{args.seed}")
+            kauo_vertical(args)
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as exc:
         print(f"RampLab release workflow failed: {exc}", file=sys.stderr)
         return 1

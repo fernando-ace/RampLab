@@ -40,6 +40,18 @@ def analyze(*runs, determinism=False):
 
 
 class DashboardDataTests(unittest.TestCase):
+    def test_real_demo_label_uses_generated_airport_and_release_run(self):
+        with TemporaryDirectory() as temp:
+            bundle = Path(temp)
+            (bundle / "release-run.json").write_text(json.dumps({"mode": "disruption", "seed": 42,
+                                                                    "scenario": "airport_kauo"}), encoding="utf-8")
+            (bundle / "experiment.json").write_text(json.dumps({
+                "source_scenario": "airport_kauo",
+                "scenario_generation": {"manifest": {"airport": {"airport_id": "KAUO", "icao": "KAUO"}}},
+            }), encoding="utf-8")
+            self.assertEqual(server._real_demo_label(bundle, "fallback"),
+                             "Disruption · KAUO · airport_kauo · seed 42")
+
     def test_valid_control_loads_metrics_entities_and_events(self):
         report = analyze(fixture_run("control"))["runs"][0]
         self.assertEqual(report["metrics"]["surface_departed_aircraft"], 3)

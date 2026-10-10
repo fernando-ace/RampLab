@@ -51,7 +51,7 @@ struct ScenarioDocument {
     std::vector<Disruption> disruptions;
     struct VehicleOutage { std::int64_t time; std::string vehicle; };
     std::vector<VehicleOutage> vehicle_outages;
-    struct SurfaceOperations { std::string departure_handoff; std::string runway_node; std::string arrival_exit; std::int64_t pushback_seconds{30}; std::int64_t runway_seconds{60}; std::int64_t arrival_rollout_seconds{90}; double speed_mps{5.0}; double queue_spacing_m{30.0}; };
+    struct SurfaceOperations { std::string departure_handoff; std::string runway_node; std::string arrival_exit; std::int64_t pushback_seconds{30}; std::int64_t runway_seconds{60}; std::int64_t arrival_rollout_seconds{90}; double speed_mps{5.0}; double queue_spacing_m{30.0}; bool return_vehicles_after_task{false}; };
     std::optional<SurfaceOperations> surface_operations;
 };
 
@@ -222,6 +222,7 @@ ScenarioDocument parse_document(const YAML::Node& root) {
         if (surface["arrival_rollout_seconds"]) config.arrival_rollout_seconds = scalar<std::int64_t>(surface, "arrival_rollout_seconds", "surface_operations");
         if (surface["aircraft_speed_mps"]) config.speed_mps = scalar<double>(surface, "aircraft_speed_mps", "surface_operations");
         if (surface["departure_queue_spacing_m"]) config.queue_spacing_m = scalar<double>(surface, "departure_queue_spacing_m", "surface_operations");
+        config.return_vehicles_after_task = optional_bool(surface, "return_service_vehicles_to_depot_after_task", false, "surface_operations");
         document.surface_operations = std::move(config);
     }
     return document;
@@ -305,7 +306,8 @@ Scenario validate_and_build(const ScenarioDocument& document) {
             lookup(nodes, config.runway_node, "surface_operations.runway_node"),
             lookup(nodes, config.arrival_exit, "surface_operations.arrival_exit"),
             SimTime{config.pushback_seconds}, SimTime{config.runway_seconds},
-            SimTime{config.arrival_rollout_seconds}, config.speed_mps, config.queue_spacing_m};
+            SimTime{config.arrival_rollout_seconds}, config.speed_mps, config.queue_spacing_m,
+            config.return_vehicles_after_task};
     }
     for (std::size_t index = 0; index < document.edges.size(); ++index) {
         const auto& value = document.edges[index];

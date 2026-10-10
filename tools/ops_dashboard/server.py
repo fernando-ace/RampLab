@@ -29,6 +29,29 @@ def _safe_name(name: str) -> str:
     return Path(name.replace("\\", "/")).name or "upload"
 
 
+def _real_demo_label(bundle: Path, fallback: str) -> str:
+    """Use run metadata so the real-run picker identifies airport and scenario."""
+    try:
+        release = json.loads((bundle / "release-run.json").read_text(encoding="utf-8"))
+        experiment = json.loads((bundle / "experiment.json").read_text(encoding="utf-8"))
+        generation = experiment.get("scenario_generation", {})
+        manifest = generation.get("manifest", {}) if isinstance(generation, dict) else {}
+        airport = manifest.get("airport", {}) if isinstance(manifest, dict) else {}
+        airport_name = airport.get("icao") or airport.get("airport_id")
+        mode, seed = release.get("mode"), release.get("seed")
+        scenario = release.get("scenario") or experiment.get("source_scenario")
+        if isinstance(mode, str) and isinstance(airport_name, str):
+            label = f"{mode.title()} · {airport_name}"
+            if isinstance(scenario, str) and scenario:
+                label += f" · {scenario}"
+            if isinstance(seed, int) and not isinstance(seed, bool):
+                label += f" · seed {seed}"
+            return label
+    except (OSError, ValueError, TypeError):
+        pass
+    return fallback
+
+
 def _run_data(run: dict, folder: Path) -> dict:
     folder.mkdir(parents=True, exist_ok=True)
     files = run.get("files")
@@ -196,7 +219,7 @@ class Handler(BaseHTTPRequestHandler):
                         if REAL_DEMO_DIR not in candidate.parents or not candidate.is_file():
                             raise FileNotFoundError(f"Missing {folder}/{filename} in configured run bundles.")
                         files.append({"name": filename, "content": candidate.read_text(encoding="utf-8")})
-                    data.append({"id": f"real-{folder}", "label": name, "files": files})
+                    data.append({"id": f"real-{folder}", "label": _real_demo_label(bundle, name), "files": files})
                 return self._send(200, json.dumps({"runs": data}).encode("utf-8"), "application/json; charset=utf-8")
             except (OSError, ValueError) as exc:
                 return self._send(400, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")

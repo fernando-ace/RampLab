@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "kauo-operational-digital-twin-goal27-2026-10-09",
+  "description": "Source-backed FAA airport and runway references plus explicitly assumed, illustrative KAUO-like flight, service-fleet, apron-position, timing, and disruption inputs for the Goal 27 operational simulation. These are not observed KAUO operations.",
+  "airport": {
+    "airport_id": "KAUO",
+    "name": "Auburn University Regional Airport",
+    "iata": "AUO",
+    "icao": "KAUO",
+    "timezone": "UTC",
+    "local_timezone": "America/Chicago",
+    "reference_latitude": 32.61511111,
+    "reference_longitude": -85.434,
+    "field_elevation_ft": 776.8,
+    "field_elevation_m": 236.785,
+    "runways": [
+      {
+        "identifier": "18/36",
+        "length_ft": 5264,
+        "width_ft": 100,
+        "surface": "asphalt, grooved",
+        "classification": "FAA published"
+      },
+      {
+        "identifier": "11/29",
+        "length_ft": 4000,
+        "width_ft": 75,
+        "surface": "asphalt",
+        "classification": "FAA published"
+      }
+    ],
+    "operational_areas": [
+      {
+        "id": "primary_fbo_apron",
+        "label": "Terminal/FBO apron",
+        "classification": "APPROXIMATE chart-informed operational area; boundary is not surveyed"
+      },
+      {
+        "id": "ga_parking_area",
+        "label": "Illustrative general aviation parking positions",
+        "classification": "ASSUMED FOR SIMULATION; stand positions are not published FAA stands"
+      },
+      {
+        "id": "service_staging_area",
+        "label": "Illustrative apron service staging",
+        "classification": "ASSUMED FOR SIMULATION; not verified vehicle locations"
+      }
+    ]
+  },
+  "files": {
+    "flights": "flights.json",
+    "aircraft": "aircraft.json",
+    "gates": "gates.json",
+    "equipment": "equipment.json",
+    "turnaround_requirements": "turnaround.json",
+    "disruptions": "disruptions.json"
+  }
+}
