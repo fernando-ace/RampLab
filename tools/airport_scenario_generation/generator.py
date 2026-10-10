@@ -168,7 +168,7 @@ def load_mapping(path: Path) -> tuple[dict[str, Any], bytes, dict[str, Any], byt
     equipment_types = mapping.get("equipment_types", {})
     if not isinstance(equipment_types, dict):
         raise GenerationError("equipment_types must be an object")
-    allowed_vehicle_types = {"fueling", "baggage", "catering", "deboarding", "cabin_cleaning", "baggage_load", "pushback_preparation"}
+    allowed_vehicle_types = {"fueling", "baggage", "catering", "deboarding", "cabin_cleaning", "baggage_load", "pushback_preparation", "lavatory_service", "potable_water", "ground_power", "pushback", "passenger_stairs", "air_start", "maintenance_inspection", "chocks"}
     for canonical, value in equipment_types.items():
         if not isinstance(value, dict):
             raise GenerationError(f"equipment_types.{canonical} must be an object")
@@ -177,7 +177,7 @@ def load_mapping(path: Path) -> tuple[dict[str, Any], bytes, dict[str, Any], byt
         if value.get("initial_node") not in nodes:
             raise GenerationError(f"equipment_types.{canonical} initial_node references unknown simulator node {value.get('initial_node')!r}")
     service_types = mapping.get("service_types", {})
-    allowed_services = {"fueling", "baggage", "deboarding", "catering", "cabin_cleaning", "baggage_load", "pushback_preparation"}
+    allowed_services = {"fueling", "baggage", "deboarding", "catering", "cabin_cleaning", "baggage_load", "pushback_preparation", "lavatory_service", "potable_water", "ground_power", "pushback", "passenger_stairs", "air_start", "maintenance_inspection", "chocks"}
     if not isinstance(service_types, dict) or any(v not in allowed_services for v in service_types.values()):
         raise GenerationError("service_types contains an unsupported RampLab service type")
     return mapping, raw, geometry, geometry_raw
@@ -236,11 +236,13 @@ def generate(package_path: Path, mapping_path: Path, output: Path, *, seed: int 
         vehicle_id = ident
         equipment_identity[ident] = vehicle_id
         equipment_rows.append({"id": vehicle_id, "name": ident, "type": adapter["type"], "depot_node": node, "speed_mps": 8.0})
+    vehicle_backed_services = {"fueling", "baggage", "catering", "baggage_load", "lavatory_service",
+                               "potable_water", "ground_power", "pushback", "passenger_stairs", "air_start"}
     required_vehicle_types = {
         mapping["service_types"][str(requirement["service_type"])]
         for requirement in data["turnaround_requirements"]
         if str(requirement["service_type"]) in mapping["service_types"]
-        and mapping["service_types"][str(requirement["service_type"])] != "pushback_preparation"
+        and mapping["service_types"][str(requirement["service_type"])] in vehicle_backed_services
     }
     available_vehicle_types = {str(vehicle["type"]) for vehicle in equipment_rows}
     missing_vehicle_types = sorted(required_vehicle_types - available_vehicle_types)
@@ -403,8 +405,13 @@ def generate(package_path: Path, mapping_path: Path, output: Path, *, seed: int 
         else:
             _warn(warnings, "UNSUPPORTED_DISRUPTION", f"{did} type {kind!r} has no generated simulator equivalent")
 
-    service_durations = {"fueling": 300, "baggage": 240, "deboarding": 120, "catering": 300,
-                         "cabin_cleaning": 180, "baggage_load": 240, "pushback_preparation": 120}
+    # Deterministic demonstration defaults (seconds); these are simulation assumptions,
+    # not measured airport service times. Scenario task durations override these values.
+    service_durations = {"fueling": 720, "baggage": 480, "deboarding": 300, "catering": 600,
+                         "cabin_cleaning": 600, "baggage_load": 600, "pushback_preparation": 120,
+                         "lavatory_service": 300, "potable_water": 240, "ground_power": 120,
+                         "pushback": 180, "passenger_stairs": 90, "air_start": 120,
+                         "maintenance_inspection": 300, "chocks": 30}
     scenario_name = "airport_" + re.sub(r"[^A-Za-z0-9_]+", "_", str(data["airport"]["airport_id"])).strip("_").lower()
     scenario = {"name": scenario_name, "default_seed": seed,
         "airport": geometry["airport"],

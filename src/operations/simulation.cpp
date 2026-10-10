@@ -53,7 +53,28 @@ SimulationEventRecord aircraft_event(SimulationEventType type, const Aircraft& a
 }
 
 bool uses_mobile_fleet(ServiceType type) {
-    return type == ServiceType::Fueling || type == ServiceType::Baggage || type == ServiceType::BaggageLoad;
+    switch (type) {
+    case ServiceType::Fueling: case ServiceType::Baggage: case ServiceType::Catering:
+    case ServiceType::BaggageLoad: case ServiceType::LavatoryService: case ServiceType::PotableWater:
+    case ServiceType::GroundPower: case ServiceType::Pushback: case ServiceType::PassengerStairs:
+    case ServiceType::AirStart: return true;
+    default: return false;
+    }
+}
+
+std::string fleet_capability(ServiceType type) {
+    switch (type) {
+    case ServiceType::Fueling: return "fuel_truck";
+    case ServiceType::Baggage: case ServiceType::BaggageLoad: return "baggage_vehicle";
+    case ServiceType::Catering: return "catering_truck";
+    case ServiceType::LavatoryService: return "lavatory_truck";
+    case ServiceType::PotableWater: return "water_truck";
+    case ServiceType::GroundPower: return "gpu";
+    case ServiceType::Pushback: return "pushback_tug";
+    case ServiceType::PassengerStairs: return "passenger_stairs";
+    case ServiceType::AirStart: return "air_start_unit";
+    default: return "";
+    }
 }
 
 }  // namespace
@@ -62,10 +83,15 @@ Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryP
     : scenario_(std::move(scenario)), seed_(seed), random_(seed),
       fuel_pool_(make_resource_pool(scenario_, ServiceType::Fueling)),
       baggage_pool_(make_resource_pool(scenario_, ServiceType::Baggage)), history_policy_(history_policy) {
-    for (const auto type : {ServiceType::Fueling, ServiceType::Baggage}) {
-        if (!scenario_.service_durations.contains(type) || duration(type) <= SimTime::zero()) {
-            throw std::invalid_argument("scenario requires positive service durations");
+    if (!scenario_.turnaround_orchestration) {
+        for (const auto type : {ServiceType::Fueling, ServiceType::Baggage}) {
+            if (!scenario_.service_durations.contains(type) || duration(type) <= SimTime::zero())
+                throw std::invalid_argument("legacy service scenarios require positive fuel and baggage durations");
         }
+    }
+    for (const auto& [type, service_duration] : scenario_.service_durations) {
+        static_cast<void>(type);
+        if (service_duration <= SimTime::zero()) throw std::invalid_argument("service durations must be positive");
     }
     for (const auto& flight : scenario_.aircraft) {
         [[maybe_unused]] const auto sequence = events_.schedule(
@@ -102,8 +128,8 @@ Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryP
         for (const auto& service_vehicle : scenario_.vehicles) {
             const auto& depot = scenario_.graph.node(service_vehicle.depot_node());
             const auto id = autonomy::VehicleId{std::to_string(service_vehicle.id().value())};
-            const auto capability = service_vehicle.capability() == ServiceType::Fueling
-                ? "fuel_truck" : "baggage_vehicle";
+            const auto capability = fleet_capability(service_vehicle.capability());
+            if (capability.empty()) throw std::invalid_argument("turnaround fleet vehicle has no mobile capability");
             const auto return_capability = "ramplab_return_" + id.value;
             std::optional<std::string> outage_safe_node;
             if (const auto refuge = service_vehicle.outage_safe_node())
@@ -1024,13 +1050,21 @@ void Simulation::queue_mobile_task(Aircraft& flight, ServiceTask& task_value, st
     const auto request_id = std::format("turnaround-{}-task-{}", flight.id().value(), task_value.id.value());
     if (fleet_task_requests_.contains(request_id)) return;
     auto node = scenario_.graph.node(flight.gate_node()).name;
-    if (task_value.type == ServiceType::Baggage || task_value.type == ServiceType::BaggageLoad) {
-        const auto staging_name = node + " Baggage Stand";
-        if (std::ranges::any_of(scenario_.graph.nodes(), [&](const auto& candidate) {
-                return candidate.name == staging_name;
-            })) node = staging_name;
-    } else if (task_value.type == ServiceType::Fueling) {
-        const auto staging_name = node + " Fuel Stand";
+    std::string service_staging;
+    switch (task_value.type) {
+    case ServiceType::Baggage: case ServiceType::BaggageLoad: service_staging = "Baggage Stand"; break;
+    case ServiceType::Fueling: service_staging = "Fuel Stand"; break;
+    case ServiceType::Catering: service_staging = "Catering Stand"; break;
+    case ServiceType::LavatoryService: service_staging = "Lavatory Stand"; break;
+    case ServiceType::PotableWater: service_staging = "Water Stand"; break;
+    case ServiceType::GroundPower: service_staging = "GPU Stand"; break;
+    case ServiceType::Pushback: service_staging = "Pushback Stand"; break;
+    case ServiceType::PassengerStairs: service_staging = "Stairs Stand"; break;
+    case ServiceType::AirStart: service_staging = "Air Start Stand"; break;
+    default: break;
+    }
+    if (!service_staging.empty()) {
+        const auto staging_name = node + " " + service_staging;
         if (std::ranges::any_of(scenario_.graph.nodes(), [&](const auto& candidate) {
                 return candidate.name == staging_name;
             })) node = staging_name;
@@ -1039,7 +1073,7 @@ void Simulation::queue_mobile_task(Aircraft& flight, ServiceTask& task_value, st
     request.id = autonomy::ServiceRequestId{request_id};
     request.kind = task_value.type == ServiceType::Fueling
         ? autonomy::ServiceKind::FuelService : autonomy::ServiceKind::BaggageDelivery;
-    request.required_capability = task_value.type == ServiceType::Fueling ? "fuel_truck" : "baggage_vehicle";
+    request.required_capability = fleet_capability(task_value.type);
     request.origin = node;
     request.destination = node;
     request.release_time_s = static_cast<double>(now_.count());

@@ -21,7 +21,7 @@ REQUIRED = {
     "disruptions": ("disruption_id", "type", "start_time"),
 }
 ENUMS = {"operation": {"arrival", "departure"}, "status": {"available", "unavailable", "maintenance", "active", "inactive", "open", "closed", "out_of_service"},
-         "type": {"tug", "baggage_vehicle", "fuel_vehicle", "catering_vehicle", "service_cart", "ground_service_vehicle"}}
+         "type": {"tug", "baggage_vehicle", "belt_loader", "fuel_vehicle", "catering_vehicle", "lavatory_vehicle", "potable_water_vehicle", "ground_power_unit", "service_cart", "ground_service_vehicle", "stairs_vehicle", "air_start_unit", "maintenance_vehicle"}}
 ID_FIELDS = {"flights": "flight_id", "aircraft": "aircraft_id", "gates": "gate_id", "equipment": "equipment_id",
              "turnaround_requirements": "requirement_id", "disruptions": "disruption_id"}
 
