@@ -60,9 +60,9 @@ Focused Studio and integration checks:
 ```powershell
 python -m unittest tools.ops_dashboard.test_scenario_studio -v
 python -m unittest tools.airport_scenario_generation.test_generation tools.airport_scenario_generation.test_run_artifacts -v
-python -m unittest tools.experiment_analysis.test_analyze -v
+python -m unittest discover -s tools/experiment_analysis -p "test_*.py" -v
 python -m unittest discover -s tools/ops_dashboard -p "test_*.py" -v
 ctest --test-dir build-goal30 -C Release --output-on-failure
 ```
 
-The browser verification used the real local UI to validate, save, run, and compare the KAUO baseline and closure variant. The primary checkout was not modified, and no remote branch or pull request was created.
+The browser verification used the real local UI to validate, save, run, and compare the KAUO baseline and closure variant. Implementation and browser verification ran in an isolated worktree; the primary checkout was untouched.
