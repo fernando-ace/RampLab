@@ -260,6 +260,36 @@ std::vector<VehicleId> find_deadlocked_vehicles(
     return deadlocked;
 }
 
+std::vector<VehicleId> find_failed_retreat_blockers(
+    const std::vector<FleetWaitDependency>& dependencies,
+    const std::vector<VehicleId>& failed_retreat_vehicles) {
+    std::set<VehicleId> failed(failed_retreat_vehicles.begin(), failed_retreat_vehicles.end());
+    std::set<VehicleId> blockers;
+    for (const auto& dependency : dependencies)
+        if (failed.contains(dependency.blocking_vehicle)) blockers.insert(dependency.blocking_vehicle);
+    return {blockers.begin(), blockers.end()};
+}
+
+std::vector<FleetWaitDependency> find_stalled_dependencies(
+    const std::vector<FleetWaitDependency>& dependencies, double threshold_s,
+    const std::vector<VehicleId>& servicing_vehicles) {
+    if (!std::isfinite(threshold_s) || threshold_s <= 0.0)
+        throw std::invalid_argument("liveness threshold must be finite and positive");
+    std::vector<FleetWaitDependency> stalled;
+    for (const auto& dependency : dependencies) {
+        if (dependency.wait_duration_s < threshold_s ||
+            std::ranges::find(servicing_vehicles, dependency.blocking_vehicle) != servicing_vehicles.end())
+            continue;
+        stalled.push_back(dependency);
+    }
+    std::ranges::sort(stalled, [](const auto& a, const auto& b) {
+        return std::tie(a.waiting_vehicle, a.blocking_vehicle, a.resource) <
+               std::tie(b.waiting_vehicle, b.blocking_vehicle, b.resource);
+    });
+    stalled.erase(std::unique(stalled.begin(), stalled.end()), stalled.end());
+    return stalled;
+}
+
 VehicleId choose_recovery_vehicle(std::vector<FleetRecoveryCandidate> candidates) {
     if (candidates.empty()) throw std::invalid_argument("deadlock recovery requires at least one candidate");
     for (const auto& candidate : candidates)
@@ -289,6 +319,9 @@ struct FleetSimulation::Impl {
         double busy_time_s{};
         double idle_time_s{};
         double dispatch_state_since_s{};
+        double last_progress_s{};
+        Vec2 last_progress_position{};
+        double last_progress_distance_m{};
         bool active{true};
         bool unavailable{};
         bool unavailable_pending{};
@@ -315,6 +348,7 @@ struct FleetSimulation::Impl {
         double retreat_last_event_progress_m{};
         double retreat_started_s{};
         double retreat_last_progress_s{};
+        double retreat_timeout_s{60.0};
         Vec2 retreat_last_position{};
         std::size_t recovery_attempts{};
         Member(FleetMission m, AutonomyScenario s, std::vector<std::string> resources,
@@ -322,6 +356,8 @@ struct FleetSimulation::Impl {
             : mission(std::move(m)), route_resources(std::move(resources)), route_edges(std::move(edges)), simulation(std::move(s),seed),
               controller(simulation.scenario().safety_stop_range_m,simulation.scenario().perception_timeout_s,simulation.scenario().localization_timeout_s) {
             traversal_history.push_back(simulation.state().position);
+            last_progress_position = simulation.state().position;
+            last_progress_distance_m = simulation.state().distance_m;
         }
     };
     std::vector<Member> members;
@@ -350,6 +386,8 @@ struct FleetSimulation::Impl {
     std::size_t reservation_denials{};
     double resource_wait_total_s{}, resource_wait_max_s{};
     std::size_t resource_wait_samples{};
+    bool unresolved_deadlock{};
+    std::string failure_reason;
     AutonomyScenario base_scenario;
     std::unique_ptr<FleetDispatcher> dispatcher;
     bool dispatch_mode{};
@@ -448,6 +486,37 @@ struct FleetSimulation::Impl {
             (base_scenario.timeout_s + maximum_service + base_scenario.timestep_s));
     }
 
+    void fail_unresolved_deadlock(std::string reason,
+                                  const std::vector<FleetWaitDependency>& dependencies,
+                                  std::optional<VehicleId> stalled_vehicle = std::nullopt) {
+        if (unresolved_deadlock) return;
+        unresolved_deadlock = true;
+        failure_reason = std::move(reason);
+        for (const auto& dependency : dependencies) {
+            const auto blocker = std::ranges::find(members, dependency.blocking_vehicle,
+                [](const auto& member) { return member.mission.id; });
+            events.push_back({now, TrafficEventKind::DeadlockUnresolved, dependency.blocking_vehicle,
+                              dependency.waiting_vehicle, dependency.resource,
+                              blocker == members.end() ? Vec2{} : blocker->simulation.state().position,
+                              {}, dependency.wait_duration_s});
+        }
+        if (stalled_vehicle) {
+            const auto member = std::ranges::find(members, *stalled_vehicle,
+                [](const auto& candidate) { return candidate.mission.id; });
+            events.push_back({now, TrafficEventKind::DeadlockUnresolved, *stalled_vehicle, {},
+                              "vehicle_no_progress", member == members.end()
+                                  ? Vec2{} : member->simulation.state().position});
+        }
+        if (dispatcher) dispatcher->fail_unfinished(now, failure_reason);
+        for (auto& member : members) {
+            if (member.active) member.unavailable = true;
+            member.active = false;
+            member.current_request.reset();
+            member.servicing = false;
+            member.waiting = false;
+        }
+    }
+
     [[nodiscard]] std::string nearest_node_name(const Member& member) const {
         const auto graph = member.simulation.graph();
         const auto position = member.simulation.state().position;
@@ -541,6 +610,9 @@ struct FleetSimulation::Impl {
         member.current_request = task.request.id;
         member.active = true;
         member.servicing = false;
+        member.last_progress_s = now;
+        member.last_progress_position = member.simulation.state().position;
+        member.last_progress_distance_m = member.simulation.state().distance_m;
         member.service_complete_at_s = 0.0;
         member.waiting = false;
         member.route_blocked = false;
@@ -630,7 +702,7 @@ struct FleetSimulation::Impl {
         scenario.initial_state = member.simulation.state();
         member.mission.start_node = nearest->name;
         member.mission.goal_node = *member.outage_safe_node;
-        auto evacuation_seed = base_seed ^ 0xe7037ed1a0b428dbULL;
+        std::uint64_t evacuation_seed = base_seed ^ static_cast<std::uint64_t>(0xe7037ed1a0b428dbULL);
         hash_string(evacuation_seed, member.mission.id.value);
         member.simulation = AutonomySimulation(std::move(scenario), evacuation_seed);
         std::vector<Vec2> waypoints{position};
@@ -726,6 +798,19 @@ struct FleetSimulation::Impl {
                 const auto task = std::ranges::find(task_snapshots, *member.current_request,
                     [](const auto& candidate) { return candidate.request.id; });
                 if (task == task_snapshots.end()) throw std::logic_error("completed task disappeared from dispatcher");
+                if (task->state != ServiceTaskState::EnRoute) {
+                    // A request can time out while its assigned vehicle is still
+                    // travelling. Do not transition a terminal request back into
+                    // service when that vehicle eventually reaches the destination.
+                    member.current_node = member.service_destination_node;
+                    member.current_request.reset();
+                    member.active = false;
+                    member.servicing = false;
+                    member.waiting = false;
+                    member.route_blocked = false;
+                    rebuild_opposing_route_usage();
+                    continue;
+                }
                 dispatcher->set_state(*member.current_request, ServiceTaskState::Servicing, now);
                 member.servicing = true;
                 member.service_complete_at_s = now + task->request.service_duration_s;
@@ -745,16 +830,25 @@ struct FleetSimulation::Impl {
         }
     }
 
-    bool replan(Member& member, std::optional<EdgeId> forbidden_edge = std::nullopt) {
+    bool replan(Member& member, std::optional<EdgeId> forbidden_edge = std::nullopt,
+                std::optional<NodeId> forbidden_intersection = std::nullopt) {
         AirportGraph graph = member.simulation.graph();
         if (forbidden_edge) graph.set_edge_available(*forbidden_edge, false);
+        if (forbidden_intersection) {
+            for (const auto& edge : graph.edges())
+                if (edge.from == *forbidden_intersection || edge.to == *forbidden_intersection)
+                    graph.set_edge_available(edge.id, false);
+        }
         const auto& nodes = graph.nodes();
         if (nodes.empty()) return false;
         const auto nearest = std::ranges::min_element(nodes, [&](const auto& a, const auto& b) {
             const auto pa = member.simulation.state().position;
+            if (forbidden_intersection && a.id == *forbidden_intersection) return false;
+            if (forbidden_intersection && b.id == *forbidden_intersection) return true;
             const double da = separation(pa, a.position), db = separation(pa, b.position);
             return da == db ? a.id < b.id : da < db;
         });
+        if (nearest == nodes.end() || (forbidden_intersection && nearest->id == *forbidden_intersection)) return false;
         std::optional<NodeId> goal;
         const auto& active_goal_node = member.simulation.scenario().goal_node;
         for (const auto& node : nodes) if (node.name == active_goal_node) goal = node.id;
@@ -779,10 +873,17 @@ struct FleetSimulation::Impl {
         if (waypoints.back() != goal_position) waypoints.push_back(goal_position);
         member.simulation.set_route(std::move(waypoints));
         if (forbidden_edge) member.simulation.set_edge_available(*forbidden_edge, false);
+        if (forbidden_intersection)
+            for (const auto& edge : member.simulation.graph().edges())
+                if (edge.from == *forbidden_intersection || edge.to == *forbidden_intersection)
+                    member.simulation.set_edge_available(edge.id, false);
         member.controller = ReferenceController(member.simulation.scenario().safety_stop_range_m,
             member.simulation.scenario().perception_timeout_s, member.simulation.scenario().localization_timeout_s);
         member.command = member.controller.update(member.simulation.observe(), member.simulation.mission());
         member.route_blocked = false;
+        member.last_progress_s = now;
+        member.last_progress_position = member.simulation.state().position;
+        member.last_progress_distance_m = member.simulation.state().distance_m;
         const auto replacement = airside::find_route(graph, route_start, *goal);
         member.route_resources.clear();
         member.route_edges.clear();
@@ -861,11 +962,21 @@ struct FleetSimulation::Impl {
         member.recovery_resource = resource;
         member.retreat_cursor = member.retreat_path.size() > 1 ? 1 : 0;
         member.retreat_target = member.retreat_path.back();
+        double retreat_distance_m = 0.0;
+        for (std::size_t i = 1; i < member.retreat_path.size(); ++i)
+            retreat_distance_m += separation(member.retreat_path[i - 1], member.retreat_path[i]);
+        const double retreat_speed_mps = std::max(
+            0.1, member.simulation.scenario().limits.maximum_speed_mps * 0.35);
+        member.retreat_timeout_s = std::clamp(30.0 + 4.0 * retreat_distance_m / retreat_speed_mps,
+                                               60.0, 300.0);
         member.retreat_progress_m = 0.0;
         member.retreat_last_event_progress_m = 0.0;
         member.retreat_started_s = now;
         member.retreat_last_progress_s = now;
         member.retreat_last_position = state.position;
+        member.last_progress_s = now;
+        member.last_progress_position = state.position;
+        member.last_progress_distance_m = state.distance_m;
         ++member.recovery_attempts;
         member.recovery_active = true;
         member.recovery_state = RecoveryState::Retreating;
@@ -876,7 +987,6 @@ struct FleetSimulation::Impl {
     }
 
     VehicleCommand retreat_command(Member& member) {
-        constexpr double timeout_s = 60.0;
         constexpr double no_progress_s = 10.0;
         const auto& state = member.simulation.state();
         if (separation(state.position, member.retreat_last_position) >= 0.10) {
@@ -889,7 +999,8 @@ struct FleetSimulation::Impl {
                                   state.position, member.retreat_target, member.retreat_progress_m});
             }
         }
-        if (now - member.retreat_started_s > timeout_s || now - member.retreat_last_progress_s > no_progress_s) {
+        if (now - member.retreat_started_s > member.retreat_timeout_s ||
+            now - member.retreat_last_progress_s > no_progress_s) {
             member.recovery_state = RecoveryState::Failed;
             events.push_back({now, TrafficEventKind::RetreatFailed, member.mission.id, {}, member.recovery_resource});
             return {};
@@ -927,6 +1038,7 @@ FleetSimulation::~FleetSimulation()=default;
 FleetSimulation::FleetSimulation(FleetSimulation&&) noexcept=default;
 FleetSimulation& FleetSimulation::operator=(FleetSimulation&&) noexcept=default;
 bool FleetSimulation::finished()const noexcept{
+    if (impl_->unresolved_deadlock) return true;
     if (impl_->dispatch_mode) return impl_->dispatcher->all_terminal() &&
         std::ranges::none_of(impl_->members, [](const auto& member) { return member.active; });
     return std::ranges::all_of(impl_->members,[](const auto&m){return m.simulation.finished();});
@@ -935,7 +1047,6 @@ double FleetSimulation::time_s()const noexcept{return impl_->now;}
 bool FleetSimulation::advance(){
     auto& x=*impl_;
     if (x.dispatch_mode) {
-        x.update_dispatch_lifecycle();
         if (x.now + 1e-9 >= x.dispatch_horizon_s && !x.dispatcher->all_terminal())
             x.dispatcher->fail_unfinished(x.now, "dispatch_horizon_exceeded");
     }
@@ -988,6 +1099,13 @@ bool FleetSimulation::advance(){
                     x.events.push_back({x.now, TrafficEventKind::Deferred, request.vehicle, *owner, resource});
                 }
             }
+            std::vector<VehicleId> active_waiters;
+            active_waiters.reserve(users.size());
+            for (const auto index : users) {
+                const auto& member = x.members[index];
+                if (member.active && !member.simulation.finished()) active_waiters.push_back(member.mission.id);
+            }
+            x.reservations.retain_waiters(resource, active_waiters);
         }
         x.opposing_reservations_initialized = true;
     }
@@ -1047,7 +1165,7 @@ bool FleetSimulation::advance(){
                 if (member.recovery_state == Impl::RecoveryState::Retreating ||
                     member.recovery_state == Impl::RecoveryState::Holding) continue;
                 if(!was_conflicting)newly_conflicting_resources.insert(resource);
-                const int blocked_priority=std::numeric_limits<int>::max();
+            const int blocked_priority=std::numeric_limits<int>::max();
                 const ReservationRequest request{member.mission.id,x.now,
                     (!member.active || member.simulation.finished())?blocked_priority:member.mission.priority};
                 const auto existing=std::ranges::find(candidates,request.vehicle,&ReservationRequest::vehicle);
@@ -1063,7 +1181,12 @@ bool FleetSimulation::advance(){
         if (x.opposing_edge_users.contains(resource)) continue;
         std::vector<VehicleId> active_vehicles;
         active_vehicles.reserve(batch.size());
-        for (const auto& request : batch) active_vehicles.push_back(request.vehicle);
+        for (const auto& request : batch) {
+            const auto member = std::ranges::find(x.members, request.vehicle,
+                [](const auto& candidate) { return candidate.mission.id; });
+            if (member != x.members.end() && member->active && !member->simulation.finished())
+                active_vehicles.push_back(request.vehicle);
+        }
         x.reservations.retain_waiters(resource, active_vehicles);
         if(!newly_conflicting_resources.contains(resource)&&x.reservations.owner(resource))continue;
         std::ranges::sort(batch,[&](const auto& a, const auto& b) { return request_before(resource, a, b, x.resource_specific_tie_breaks); });
@@ -1079,9 +1202,16 @@ bool FleetSimulation::advance(){
     }
     for (const auto& [resource, owner] : x.reservations.held_resources()) {
         const auto member = std::ranges::find(x.members, owner, [](const auto& candidate) { return candidate.mission.id; });
-        if (member == x.members.end() ||
-            (member->active && !member->simulation.finished() && member->recovery_state != Impl::RecoveryState::Retreating &&
-             member->recovery_state != Impl::RecoveryState::Holding) ||
+        const bool current_route_uses_resource = member != x.members.end() &&
+            std::ranges::find(member->route_resources, resource) != member->route_resources.end();
+        const bool active_recovery_uses_resource = member != x.members.end() &&
+            (member->recovery_state == Impl::RecoveryState::Retreating ||
+             member->recovery_state == Impl::RecoveryState::Holding);
+        const bool active_route_uses_resource = member != x.members.end() && member->active &&
+            !member->simulation.finished() && (x.dispatch_mode
+                ? current_route_uses_resource || active_recovery_uses_resource
+                : !active_recovery_uses_resource);
+        if (member == x.members.end() || active_route_uses_resource ||
             !x.physically_clear(*member, resource)) continue;
         if (x.reservations.release(resource, owner)) {
             x.events.push_back({x.now, TrafficEventKind::ReleasedConflict, owner, {}, resource});
@@ -1269,6 +1399,54 @@ bool FleetSimulation::advance(){
         return std::tie(a.waiting_vehicle, a.blocking_vehicle, a.resource) <
                std::tie(b.waiting_vehicle, b.blocking_vehicle, b.resource);
     });
+    x.current_dependencies.erase(std::unique(x.current_dependencies.begin(), x.current_dependencies.end()),
+                                x.current_dependencies.end());
+    std::vector<VehicleId> failed_retreat_vehicles;
+    for (const auto& member : x.members) {
+        if (!member.active || member.recovery_state != Impl::RecoveryState::Failed) continue;
+        failed_retreat_vehicles.push_back(member.mission.id);
+        for (const auto& [resource, owner] : x.reservations.held_resources()) {
+            if (owner == member.mission.id && x.physically_clear(member, resource) &&
+                x.reservations.release(resource, owner))
+                x.events.push_back({x.now, TrafficEventKind::ReleasedConflict, owner, {}, resource});
+        }
+    }
+    if (!failed_retreat_vehicles.empty()) {
+        std::vector<FleetWaitDependency> refreshed_dependencies;
+        for (auto dependency : x.current_dependencies) {
+            if (dependency.waiting_vehicle == dependency.blocking_vehicle) continue;
+            if (std::ranges::find(failed_retreat_vehicles, dependency.blocking_vehicle) == failed_retreat_vehicles.end()) {
+                refreshed_dependencies.push_back(std::move(dependency));
+                continue;
+            }
+            const auto blocker = std::ranges::find(x.members, dependency.blocking_vehicle,
+                [](const auto& member) { return member.mission.id; });
+            const auto owner = x.reservations.owner(dependency.resource);
+            if (owner && *owner != dependency.blocking_vehicle) {
+                if (*owner == dependency.waiting_vehicle) continue;
+                dependency.blocking_vehicle = *owner;
+                refreshed_dependencies.push_back(std::move(dependency));
+                continue;
+            }
+            if (!owner && blocker != x.members.end() && x.physically_clear(*blocker, dependency.resource)) continue;
+            refreshed_dependencies.push_back(std::move(dependency));
+        }
+        x.current_dependencies = std::move(refreshed_dependencies);
+        waits_for.clear();
+        wait_resources.clear();
+        for (const auto& dependency : x.current_dependencies)
+            if (dependency.waiting_vehicle != dependency.blocking_vehicle)
+                add_dependency(dependency.waiting_vehicle, dependency.blocking_vehicle, dependency.resource);
+        std::ranges::sort(x.current_dependencies, [](const auto& a, const auto& b) {
+            return std::tie(a.waiting_vehicle, a.blocking_vehicle, a.resource) <
+                   std::tie(b.waiting_vehicle, b.blocking_vehicle, b.resource);
+        });
+        x.current_dependencies.erase(std::unique(x.current_dependencies.begin(), x.current_dependencies.end()),
+                                     x.current_dependencies.end());
+        current_wait_keys.clear();
+        for (const auto& dependency : x.current_dependencies)
+            current_wait_keys.emplace(dependency.waiting_vehicle, dependency.resource);
+    }
     for (auto it = x.wait_started.begin(); it != x.wait_started.end();) {
         if (!current_wait_keys.contains(it->first)) {
             x.events.push_back({x.now, TrafficEventKind::WaitEnded, it->first.first, {}, it->first.second});
@@ -1279,7 +1457,23 @@ bool FleetSimulation::advance(){
         } else ++it;
     }
     x.current_deadlocked = find_deadlocked_vehicles(waits_for);
-    if (x.current_deadlocked.empty()) {
+    std::vector<VehicleId> servicing_vehicles;
+    for (const auto& member : x.members) if (member.servicing) servicing_vehicles.push_back(member.mission.id);
+    constexpr double liveness_threshold_s = 120.0;
+    const auto stalled_dependencies = find_stalled_dependencies(
+        x.current_dependencies, liveness_threshold_s, servicing_vehicles);
+    // A failed retreat is diagnostic state, but should not fail the scenario on
+    // its first blocked frame. Give the graph its deterministic liveness window
+    // to clear or reassign that dependency before declaring it unresolved.
+    const auto stalled_failed_blockers = find_failed_retreat_blockers(
+        stalled_dependencies, failed_retreat_vehicles);
+    if (!stalled_failed_blockers.empty()) {
+        const auto reason = "DEADLOCK_UNRESOLVED: failed retreat vehicle remains a live reservation blocker";
+        x.fail_unresolved_deadlock(reason, stalled_dependencies);
+    }
+    if (x.unresolved_deadlock) {
+        // The dependency and reservation snapshots are retained for diagnosis.
+    } else if (x.current_deadlocked.empty()) {
         const bool retreat_in_progress = std::ranges::any_of(x.members, [](const auto& member) {
             return member.recovery_state == Impl::RecoveryState::Retreating ||
                    member.recovery_state == Impl::RecoveryState::Holding;
@@ -1310,37 +1504,78 @@ bool FleetSimulation::advance(){
             for (std::size_t i = 0; i < x.members.size(); ++i)
                 if (std::ranges::find(x.current_deadlocked, x.members[i].mission.id) != x.current_deadlocked.end()) candidates.push_back(i);
             std::vector<FleetRecoveryCandidate> selection;
-            for (const auto index : candidates) selection.push_back({x.members[index].mission.id,x.members[index].mission.priority,x.members[index].wait_s});
+            for (const auto index : candidates) {
+                const auto& member = x.members[index];
+                if (member.traversal_history.size() < 2 || member.recovery_attempts >= 2) continue;
+                selection.push_back({member.mission.id, member.mission.priority, member.wait_s});
+            }
             if (!selection.empty()) {
-                const auto yield_id = choose_recovery_vehicle(std::move(selection));
-                const auto candidate = std::ranges::find(x.members,yield_id,[](const auto& member){return member.mission.id;});
-                const auto candidate_index = static_cast<std::size_t>(std::distance(x.members.begin(),candidate));
-                auto& yield_member = *candidate;
-                std::string contested_resource;
-                for (const auto& dependency : x.current_dependencies) {
-                    if (dependency.waiting_vehicle != yield_member.mission.id) continue;
-                    try {
-                        if (dependency.resource.starts_with("edge/")) {
-                            contested_resource = dependency.resource;
+                std::ranges::sort(selection, [](const auto& a, const auto& b) {
+                    if (a.mission_priority != b.mission_priority) return a.mission_priority > b.mission_priority;
+                    if (a.accumulated_wait_s != b.accumulated_wait_s) return a.accumulated_wait_s > b.accumulated_wait_s;
+                    return a.vehicle < b.vehicle;
+                });
+                bool retreat_started = false;
+                for (const auto& recovery : selection) {
+                    const auto candidate = std::ranges::find(x.members, recovery.vehicle,
+                        [](const auto& member) { return member.mission.id; });
+                    const auto candidate_index = static_cast<std::size_t>(std::distance(x.members.begin(), candidate));
+                    std::vector<std::string> contested_resources;
+                    const auto append_resources = [&](bool blocker_resources) {
+                        for (const auto& dependency : x.current_dependencies) {
+                            const auto& participant = blocker_resources
+                                ? dependency.blocking_vehicle : dependency.waiting_vehicle;
+                            if (participant != recovery.vehicle) continue;
+                            if ((dependency.resource.starts_with("edge/") ||
+                                 dependency.resource.starts_with("intersection/")) &&
+                                std::ranges::find(contested_resources, dependency.resource) == contested_resources.end())
+                                contested_resources.push_back(dependency.resource);
+                        }
+                    };
+                    // In dispatched service traffic the victim must yield the
+                    // resource it owns and blocks. For standalone route-cycle
+                    // scenarios, retain the established retreat target order.
+                    append_resources(x.dispatch_mode);
+                    append_resources(!x.dispatch_mode);
+                    for (const auto& contested_resource : contested_resources) {
+                        ++x.recovery_attempts;
+                        if (x.begin_retreat(*candidate, contested_resource)) {
+                            x.events.push_back({x.now, TrafficEventKind::DeadlockRecovery,
+                                candidate->mission.id, {}, "deterministic_opposing_road_retreat"});
+                            yielding[candidate_index] = false;
+                            retreat_started = true;
                             break;
                         }
-                        if (dependency.resource.starts_with("intersection/")) {
-                            contested_resource = dependency.resource;
-                            break;
+                        if (x.dispatch_mode && contested_resource.starts_with("intersection/") &&
+                            x.reservations.owner(contested_resource) == recovery.vehicle &&
+                            x.physically_clear(*candidate, contested_resource)) {
+                            const auto node = NodeId{static_cast<std::uint32_t>(
+                                std::stoul(contested_resource.substr(13)))};
+                            if (x.replan(*candidate, std::nullopt, node) &&
+                                x.reservations.release(contested_resource, recovery.vehicle)) {
+                                x.events.push_back({x.now, TrafficEventKind::ReleasedConflict,
+                                    recovery.vehicle, {}, contested_resource});
+                                x.events.push_back({x.now, TrafficEventKind::DeadlockRecovery,
+                                    recovery.vehicle, {}, "deterministic_intersection_reroute"});
+                                yielding[candidate_index] = false;
+                                retreat_started = true;
+                                break;
+                            }
                         }
-                    } catch (...) { }
+                        x.events.push_back({x.now, TrafficEventKind::RetreatFailed,
+                            candidate->mission.id, {}, contested_resource});
+                    }
+                    if (retreat_started) break;
                 }
-                ++x.recovery_attempts;
-                x.events.push_back({x.now, TrafficEventKind::DeadlockRecovery, yield_member.mission.id, {}, "deterministic_opposing_road_retreat"});
-                if (!contested_resource.empty() && x.begin_retreat(yield_member, contested_resource)) {
-                    yielding[candidate_index] = false;
-                } else {
-                    yield_member.command.target_speed_mps = 0.0;
-                    yield_member.waiting = true;
-                    yield_member.route_blocked = true;
-                    yield_member.recovery_state = Impl::RecoveryState::Failed;
-                    x.events.push_back({x.now, TrafficEventKind::RetreatFailed, yield_member.mission.id, {}, contested_resource});
+                if (!retreat_started) {
+                    x.fail_unresolved_deadlock(
+                        "DEADLOCK_UNRESOLVED: wait-for cycle has no safe retreat route",
+                        x.current_dependencies);
                 }
+            } else {
+                x.fail_unresolved_deadlock(
+                    "DEADLOCK_UNRESOLVED: wait-for cycle has no safe retreat candidate",
+                    x.current_dependencies);
             }
         }
     }
@@ -1382,10 +1617,55 @@ bool FleetSimulation::advance(){
     }
     x.now+=dt;
     if (x.dispatch_mode) x.update_dispatch_lifecycle();
+    constexpr double vehicle_liveness_timeout_s = 120.0;
+    if (x.dispatch_mode && !x.unresolved_deadlock) {
+        for (auto& member : x.members) {
+            if (!member.active || member.servicing || !member.current_request) continue;
+            const auto position = member.simulation.state().position;
+            if (member.simulation.state().distance_m - member.last_progress_distance_m >= 0.20) {
+                member.last_progress_position = position;
+                member.last_progress_distance_m = member.simulation.state().distance_m;
+                member.last_progress_s = x.now;
+                continue;
+            }
+            const bool held_by_active_service = std::ranges::any_of(x.current_dependencies, [&](const auto& dependency) {
+                if (dependency.waiting_vehicle != member.mission.id) return false;
+                const auto blocker = std::ranges::find(x.members, dependency.blocking_vehicle,
+                    [](const auto& candidate) { return candidate.mission.id; });
+                return blocker != x.members.end() && blocker->servicing;
+            });
+            const bool active_scenario_fault = std::ranges::any_of(member.simulation.scenario().faults,
+                [&](const auto& fault) {
+                    return member.simulation.time_s() + 1e-9 >= fault.start_s &&
+                           member.simulation.time_s() < fault.start_s + fault.duration_s - 1e-9;
+                });
+            if (active_scenario_fault) {
+                member.last_progress_s = x.now;
+                member.last_progress_position = position;
+                member.last_progress_distance_m = member.simulation.state().distance_m;
+                continue;
+            }
+            // A stationary assigned vehicle is not by itself evidence of deadlock:
+            // it may be waiting for a valid service or dispatch transition. Diagnose
+            // only when it is in a failed retreat state or the current wait-for graph
+            // names it as blocked. This keeps the watchdog tied to actual resource
+            // dependencies instead of normal fleet idling.
+            const bool failed_retreat = member.recovery_state == Impl::RecoveryState::Failed;
+            if (!failed_retreat) continue;
+            if (!held_by_active_service && x.now - member.last_progress_s >= vehicle_liveness_timeout_s) {
+                x.fail_unresolved_deadlock(
+                    std::format("DEADLOCK_UNRESOLVED: vehicle {} made no route progress for {:.0f} simulation seconds",
+                                member.mission.id.value, vehicle_liveness_timeout_s),
+                    x.current_dependencies, member.mission.id);
+                break;
+            }
+        }
+    }
     for(std::size_t i=0;i<x.members.size();++i)for(std::size_t j=i+1;j<x.members.size();++j){
         const auto&a=x.members[i].simulation.state();const auto&b=x.members[j].simulation.state();
         const double d=separation(a.position,b.position);x.minimum_separation=std::min(x.minimum_separation,d);
-        if(d<x.members[i].simulation.scenario().limits.radius_m+x.members[j].simulation.scenario().limits.radius_m){++x.collisions;x.events.push_back({x.now,TrafficEventKind::Collision,x.members[i].mission.id,x.members[j].mission.id,"vehicle_conflict",a.position,b.position});}
+        if(d<x.members[i].simulation.scenario().limits.radius_m+x.members[j].simulation.scenario().limits.radius_m){
+            ++x.collisions;x.events.push_back({x.now,TrafficEventKind::Collision,x.members[i].mission.id,x.members[j].mission.id,"vehicle_conflict",a.position,b.position});}
     }
     return !finished();
 }
@@ -1440,7 +1720,7 @@ FleetDispatchMetrics FleetSimulation::dispatch_metrics() const {
     return impl_->dispatcher ? impl_->dispatcher->metrics() : FleetDispatchMetrics{};
 }
 FleetMetrics FleetSimulation::result()const{
-    const auto&x=*impl_;FleetMetrics r;r.vehicle_count=x.members.size();r.collisions=x.collisions;r.minimum_separation_m=std::isfinite(x.minimum_separation)?x.minimum_separation:0.0;r.reservation_requests=x.requests;r.reservation_contentions=x.contentions;r.deadlock_count=x.deadlock_count;r.deadlocks_resolved=x.recoveries_resolved;r.recovery_attempts=x.recovery_attempts;r.reroutes=x.reroutes;r.road_closure_replans=x.closure_replans;r.retreat_count=x.retreats;r.reservation_denials=x.reservation_denials;r.outstanding_reservations=static_cast<std::size_t>(std::ranges::count_if(x.reservations.held_resources(),[&](const auto& held){const auto member=std::ranges::find(x.members,held.second,[](const auto& value){return value.mission.id;});return member!=x.members.end()&&member->active;}));r.starvation_preventions=x.reservations.starvation_preventions();r.maximum_resource_wait_s=x.resource_wait_max_s;r.mean_resource_wait_s=x.resource_wait_samples?x.resource_wait_total_s/static_cast<double>(x.resource_wait_samples):0.0;r.wait_dependencies=x.current_dependencies;r.deadlocked_vehicles=x.current_deadlocked;r.near_conflict_events=x.near_conflict_events;r.forced_safety_stops=x.forced_safety_stops;r.events=x.events;r.deterministic_digest=14695981039346656037ULL;
+    const auto&x=*impl_;FleetMetrics r;r.vehicle_count=x.members.size();r.collisions=x.collisions;r.minimum_separation_m=std::isfinite(x.minimum_separation)?x.minimum_separation:0.0;r.reservation_requests=x.requests;r.reservation_contentions=x.contentions;r.deadlock_count=x.deadlock_count;r.deadlocks_resolved=x.recoveries_resolved;r.recovery_attempts=x.recovery_attempts;r.reroutes=x.reroutes;r.road_closure_replans=x.closure_replans;r.retreat_count=x.retreats;r.reservation_denials=x.reservation_denials;r.outstanding_reservations=static_cast<std::size_t>(std::ranges::count_if(x.reservations.held_resources(),[&](const auto& held){const auto member=std::ranges::find(x.members,held.second,[](const auto& value){return value.mission.id;});return member!=x.members.end()&&(member->active||x.unresolved_deadlock);}));r.held_reservation_owners=x.reservations.held_resources();r.unresolved_deadlock=x.unresolved_deadlock;r.failure_reason=x.failure_reason;r.starvation_preventions=x.reservations.starvation_preventions();r.maximum_resource_wait_s=x.resource_wait_max_s;r.mean_resource_wait_s=x.resource_wait_samples?x.resource_wait_total_s/static_cast<double>(x.resource_wait_samples):0.0;r.wait_dependencies=x.current_dependencies;r.deadlocked_vehicles=x.current_deadlocked;r.near_conflict_events=x.near_conflict_events;r.forced_safety_stops=x.forced_safety_stops;r.events=x.events;r.deterministic_digest=14695981039346656037ULL;
     if (x.dispatch_mode) {
         r.dispatch = x.dispatcher->metrics();
         r.missions_attempted = r.dispatch.requests_created;
@@ -1477,6 +1757,10 @@ FleetMetrics FleetSimulation::result()const{
     hash_u64(digest, r.reroutes); hash_u64(digest, r.road_closure_replans);
     hash_u64(digest, r.retreat_count); hash_u64(digest, r.reservation_denials);
     hash_u64(digest, r.outstanding_reservations);
+    hash_u64(digest, r.unresolved_deadlock); hash_string(digest, r.failure_reason);
+    for (const auto& [resource, owner] : r.held_reservation_owners) {
+        hash_string(digest, resource); hash_string(digest, owner.value);
+    }
     hash_u64(digest, r.starvation_preventions); hash_double(digest, r.maximum_resource_wait_s);
     hash_double(digest, r.mean_resource_wait_s);
     hash_u64(digest, r.near_conflict_events); hash_u64(digest, r.forced_safety_stops);
@@ -1550,5 +1834,5 @@ std::vector<FleetVehicleSnapshot> FleetSimulation::snapshots()const{
 }
 std::vector<FleetWaitDependency> FleetSimulation::wait_dependencies()const{return impl_->current_dependencies;}
 std::vector<VehicleId> FleetSimulation::deadlocked_vehicles()const{return impl_->current_deadlocked;}
-std::string to_string(TrafficEventKind k){switch(k){case TrafficEventKind::Request:return"request";case TrafficEventKind::Granted:return"granted";case TrafficEventKind::Deferred:return"deferred";case TrafficEventKind::Waiting:return"fleet_wait_started";case TrafficEventKind::WaitEnded:return"fleet_wait_ended";case TrafficEventKind::EnteredConflict:return"entered_conflict";case TrafficEventKind::ReleasedConflict:return"released_conflict";case TrafficEventKind::Collision:return"collision";case TrafficEventKind::DeadlockDetected:return"fleet_deadlock_detected";case TrafficEventKind::DeadlockRecovery:return"fleet_deadlock_resolution_started";case TrafficEventKind::RecoveryResolved:return"fleet_deadlock_resolved";case TrafficEventKind::Retreat:return"retreat";case TrafficEventKind::RetreatSelected:return"retreat_selected";case TrafficEventKind::RetreatStarted:return"retreat_started";case TrafficEventKind::RetreatProgress:return"retreat_progress";case TrafficEventKind::RetreatResourceReleased:return"retreat_resource_released";case TrafficEventKind::RetreatCompleted:return"retreat_completed";case TrafficEventKind::MissionResumed:return"mission_resumed";case TrafficEventKind::RetreatFailed:return"retreat_failed";case TrafficEventKind::Reroute:return"reroute";case TrafficEventKind::RoadClosed:return"road_closed";case TrafficEventKind::RoadReopened:return"road_reopened";case TrafficEventKind::NearConflict:return"near_conflict";case TrafficEventKind::ForcedSafetyStop:return"forced_safety_stop";}return"unknown";}
+std::string to_string(TrafficEventKind k){switch(k){case TrafficEventKind::Request:return"request";case TrafficEventKind::Granted:return"granted";case TrafficEventKind::Deferred:return"deferred";case TrafficEventKind::Waiting:return"fleet_wait_started";case TrafficEventKind::WaitEnded:return"fleet_wait_ended";case TrafficEventKind::EnteredConflict:return"entered_conflict";case TrafficEventKind::ReleasedConflict:return"released_conflict";case TrafficEventKind::Collision:return"collision";case TrafficEventKind::DeadlockDetected:return"fleet_deadlock_detected";case TrafficEventKind::DeadlockRecovery:return"fleet_deadlock_resolution_started";case TrafficEventKind::RecoveryResolved:return"fleet_deadlock_resolved";case TrafficEventKind::Retreat:return"retreat";case TrafficEventKind::RetreatSelected:return"retreat_selected";case TrafficEventKind::RetreatStarted:return"retreat_started";case TrafficEventKind::RetreatProgress:return"retreat_progress";case TrafficEventKind::RetreatResourceReleased:return"retreat_resource_released";case TrafficEventKind::RetreatCompleted:return"retreat_completed";case TrafficEventKind::MissionResumed:return"mission_resumed";case TrafficEventKind::RetreatFailed:return"retreat_failed";case TrafficEventKind::Reroute:return"reroute";case TrafficEventKind::RoadClosed:return"road_closed";case TrafficEventKind::RoadReopened:return"road_reopened";case TrafficEventKind::NearConflict:return"near_conflict";case TrafficEventKind::ForcedSafetyStop:return"forced_safety_stop";case TrafficEventKind::DeadlockUnresolved:return"deadlock_unresolved";}return"unknown";}
 } // namespace airside::autonomy

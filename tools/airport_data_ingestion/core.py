@@ -194,6 +194,45 @@ def load_dataset(manifest_path: Path):
             wanted = re.sub(r"[ -]+", "_", str(r["required_equipment_type"]).strip().lower())
             if equipment.get("type") != wanted:
                 findings.append(_finding("REQUIREMENT_EQUIPMENT_TYPE_MISMATCH", "error", f"equipment {equipment['equipment_id']!r} is {equipment.get('type')!r}, not required type {wanted!r}", field="required_equipment_type", value=wanted))
+        elif r.get("required_equipment_type"):
+            wanted = re.sub(r"[ -]+", "_", str(r["required_equipment_type"]).strip().lower())
+            if not any(item.get("type") == wanted for item in tables["equipment"]):
+                findings.append(_finding("REQUIREMENT_EQUIPMENT_TYPE_MISSING", "error", f"no canonical equipment provides required type {wanted!r}", field="required_equipment_type", value=wanted))
+    flight_aircraft = {str(row.get("flight_id")): str(row.get("aircraft_id")) for row in tables["flights"]}
+    requirements = {str(row.get("requirement_id")): row for row in tables["turnaround_requirements"]}
+    dependencies: dict[str, list[str]] = {}
+    for requirement_id, row in requirements.items():
+        owner = str(row.get("aircraft_id") or flight_aircraft.get(str(row.get("flight_id")), ""))
+        raw_dependencies = row.get("prerequisites", row.get("depends_on", row.get("dependency_requirement_id", [])))
+        if isinstance(raw_dependencies, str): raw_dependencies = [raw_dependencies]
+        if not isinstance(raw_dependencies, list):
+            findings.append(_finding("REQUIREMENT_DEPENDENCY_INVALID", "error", "prerequisites must be a requirement ID or array of IDs", field="prerequisites", value=raw_dependencies))
+            continue
+        dependencies[requirement_id] = []
+        for dependency in raw_dependencies:
+            dependency_id = str(dependency)
+            predecessor = requirements.get(dependency_id)
+            if predecessor is None:
+                findings.append(_finding("REQUIREMENT_UNKNOWN_DEPENDENCY", "error", f"prerequisite requirement {dependency_id!r} does not exist", field="prerequisites", value=dependency_id))
+                continue
+            predecessor_owner = str(predecessor.get("aircraft_id") or flight_aircraft.get(str(predecessor.get("flight_id")), ""))
+            if owner != predecessor_owner:
+                findings.append(_finding("REQUIREMENT_CROSS_AIRCRAFT_DEPENDENCY", "error", f"prerequisite {dependency_id!r} belongs to a different aircraft turnaround", field="prerequisites", value=dependency_id))
+            dependencies[requirement_id].append(dependency_id)
+    colors: dict[str, int] = {}
+    reported_cycle = False
+    def visit_requirement(requirement_id: str) -> None:
+        nonlocal reported_cycle
+        colors[requirement_id] = 1
+        for dependency_id in dependencies.get(requirement_id, []):
+            if colors.get(dependency_id) == 1 and not reported_cycle:
+                findings.append(_finding("REQUIREMENT_DEPENDENCY_CYCLE", "error", "turnaround requirement dependencies contain a cycle", field="prerequisites", value=requirement_id))
+                reported_cycle = True
+            elif colors.get(dependency_id, 0) == 0:
+                visit_requirement(dependency_id)
+        colors[requirement_id] = 2
+    for requirement_id in sorted(requirements):
+        if colors.get(requirement_id, 0) == 0: visit_requirement(requirement_id)
     known_disruptions = {"equipment_outage", "route_closure", "delayed_service", "flight_delay", "gate_unavailability"}
     for r in tables["disruptions"]:
         if r.get("type") not in known_disruptions: findings.append(_finding("DISRUPTION_TYPE_UNSUPPORTED", "error", f"unsupported disruption type {r.get('type')!r}", field="type", value=r.get("type")))

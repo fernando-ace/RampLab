@@ -279,6 +279,15 @@ def generate(package_path: Path, mapping_path: Path, output: Path, *, seed: int 
         service = str(requirement["service_type"])
         if service not in mapping["service_types"]:
             raise GenerationError(f"required turnaround service {service!r} ({requirement['requirement_id']}) has no RampLab equivalent")
+        target_type = mapping["service_types"][service]
+        required_equipment_type = str(requirement.get("required_equipment_type", "")).strip()
+        if required_equipment_type:
+            equipment_adapter = mapping["equipment_types"].get(required_equipment_type)
+            if equipment_adapter is None and target_type in {"fueling", "baggage", "catering", "baggage_load",
+                    "lavatory_service", "potable_water", "ground_power", "pushback", "passenger_stairs", "air_start"}:
+                raise GenerationError(f"required equipment type {required_equipment_type!r} for service {service!r} has no simulator mapping")
+            if equipment_adapter is not None and str(equipment_adapter.get("type")) != target_type:
+                raise GenerationError(f"required equipment type {required_equipment_type!r} does not provide service {service!r}")
         requirement["_sim_aircraft"] = target_aircraft
         requirements_by_aircraft.setdefault(target_aircraft, []).append(requirement)
 
@@ -315,9 +324,11 @@ def generate(package_path: Path, mapping_path: Path, output: Path, *, seed: int 
             task = {"id": task_id, "type": target_type, "duration_seconds": duration_seconds}
             if req.get("earliest_start"):
                 task["earliest_start_seconds"] = seconds_from(str(req["earliest_start"]), epoch)
-            prerequisite = req.get("depends_on") or req.get("dependency_requirement_id")
-            if prerequisite:
-                task["prerequisites"] = [str(prerequisite)]
+            prerequisites = req.get("prerequisites") or req.get("depends_on") or req.get("dependency_requirement_id")
+            if prerequisites:
+                if not isinstance(prerequisites, list):
+                    prerequisites = [prerequisites]
+                task["prerequisites"] = [str(value) for value in prerequisites]
             task_rows.append(task)
             req_to_task[task_id] = task_id
             requirement_task[task_id] = {"aircraft": aircraft_id, "task": task_id}

@@ -133,8 +133,8 @@ TEST(ScenarioLoaderTest, LoadsExtendedGroundServiceEquipmentTypes) {
     const TemporaryScenario file{std::move(contents)};
     const auto scenario = load_scenario(file.path());
     ASSERT_EQ(scenario.vehicles.size(), 4U);
-    EXPECT_EQ(scenario.vehicles[2].capability(), ServiceType::Catering);
-    EXPECT_EQ(scenario.vehicles[3].capability(), ServiceType::PotableWater);
+    EXPECT_EQ(scenario.vehicles[1].capability(), ServiceType::Catering);
+    EXPECT_EQ(scenario.vehicles[2].capability(), ServiceType::PotableWater);
 }
 
 TEST(ScenarioLoaderTest, RejectsDuplicateIds) {

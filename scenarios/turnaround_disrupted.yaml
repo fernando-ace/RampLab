@@ -4,12 +4,15 @@ airport:
   nodes:
     - { id: depot, name: Service Depot, x_m: 0.0, y_m: 0.0 }
     - { id: gate_a1, name: Gate A1, x_m: 100.0, y_m: 0.0 }
+    - { id: catering_depot, name: Catering Depot, x_m: 0.0, y_m: -8.0 }
+    - { id: catering_stand_a1, name: Gate A1 Catering Stand, x_m: 100.0, y_m: -8.0 }
     - { id: baggage_depot, name: Baggage Depot, x_m: 0.0, y_m: 8.0 }
     - { id: baggage_backup_depot, name: Baggage Backup Depot, x_m: 0.0, y_m: 16.0 }
     - { id: baggage_stand_a1, name: Gate A1 Baggage Stand, x_m: 100.0, y_m: 8.0 }
   edges:
     - { id: depot_a1, from: depot, to: gate_a1, distance_m: 100.0, traversal_time_seconds: 60 }
     - { id: gate_a1_depot, from: gate_a1, to: depot, distance_m: 100.0, traversal_time_seconds: 60 }
+    - { id: catering_depot_a1, from: catering_depot, to: catering_stand_a1, distance_m: 100.0, traversal_time_seconds: 60 }
     - { id: baggage_depot_a1, from: baggage_depot, to: baggage_stand_a1, distance_m: 100.0, traversal_time_seconds: 60 }
     - { id: baggage_backup_a1, from: baggage_backup_depot, to: baggage_stand_a1, distance_m: 101.0, traversal_time_seconds: 60 }
     - { id: baggage_stand_gate_a1, from: baggage_stand_a1, to: gate_a1, distance_m: 8.0, traversal_time_seconds: 5 }
@@ -18,6 +21,7 @@ gates:
 fleet:
   vehicles:
     - { id: fuel_1, name: FuelTruck-1, type: fueling, depot_node: depot, speed_mps: 10.0 }
+    - { id: catering_1, name: CateringTruck-1, type: catering, depot_node: catering_depot, speed_mps: 8.0 }
     - { id: baggage_1, name: BaggageCart-1, type: baggage, depot_node: baggage_depot, speed_mps: 8.0 }
     - { id: baggage_backup, name: BaggageCart-Backup, type: baggage, depot_node: baggage_backup_depot, speed_mps: 8.0 }
 aircraft:

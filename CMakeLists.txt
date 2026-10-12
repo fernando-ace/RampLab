@@ -168,3 +168,16 @@ if(BUILD_TESTING)
             -DAIRSIDE_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/surface-export-test
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/operations/verify_surface_exports.cmake)
 endif()
+
+# The operations simulator references the fleet autonomy layer while the fleet
+# autonomy layer also references simulator types and implementations. GNU ld
+# needs a rescan group for these mutually dependent static archives.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(RAMPLAB_GNU_LINK_CYCLE "$<LINK_GROUP:RESCAN,airside::sim,airside::scenario,airside::autonomy,airside::autonomy_experiment,airside::autonomy_scenario,airside::experiment,airside::experiment_yaml>")
+    foreach(target airside_cli airside_autonomy_cli airside_autonomy_experiment_cli
+                   airside_fleet_cli airside_experiment_cli airside_tests)
+        if(TARGET ${target})
+            target_link_libraries(${target} PRIVATE "${RAMPLAB_GNU_LINK_CYCLE}")
+        endif()
+    endforeach()
+endif()
