@@ -1,0 +1,956 @@
+{
+  "schema_version": 1,
+  "policy_matrix": [
+    "SCRIPTED",
+    "ADAPTIVE"
+  ],
+  "scenarios": {
+    "normal_operations": "turnaround_lifecycle.yaml",
+    "congestion": "surface_traffic.yaml",
+    "temporary_route_disruption": "surface_traffic_disrupted.yaml",
+    "competing_aircraft_demand": "mixed_runway_operations.yaml",
+    "combined_stress": "mixed_runway_disrupted.yaml",
+    "adaptive_route_choice_demo": "goal35_route_choice_demo.yaml"
+  },
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "serial_runs": 36,
+  "parallel_replay_runs": 36,
+  "workers": 4,
+  "determinism": {
+    "checks": [
+      {
+        "scenario": "normal_operations",
+        "seed": 42,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "normal_operations",
+        "seed": 42,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "normal_operations",
+        "seed": 43,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "normal_operations",
+        "seed": 43,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "normal_operations",
+        "seed": 44,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "normal_operations",
+        "seed": 44,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "congestion",
+        "seed": 42,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "congestion",
+        "seed": 42,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "congestion",
+        "seed": 43,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "congestion",
+        "seed": 43,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "congestion",
+        "seed": 44,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "congestion",
+        "seed": 44,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "temporary_route_disruption",
+        "seed": 42,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "temporary_route_disruption",
+        "seed": 42,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "temporary_route_disruption",
+        "seed": 43,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "temporary_route_disruption",
+        "seed": 43,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "temporary_route_disruption",
+        "seed": 44,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "temporary_route_disruption",
+        "seed": 44,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "competing_aircraft_demand",
+        "seed": 42,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "competing_aircraft_demand",
+        "seed": 42,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "competing_aircraft_demand",
+        "seed": 43,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "competing_aircraft_demand",
+        "seed": 43,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "competing_aircraft_demand",
+        "seed": 44,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "competing_aircraft_demand",
+        "seed": 44,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "combined_stress",
+        "seed": 42,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "combined_stress",
+        "seed": 42,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "combined_stress",
+        "seed": 43,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "combined_stress",
+        "seed": 43,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "combined_stress",
+        "seed": 44,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "combined_stress",
+        "seed": 44,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "adaptive_route_choice_demo",
+        "seed": 42,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "adaptive_route_choice_demo",
+        "seed": 42,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "adaptive_route_choice_demo",
+        "seed": 43,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "adaptive_route_choice_demo",
+        "seed": 43,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "adaptive_route_choice_demo",
+        "seed": 44,
+        "policy": "SCRIPTED",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      },
+      {
+        "scenario": "adaptive_route_choice_demo",
+        "seed": 44,
+        "policy": "ADAPTIVE",
+        "normalized_metrics_match": true,
+        "artifact_sha256_match": true,
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "results": [
+    {
+      "scenario": "normal_operations",
+      "policy": "SCRIPTED",
+      "runs": 3,
+      "mean_departure_delay_seconds": 1722.3333329999998,
+      "mean_departure_taxi_seconds": 1535.0,
+      "mean_departure_taxi_distance_m": 1535.0,
+      "mean_surface_wait_seconds": 553.0,
+      "mean_runway_queue_seconds": 551.0,
+      "completed_objectives": 15,
+      "failed_objectives": 0,
+      "replans": 6,
+      "decisions": 39,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 30.0
+    },
+    {
+      "scenario": "normal_operations",
+      "policy": "ADAPTIVE",
+      "runs": 3,
+      "mean_departure_delay_seconds": 1722.3333329999998,
+      "mean_departure_taxi_seconds": 1535.0,
+      "mean_departure_taxi_distance_m": 1535.0,
+      "mean_surface_wait_seconds": 553.0,
+      "mean_runway_queue_seconds": 551.0,
+      "completed_objectives": 15,
+      "failed_objectives": 0,
+      "replans": 6,
+      "decisions": 39,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 30.0
+    },
+    {
+      "scenario": "congestion",
+      "policy": "SCRIPTED",
+      "runs": 3,
+      "mean_departure_delay_seconds": 606.6666666666666,
+      "mean_departure_taxi_seconds": 735.0,
+      "mean_departure_taxi_distance_m": 672.0,
+      "mean_surface_wait_seconds": 105.0,
+      "mean_runway_queue_seconds": 10.0,
+      "completed_objectives": 9,
+      "failed_objectives": 0,
+      "replans": 0,
+      "decisions": 27,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 30.0
+    },
+    {
+      "scenario": "congestion",
+      "policy": "ADAPTIVE",
+      "runs": 3,
+      "mean_departure_delay_seconds": 606.6666666666666,
+      "mean_departure_taxi_seconds": 735.0,
+      "mean_departure_taxi_distance_m": 672.0,
+      "mean_surface_wait_seconds": 105.0,
+      "mean_runway_queue_seconds": 10.0,
+      "completed_objectives": 9,
+      "failed_objectives": 0,
+      "replans": 0,
+      "decisions": 36,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 30.0
+    },
+    {
+      "scenario": "temporary_route_disruption",
+      "policy": "SCRIPTED",
+      "runs": 3,
+      "mean_departure_delay_seconds": 625.111111,
+      "mean_departure_taxi_seconds": 800.3333333333334,
+      "mean_departure_taxi_distance_m": 768.0,
+      "mean_surface_wait_seconds": 64.33333333333333,
+      "mean_runway_queue_seconds": 0.0,
+      "completed_objectives": 9,
+      "failed_objectives": 0,
+      "replans": 3,
+      "decisions": 30,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 38.588373
+    },
+    {
+      "scenario": "temporary_route_disruption",
+      "policy": "ADAPTIVE",
+      "runs": 3,
+      "mean_departure_delay_seconds": 625.111111,
+      "mean_departure_taxi_seconds": 800.3333333333334,
+      "mean_departure_taxi_distance_m": 768.0,
+      "mean_surface_wait_seconds": 64.33333333333333,
+      "mean_runway_queue_seconds": 0.0,
+      "completed_objectives": 9,
+      "failed_objectives": 0,
+      "replans": 3,
+      "decisions": 36,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 38.588373
+    },
+    {
+      "scenario": "competing_aircraft_demand",
+      "policy": "SCRIPTED",
+      "runs": 3,
+      "mean_departure_delay_seconds": 898.3333336666666,
+      "mean_departure_taxi_seconds": 1620.0,
+      "mean_departure_taxi_distance_m": 672.0,
+      "mean_surface_wait_seconds": 1137.3333333333333,
+      "mean_runway_queue_seconds": 157.33333333333334,
+      "completed_objectives": 15,
+      "failed_objectives": 0,
+      "replans": 0,
+      "decisions": 39,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 18.601633
+    },
+    {
+      "scenario": "competing_aircraft_demand",
+      "policy": "ADAPTIVE",
+      "runs": 3,
+      "mean_departure_delay_seconds": 898.3333336666666,
+      "mean_departure_taxi_seconds": 1620.0,
+      "mean_departure_taxi_distance_m": 672.0,
+      "mean_surface_wait_seconds": 1137.3333333333333,
+      "mean_runway_queue_seconds": 157.33333333333334,
+      "completed_objectives": 15,
+      "failed_objectives": 0,
+      "replans": 0,
+      "decisions": 90,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 18.601633
+    },
+    {
+      "scenario": "combined_stress",
+      "policy": "SCRIPTED",
+      "runs": 3,
+      "mean_departure_delay_seconds": 898.3333336666666,
+      "mean_departure_taxi_seconds": 1620.0,
+      "mean_departure_taxi_distance_m": 672.0,
+      "mean_surface_wait_seconds": 1137.3333333333333,
+      "mean_runway_queue_seconds": 157.33333333333334,
+      "completed_objectives": 15,
+      "failed_objectives": 0,
+      "replans": 0,
+      "decisions": 39,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 18.601633
+    },
+    {
+      "scenario": "combined_stress",
+      "policy": "ADAPTIVE",
+      "runs": 3,
+      "mean_departure_delay_seconds": 898.3333336666666,
+      "mean_departure_taxi_seconds": 1620.0,
+      "mean_departure_taxi_distance_m": 672.0,
+      "mean_surface_wait_seconds": 1137.3333333333333,
+      "mean_runway_queue_seconds": 157.33333333333334,
+      "completed_objectives": 15,
+      "failed_objectives": 0,
+      "replans": 0,
+      "decisions": 90,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 18.601633
+    },
+    {
+      "scenario": "adaptive_route_choice_demo",
+      "policy": "SCRIPTED",
+      "runs": 3,
+      "mean_departure_delay_seconds": 698.6666666666666,
+      "mean_departure_taxi_seconds": 941.0,
+      "mean_departure_taxi_distance_m": 780.0,
+      "mean_surface_wait_seconds": 273.0,
+      "mean_runway_queue_seconds": 50.0,
+      "completed_objectives": 9,
+      "failed_objectives": 0,
+      "replans": 0,
+      "decisions": 27,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 30.0
+    },
+    {
+      "scenario": "adaptive_route_choice_demo",
+      "policy": "ADAPTIVE",
+      "runs": 3,
+      "mean_departure_delay_seconds": 797.6666666666666,
+      "mean_departure_taxi_seconds": 1267.0,
+      "mean_departure_taxi_distance_m": 1056.0,
+      "mean_surface_wait_seconds": 294.0,
+      "mean_runway_queue_seconds": 82.0,
+      "completed_objectives": 9,
+      "failed_objectives": 0,
+      "replans": 15,
+      "decisions": 45,
+      "collisions": 0,
+      "safety_failures": 0,
+      "minimum_separation_m": 26.062233
+    }
+  ],
+  "runs": [
+    {
+      "scenario": "normal_operations",
+      "seed": 42,
+      "policy": "SCRIPTED",
+      "directory": "runs/normal_operations/seed-42/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "9cc7f8a0f4c8762f0fbf27392441f23b8594983b6442309d7e94145b2102c2d6",
+        "events.jsonl": "5803a58659f82f4ec2c0a24701a43a1883c816a86b87fa79afec062357499c61",
+        "decisions.json": "c2589b9274d929a8310b118f3348cfe60bbe96b55264a39a85c3e6fc037dfcef"
+      }
+    },
+    {
+      "scenario": "normal_operations",
+      "seed": 42,
+      "policy": "ADAPTIVE",
+      "directory": "runs/normal_operations/seed-42/adaptive",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "9cc7f8a0f4c8762f0fbf27392441f23b8594983b6442309d7e94145b2102c2d6",
+        "events.jsonl": "4ab8b26bc011799e6c8d3eb907250cf264be30dc82d81d59a86cf4fbb10715c6",
+        "decisions.json": "6cb545568178e8d89e1f06f28372bb4a36d38b5870b8699b6d43691d8bafdf5f"
+      }
+    },
+    {
+      "scenario": "normal_operations",
+      "seed": 43,
+      "policy": "SCRIPTED",
+      "directory": "runs/normal_operations/seed-43/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "91b3452548ab0fe571d47a0de1d409480b7d844392a58c1dc84889b241777ea7",
+        "events.jsonl": "5803a58659f82f4ec2c0a24701a43a1883c816a86b87fa79afec062357499c61",
+        "decisions.json": "3b2daf5618f61f5810d2254f0cc10e1be7a839edfa788df4229ab5764447eb88"
+      }
+    },
+    {
+      "scenario": "normal_operations",
+      "seed": 43,
+      "policy": "ADAPTIVE",
+      "directory": "runs/normal_operations/seed-43/adaptive",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "91b3452548ab0fe571d47a0de1d409480b7d844392a58c1dc84889b241777ea7",
+        "events.jsonl": "4ab8b26bc011799e6c8d3eb907250cf264be30dc82d81d59a86cf4fbb10715c6",
+        "decisions.json": "5fbd14d6ab7f4f325d6370d12947c02f990ead3c2d28547e36cd5798a9eaa0fc"
+      }
+    },
+    {
+      "scenario": "normal_operations",
+      "seed": 44,
+      "policy": "SCRIPTED",
+      "directory": "runs/normal_operations/seed-44/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "7782fde596cac8593932a1f24a20abc8851994a86a555f0b6994b819819e3af1",
+        "events.jsonl": "5803a58659f82f4ec2c0a24701a43a1883c816a86b87fa79afec062357499c61",
+        "decisions.json": "b7a0df3aa29f5554ada24e922ce5ca2a80c087788a6f9b4f86c41e4dff8a6728"
+      }
+    },
+    {
+      "scenario": "normal_operations",
+      "seed": 44,
+      "policy": "ADAPTIVE",
+      "directory": "runs/normal_operations/seed-44/adaptive",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "7782fde596cac8593932a1f24a20abc8851994a86a555f0b6994b819819e3af1",
+        "events.jsonl": "4ab8b26bc011799e6c8d3eb907250cf264be30dc82d81d59a86cf4fbb10715c6",
+        "decisions.json": "0b056be31d4467678b61be9b116b76558f81bf55ec95c65137a26f6afff6f2c4"
+      }
+    },
+    {
+      "scenario": "congestion",
+      "seed": 42,
+      "policy": "SCRIPTED",
+      "directory": "runs/congestion/seed-42/scripted",
+      "decision_count": 9,
+      "digests": {
+        "metrics.json": "5117143a1fbc25d79da235a97747fa188e1678fb23865fec9fb48a86f0ad6a4a",
+        "events.jsonl": "057eecc82fc4f51b2a90a811f804cc952724217e6d1d9bc66f9c3d911340e4f1",
+        "decisions.json": "9a3a53b31d016edc062f0ecbcb4708162348e1998e663ac9926b99c7106f3a5c"
+      }
+    },
+    {
+      "scenario": "congestion",
+      "seed": 42,
+      "policy": "ADAPTIVE",
+      "directory": "runs/congestion/seed-42/adaptive",
+      "decision_count": 12,
+      "digests": {
+        "metrics.json": "77e12ae0c3cf0ec8e1f55983efb2a19ed164414c9983f54bd4ac5426a556dc5a",
+        "events.jsonl": "562db93c01238f315cd9711be1a437f7c6c18cb1e2143b618c92920e89181553",
+        "decisions.json": "95c77bdb9ab29c78e048615059bab42c3afd79e0b33df2f040615882a2f90bae"
+      }
+    },
+    {
+      "scenario": "congestion",
+      "seed": 43,
+      "policy": "SCRIPTED",
+      "directory": "runs/congestion/seed-43/scripted",
+      "decision_count": 9,
+      "digests": {
+        "metrics.json": "465332245ea023b80705bfd2bcc6965d52c2c2098a7f2589368074b4b2a50c55",
+        "events.jsonl": "057eecc82fc4f51b2a90a811f804cc952724217e6d1d9bc66f9c3d911340e4f1",
+        "decisions.json": "733fdd6a4e4d90e1e49ea2dcf9e966d8e7321339e6055e99a632269521a32d81"
+      }
+    },
+    {
+      "scenario": "congestion",
+      "seed": 43,
+      "policy": "ADAPTIVE",
+      "directory": "runs/congestion/seed-43/adaptive",
+      "decision_count": 12,
+      "digests": {
+        "metrics.json": "5704c5468fa037b13d3179a68a86d352c9482054e0754cd33d0fd6a4b6be806d",
+        "events.jsonl": "562db93c01238f315cd9711be1a437f7c6c18cb1e2143b618c92920e89181553",
+        "decisions.json": "00a1459c112d33f49d9a36e3aee4018a419af1e145e64009d9e0901164845cbe"
+      }
+    },
+    {
+      "scenario": "congestion",
+      "seed": 44,
+      "policy": "SCRIPTED",
+      "directory": "runs/congestion/seed-44/scripted",
+      "decision_count": 9,
+      "digests": {
+        "metrics.json": "5f329c35b2c3086b5e74abcb1071b71df124922a091ce8697ee687b6c2ad9ab8",
+        "events.jsonl": "74c1812c87be81ac1c3315e4e39ff29229d32c13ce6123c103cd83ebf9ad9e9d",
+        "decisions.json": "b35864d44f77529883d33badcfda7d7bd5bb06e70825d7f3f1046c3f373e27f7"
+      }
+    },
+    {
+      "scenario": "congestion",
+      "seed": 44,
+      "policy": "ADAPTIVE",
+      "directory": "runs/congestion/seed-44/adaptive",
+      "decision_count": 12,
+      "digests": {
+        "metrics.json": "75e72c95fdc8babeadceeedf7853e3b1d4f8109141e03e8bd9b617cbf2e20ff4",
+        "events.jsonl": "c5805fbca6903532ee4f21ec0c2772376edf5d4712f7a35279f30822f848149d",
+        "decisions.json": "8c8cfc0cd811a41d77503df172a7f769b2880524e8574612062e6d687d6b39c9"
+      }
+    },
+    {
+      "scenario": "temporary_route_disruption",
+      "seed": 42,
+      "policy": "SCRIPTED",
+      "directory": "runs/temporary_route_disruption/seed-42/scripted",
+      "decision_count": 10,
+      "digests": {
+        "metrics.json": "9b589c3f3a16cde8d0cc4bb76ae7fba221a04dce23390f974a336ee3a70e3db8",
+        "events.jsonl": "1b0bb8ec538e7b463f319aac139bd7442cea0175d1107ede04d1df5219af194d",
+        "decisions.json": "17d3d0c65e1104bcf5d5c5db3ff0cf56b42648b083a19793aa3c3db514b988a0"
+      }
+    },
+    {
+      "scenario": "temporary_route_disruption",
+      "seed": 42,
+      "policy": "ADAPTIVE",
+      "directory": "runs/temporary_route_disruption/seed-42/adaptive",
+      "decision_count": 12,
+      "digests": {
+        "metrics.json": "5a35324e3711a6efb69a3930318f6824a3e83c5aa8441e83d92e33e6957f7957",
+        "events.jsonl": "dc24d0064e50cb282e6df77a446e597eeca2cfd8f7ef2774a3efb6b0f098a701",
+        "decisions.json": "f3cc6705dd48f4d0a862f451a22cf2996e6815854bb7567568691d4a78a1c812"
+      }
+    },
+    {
+      "scenario": "temporary_route_disruption",
+      "seed": 43,
+      "policy": "SCRIPTED",
+      "directory": "runs/temporary_route_disruption/seed-43/scripted",
+      "decision_count": 10,
+      "digests": {
+        "metrics.json": "e5ac9d5ad8606446e3944cdb1071b966139a99fbb2069cdeb733da4863c3d417",
+        "events.jsonl": "1b0bb8ec538e7b463f319aac139bd7442cea0175d1107ede04d1df5219af194d",
+        "decisions.json": "b439664de43a91da2572ad7d85f9d2a0a6e077744c6e1297a96abbe021faf1a1"
+      }
+    },
+    {
+      "scenario": "temporary_route_disruption",
+      "seed": 43,
+      "policy": "ADAPTIVE",
+      "directory": "runs/temporary_route_disruption/seed-43/adaptive",
+      "decision_count": 12,
+      "digests": {
+        "metrics.json": "b19d6bca0854bd66820e58b9268be62d4cbe9dc3ddd74a1a2746e842b7d239fe",
+        "events.jsonl": "dc24d0064e50cb282e6df77a446e597eeca2cfd8f7ef2774a3efb6b0f098a701",
+        "decisions.json": "3835029f12fc6fd81ebdca6eb056f5be46dfa7e51123d58d86ac38f4e9ba784b"
+      }
+    },
+    {
+      "scenario": "temporary_route_disruption",
+      "seed": 44,
+      "policy": "SCRIPTED",
+      "directory": "runs/temporary_route_disruption/seed-44/scripted",
+      "decision_count": 10,
+      "digests": {
+        "metrics.json": "d455b019e72988c85ac1af2ae96ded61b165ee4f7f18694c297fc00479e2fca1",
+        "events.jsonl": "65ceda86d8b4f80a880e8fdb7f369ee024c4ac6f1162fc24901ed4761a185a3a",
+        "decisions.json": "f36325a8319807dee25329253fcc10ca05e37e84be4b0520e83eaae6f3771710"
+      }
+    },
+    {
+      "scenario": "temporary_route_disruption",
+      "seed": 44,
+      "policy": "ADAPTIVE",
+      "directory": "runs/temporary_route_disruption/seed-44/adaptive",
+      "decision_count": 12,
+      "digests": {
+        "metrics.json": "c40ddd621b48b678abe88f3b1f83f1d4a817e7904e4eda02bb61694f80ff9098",
+        "events.jsonl": "825430538a158010464cb532d7ba2352db359851cff1a181fb844c7064cdac2d",
+        "decisions.json": "2a6b4629555ae6783d5abe324af758b9c3eeed1da81ea045237376849b7cec0d"
+      }
+    },
+    {
+      "scenario": "competing_aircraft_demand",
+      "seed": 42,
+      "policy": "SCRIPTED",
+      "directory": "runs/competing_aircraft_demand/seed-42/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "cb49dd648b9366efa11583c6b2113d8dfc6ffb7b710a51dc5cfd22edfa12e32f",
+        "events.jsonl": "7b5ca7fc6cc9855ef6e15be977db2db3f0323556985bf83d535cda911ef63f43",
+        "decisions.json": "e561866c5ecb0f86d42e92fa97e15d46afdd7accf99b0df486b63e16788ceb3e"
+      }
+    },
+    {
+      "scenario": "competing_aircraft_demand",
+      "seed": 42,
+      "policy": "ADAPTIVE",
+      "directory": "runs/competing_aircraft_demand/seed-42/adaptive",
+      "decision_count": 30,
+      "digests": {
+        "metrics.json": "0b57ad5b54674ca5cd6479d5cce075bdda8e4ee6b6de345b808c67e1eb396426",
+        "events.jsonl": "165d95d4f7296f3383ca14879af2ad008522ca9b8c67815be26043a025d95be7",
+        "decisions.json": "503c8e78250ee079f5bf7c30ce78ea2c8bb7602b80342cc424f7be8aa8c158ee"
+      }
+    },
+    {
+      "scenario": "competing_aircraft_demand",
+      "seed": 43,
+      "policy": "SCRIPTED",
+      "directory": "runs/competing_aircraft_demand/seed-43/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "597a5790e5f707f1d26b65a17203912515b2c38c8182ceab0aeec3b1c69aa495",
+        "events.jsonl": "7b5ca7fc6cc9855ef6e15be977db2db3f0323556985bf83d535cda911ef63f43",
+        "decisions.json": "52a42a2caca191d51cbdce576d5fec7566e41f59ccd5ef26f9bfc6be3a18402d"
+      }
+    },
+    {
+      "scenario": "competing_aircraft_demand",
+      "seed": 43,
+      "policy": "ADAPTIVE",
+      "directory": "runs/competing_aircraft_demand/seed-43/adaptive",
+      "decision_count": 30,
+      "digests": {
+        "metrics.json": "ebacbe36089166fe706b20e5225c48197309afbc80f2f7c2b37518f16a756da6",
+        "events.jsonl": "165d95d4f7296f3383ca14879af2ad008522ca9b8c67815be26043a025d95be7",
+        "decisions.json": "8ae6927559b52e771e54010d59e87f21388c0968af8871bb25d19b9cee9b2c5d"
+      }
+    },
+    {
+      "scenario": "competing_aircraft_demand",
+      "seed": 44,
+      "policy": "SCRIPTED",
+      "directory": "runs/competing_aircraft_demand/seed-44/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "3382bd190cd4f78e4119803ade68591f8a519153dddf6c1580ba1e2c9ec06c4f",
+        "events.jsonl": "8acb1fb843a901d08fc7a05a53adba3e9cb0ea975feac4839f2d9a8223c4546d",
+        "decisions.json": "3bbcfad83c9fe935457dea6aaa3d8a1f6448c421e973a0e139a2c768ec411933"
+      }
+    },
+    {
+      "scenario": "competing_aircraft_demand",
+      "seed": 44,
+      "policy": "ADAPTIVE",
+      "directory": "runs/competing_aircraft_demand/seed-44/adaptive",
+      "decision_count": 30,
+      "digests": {
+        "metrics.json": "5082524ec1d2cc439dce4e2b7afddd316ee8e613fe0e9a280e3dbdf1d3f944ad",
+        "events.jsonl": "e05cbd8ed74756063188aebc5bbd943a7030512a0727f96e612fc358c0ae842e",
+        "decisions.json": "112054ad2e0c3d1ff5b348ba8a77b001fbe5661bcc7c209eb89ebd489df0de4e"
+      }
+    },
+    {
+      "scenario": "combined_stress",
+      "seed": 42,
+      "policy": "SCRIPTED",
+      "directory": "runs/combined_stress/seed-42/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "5ff94465f44f2dbd6c5ebe790215eaf17b9c3d0b5c9155e92ad20c82f45874d6",
+        "events.jsonl": "1e8d96db9ca9f54b3f448139940081082985e888ddd75e0bf09c7a448ad09193",
+        "decisions.json": "d03f49fc96dace098f27880a2ec162e54f6a3f26839ebdc884e5fd3a779c790e"
+      }
+    },
+    {
+      "scenario": "combined_stress",
+      "seed": 42,
+      "policy": "ADAPTIVE",
+      "directory": "runs/combined_stress/seed-42/adaptive",
+      "decision_count": 30,
+      "digests": {
+        "metrics.json": "61b4419df23eab213b7945a247ca07785246e96030a6f1bf1d83ce4d1ccda498",
+        "events.jsonl": "c3e8db709bc5ef4875f906a46556853e1749f7c0d8065eb880c75fe7bdc4bcbc",
+        "decisions.json": "af137c0e96fa2352b45e9ff61ea530cfe77bfc4f92daac3e96f3412f8a30c35a"
+      }
+    },
+    {
+      "scenario": "combined_stress",
+      "seed": 43,
+      "policy": "SCRIPTED",
+      "directory": "runs/combined_stress/seed-43/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "2f83eeb72ba7c38d5564e011182d4a4b3e7b048b15265e1792864267f252564a",
+        "events.jsonl": "1e8d96db9ca9f54b3f448139940081082985e888ddd75e0bf09c7a448ad09193",
+        "decisions.json": "9054f97f95c5eb624db8002dae8ef811372d66bc07f7ae79efff8f6d9ce508ef"
+      }
+    },
+    {
+      "scenario": "combined_stress",
+      "seed": 43,
+      "policy": "ADAPTIVE",
+      "directory": "runs/combined_stress/seed-43/adaptive",
+      "decision_count": 30,
+      "digests": {
+        "metrics.json": "cf66c66d32bbf433e74e002cdc1be2765194f36274c4341955cfc5731e2d3619",
+        "events.jsonl": "c3e8db709bc5ef4875f906a46556853e1749f7c0d8065eb880c75fe7bdc4bcbc",
+        "decisions.json": "79026978ae24d9aa6cc86de90a3065d9bc51bc61e25a6220418a1153ee40a302"
+      }
+    },
+    {
+      "scenario": "combined_stress",
+      "seed": 44,
+      "policy": "SCRIPTED",
+      "directory": "runs/combined_stress/seed-44/scripted",
+      "decision_count": 13,
+      "digests": {
+        "metrics.json": "7edfebfdc62aed3b44b479ea3cc25a57d732c9fdad15dbb91f8869011f2e8266",
+        "events.jsonl": "6f0a115354a9ad4a57182773280f4e518aebb35af40cc0cbf16a9d9c7da1ce88",
+        "decisions.json": "9ae574406f5de712a5c22544d47ca90300a9d2aca683e52a12b42949e15705d4"
+      }
+    },
+    {
+      "scenario": "combined_stress",
+      "seed": 44,
+      "policy": "ADAPTIVE",
+      "directory": "runs/combined_stress/seed-44/adaptive",
+      "decision_count": 30,
+      "digests": {
+        "metrics.json": "e2d890badd5d798a093ddd168f4350c2f34221f428425f97e886c56b2a91b43e",
+        "events.jsonl": "0f35abfa5eaedc2012b36ae74354f40d651fc20da37815d8b557925bb03c0c5f",
+        "decisions.json": "cc1a671dce4bc645ebe897fbf25eb46461fee5ccf44b5c0e0192e9cf98abefea"
+      }
+    },
+    {
+      "scenario": "adaptive_route_choice_demo",
+      "seed": 42,
+      "policy": "SCRIPTED",
+      "directory": "runs/adaptive_route_choice_demo/seed-42/scripted",
+      "decision_count": 9,
+      "digests": {
+        "metrics.json": "f9a9eb8a5ecf0c63160cfc492edc3ab702d6476610e96f206d4d626d1dd35587",
+        "events.jsonl": "4aa32b5869bf4182a208888e2c8e94069debffa0338b53fc52cf59803d92df3a",
+        "decisions.json": "303c3ac37e4f9d0bab465015333a58f90636f1419230a5e5f5ec57700d47bc8d"
+      }
+    },
+    {
+      "scenario": "adaptive_route_choice_demo",
+      "seed": 42,
+      "policy": "ADAPTIVE",
+      "directory": "runs/adaptive_route_choice_demo/seed-42/adaptive",
+      "decision_count": 15,
+      "digests": {
+        "metrics.json": "38093ede0b53eef13e55be81add01fa093541df81c339d3651f241f3a8d15acd",
+        "events.jsonl": "faea0e153d865202c180f7d7770300c27a6d62e3100588016d3ec8121cc9c139",
+        "decisions.json": "f217cfe8ed63f11add8a0ae97b0843f83ca8d18f5f68b431c658f08258067d90"
+      }
+    },
+    {
+      "scenario": "adaptive_route_choice_demo",
+      "seed": 43,
+      "policy": "SCRIPTED",
+      "directory": "runs/adaptive_route_choice_demo/seed-43/scripted",
+      "decision_count": 9,
+      "digests": {
+        "metrics.json": "f08406bed971fdc956328e55f2ec1336fc1ce2a4fc83f36b3b83aa532f5ac089",
+        "events.jsonl": "4aa32b5869bf4182a208888e2c8e94069debffa0338b53fc52cf59803d92df3a",
+        "decisions.json": "13e011f1f8fdbbd133a14258156728d87a067e04b5adb583e6df55336c65f5a5"
+      }
+    },
+    {
+      "scenario": "adaptive_route_choice_demo",
+      "seed": 43,
+      "policy": "ADAPTIVE",
+      "directory": "runs/adaptive_route_choice_demo/seed-43/adaptive",
+      "decision_count": 15,
+      "digests": {
+        "metrics.json": "74a88d1d2f7763f8f4600521c913fa43e61ae4b35098d7426ca256e13cd4ceae",
+        "events.jsonl": "faea0e153d865202c180f7d7770300c27a6d62e3100588016d3ec8121cc9c139",
+        "decisions.json": "a1210e9e0e6f601d875944bfad8feb7f2aa30cb0dfd44658b5d4b8c051166347"
+      }
+    },
+    {
+      "scenario": "adaptive_route_choice_demo",
+      "seed": 44,
+      "policy": "SCRIPTED",
+      "directory": "runs/adaptive_route_choice_demo/seed-44/scripted",
+      "decision_count": 9,
+      "digests": {
+        "metrics.json": "4bc721800775e95d2c17439dde966a9d53664d52ffd08bbdc11d12d7ffeb9148",
+        "events.jsonl": "c6f6192043345d554c690daf65dc56036c6c3cfacf6a240263e3d0ea08789522",
+        "decisions.json": "545bd63a0fec485937de5780bda3d2b939df70f3e6e1f703d59749f6ca522d33"
+      }
+    },
+    {
+      "scenario": "adaptive_route_choice_demo",
+      "seed": 44,
+      "policy": "ADAPTIVE",
+      "directory": "runs/adaptive_route_choice_demo/seed-44/adaptive",
+      "decision_count": 15,
+      "digests": {
+        "metrics.json": "69d4b464427660d07af983927b8b48f0ac8574172af1b0ff9a7017b7bd463638",
+        "events.jsonl": "96eec28ac5f3f233525d2ccd6881a89f59b8ee04bac02a951980dc61a29a8cf8",
+        "decisions.json": "e90ef528e68e38c102166a030b5c68c5c9d1678a6761558812164297e288125c"
+      }
+    }
+  ]
+}

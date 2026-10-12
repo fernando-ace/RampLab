@@ -27,6 +27,7 @@ enum class ReasonCode {
     ObjectiveCompleted,
     OperatorIntervention
 };
+enum class CandidateKind { ContinueCurrentRoute, AlternateRoute, Wait };
 enum class AutonomyMode { Scripted, Adaptive };
 
 struct Objective {
@@ -35,6 +36,18 @@ struct Objective {
     NodeId destination{};
     std::int64_t priority{};
     auto operator<=>(const Objective&) const = default;
+};
+
+struct CandidateEvaluation {
+    CandidateKind kind{CandidateKind::AlternateRoute};
+    std::optional<Route> route;
+    double predicted_taxi_distance_m{};
+    SimTime predicted_taxi_time{};
+    SimTime expected_wait{};
+    double score_seconds{};
+    bool valid{true};
+    std::string explanation;
+    auto operator<=>(const CandidateEvaluation&) const = default;
 };
 
 // The simulator builds this agent-scoped view from authoritative state. Policies
@@ -54,8 +67,11 @@ struct Observation {
     SimTime current_route_cost{};
     std::optional<Route> available_route;
     SimTime available_route_cost{};
+    double aircraft_speed_mps{5.0};
+    std::vector<CandidateEvaluation> candidates;
     bool objective_satisfied{};
     bool operator_triggered{};
+    auto operator<=>(const Observation&) const = default;
 };
 
 struct PolicyMemory {
@@ -82,6 +98,9 @@ struct DecisionEvent {
     AgentType agent_type{AgentType::AircraftSurface};
     std::string policy_id;
     Objective objective;
+    Observation observation;
+    std::vector<CandidateEvaluation> candidates;
+    std::optional<std::size_t> selected_candidate;
     ActionType action{ActionType::Wait};
     AgentStatus status{AgentStatus::Waiting};
     ReasonCode reason{ReasonCode::RouteValid};
@@ -146,5 +165,6 @@ private:
 [[nodiscard]] std::string_view to_string(ActionType value) noexcept;
 [[nodiscard]] std::string_view to_string(ReasonCode value) noexcept;
 [[nodiscard]] std::string route_string(const std::optional<Route>& route);
+[[nodiscard]] std::string_view to_string(CandidateKind value) noexcept;
 
 }  // namespace airside::agents

@@ -30,4 +30,12 @@ struct Route {
     NodeId destination,
     const std::unordered_map<EdgeId, SimTime>& expected_wait);
 
+// Enumerate a bounded set of simple, currently available routes in deterministic
+// score order. This is for policy comparison only; movement still validates every
+// selected route against authoritative reservations and closures.
+[[nodiscard]] std::vector<Route> find_route_candidates(
+    const AirportGraph& graph, NodeId origin, NodeId destination,
+    std::size_t maximum_candidates,
+    const std::unordered_map<EdgeId, SimTime>& expected_wait = {});
+
 }  // namespace airside

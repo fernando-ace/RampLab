@@ -68,6 +68,48 @@ TEST(OperationalAgentPolicyTests, AdaptivePolicyUsesThresholdAndCooldownBeforeCo
     EXPECT_EQ(decision.reason, ReasonCode::Congestion);
 }
 
+TEST(OperationalAgentPolicyTests, AdaptivePolicyChoosesLowerScoringRouteBeforeAClosureOrBlockage) {
+    AdaptiveRoutingPolicy policy{SimTime{15}, SimTime{0}};
+    auto observation = base_observation();
+    observation.candidates = {
+        {CandidateKind::ContinueCurrentRoute, route({1, 2, 4}), 220.0, SimTime{100}, SimTime{100}, 220.0, true, "busy"},
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 140.0, SimTime{80}, SimTime{0}, 140.0, true, "clear"}
+    };
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, observation.candidates[1].route);
+    EXPECT_EQ(decision.reason, ReasonCode::Congestion);
+}
+
+TEST(OperationalAgentPolicyTests, WaitCandidateIncludesContinuationTaxiCost) {
+    AdaptiveRoutingPolicy policy{SimTime{15}, SimTime{0}};
+    auto observation = base_observation();
+    observation.reservation_blocked = true;
+    observation.candidates = {
+        {CandidateKind::ContinueCurrentRoute, route({1, 2, 4}), 100.0, SimTime{80}, SimTime{60}, 142.0, true, "current"},
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 100.0, SimTime{100}, SimTime{0}, 102.0, true, "alternate"},
+        {CandidateKind::Wait, route({1, 2, 4}), 100.0, SimTime{80}, SimTime{60}, 142.0, true, "wait then continue"}
+    };
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, observation.candidates[1].route);
+    EXPECT_EQ(decision.reason, ReasonCode::Congestion);
+}
+
+TEST(OperationalAgentPolicyTests, AdaptiveCandidateTieBreakUsesStableCandidateOrder) {
+    AdaptiveRoutingPolicy policy{SimTime{0}, SimTime{0}};
+    auto observation = base_observation();
+    observation.current_route.reset();
+    observation.candidates = {
+        {CandidateKind::AlternateRoute, route({1, 2, 4}), 100.0, SimTime{80}, SimTime{0}, 80.0, true, "first"},
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 100.0, SimTime{80}, SimTime{0}, 80.0, true, "second"}
+    };
+    const auto first = policy.decide(observation, destination_objective(), {});
+    const auto replay = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(first, replay);
+    EXPECT_EQ(first.route, observation.candidates.front().route);
+}
+
 TEST(OperationalAgentPolicyTests, ClosureReplanIsImmediateAndPolicyOutputIsDeterministic) {
     AdaptiveRoutingPolicy policy;
     auto observation = base_observation();
