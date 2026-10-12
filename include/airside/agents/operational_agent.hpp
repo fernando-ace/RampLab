@@ -28,7 +28,7 @@ enum class ReasonCode {
     OperatorIntervention
 };
 enum class CandidateKind { ContinueCurrentRoute, AlternateRoute, Wait };
-enum class AutonomyMode { Scripted, Adaptive, CoordinatedAdaptive };
+enum class AutonomyMode { Scripted, Adaptive, CoordinatedAdaptive, RollingHorizonCoordinated };
 
 struct Objective {
     std::string id;
@@ -52,6 +52,18 @@ struct CandidateEvaluation {
     std::size_t affected_agents{};
     std::optional<std::string> conflicting_agent;
     std::optional<EdgeId> conflicting_edge;
+    double estimated_self_delay_seconds{};
+    std::vector<EdgeId> predicted_contention_points;
+    struct ContentionPrediction {
+        EdgeId edge{};
+        std::string agent_id;
+        SimTime self_arrival{};
+        SimTime other_arrival{};
+        double estimated_self_delay_seconds{};
+        double estimated_other_delay_seconds{};
+        auto operator<=>(const ContentionPrediction&) const = default;
+    };
+    std::vector<ContentionPrediction> predicted_contention;
     auto operator<=>(const CandidateEvaluation&) const = default;
 };
 
@@ -63,6 +75,8 @@ struct SharedTrafficUse {
     SimTime wait_age{};
     std::int64_t priority{};
     bool reserved{};
+    SimTime estimated_arrival{};
+    SimTime estimated_occupancy{};
     auto operator<=>(const SharedTrafficUse&) const = default;
 };
 
@@ -146,6 +160,9 @@ struct DecisionEvent {
     double estimated_system_cost_seconds{};
     std::size_t affected_agents{};
     std::string safety_constraints;
+    SimTime planning_horizon{};
+    std::string replan_trigger;
+    std::string tie_break_reason;
     auto operator<=>(const DecisionEvent&) const = default;
 };
 
@@ -191,6 +208,13 @@ private:
 };
 
 class CoordinatedAdaptiveRoutingPolicy final : public DecisionPolicy {
+public:
+    [[nodiscard]] std::string_view id() const noexcept override;
+    [[nodiscard]] Decision decide(const Observation& observation,
+        const Objective& objective, const PolicyMemory& memory) const override;
+};
+
+class RollingHorizonCoordinatedPolicy final : public DecisionPolicy {
 public:
     [[nodiscard]] std::string_view id() const noexcept override;
     [[nodiscard]] Decision decide(const Observation& observation,

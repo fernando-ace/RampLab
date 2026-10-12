@@ -139,12 +139,63 @@ const DecisionPolicy& policy_for(AutonomyMode mode) {
     static const ScriptedRoutingPolicy scripted;
     static const AdaptiveRoutingPolicy adaptive;
     static const CoordinatedAdaptiveRoutingPolicy coordinated;
+    static const RollingHorizonCoordinatedPolicy rolling;
     switch (mode) {
     case AutonomyMode::Scripted: return scripted;
     case AutonomyMode::Adaptive: return adaptive;
     case AutonomyMode::CoordinatedAdaptive: return coordinated;
+    case AutonomyMode::RollingHorizonCoordinated: return rolling;
     }
     throw std::invalid_argument("unknown autonomy mode");
+}
+
+std::string_view RollingHorizonCoordinatedPolicy::id() const noexcept {
+    return "rolling-horizon-coordinated-v1";
+}
+
+Decision RollingHorizonCoordinatedPolicy::decide(const Observation& observation,
+    const Objective& objective, const PolicyMemory& memory) const {
+    if (observation.objective_satisfied)
+        return {ActionType::CompleteObjective, AgentStatus::Completed, ReasonCode::ObjectiveCompleted,
+            std::nullopt, "Objective reached."};
+    if (observation.route_invalidated || (memory.last_destination && *memory.last_destination != objective.destination)) {
+        const auto reason = observation.operator_triggered ? ReasonCode::OperatorIntervention :
+            observation.invalid_edge ? ReasonCode::RouteClosed :
+            memory.last_destination && *memory.last_destination != objective.destination
+                ? ReasonCode::DestinationChanged : ReasonCode::RouteInvalid;
+        return plan(observation, reason, "Invalidated route is replanned through the safe route candidates.");
+    }
+    if (observation.candidates.empty()) {
+        if (observation.reservation_blocked)
+            return wait(ReasonCode::ReservationBlocked, "No safe horizon candidate is available; wait for authoritative reservations to clear.");
+        return plan(observation, ReasonCode::ObjectiveCreated, "No route candidate is available; request the safe fallback route.");
+    }
+    const auto best = std::ranges::min_element(observation.candidates, [](const auto& left, const auto& right) {
+        if (left.valid != right.valid) return left.valid;
+        if (left.estimated_system_cost_seconds != right.estimated_system_cost_seconds)
+            return left.estimated_system_cost_seconds < right.estimated_system_cost_seconds;
+        return left.score_seconds < right.score_seconds;
+    });
+    if (best == observation.candidates.end() || !best->valid)
+        return plan(observation, ReasonCode::ObjectiveCreated, "No feasible safe horizon candidate; request the existing safe fallback.");
+    if (best->kind == CandidateKind::Wait)
+        return wait(ReasonCode::ReservationBlocked, "Wait is the lowest bounded-horizon cost while the reservation remains active.");
+    if (!best->route) return wait(ReasonCode::ReservationBlocked, "Selected horizon candidate has no route; hold safely.");
+    const auto current = std::ranges::find(observation.candidates, CandidateKind::ContinueCurrentRoute,
+        &CandidateEvaluation::kind);
+    if (best->kind == CandidateKind::ContinueCurrentRoute)
+        return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+            best->route, "Continue the route with the lowest bounded-horizon fleet cost."};
+    const bool cooldown_elapsed = !memory.last_replan_at || observation.time - *memory.last_replan_at >= SimTime{10};
+    const bool materially_better = current == observation.candidates.end() ||
+        best->estimated_system_cost_seconds + 15.0 < current->estimated_system_cost_seconds;
+    if (observation.current_route && (!cooldown_elapsed || !materially_better) &&
+        current != observation.candidates.end() && current->route)
+        return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+            current->route, "Keep the current route; the forecast gain is below 15 seconds or cooldown."};
+    return {ActionType::PlanRoute, AgentStatus::Replanning,
+        best->predicted_contention_points.empty() ? ReasonCode::ObjectiveCreated : ReasonCode::Congestion,
+        best->route, "Selected the lowest bounded-horizon cost using predicted edge occupancy and stable candidate order."};
 }
 
 std::string_view CoordinatedAdaptiveRoutingPolicy::id() const noexcept {
@@ -221,11 +272,12 @@ AutonomyMode parse_autonomy_mode(std::string_view value) {
     if (value == "SCRIPTED") return AutonomyMode::Scripted;
     if (value == "ADAPTIVE") return AutonomyMode::Adaptive;
     if (value == "COORDINATED_ADAPTIVE") return AutonomyMode::CoordinatedAdaptive;
-    throw std::invalid_argument("routing policy must be SCRIPTED, ADAPTIVE, or COORDINATED_ADAPTIVE");
+    if (value == "ROLLING_HORIZON_COORDINATED") return AutonomyMode::RollingHorizonCoordinated;
+    throw std::invalid_argument("routing policy must be SCRIPTED, ADAPTIVE, COORDINATED_ADAPTIVE, or ROLLING_HORIZON_COORDINATED");
 }
 
 std::string_view to_string(AutonomyMode value) noexcept {
-    switch (value) { case AutonomyMode::Scripted: return "SCRIPTED"; case AutonomyMode::Adaptive: return "ADAPTIVE"; case AutonomyMode::CoordinatedAdaptive: return "COORDINATED_ADAPTIVE"; }
+    switch (value) { case AutonomyMode::Scripted: return "SCRIPTED"; case AutonomyMode::Adaptive: return "ADAPTIVE"; case AutonomyMode::CoordinatedAdaptive: return "COORDINATED_ADAPTIVE"; case AutonomyMode::RollingHorizonCoordinated: return "ROLLING_HORIZON_COORDINATED"; }
     return "UNKNOWN";
 }
 std::string_view to_string(AgentType value) noexcept {
