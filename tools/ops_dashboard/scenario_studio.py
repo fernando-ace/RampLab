@@ -92,6 +92,7 @@ def new_scenario(key: str = "kauo") -> dict[str, Any]:
         "airport_key": key,
         "dataset_id": data["dataset"]["dataset_id"],
         "seed": 42,
+        "agent_policy": {"aircraft_routing": "SCRIPTED"},
         "baseline": True,
         "flights": deepcopy(baseline["flights"]),
         "aircraft": deepcopy(baseline["aircraft"]),
@@ -129,6 +130,10 @@ def scenario_package(scenario: dict[str, Any]) -> dict[str, Any]:
             data["dataset"]["operational_date"] = scenario["operational_schedule"].get("operational_date")
             data["dataset"]["operational_timezone"] = scenario["operational_schedule"].get("timezone")
     data["schema_version"] = "1.0"
+    agent_policy = scenario.get("agent_policy", {"aircraft_routing": "SCRIPTED"})
+    if not isinstance(agent_policy, dict) or agent_policy.get("aircraft_routing", "SCRIPTED") not in {"SCRIPTED", "ADAPTIVE"}:
+        raise ValueError("Aircraft routing policy must be SCRIPTED or ADAPTIVE.")
+    data["agent_policy"] = {"aircraft_routing": agent_policy.get("aircraft_routing", "SCRIPTED")}
     return data
 
 
@@ -158,6 +163,8 @@ def validate_scenario(scenario: dict[str, Any]) -> dict[str, Any]:
     seed = scenario.get("seed")
     if not isinstance(seed, int) or isinstance(seed, bool) or seed < 0 or seed > 2147483647:
         findings.append({"severity": "error", "code": "SEED_INVALID", "message": "Seed must be a whole number from 0 through 2,147,483,647."})
+    if scenario.get("agent_policy", {}).get("aircraft_routing", "SCRIPTED") not in {"SCRIPTED", "ADAPTIVE"}:
+        findings.append({"severity": "error", "code": "AGENT_POLICY_INVALID", "message": "Aircraft routing policy must be SCRIPTED or ADAPTIVE."})
 
     for section, field, label in (("flights", "flight_id", "Flight identifier"),
                                   ("aircraft", "aircraft_id", "Aircraft identifier"),
@@ -394,7 +401,7 @@ class RunManager:
         checked = validate_scenario(scenario)
         if not checked["valid"]:
             raise ValueError("Resolve the validation errors before running this scenario.")
-        fingerprint = json.dumps({key: scenario.get(key) for key in ("airport_key", "seed", "flights", "aircraft", "gates", "equipment", "turnaround_requirements", "disruptions")}, sort_keys=True)
+        fingerprint = json.dumps({key: scenario.get(key) for key in ("airport_key", "seed", "flights", "aircraft", "gates", "equipment", "turnaround_requirements", "disruptions", "agent_policy")}, sort_keys=True)
         with self._lock:
             for record in self._records.values():
                 if record.get("fingerprint") == fingerprint and record.get("status") in {"queued", "preparing", "generating", "running"}:
@@ -547,6 +554,38 @@ def export_run(ident: str) -> bytes:
             if path.is_file():
                 archive.write(path, relative.replace("\\", "/"))
     return buffer.getvalue()
+
+
+def agent_trace(ident: str) -> dict[str, Any]:
+    run = RunManagerSingleton.get(ident)
+    if run.get("status") != "complete":
+        raise ValueError("Agent decisions are available after the simulation completes.")
+    path = Path(run["folder"]) / "result" / "events.jsonl"
+    decisions: list[dict[str, Any]] = []
+    if path.is_file():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if event.get("type") == "AgentDecision":
+                decisions.append(event)
+    agents: dict[str, dict[str, Any]] = {}
+    for event in decisions:
+        agent = agents.setdefault(event.get("agent_id", "unknown"), {
+            "agent_id": event.get("agent_id", "unknown"), "agent_type": event.get("agent_type", "UNKNOWN"),
+            "policy_id": event.get("policy_id", "UNKNOWN"), "objective_id": event.get("objective_id", ""),
+            "decisions": 0, "replans": 0, "last_decision": None, "route_nodes": [], "previous_route_nodes": []})
+        agent["decisions"] += 1
+        agent["replans"] += event.get("decision") in {"PLAN_ROUTE", "REROUTE"}
+        agent["last_decision"] = event
+        if event.get("route_nodes"):
+            agent["route_nodes"] = event["route_nodes"]
+        if event.get("previous_route_nodes"):
+            agent["previous_route_nodes"] = event["previous_route_nodes"]
+    return {"run_id": ident, "scenario_name": run.get("scenario_name"),
+            "policy": run.get("scenario", {}).get("agent_policy", {}).get("aircraft_routing", "SCRIPTED"),
+            "decisions": decisions, "agents": sorted(agents.values(), key=lambda item: item["agent_id"])}
 
 
 def launch_viewer(ident: str) -> dict[str, Any]:

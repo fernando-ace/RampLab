@@ -1,0 +1,42 @@
+{
+  "agent_policy": {
+    "aircraft_routing": "ADAPTIVE"
+  },
+  "airport_key": "kauo",
+  "artifacts_sha256": {
+    "canonical.json": "e58099b035539084f96affbbe3fa581d2d94566dd449a36feac8ab3d69bc29cc",
+    "generated/manifest.json": "866483c350c9ffcfce9fd90c07c60ca9fb2a53c74361685ad20503193a37d9ac",
+    "generated/scenario.json": "9979fcb9cbd60537ae40a12634e56fa4074b6b93868a7b3de6ba556c665fd125",
+    "result/events.jsonl": "b83d9d5ee6e63a07d9fcc0b50436a6a6094d595a44636a22cad3a0fef6f01a43",
+    "result/experiment.json": "5a216960c80e65316192383a614e6aa6f3e26cfa55d643ee73d65b25cd9b7cd1",
+    "result/release-run.json": "da899388a2d1b1fb46dc8a8396a984cdda44ab5465de815cf56d2dad1d479a83",
+    "result/simulator-metrics.csv": "0d817ba11cf7c26c525eee7cb125d7d19fe9ef2e92dc5774e666702e7977da25",
+    "result/simulator-metrics.json": "d492d217b4428449e4d34537cab693c82fae02921b91e1848ce3ad7aea5289bc"
+  },
+  "dataset_id": "ops_bb2d85a392da7bca2738",
+  "disruptions": [],
+  "metrics": {
+    "agent_decisions": 15,
+    "agent_objectives_completed": 6,
+    "agent_objectives_failed": 0,
+    "agent_operator_interventions": 0,
+    "agent_replans": 3,
+    "agent_route_selections": 9
+  },
+  "operational_provenance": {
+    "dataset_id": "ops_bb2d85a392da7bca2738",
+    "mapping_profile_sha256": "1757a9bfa611145b27a307509e91b1f1717556f8f583cfb29493df4fb941dabf",
+    "normalized_sha256": "bb2d85a392da7bca2738217ecfddd33165625a8a474724f3a9844a556d5832b0",
+    "operational_date": "2026-10-12",
+    "record_count": 3,
+    "schema_version": "1.0",
+    "source_filename": "kauo-tomorrow-schedule.csv",
+    "source_format": "csv",
+    "source_sha256": "6552326f62a9c95c3dad04d43d67552917be6d0644fc2707390d758014601e54",
+    "timezone": "America/Chicago"
+  },
+  "run_id": "9204bc7aa0e3491a8aaac93128897350",
+  "scenario_name": "Goal 34 adaptive Goal 33 Plan replay integration",
+  "seed": 42,
+  "status": "complete"
+}

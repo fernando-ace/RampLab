@@ -89,6 +89,12 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
         const auto& metrics = result.metrics;
         output << std::fixed << std::setprecision(6)
             << "{\"seed\":" << result.seed << ",\"simulated_duration_seconds\":" << result.simulated_duration.count()
+            << ",\"agent_decisions\":" << metrics.agent_decisions
+            << ",\"agent_route_selections\":" << metrics.agent_route_selections
+            << ",\"agent_replans\":" << metrics.agent_replans
+            << ",\"agent_objectives_completed\":" << metrics.agent_objectives_completed
+            << ",\"agent_objectives_failed\":" << metrics.agent_objectives_failed
+            << ",\"agent_operator_interventions\":" << metrics.agent_operator_interventions
             << ",\"total_turnarounds\":" << metrics.total_turnarounds
             << ",\"completed_turnarounds\":" << metrics.completed_turnarounds
             << ",\"delayed_turnarounds\":" << metrics.delayed_turnarounds
@@ -232,7 +238,7 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
         if (!csv_path.parent_path().empty()) std::filesystem::create_directories(csv_path.parent_path());
         std::ofstream output{csv_path};
         if (!output) throw std::runtime_error("cannot create metrics CSV: " + csv_path.string());
-        output << "seed,simulated_duration_seconds,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,turnaround_id,aircraft_id,gate_id,scheduled_departure_seconds,actual_departure_seconds,departure_delay_seconds,completed_required_tasks,unfinished_required_tasks,task_id,service_type,state,requested_at_seconds,started_at_seconds,completed_at_seconds,latest_desirable_completion_seconds,reassignments,assigned_resource,surface_state,taxi_distance_m,surface_reroutes,surface_wait_seconds,pushback_started_at_seconds,pushback_completed_at_seconds,taxi_started_at_seconds,taxi_completed_at_seconds,runway_queue_entered_at_seconds,surface_departed_aircraft,surface_total_aircraft,surface_departure_throughput_per_hour,surface_reroutes_total,surface_wait_events,surface_wait_total_seconds,surface_taxi_seconds,runway_queue_total_seconds,surface_safe_failures,max_simultaneous_taxiing_aircraft,surface_aircraft_aircraft_collisions,surface_aircraft_ground_collisions,minimum_aircraft_separation_m,minimum_aircraft_ground_separation_m,arrivals_completed,gate_assignments,gate_wait_seconds,gate_occupancy_seconds,arrival_to_departure_seconds,runway_operations_completed,maximum_runway_queue_depth,arrival_runway_wait_seconds,departure_runway_wait_seconds,average_runway_wait_seconds,runway_occupied_seconds,runway_utilization,arrival_taxi_seconds,arrival_taxi_distance_m,departure_taxi_seconds,departure_taxi_distance_m\n";
+        output << "seed,simulated_duration_seconds,total_turnarounds,completed_turnarounds,delayed_turnarounds,failed_or_timed_out_turnarounds,task_reassignments,disruption_triggered_replans,unresolved_service_requests,fleet_collisions,fleet_minimum_separation_m,fleet_reservation_requests,fleet_reservation_contentions,fleet_outstanding_reservations,fleet_unfinished_requests,fleet_reassignments,fleet_requests_created,fleet_requests_completed,fleet_requests_failed,turnaround_id,aircraft_id,gate_id,scheduled_departure_seconds,actual_departure_seconds,departure_delay_seconds,completed_required_tasks,unfinished_required_tasks,task_id,service_type,state,requested_at_seconds,started_at_seconds,completed_at_seconds,latest_desirable_completion_seconds,reassignments,assigned_resource,surface_state,taxi_distance_m,surface_reroutes,surface_wait_seconds,pushback_started_at_seconds,pushback_completed_at_seconds,taxi_started_at_seconds,taxi_completed_at_seconds,runway_queue_entered_at_seconds,surface_departed_aircraft,surface_total_aircraft,surface_departure_throughput_per_hour,surface_reroutes_total,surface_wait_events,surface_wait_total_seconds,surface_taxi_seconds,runway_queue_total_seconds,surface_safe_failures,max_simultaneous_taxiing_aircraft,surface_aircraft_aircraft_collisions,surface_aircraft_ground_collisions,minimum_aircraft_separation_m,minimum_aircraft_ground_separation_m,arrivals_completed,gate_assignments,gate_wait_seconds,gate_occupancy_seconds,arrival_to_departure_seconds,runway_operations_completed,maximum_runway_queue_depth,arrival_runway_wait_seconds,departure_runway_wait_seconds,average_runway_wait_seconds,runway_occupied_seconds,runway_utilization,arrival_taxi_seconds,arrival_taxi_distance_m,departure_taxi_seconds,departure_taxi_distance_m,agent_decisions,agent_route_selections,agent_replans,agent_objectives_completed,agent_objectives_failed,agent_operator_interventions\n";
         output << result.seed << ',' << result.simulated_duration.count() << ',' << result.metrics.total_turnarounds << ','
             << result.metrics.completed_turnarounds << ',' << result.metrics.delayed_turnarounds << ','
             << result.metrics.failed_or_timed_out_turnarounds << ',' << result.metrics.task_reassignments << ','
@@ -298,7 +304,10 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
                     << result.metrics.departure_runway_wait_seconds << ',' << result.metrics.average_runway_wait_seconds << ','
                     << result.metrics.runway_occupied_seconds << ',' << result.metrics.runway_utilization << ','
                     << result.metrics.arrival_taxi_seconds << ',' << result.metrics.arrival_taxi_distance_m << ','
-                    << result.metrics.departure_taxi_seconds << ',' << result.metrics.departure_taxi_distance_m;
+                    << result.metrics.departure_taxi_seconds << ',' << result.metrics.departure_taxi_distance_m << ','
+                    << result.metrics.agent_decisions << ',' << result.metrics.agent_route_selections << ','
+                    << result.metrics.agent_replans << ',' << result.metrics.agent_objectives_completed << ','
+                    << result.metrics.agent_objectives_failed << ',' << result.metrics.agent_operator_interventions;
             }
         }
         output << '\n';
@@ -391,6 +400,15 @@ public:
             if (event.vehicle) output_ << ",\"vehicle_id\":" << event.vehicle->value();
             if (!event.vehicle_name.empty()) output_ << ",\"vehicle\":\"" << json_escape(event.vehicle_name) << '"';
             if (!event.turnaround_id.empty()) output_ << ",\"turnaround_id\":\"" << json_escape(event.turnaround_id) << '"';
+            if (!event.agent_id.empty()) output_ << ",\"agent_id\":\"" << json_escape(event.agent_id) << '"';
+            if (!event.agent_event_id.empty()) output_ << ",\"event_id\":\"" << json_escape(event.agent_event_id) << '"';
+            if (!event.agent_type.empty()) output_ << ",\"agent_type\":\"" << json_escape(event.agent_type) << '"';
+            if (!event.policy_id.empty()) output_ << ",\"policy_id\":\"" << json_escape(event.policy_id) << '"';
+            if (!event.objective_id.empty()) output_ << ",\"objective_id\":\"" << json_escape(event.objective_id) << '"';
+            if (!event.decision.empty()) output_ << ",\"decision\":\"" << json_escape(event.decision) << '"';
+            if (!event.reason_code.empty()) output_ << ",\"reason_code\":\"" << json_escape(event.reason_code) << '"';
+            if (!event.observation_summary.empty()) output_ << ",\"observation_summary\":\"" << json_escape(event.observation_summary) << '"';
+            if (!event.decision_result.empty()) output_ << ",\"result\":\"" << json_escape(event.decision_result) << '"';
             if (event.task) output_ << ",\"task_id\":" << event.task->value();
             if (event.edge) output_ << ",\"edge_id\":" << event.edge->value();
             if (event.service) output_ << ",\"service\":\"" << airside::to_string(*event.service) << '"';
@@ -403,6 +421,14 @@ public:
                 for (std::size_t index = 0; index < event.route->nodes.size(); ++index) {
                     if (index != 0) output_ << ',';
                     output_ << event.route->nodes[index].value();
+                }
+                output_ << ']';
+            }
+            if (event.previous_route) {
+                output_ << ",\"previous_route_nodes\":[";
+                for (std::size_t index = 0; index < event.previous_route->nodes.size(); ++index) {
+                    if (index != 0) output_ << ',';
+                    output_ << event.previous_route->nodes[index].value();
                 }
                 output_ << ']';
             }

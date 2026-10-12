@@ -118,6 +118,12 @@ struct SimulationMetrics {
     double arrival_taxi_distance_m{0.0};
     std::int64_t departure_taxi_seconds{0};
     double departure_taxi_distance_m{0.0};
+    std::size_t agent_decisions{0};
+    std::size_t agent_route_selections{0};
+    std::size_t agent_replans{0};
+    std::size_t agent_objectives_completed{0};
+    std::size_t agent_objectives_failed{0};
+    std::size_t agent_operator_interventions{0};
 
     constexpr auto operator<=>(const SimulationMetrics&) const = default;
 };

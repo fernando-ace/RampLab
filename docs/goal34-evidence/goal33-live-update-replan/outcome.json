@@ -1,0 +1,55 @@
+{
+  "dataset_id": "ops_bb2d85a392da7bca2738",
+  "dataset_source": "kauo-tomorrow-schedule.csv",
+  "evidence_kind": "GOAL33_LIVE_UPDATE_TO_GOAL34_AGENT_RESPONSE",
+  "interpretation": "Controlled local demonstration using a synthetic KAUO schedule fixture and approximate geometry. The Goal 33 live closure observation is mapped into simulator operator control; the simulator records an adaptive aircraft route replan. This is not evidence of real airport activity.",
+  "policy": "ADAPTIVE",
+  "route_mapping": {
+    "simulator_edge_id": 4,
+    "simulator_edge_name": "twy_a_mid_fbo_primary",
+    "source_route_id": "KAUO-TWY-A-RAMP-CONNECTOR"
+  },
+  "scenario_classification": "SYNTHETIC_KAUO_DEMONSTRATION",
+  "schema_version": "1.0",
+  "simulator_run": {
+    "agent_id": "aircraft-1",
+    "agent_objectives_completed": 4,
+    "agent_objectives_failed": 0,
+    "agent_replan_time_seconds": 1532,
+    "aircraft_aircraft_collisions": 0,
+    "aircraft_ground_collisions": 0,
+    "decision": "PLAN_ROUTE",
+    "policy_id": "adaptive-routing-v1",
+    "previous_route_nodes": [
+      6,
+      4,
+      3,
+      2
+    ],
+    "reason_code": "OPERATOR_INTERVENTION",
+    "route_nodes": [
+      6,
+      7,
+      5,
+      4,
+      3,
+      2
+    ],
+    "seed": 42,
+    "simulated_duration_seconds": 2212,
+    "source_intervention_time_seconds": 1504,
+    "surface_safe_failures": 0
+  },
+  "source_event": {
+    "entity_id": "KAUO-TWY-A-RAMP-CONNECTOR",
+    "event_id": "fcd7e0f1-01d6-4dc9-a9df-59c5008ced02",
+    "event_type": "closure_started",
+    "payload": {
+      "disruption_id": "live-fcd7e0f1-01d6-4dc9-a9df-59c5008ced02",
+      "route_id": "KAUO-TWY-A-RAMP-CONNECTOR",
+      "simulation_action": "apply"
+    },
+    "source": "Goal 33 live operations feed",
+    "timestamp": "2026-10-12T14:25:00Z"
+  }
+}

@@ -45,6 +45,7 @@ class LiveSession:
         self.worker: threading.Thread | None = None
         self.running = False
         self.speed = "max"
+        self.aircraft_routing_policy = "SCRIPTED"
         self.snapshot: dict[str, Any] = {"session_state": "idle", "simulated_time_seconds": 0,
                                          "interventions": [], "aircraft": [], "vehicles": [], "roads": [],
                                          "tasks": [], "events": []}
@@ -56,6 +57,7 @@ class LiveSession:
         with self.lock:
             return {**self.snapshot, "session_state": self.snapshot.get("session_state", "idle"),
                     "speed": self.speed, "interventions": list(self.interventions),
+                    "aircraft_routing_policy": self.aircraft_routing_policy,
                     "output_directory": str(self.output_dir) if self.output_dir else None,
                     "live_state_file": str(self.root / "live-state.json")}
 
@@ -70,6 +72,7 @@ class LiveSession:
         if "error" in payload:
             raise LiveSessionError(payload["error"])
         payload["session_state"] = self.snapshot.get("session_state", "paused")
+        payload["aircraft_routing_policy"] = self.aircraft_routing_policy
         self.events.extend(payload.get("events", []))
         payload["events"] = list(self.events)
         payload["interventions"] = list(self.interventions)
@@ -114,14 +117,19 @@ class LiveSession:
         self.snapshot = self._read()
         self.snapshot["session_state"] = "paused"
 
-    def start(self) -> dict[str, Any]:
+    def start(self, aircraft_routing_policy: str = "SCRIPTED") -> dict[str, Any]:
+        if aircraft_routing_policy not in {"SCRIPTED", "ADAPTIVE"}:
+            raise LiveSessionError("Aircraft routing policy must be SCRIPTED or ADAPTIVE.")
         with self.lock:
+            self.aircraft_routing_policy = aircraft_routing_policy
             self._stop_process()
             self.root.mkdir(parents=True, exist_ok=True)
             generated = self.root / "generated" / "control"
             self.generation = generate(PACKAGE, MAPPING, generated, seed=42, without_disruptions=True)
             self.scenario_file = generated / "scenario.json"
             document = json.loads(self.scenario_file.read_text(encoding="utf-8"))
+            document.setdefault("surface_operations", {})["aircraft_routing_policy"] = aircraft_routing_policy
+            self.scenario_file.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             self.edge_names = {index + 1: str(edge["id"]) for index, edge in enumerate(document["airport"]["edges"])}
             self.vehicle_names = {index + 1: str(vehicle["name"]) for index, vehicle in enumerate(document["fleet"]["vehicles"])}
             self.output_dir = self.root / "run-001"
@@ -226,6 +234,34 @@ class LiveSession:
             self.snapshot["session_state"] = "running" if was_running else "paused"
             self._write_live_state()
             return self.state()
+
+    def apply_operational_update(self, event: dict[str, Any]) -> dict[str, Any]:
+        """Apply a Goal 33 route-closure observation to the live simulator through its control API."""
+        if not isinstance(event, dict):
+            raise LiveSessionError("Operational update must be an event object.")
+        event_id = event.get("event_id")
+        with self.lock:
+            prior = next((item for item in self.interventions if item.get("source_event_id") == event_id), None)
+            if prior:
+                return {**self.state(), "applied_operational_update": prior, "duplicate": True}
+            event_type = event.get("event_type")
+            if event_type not in {"closure_started", "closure_ended"}:
+                raise LiveSessionError("Only route-closure operational updates can alter the current aircraft plan.")
+            route_id = event.get("payload", {}).get("route_id") or event.get("entity_id")
+            mapping = json.loads(MAPPING.read_text(encoding="utf-8"))
+            edge_name = mapping.get("route_ids", {}).get(route_id)
+            target = next((ident for ident, name in self.edge_names.items() if name == edge_name), None)
+            if target is None:
+                raise LiveSessionError(f"Operational route {route_id!r} is not mapped to this live simulation.")
+            state = self.intervene("surface_closure", target, available=event_type == "closure_ended")
+            entry = self.interventions[-1]
+            entry.update({"source_event_id": event_id, "source_event_type": event_type,
+                          "source": event.get("source", "Goal 33 operational update"),
+                          "source_timestamp": event.get("timestamp"), "source_route_id": route_id})
+            (self.output_dir / "interventions.json").write_text(
+                json.dumps(self.interventions, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            self._write_live_state()
+            return {**state, "applied_operational_update": entry, "duplicate": False}
 
     def advance(self) -> dict[str, Any]:
         with self.lock:

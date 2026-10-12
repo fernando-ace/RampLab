@@ -310,6 +310,64 @@ TEST(SurfaceTrafficTest, ClosureInvalidatesRouteAndReroutesWithoutBlockingDepart
     EXPECT_GE((disrupted_ax202->departure_delay - control_ax202->departure_delay).count(), 30);
 }
 
+TEST(SurfaceTrafficTest, AdaptiveAgentsReplanDeterministicallyAndCompleteAfterScheduledClosure) {
+    auto first_scenario = airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml"));
+    auto second_scenario = airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml"));
+    first_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Adaptive;
+    second_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Adaptive;
+    airside::Simulation first{std::move(first_scenario), 42};
+    airside::Simulation second{std::move(second_scenario), 42};
+    const auto first_result = first.run();
+    const auto second_result = second.run();
+
+    ASSERT_FALSE(first_result.agent_decisions.empty());
+    EXPECT_EQ(first_result.agent_decisions, second_result.agent_decisions);
+    EXPECT_EQ(first_result.metrics.agent_decisions, first_result.agent_decisions.size());
+    EXPECT_GE(first_result.metrics.agent_replans, 1U);
+    EXPECT_EQ(first_result.metrics.agent_objectives_failed, 0U);
+    EXPECT_EQ(first_result.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(first_result.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(first_result.metrics.surface_aircraft_ground_collisions, 0U);
+    EXPECT_TRUE(std::ranges::any_of(first_result.agent_decisions, [](const auto& decision) {
+        return decision.reason == airside::agents::ReasonCode::RouteClosed &&
+            decision.action == airside::agents::ActionType::PlanRoute && decision.selected_route.has_value();
+    }));
+    EXPECT_EQ(first_result.metrics.surface_departed_aircraft, 3U);
+}
+
+TEST(SurfaceTrafficTest, OperatorClosureIsObservedAndRecordedByAffectedAgent) {
+    auto scenario = airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml"));
+    scenario.road_events.clear();
+    scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Adaptive;
+    airside::Simulation simulation{std::move(scenario), 42};
+    bool intervention_scheduled = false;
+    std::size_t steps = 0;
+    while (!simulation.finished() && steps < 10000U) {
+        if (!intervention_scheduled) {
+            const auto decision = std::ranges::find_if(simulation.event_history(), [](const auto& event) {
+                return event.type == airside::SimulationEventType::AgentDecision &&
+                    event.decision == "PLAN_ROUTE" && event.route && !event.route->edges.empty();
+            });
+            if (decision != simulation.event_history().end()) {
+                simulation.schedule_surface_availability(decision->route->edges.front(), false);
+                intervention_scheduled = true;
+            }
+        }
+        (void)simulation.advance();
+        ++steps;
+    }
+    ASSERT_TRUE(intervention_scheduled);
+    ASSERT_TRUE(simulation.finished());
+    const auto result = simulation.result();
+    EXPECT_EQ(result.metrics.surface_departed_aircraft, 3U);
+    EXPECT_EQ(result.metrics.surface_safe_failures, 0U);
+    EXPECT_TRUE(std::ranges::any_of(result.agent_decisions, [](const auto& event) {
+        return event.operator_triggered && event.reason == airside::agents::ReasonCode::OperatorIntervention &&
+            event.action == airside::agents::ActionType::PlanRoute;
+    }));
+    EXPECT_EQ(result.metrics.agent_operator_interventions, 1U);
+}
+
 TEST(SurfaceTrafficTest, RepeatedSeedProducesIdenticalSurfaceEventsAndMetrics) {
     auto first_scenario = airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml"));
     auto second_scenario = airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml"));

@@ -75,6 +75,37 @@ class ScenarioStudioTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("ROUTE_UNSUPPORTED", {item["code"] for item in result["findings"]})
 
+    def test_aircraft_agent_policy_is_validated_and_reaches_native_scenario(self):
+        scenario = studio.new_scenario("kauo")
+        scenario["agent_policy"]["aircraft_routing"] = "ADAPTIVE"
+        self.assertTrue(studio.validate_scenario(scenario)["valid"])
+        with tempfile.TemporaryDirectory(prefix="ramplab-agent-policy-") as temp:
+            root = Path(temp)
+            package_file = root / "canonical.json"
+            package_file.write_text(json.dumps(studio.scenario_package(scenario)), encoding="utf-8")
+            output = root / "generated"
+            generate(package_file, studio._mapping("kauo"), output, seed=42)
+            native = json.loads((output / "scenario.json").read_text(encoding="utf-8"))
+            self.assertEqual(native["surface_operations"]["aircraft_routing_policy"], "ADAPTIVE")
+        scenario["agent_policy"]["aircraft_routing"] = "UNSUPPORTED"
+        self.assertFalse(studio.validate_scenario(scenario)["valid"])
+
+    def test_agent_trace_reads_real_agent_decision_events(self):
+        with tempfile.TemporaryDirectory(prefix="ramplab-agent-trace-") as temp:
+            root = Path(temp); (root / "result").mkdir()
+            event = {"sequence": 4, "time_seconds": 90, "type": "AgentDecision", "agent_id": "aircraft-7",
+                     "agent_type": "AIRCRAFT_SURFACE", "policy_id": "adaptive-routing-v1",
+                     "objective_id": "aircraft-7-arrival-stand", "decision": "PLAN_ROUTE",
+                     "reason_code": "ROUTE_CLOSED", "route_nodes": [1, 3, 4]}
+            (root / "result" / "events.jsonl").write_text(json.dumps(event) + "\n", encoding="utf-8")
+            run = {"id": "a" * 32, "status": "complete", "folder": str(root), "scenario_name": "test",
+                   "scenario": {"agent_policy": {"aircraft_routing": "ADAPTIVE"}}}
+            with patch.object(studio.RunManagerSingleton, "get", return_value=run):
+                trace = studio.agent_trace("a" * 32)
+            self.assertEqual(trace["policy"], "ADAPTIVE")
+            self.assertEqual(trace["agents"][0]["replans"], 1)
+            self.assertEqual(trace["agents"][0]["route_nodes"], [1, 3, 4])
+
     def test_vehicle_outage_needs_a_mapped_vehicle_and_supported_duration(self):
         scenario = studio.new_scenario("kauo")
         scenario["disruptions"] = [{"disruption_id": "OUTAGE", "type": "equipment_outage",

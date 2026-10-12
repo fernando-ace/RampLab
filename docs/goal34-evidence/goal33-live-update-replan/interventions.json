@@ -1,0 +1,16 @@
+[
+  {
+    "order": 1,
+    "result": "surface_closure target=edge:4 available=false result=accepted",
+    "sequence": 102,
+    "simulated_time_seconds": 1504,
+    "source": "Goal 33 live operations feed",
+    "source_event_id": "fcd7e0f1-01d6-4dc9-a9df-59c5008ced02",
+    "source_event_type": "closure_started",
+    "source_route_id": "KAUO-TWY-A-RAMP-CONNECTOR",
+    "source_timestamp": "2026-10-12T14:25:00Z",
+    "target": 4,
+    "target_name": "twy_a_mid_fbo_primary",
+    "type": "surface_closure"
+  }
+]

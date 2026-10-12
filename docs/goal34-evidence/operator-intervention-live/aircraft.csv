@@ -1,0 +1,3 @@
+aircraft_id,flight_number,turnaround_id,operation_type,surface_state,state,taxi_time_seconds,taxi_distance_m,total_operational_delay_seconds,departure_delay_seconds,turnaround_duration_seconds,runway_wait_seconds,gate_arrival_time_seconds,departure_time_seconds,task_count,completed_tasks,service_waiting_seconds
+1,KAUO-SIM-GA-01,KAUO-SIM-GA-01,arrival_turnaround,Departed,Departed,568,2819.917,1354,1354,1200,0,179,2074,4,4,602.0
+2,KAUO-SIM-GA-02,KAUO-SIM-GA-02,arrival_turnaround,Departed,Departed,592,2945.281,1252,1252,1248,0,431,2212,4,4,638.0

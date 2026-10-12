@@ -411,7 +411,8 @@ def generate(package_path: Path, mapping_path: Path, output: Path, *, seed: int 
         "gates": geometry["gates"],
         "fleet": {"vehicles": equipment_rows},
         "aircraft": simulator_aircraft,
-        "surface_operations": geometry["surface_operations"],
+        "surface_operations": {**geometry["surface_operations"],
+            "aircraft_routing_policy": data.get("agent_policy", {}).get("aircraft_routing", "SCRIPTED")},
         "service_durations_seconds": service_durations}
     if road_events:
         scenario["road_events"] = sorted(road_events, key=lambda x: (x["time_seconds"], x["edge"], x["enabled"]))

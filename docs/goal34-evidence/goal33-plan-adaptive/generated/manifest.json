@@ -1,0 +1,132 @@
+{
+  "airport": {
+    "airport_id": "KAUO",
+    "field_elevation_ft": 776.8,
+    "field_elevation_m": 236.785,
+    "iata": "AUO",
+    "icao": "KAUO",
+    "local_timezone": "America/Chicago",
+    "name": "Auburn University Regional Airport",
+    "reference_latitude": 32.61511111,
+    "reference_longitude": -85.434,
+    "runways": [
+      {
+        "classification": "FAA published",
+        "identifier": "18/36",
+        "length_ft": 5264,
+        "surface": "asphalt, grooved",
+        "width_ft": 100
+      },
+      {
+        "classification": "FAA published",
+        "identifier": "11/29",
+        "length_ft": 4000,
+        "surface": "asphalt",
+        "width_ft": 75
+      }
+    ],
+    "timezone": "UTC"
+  },
+  "entities": {
+    "aircraft": 3,
+    "flights": 6,
+    "gates": 1,
+    "ground_vehicles": 0,
+    "turnaround_tasks": 3
+  },
+  "generated_disruptions": {
+    "delayed_services": 0,
+    "equipment_outages": 0,
+    "flight_delays": 0,
+    "route_closures": 0
+  },
+  "generated_scenario_id": "airport-d681561dc0029e13",
+  "generator_schema_version": "1.0.0",
+  "geometry_configuration_sha256": "9195da9874beff2edffa6794ae650b308371f04feda2f1fa2b951a5fba3148dc",
+  "identity_map_file": "identity-map.json",
+  "mapping_configuration_sha256": "8a1dc83435b625737873f96b60c2ddf452432513643de6cc136e3b23f3eb644d",
+  "output_file_sha256": {
+    "identity-map.json": "3ac7bd2c357b9453b090f1820d86b75f171d6424ee5394ae74a4ed93cd54ee14",
+    "scenario.json": "9979fcb9cbd60537ae40a12634e56fa4074b6b93868a7b3de6ba556c665fd125",
+    "support-matrix.json": "499de98624d814999812663821f00dfe32203efa716a9308ff17aa9cb1487ba1"
+  },
+  "scenario_epoch_utc": "2026-10-12T12:00:00Z",
+  "scenario_name": "airport_kauo",
+  "seed": 42,
+  "source_canonical_schema_version": "1.0",
+  "source_canonical_sha256": "e58099b035539084f96affbbe3fa581d2d94566dd449a36feac8ab3d69bc29cc",
+  "source_dataset_id": "ops_bb2d85a392da7bca2738",
+  "source_provenance": [
+    {
+      "accepted_record_count": 1,
+      "filename": "aircraft.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "df5ccafb8bf2be44f60ed32aacfc1410d333f2d90722f45d880bb610c31d7a92",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 1,
+      "filename": "disruptions.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "4cc5588d7afd53a7b2f1f087d7d85c98b0da854562a01bc51bc2e9a9583dc619",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 0,
+      "filename": "equipment.json",
+      "record_count": 0,
+      "rejected_record_count": 0,
+      "sha256": "a5338d955b09046ec0b16f3a9625b7955c763aae07dc722e474e6078745f932f",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 2,
+      "filename": "flights.json",
+      "record_count": 2,
+      "rejected_record_count": 0,
+      "sha256": "991684bad8717448a99e1c25bd31c32e505c59b6e27d2ef7cf37c7fb5604a07c",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 1,
+      "filename": "gates.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "a3481a07fb2662689dfd26fd4bbc9dfbb5955d740127f53ea08ecd2cbb787fa0",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 1,
+      "filename": "turnaround.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "d702a8deb9feecad8e9a9ba0d86eb9569707d9f5b7e0a2819905f6b30998f63a",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 3,
+      "data_classification": "SCHEDULED",
+      "filename": "kauo-tomorrow-schedule.csv",
+      "mapping_profile_sha256": "1757a9bfa611145b27a307509e91b1f1717556f8f583cfb29493df4fb941dabf",
+      "record_count": 3,
+      "rejected_record_count": 0,
+      "sha256": "6552326f62a9c95c3dad04d43d67552917be6d0644fc2707390d758014601e54",
+      "type": "csv"
+    }
+  ],
+  "unsupported_metadata": {
+    "aircraft": [
+      "N201AA",
+      "N202AA",
+      "N203AA"
+    ],
+    "equipment_without_simulator_vehicle": []
+  },
+  "warnings": [
+    "AIRCRAFT_METADATA_ONLY: N201AA.registration preserved in manifest; movement behavior is unchanged",
+    "AIRCRAFT_METADATA_ONLY: N202AA.registration preserved in manifest; movement behavior is unchanged",
+    "AIRCRAFT_METADATA_ONLY: N203AA.registration preserved in manifest; movement behavior is unchanged"
+  ]
+}

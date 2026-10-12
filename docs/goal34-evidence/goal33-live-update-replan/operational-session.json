@@ -1,0 +1,16 @@
+{
+  "closed_at": "2026-10-12T06:11:51Z",
+  "dataset_id": "ops_bb2d85a392da7bca2738",
+  "event_count": 1,
+  "event_file": "events.jsonl",
+  "last_received_at": "2026-10-12T06:09:44Z",
+  "late_event_count": 0,
+  "provenance": {
+    "classification": "LIVE_OBSERVATION",
+    "source": "local update interface"
+  },
+  "schema_version": "1.0",
+  "session_id": "live_bb2d85a392da7bca2738_325dad7a",
+  "started_at": "2026-10-12T06:04:56Z",
+  "status": "CLOSED"
+}

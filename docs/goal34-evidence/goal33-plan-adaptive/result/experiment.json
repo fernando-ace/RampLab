@@ -1,0 +1,2593 @@
+{
+  "events": [
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "detail": "arrival",
+      "sequence": 0,
+      "time_seconds": 0,
+      "turnaround_id": "N201AA",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 1,
+      "time_seconds": 0,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 2,
+      "time_seconds": 1,
+      "turnaround_id": "N201AA",
+      "type": "AircraftLanded"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 3,
+      "time_seconds": 1,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 4,
+      "time_seconds": 1,
+      "turnaround_id": "N201AA",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 5,
+      "time_seconds": 1,
+      "turnaround_id": "N201AA",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "detail": "arrival rollout complete",
+      "sequence": 6,
+      "time_seconds": 91,
+      "turnaround_id": "N201AA",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "detail": "runway exit 4",
+      "sequence": 7,
+      "time_seconds": 91,
+      "turnaround_id": "N201AA",
+      "type": "ArrivalRunwayExit"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "detail": "arrival gate reserved",
+      "sequence": 8,
+      "time_seconds": 91,
+      "turnaround_id": "N201AA",
+      "type": "GateAssigned"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-0",
+      "objective_id": "aircraft-1-arrival-stand",
+      "observation_summary": "node=4 destination=8 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        4,
+        6,
+        8
+      ],
+      "sequence": 9,
+      "time_seconds": 91,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 10,
+      "time_seconds": 91,
+      "turnaround_id": "N201AA",
+      "type": "ArrivalTaxiInStarted"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "route_nodes": [
+        4,
+        6,
+        8
+      ],
+      "sequence": 11,
+      "time_seconds": 91,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 4,
+      "sequence": 12,
+      "time_seconds": 91,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 4,
+      "sequence": 13,
+      "time_seconds": 151,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 14,
+      "time_seconds": 151,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 15,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-1",
+      "objective_id": "aircraft-1-arrival-stand",
+      "observation_summary": "node=8 destination=8 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 16,
+      "time_seconds": 179,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "detail": "gate occupied",
+      "sequence": 17,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "ArrivalAtGate"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 18,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "AircraftArrived"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 19,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 20,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "TurnaroundStarted"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 21,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "TurnaroundCreated"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "estimated_ready_time_seconds": 479,
+      "schedule_slack_seconds": 2221,
+      "sequence": 22,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 23,
+      "service": "PushbackPreparation",
+      "task_id": 1,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 24,
+      "service": "PushbackPreparation",
+      "task_id": 1,
+      "time_seconds": 179,
+      "turnaround_id": "N201AA",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 25,
+      "service": "PushbackPreparation",
+      "task_id": 1,
+      "time_seconds": 479,
+      "turnaround_id": "N201AA",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 26,
+      "time_seconds": 479,
+      "turnaround_id": "N201AA",
+      "type": "TurnaroundReadyForDeparture"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 27,
+      "time_seconds": 479,
+      "turnaround_id": "N201AA",
+      "type": "AircraftReadyForPushback"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "PLAN_ROUTE",
+      "detail": "The objective changed; selecting a safe route to its new destination. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-2",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=8 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "DESTINATION_CHANGED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 28,
+      "time_seconds": 479,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 29,
+      "time_seconds": 479,
+      "turnaround_id": "N201AA",
+      "type": "SurfacePushbackRequested"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 30,
+      "time_seconds": 480,
+      "turnaround_id": "N201AA",
+      "type": "SurfacePushbackStarted"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 31,
+      "time_seconds": 480,
+      "turnaround_id": "N201AA",
+      "type": "PushbackTaxiOutStarted"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 32,
+      "time_seconds": 480,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 33,
+      "time_seconds": 500,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 34,
+      "time_seconds": 500,
+      "turnaround_id": "N201AA",
+      "type": "SurfacePushbackCompleted"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-3",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=8 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 35,
+      "time_seconds": 500,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 36,
+      "time_seconds": 500,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 37,
+      "time_seconds": 500,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 38,
+      "time_seconds": 528,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 4,
+      "sequence": 39,
+      "time_seconds": 528,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 4,
+      "sequence": 40,
+      "time_seconds": 588,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 2,
+      "sequence": 41,
+      "time_seconds": 588,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 2,
+      "sequence": 42,
+      "time_seconds": 688,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 1,
+      "sequence": 43,
+      "time_seconds": 688,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "edge_id": 1,
+      "sequence": 44,
+      "time_seconds": 776,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-4",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=2 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 45,
+      "time_seconds": 776,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "detail": "departure",
+      "sequence": 46,
+      "time_seconds": 776,
+      "turnaround_id": "N201AA",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 47,
+      "time_seconds": 776,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 48,
+      "time_seconds": 2700,
+      "turnaround_id": "N201AA",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 49,
+      "time_seconds": 2700,
+      "turnaround_id": "N201AA",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 50,
+      "time_seconds": 2700,
+      "turnaround_id": "N201AA",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "detail": "departure interval complete",
+      "sequence": 51,
+      "time_seconds": 2790,
+      "turnaround_id": "N201AA",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 52,
+      "time_seconds": 2790,
+      "turnaround_id": "N201AA",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "N201AA",
+      "aircraft_id": 1,
+      "sequence": 53,
+      "time_seconds": 2790,
+      "turnaround_id": "N201AA",
+      "type": "AircraftDeparted"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "detail": "arrival",
+      "sequence": 54,
+      "time_seconds": 3600,
+      "turnaround_id": "N202AA",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 55,
+      "time_seconds": 3600,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 56,
+      "time_seconds": 3601,
+      "turnaround_id": "N202AA",
+      "type": "AircraftLanded"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 57,
+      "time_seconds": 3601,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 58,
+      "time_seconds": 3601,
+      "turnaround_id": "N202AA",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 59,
+      "time_seconds": 3601,
+      "turnaround_id": "N202AA",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "detail": "arrival rollout complete",
+      "sequence": 60,
+      "time_seconds": 3691,
+      "turnaround_id": "N202AA",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "detail": "runway exit 4",
+      "sequence": 61,
+      "time_seconds": 3691,
+      "turnaround_id": "N202AA",
+      "type": "ArrivalRunwayExit"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "detail": "arrival gate reserved",
+      "sequence": 62,
+      "time_seconds": 3691,
+      "turnaround_id": "N202AA",
+      "type": "GateAssigned"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-5",
+      "objective_id": "aircraft-2-arrival-stand",
+      "observation_summary": "node=4 destination=8 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        4,
+        6,
+        8
+      ],
+      "sequence": 63,
+      "time_seconds": 3691,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 64,
+      "time_seconds": 3691,
+      "turnaround_id": "N202AA",
+      "type": "ArrivalTaxiInStarted"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "route_nodes": [
+        4,
+        6,
+        8
+      ],
+      "sequence": 65,
+      "time_seconds": 3691,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 4,
+      "sequence": 66,
+      "time_seconds": 3691,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 4,
+      "sequence": 67,
+      "time_seconds": 3751,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 7,
+      "sequence": 68,
+      "time_seconds": 3751,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 7,
+      "sequence": 69,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-6",
+      "objective_id": "aircraft-2-arrival-stand",
+      "observation_summary": "node=8 destination=8 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 70,
+      "time_seconds": 3779,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "detail": "gate occupied",
+      "sequence": 71,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "ArrivalAtGate"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 72,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "AircraftArrived"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 73,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 74,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "TurnaroundStarted"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 75,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "TurnaroundCreated"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "estimated_ready_time_seconds": 4079,
+      "schedule_slack_seconds": 2221,
+      "sequence": 76,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 77,
+      "service": "PushbackPreparation",
+      "task_id": 2,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 78,
+      "service": "PushbackPreparation",
+      "task_id": 2,
+      "time_seconds": 3779,
+      "turnaround_id": "N202AA",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 79,
+      "service": "PushbackPreparation",
+      "task_id": 2,
+      "time_seconds": 4079,
+      "turnaround_id": "N202AA",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 80,
+      "time_seconds": 4079,
+      "turnaround_id": "N202AA",
+      "type": "TurnaroundReadyForDeparture"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 81,
+      "time_seconds": 4079,
+      "turnaround_id": "N202AA",
+      "type": "AircraftReadyForPushback"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "PLAN_ROUTE",
+      "detail": "The objective changed; selecting a safe route to its new destination. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-7",
+      "objective_id": "aircraft-2-departure",
+      "observation_summary": "node=8 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "DESTINATION_CHANGED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 82,
+      "time_seconds": 4079,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 83,
+      "time_seconds": 4079,
+      "turnaround_id": "N202AA",
+      "type": "SurfacePushbackRequested"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 84,
+      "time_seconds": 4080,
+      "turnaround_id": "N202AA",
+      "type": "SurfacePushbackStarted"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 85,
+      "time_seconds": 4080,
+      "turnaround_id": "N202AA",
+      "type": "PushbackTaxiOutStarted"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 7,
+      "sequence": 86,
+      "time_seconds": 4080,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 7,
+      "sequence": 87,
+      "time_seconds": 4100,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 88,
+      "time_seconds": 4100,
+      "turnaround_id": "N202AA",
+      "type": "SurfacePushbackCompleted"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-8",
+      "objective_id": "aircraft-2-departure",
+      "observation_summary": "node=8 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 89,
+      "time_seconds": 4100,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 90,
+      "time_seconds": 4100,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 7,
+      "sequence": 91,
+      "time_seconds": 4100,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 7,
+      "sequence": 92,
+      "time_seconds": 4128,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 4,
+      "sequence": 93,
+      "time_seconds": 4128,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 4,
+      "sequence": 94,
+      "time_seconds": 4188,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 2,
+      "sequence": 95,
+      "time_seconds": 4188,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 2,
+      "sequence": 96,
+      "time_seconds": 4288,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 1,
+      "sequence": 97,
+      "time_seconds": 4288,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "edge_id": 1,
+      "sequence": 98,
+      "time_seconds": 4376,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-9",
+      "objective_id": "aircraft-2-departure",
+      "observation_summary": "node=2 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 99,
+      "time_seconds": 4376,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "detail": "departure",
+      "sequence": 100,
+      "time_seconds": 4376,
+      "turnaround_id": "N202AA",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 101,
+      "time_seconds": 4376,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 102,
+      "time_seconds": 6300,
+      "turnaround_id": "N202AA",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 103,
+      "time_seconds": 6300,
+      "turnaround_id": "N202AA",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 104,
+      "time_seconds": 6300,
+      "turnaround_id": "N202AA",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "detail": "departure interval complete",
+      "sequence": 105,
+      "time_seconds": 6390,
+      "turnaround_id": "N202AA",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 106,
+      "time_seconds": 6390,
+      "turnaround_id": "N202AA",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "N202AA",
+      "aircraft_id": 2,
+      "sequence": 107,
+      "time_seconds": 6390,
+      "turnaround_id": "N202AA",
+      "type": "AircraftDeparted"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "detail": "arrival",
+      "sequence": 108,
+      "time_seconds": 7200,
+      "turnaround_id": "N203AA",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 109,
+      "time_seconds": 7200,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 110,
+      "time_seconds": 7201,
+      "turnaround_id": "N203AA",
+      "type": "AircraftLanded"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 111,
+      "time_seconds": 7201,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 112,
+      "time_seconds": 7201,
+      "turnaround_id": "N203AA",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 113,
+      "time_seconds": 7201,
+      "turnaround_id": "N203AA",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "detail": "arrival rollout complete",
+      "sequence": 114,
+      "time_seconds": 7291,
+      "turnaround_id": "N203AA",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "detail": "runway exit 4",
+      "sequence": 115,
+      "time_seconds": 7291,
+      "turnaround_id": "N203AA",
+      "type": "ArrivalRunwayExit"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "detail": "arrival gate reserved",
+      "sequence": 116,
+      "time_seconds": 7291,
+      "turnaround_id": "N203AA",
+      "type": "GateAssigned"
+    },
+    {
+      "agent_id": "aircraft-3",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 3,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-10",
+      "objective_id": "aircraft-3-arrival-stand",
+      "observation_summary": "node=4 destination=8 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        4,
+        6,
+        8
+      ],
+      "sequence": 117,
+      "time_seconds": 7291,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 118,
+      "time_seconds": 7291,
+      "turnaround_id": "N203AA",
+      "type": "ArrivalTaxiInStarted"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "route_nodes": [
+        4,
+        6,
+        8
+      ],
+      "sequence": 119,
+      "time_seconds": 7291,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 4,
+      "sequence": 120,
+      "time_seconds": 7291,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 4,
+      "sequence": 121,
+      "time_seconds": 7351,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 7,
+      "sequence": 122,
+      "time_seconds": 7351,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 7,
+      "sequence": 123,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-3",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 3,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-11",
+      "objective_id": "aircraft-3-arrival-stand",
+      "observation_summary": "node=8 destination=8 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 124,
+      "time_seconds": 7379,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "detail": "gate occupied",
+      "sequence": 125,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "ArrivalAtGate"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 126,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "AircraftArrived"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 127,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 128,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "TurnaroundStarted"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 129,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "TurnaroundCreated"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "estimated_ready_time_seconds": 7679,
+      "schedule_slack_seconds": 2221,
+      "sequence": 130,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 131,
+      "service": "PushbackPreparation",
+      "task_id": 3,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 132,
+      "service": "PushbackPreparation",
+      "task_id": 3,
+      "time_seconds": 7379,
+      "turnaround_id": "N203AA",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 133,
+      "service": "PushbackPreparation",
+      "task_id": 3,
+      "time_seconds": 7679,
+      "turnaround_id": "N203AA",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 134,
+      "time_seconds": 7679,
+      "turnaround_id": "N203AA",
+      "type": "TurnaroundReadyForDeparture"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 135,
+      "time_seconds": 7679,
+      "turnaround_id": "N203AA",
+      "type": "AircraftReadyForPushback"
+    },
+    {
+      "agent_id": "aircraft-3",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 3,
+      "decision": "PLAN_ROUTE",
+      "detail": "The objective changed; selecting a safe route to its new destination. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-12",
+      "objective_id": "aircraft-3-departure",
+      "observation_summary": "node=8 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "DESTINATION_CHANGED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 136,
+      "time_seconds": 7679,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 137,
+      "time_seconds": 7679,
+      "turnaround_id": "N203AA",
+      "type": "SurfacePushbackRequested"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 138,
+      "time_seconds": 7680,
+      "turnaround_id": "N203AA",
+      "type": "SurfacePushbackStarted"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 139,
+      "time_seconds": 7680,
+      "turnaround_id": "N203AA",
+      "type": "PushbackTaxiOutStarted"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 7,
+      "sequence": 140,
+      "time_seconds": 7680,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 7,
+      "sequence": 141,
+      "time_seconds": 7700,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 142,
+      "time_seconds": 7700,
+      "turnaround_id": "N203AA",
+      "type": "SurfacePushbackCompleted"
+    },
+    {
+      "agent_id": "aircraft-3",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 3,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-13",
+      "objective_id": "aircraft-3-departure",
+      "observation_summary": "node=8 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 143,
+      "time_seconds": 7700,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 144,
+      "time_seconds": 7700,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 7,
+      "sequence": 145,
+      "time_seconds": 7700,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 7,
+      "sequence": 146,
+      "time_seconds": 7728,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 4,
+      "sequence": 147,
+      "time_seconds": 7728,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 4,
+      "sequence": 148,
+      "time_seconds": 7788,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 2,
+      "sequence": 149,
+      "time_seconds": 7788,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 2,
+      "sequence": 150,
+      "time_seconds": 7888,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 1,
+      "sequence": 151,
+      "time_seconds": 7888,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "edge_id": 1,
+      "sequence": 152,
+      "time_seconds": 7976,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-3",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 3,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-14",
+      "objective_id": "aircraft-3-departure",
+      "observation_summary": "node=2 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 153,
+      "time_seconds": 7976,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "detail": "departure",
+      "sequence": 154,
+      "time_seconds": 7976,
+      "turnaround_id": "N203AA",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 155,
+      "time_seconds": 7976,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 156,
+      "time_seconds": 9900,
+      "turnaround_id": "N203AA",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 157,
+      "time_seconds": 9900,
+      "turnaround_id": "N203AA",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 158,
+      "time_seconds": 9900,
+      "turnaround_id": "N203AA",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "detail": "departure interval complete",
+      "sequence": 159,
+      "time_seconds": 9990,
+      "turnaround_id": "N203AA",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 160,
+      "time_seconds": 9990,
+      "turnaround_id": "N203AA",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "N203AA",
+      "aircraft_id": 3,
+      "sequence": 161,
+      "time_seconds": 9990,
+      "turnaround_id": "N203AA",
+      "type": "AircraftDeparted"
+    }
+  ],
+  "experiment_name": "airport_kauo",
+  "native_metrics": {
+    "agent_decisions": 15,
+    "agent_objectives_completed": 6,
+    "agent_objectives_failed": 0,
+    "agent_operator_interventions": 0,
+    "agent_replans": 3,
+    "agent_route_selections": 9,
+    "aircraft_operations": [
+      {
+        "actual_arrival_seconds": 1,
+        "aircraft_id": 1,
+        "arrival_gate_time_seconds": 179,
+        "arrival_runway_clearance_time_seconds": 1,
+        "arrival_runway_release_time_seconds": 91,
+        "arrival_runway_request_time_seconds": 0,
+        "arrival_runway_wait_seconds": 1,
+        "arrival_taxi_completed_at_seconds": 179,
+        "arrival_taxi_distance_m": 435.884,
+        "arrival_taxi_started_at_seconds": 91,
+        "arrival_to_departure_seconds": 2789,
+        "departure_runway_clearance_time_seconds": 2700,
+        "departure_runway_release_time_seconds": 2790,
+        "departure_runway_request_time_seconds": 776,
+        "departure_runway_wait_seconds": 1924,
+        "departure_taxi_completed_at_seconds": 776,
+        "departure_taxi_distance_m": 1370.279,
+        "departure_taxi_started_at_seconds": 500,
+        "departure_time_seconds": 2790,
+        "flight_number": "N201AA",
+        "gate_id": 1,
+        "gate_occupancy_seconds": 301,
+        "gate_released_at_seconds": 480,
+        "gate_wait_seconds": 0,
+        "operation_type": "arrival_turnaround",
+        "pushback_completed_at_seconds": 500,
+        "pushback_started_at_seconds": 480,
+        "runway_clearance_time_seconds": 2700,
+        "runway_release_time_seconds": 2790,
+        "runway_request_time_seconds": 776,
+        "runway_wait_seconds": 1924,
+        "surface_state": "Departed",
+        "taxi_distance_m": 1806.163
+      },
+      {
+        "actual_arrival_seconds": 3601,
+        "aircraft_id": 2,
+        "arrival_gate_time_seconds": 3779,
+        "arrival_runway_clearance_time_seconds": 3601,
+        "arrival_runway_release_time_seconds": 3691,
+        "arrival_runway_request_time_seconds": 3600,
+        "arrival_runway_wait_seconds": 1,
+        "arrival_taxi_completed_at_seconds": 3779,
+        "arrival_taxi_distance_m": 435.884,
+        "arrival_taxi_started_at_seconds": 3691,
+        "arrival_to_departure_seconds": 2789,
+        "departure_runway_clearance_time_seconds": 6300,
+        "departure_runway_release_time_seconds": 6390,
+        "departure_runway_request_time_seconds": 4376,
+        "departure_runway_wait_seconds": 1924,
+        "departure_taxi_completed_at_seconds": 4376,
+        "departure_taxi_distance_m": 1370.279,
+        "departure_taxi_started_at_seconds": 4100,
+        "departure_time_seconds": 6390,
+        "flight_number": "N202AA",
+        "gate_id": 1,
+        "gate_occupancy_seconds": 301,
+        "gate_released_at_seconds": 4080,
+        "gate_wait_seconds": 0,
+        "operation_type": "arrival_turnaround",
+        "pushback_completed_at_seconds": 4100,
+        "pushback_started_at_seconds": 4080,
+        "runway_clearance_time_seconds": 6300,
+        "runway_release_time_seconds": 6390,
+        "runway_request_time_seconds": 4376,
+        "runway_wait_seconds": 1924,
+        "surface_state": "Departed",
+        "taxi_distance_m": 1806.163
+      },
+      {
+        "actual_arrival_seconds": 7201,
+        "aircraft_id": 3,
+        "arrival_gate_time_seconds": 7379,
+        "arrival_runway_clearance_time_seconds": 7201,
+        "arrival_runway_release_time_seconds": 7291,
+        "arrival_runway_request_time_seconds": 7200,
+        "arrival_runway_wait_seconds": 1,
+        "arrival_taxi_completed_at_seconds": 7379,
+        "arrival_taxi_distance_m": 435.884,
+        "arrival_taxi_started_at_seconds": 7291,
+        "arrival_to_departure_seconds": 2789,
+        "departure_runway_clearance_time_seconds": 9900,
+        "departure_runway_release_time_seconds": 9990,
+        "departure_runway_request_time_seconds": 7976,
+        "departure_runway_wait_seconds": 1924,
+        "departure_taxi_completed_at_seconds": 7976,
+        "departure_taxi_distance_m": 1370.279,
+        "departure_taxi_started_at_seconds": 7700,
+        "departure_time_seconds": 9990,
+        "flight_number": "N203AA",
+        "gate_id": 1,
+        "gate_occupancy_seconds": 301,
+        "gate_released_at_seconds": 7680,
+        "gate_wait_seconds": 0,
+        "operation_type": "arrival_turnaround",
+        "pushback_completed_at_seconds": 7700,
+        "pushback_started_at_seconds": 7680,
+        "runway_clearance_time_seconds": 9900,
+        "runway_release_time_seconds": 9990,
+        "runway_request_time_seconds": 7976,
+        "runway_wait_seconds": 1924,
+        "surface_state": "Departed",
+        "taxi_distance_m": 1806.163
+      }
+    ],
+    "completed_turnarounds": 3,
+    "delayed_turnarounds": 3,
+    "disruption_triggered_replans": 0,
+    "failed_or_timed_out_turnarounds": 0,
+    "fleet": {
+      "collisions": 0,
+      "minimum_separation_m": 0.0,
+      "outstanding_reservations": 0,
+      "reassignments": 0,
+      "requests_completed": 0,
+      "requests_created": 0,
+      "requests_failed": 0,
+      "reservation_contentions": 0,
+      "reservation_requests": 0,
+      "unfinished_requests": 0
+    },
+    "seed": 42,
+    "simulated_duration_seconds": 9990,
+    "surface": {
+      "aircraft_aircraft_collisions": 0,
+      "aircraft_ground_collisions": 0,
+      "arrival_runway_wait_seconds": 3,
+      "arrival_taxi_distance_m": 1307.652,
+      "arrival_taxi_seconds": 264,
+      "arrival_to_departure_seconds": 8367,
+      "arrivals_completed": 3,
+      "average_runway_wait_seconds": 962.5,
+      "departed_aircraft": 3,
+      "departure_runway_wait_seconds": 5772,
+      "departure_taxi_distance_m": 4110.837,
+      "departure_taxi_seconds": 828,
+      "departure_throughput_per_hour": 1.081081,
+      "gate_assignments": 3,
+      "gate_occupancy_seconds": 903,
+      "gate_wait_seconds": 0,
+      "max_simultaneous_taxiing": 1,
+      "maximum_runway_queue_depth": 1,
+      "minimum_aircraft_ground_separation_m": 0.0,
+      "minimum_aircraft_separation_m": 0.0,
+      "reroutes": 0,
+      "runway_occupied_seconds": 540,
+      "runway_operations_completed": 6,
+      "runway_queue_seconds": 5775,
+      "runway_utilization": 0.054054,
+      "safe_failures": 0,
+      "taxi_distance_m": 5418.489,
+      "taxi_seconds": 1092,
+      "total_aircraft": 3,
+      "wait_events": 0,
+      "wait_seconds": 5778
+    },
+    "task_reassignments": 0,
+    "total_turnarounds": 3,
+    "turnarounds": [
+      {
+        "actual_arrival_seconds": 1,
+        "actual_departure_seconds": 2790,
+        "aircraft_id": 1,
+        "completed_required_tasks": 1,
+        "critical_path_task_ids": [
+          1
+        ],
+        "departure_delay_seconds": 90,
+        "estimated_ready_time_seconds": 479,
+        "failure_reason": "",
+        "gate_id": 1,
+        "gate_occupancy_seconds": 301,
+        "gate_wait_seconds": 0,
+        "predicted_late": false,
+        "pushback_completed_at_seconds": 500,
+        "pushback_started_at_seconds": 480,
+        "runway_queue_entered_at_seconds": 776,
+        "schedule_slack_seconds": 2221,
+        "scheduled_arrival_seconds": 0,
+        "scheduled_departure_seconds": 2700,
+        "state": "Departed",
+        "surface_reroutes": 0,
+        "surface_state": "Departed",
+        "surface_wait_seconds": 1926,
+        "tasks": [
+          {
+            "assigned_resource": "crew:PushbackPreparation:1",
+            "completed_at_seconds": 479,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 179,
+            "service_type": "PushbackPreparation",
+            "started_at_seconds": 179,
+            "state": "Completed",
+            "task_id": 1
+          }
+        ],
+        "taxi_completed_at_seconds": 776,
+        "taxi_distance_m": 1806.163,
+        "taxi_started_at_seconds": 91,
+        "turnaround_id": "N201AA",
+        "unfinished_required_tasks": 0
+      },
+      {
+        "actual_arrival_seconds": 3601,
+        "actual_departure_seconds": 6390,
+        "aircraft_id": 2,
+        "completed_required_tasks": 1,
+        "critical_path_task_ids": [
+          2
+        ],
+        "departure_delay_seconds": 90,
+        "estimated_ready_time_seconds": 4079,
+        "failure_reason": "",
+        "gate_id": 1,
+        "gate_occupancy_seconds": 301,
+        "gate_wait_seconds": 0,
+        "predicted_late": false,
+        "pushback_completed_at_seconds": 4100,
+        "pushback_started_at_seconds": 4080,
+        "runway_queue_entered_at_seconds": 4376,
+        "schedule_slack_seconds": 2221,
+        "scheduled_arrival_seconds": 3600,
+        "scheduled_departure_seconds": 6300,
+        "state": "Departed",
+        "surface_reroutes": 0,
+        "surface_state": "Departed",
+        "surface_wait_seconds": 1926,
+        "tasks": [
+          {
+            "assigned_resource": "crew:PushbackPreparation:1",
+            "completed_at_seconds": 4079,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 3779,
+            "service_type": "PushbackPreparation",
+            "started_at_seconds": 3779,
+            "state": "Completed",
+            "task_id": 2
+          }
+        ],
+        "taxi_completed_at_seconds": 4376,
+        "taxi_distance_m": 1806.163,
+        "taxi_started_at_seconds": 3691,
+        "turnaround_id": "N202AA",
+        "unfinished_required_tasks": 0
+      },
+      {
+        "actual_arrival_seconds": 7201,
+        "actual_departure_seconds": 9990,
+        "aircraft_id": 3,
+        "completed_required_tasks": 1,
+        "critical_path_task_ids": [
+          3
+        ],
+        "departure_delay_seconds": 90,
+        "estimated_ready_time_seconds": 7679,
+        "failure_reason": "",
+        "gate_id": 1,
+        "gate_occupancy_seconds": 301,
+        "gate_wait_seconds": 0,
+        "predicted_late": false,
+        "pushback_completed_at_seconds": 7700,
+        "pushback_started_at_seconds": 7680,
+        "runway_queue_entered_at_seconds": 7976,
+        "schedule_slack_seconds": 2221,
+        "scheduled_arrival_seconds": 7200,
+        "scheduled_departure_seconds": 9900,
+        "state": "Departed",
+        "surface_reroutes": 0,
+        "surface_state": "Departed",
+        "surface_wait_seconds": 1926,
+        "tasks": [
+          {
+            "assigned_resource": "crew:PushbackPreparation:1",
+            "completed_at_seconds": 7679,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 7379,
+            "service_type": "PushbackPreparation",
+            "started_at_seconds": 7379,
+            "state": "Completed",
+            "task_id": 3
+          }
+        ],
+        "taxi_completed_at_seconds": 7976,
+        "taxi_distance_m": 1806.163,
+        "taxi_started_at_seconds": 7291,
+        "turnaround_id": "N203AA",
+        "unfinished_required_tasks": 0
+      }
+    ],
+    "unresolved_service_requests": 0
+  },
+  "run_count": 1,
+  "runs": [
+    {
+      "aircraft_count": 3,
+      "arrival_runway_wait_seconds": 3,
+      "arrival_taxi_distance_m": 1307.652,
+      "arrival_taxi_seconds": 264,
+      "arrival_to_departure_seconds": 8367,
+      "average_runway_wait_seconds": 962.5,
+      "avg_departure_delay_minutes": 1.5,
+      "avg_service_waiting_minutes": 0.0,
+      "avg_turnaround_minutes": 7.966666666666667,
+      "completed_turnarounds": 3,
+      "delayed_aircraft": 3,
+      "delayed_turnarounds": 3,
+      "departure_runway_wait_seconds": 5772,
+      "departure_taxi_distance_m": 4110.837,
+      "departure_taxi_seconds": 828,
+      "disruption_triggered_replans": 0,
+      "failed_or_timed_out_turnarounds": 0,
+      "fleet_collisions": 0,
+      "fleet_minimum_separation_m": 0.0,
+      "fleet_outstanding_reservations": 0,
+      "fleet_reassignments": 0,
+      "fleet_requests_completed": 0,
+      "fleet_requests_created": 0,
+      "fleet_requests_failed": 0,
+      "fleet_reservation_contentions": 0,
+      "fleet_unfinished_requests": 0,
+      "gate_assignments": 3,
+      "gate_occupancy_seconds": 903,
+      "gate_wait_seconds": 0,
+      "max_simultaneous_taxiing_aircraft": 1,
+      "maximum_runway_queue_depth": 1,
+      "maximum_service_task_wait_seconds": 0.0,
+      "minimum_aircraft_ground_separation_m": 0.0,
+      "minimum_aircraft_separation_m": 0.0,
+      "ordinal": 1,
+      "road_closure_events": 0,
+      "runway_operations_completed": 6,
+      "runway_queue_seconds": 5775,
+      "runway_utilization": 0.054054,
+      "scenario": "airport_kauo",
+      "seed": 42,
+      "simulated_duration_seconds": 9990,
+      "surface_aircraft_aircraft_collisions": 0,
+      "surface_aircraft_ground_collisions": 0,
+      "surface_arrived_aircraft": 3,
+      "surface_departed_aircraft": 3,
+      "surface_departure_throughput_per_hour": 1.081081,
+      "surface_reroutes": 0,
+      "surface_safe_failures": 0,
+      "surface_taxi_distance_m": 5418.489,
+      "surface_taxi_seconds": 1092,
+      "surface_total_aircraft": 3,
+      "surface_wait_events": 0,
+      "surface_wait_seconds": 5778,
+      "task_reassignments": 0,
+      "total_service_task_wait_seconds": 0.0,
+      "total_turnarounds": 3,
+      "unresolved_service_requests": 0
+    }
+  ],
+  "scenario_generation": {
+    "identity_map": {
+      "aircraft": {
+        "N201AA": "N201AA",
+        "N202AA": "N202AA",
+        "N203AA": "N203AA"
+      },
+      "disruptions": {},
+      "equipment": {},
+      "flights": {
+        "AX201::ARR": {
+          "canonical_aircraft_id": "N201AA",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE",
+          "operation": "arrival",
+          "simulator_aircraft_id": "N201AA",
+          "simulator_gate_id": "GA-PARK-01"
+        },
+        "AX201::DEP": {
+          "canonical_aircraft_id": "N201AA",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE",
+          "operation": "departure",
+          "simulator_aircraft_id": "N201AA",
+          "simulator_gate_id": "GA-PARK-01"
+        },
+        "AX202::ARR": {
+          "canonical_aircraft_id": "N202AA",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE",
+          "operation": "arrival",
+          "simulator_aircraft_id": "N202AA",
+          "simulator_gate_id": "GA-PARK-01"
+        },
+        "AX202::DEP": {
+          "canonical_aircraft_id": "N202AA",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE",
+          "operation": "departure",
+          "simulator_aircraft_id": "N202AA",
+          "simulator_gate_id": "GA-PARK-01"
+        },
+        "AX203::ARR": {
+          "canonical_aircraft_id": "N203AA",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE",
+          "operation": "arrival",
+          "simulator_aircraft_id": "N203AA",
+          "simulator_gate_id": "GA-PARK-01"
+        },
+        "AX203::DEP": {
+          "canonical_aircraft_id": "N203AA",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE",
+          "operation": "departure",
+          "simulator_aircraft_id": "N203AA",
+          "simulator_gate_id": "GA-PARK-01"
+        }
+      },
+      "gates": {
+        "GA-PARK-ILLUSTRATIVE": "GA-PARK-01"
+      },
+      "turnaround_requirements": {
+        "OPS-N201AA-1": {
+          "aircraft": "N201AA",
+          "task": "OPS-N201AA-1"
+        },
+        "OPS-N202AA-1": {
+          "aircraft": "N202AA",
+          "task": "OPS-N202AA-1"
+        },
+        "OPS-N203AA-1": {
+          "aircraft": "N203AA",
+          "task": "OPS-N203AA-1"
+        }
+      }
+    },
+    "manifest": {
+      "airport": {
+        "airport_id": "KAUO",
+        "field_elevation_ft": 776.8,
+        "field_elevation_m": 236.785,
+        "iata": "AUO",
+        "icao": "KAUO",
+        "local_timezone": "America/Chicago",
+        "name": "Auburn University Regional Airport",
+        "reference_latitude": 32.61511111,
+        "reference_longitude": -85.434,
+        "runways": [
+          {
+            "classification": "FAA published",
+            "identifier": "18/36",
+            "length_ft": 5264,
+            "surface": "asphalt, grooved",
+            "width_ft": 100
+          },
+          {
+            "classification": "FAA published",
+            "identifier": "11/29",
+            "length_ft": 4000,
+            "surface": "asphalt",
+            "width_ft": 75
+          }
+        ],
+        "timezone": "UTC"
+      },
+      "entities": {
+        "aircraft": 3,
+        "flights": 6,
+        "gates": 1,
+        "ground_vehicles": 0,
+        "turnaround_tasks": 3
+      },
+      "generated_disruptions": {
+        "delayed_services": 0,
+        "equipment_outages": 0,
+        "flight_delays": 0,
+        "route_closures": 0
+      },
+      "generated_scenario_id": "airport-d681561dc0029e13",
+      "generator_schema_version": "1.0.0",
+      "geometry_configuration_sha256": "9195da9874beff2edffa6794ae650b308371f04feda2f1fa2b951a5fba3148dc",
+      "identity_map_file": "identity-map.json",
+      "mapping_configuration_sha256": "8a1dc83435b625737873f96b60c2ddf452432513643de6cc136e3b23f3eb644d",
+      "output_file_sha256": {
+        "identity-map.json": "3ac7bd2c357b9453b090f1820d86b75f171d6424ee5394ae74a4ed93cd54ee14",
+        "scenario.json": "9979fcb9cbd60537ae40a12634e56fa4074b6b93868a7b3de6ba556c665fd125",
+        "support-matrix.json": "499de98624d814999812663821f00dfe32203efa716a9308ff17aa9cb1487ba1"
+      },
+      "scenario_epoch_utc": "2026-10-12T12:00:00Z",
+      "scenario_name": "airport_kauo",
+      "seed": 42,
+      "source_canonical_schema_version": "1.0",
+      "source_canonical_sha256": "e58099b035539084f96affbbe3fa581d2d94566dd449a36feac8ab3d69bc29cc",
+      "source_dataset_id": "ops_bb2d85a392da7bca2738",
+      "source_provenance": [
+        {
+          "accepted_record_count": 1,
+          "filename": "aircraft.json",
+          "record_count": 1,
+          "rejected_record_count": 0,
+          "sha256": "df5ccafb8bf2be44f60ed32aacfc1410d333f2d90722f45d880bb610c31d7a92",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 1,
+          "filename": "disruptions.json",
+          "record_count": 1,
+          "rejected_record_count": 0,
+          "sha256": "4cc5588d7afd53a7b2f1f087d7d85c98b0da854562a01bc51bc2e9a9583dc619",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 0,
+          "filename": "equipment.json",
+          "record_count": 0,
+          "rejected_record_count": 0,
+          "sha256": "a5338d955b09046ec0b16f3a9625b7955c763aae07dc722e474e6078745f932f",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 2,
+          "filename": "flights.json",
+          "record_count": 2,
+          "rejected_record_count": 0,
+          "sha256": "991684bad8717448a99e1c25bd31c32e505c59b6e27d2ef7cf37c7fb5604a07c",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 1,
+          "filename": "gates.json",
+          "record_count": 1,
+          "rejected_record_count": 0,
+          "sha256": "a3481a07fb2662689dfd26fd4bbc9dfbb5955d740127f53ea08ecd2cbb787fa0",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 1,
+          "filename": "turnaround.json",
+          "record_count": 1,
+          "rejected_record_count": 0,
+          "sha256": "d702a8deb9feecad8e9a9ba0d86eb9569707d9f5b7e0a2819905f6b30998f63a",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 3,
+          "data_classification": "SCHEDULED",
+          "filename": "kauo-tomorrow-schedule.csv",
+          "mapping_profile_sha256": "1757a9bfa611145b27a307509e91b1f1717556f8f583cfb29493df4fb941dabf",
+          "record_count": 3,
+          "rejected_record_count": 0,
+          "sha256": "6552326f62a9c95c3dad04d43d67552917be6d0644fc2707390d758014601e54",
+          "type": "csv"
+        }
+      ],
+      "unsupported_metadata": {
+        "aircraft": [
+          "N201AA",
+          "N202AA",
+          "N203AA"
+        ],
+        "equipment_without_simulator_vehicle": []
+      },
+      "warnings": [
+        "AIRCRAFT_METADATA_ONLY: N201AA.registration preserved in manifest; movement behavior is unchanged",
+        "AIRCRAFT_METADATA_ONLY: N202AA.registration preserved in manifest; movement behavior is unchanged",
+        "AIRCRAFT_METADATA_ONLY: N203AA.registration preserved in manifest; movement behavior is unchanged"
+      ]
+    },
+    "scenario_document": {
+      "aircraft": [
+        {
+          "arrival_exit": "twy_a_mid",
+          "gate": "GA-PARK-01",
+          "id": "N201AA",
+          "operation_type": "arrival_turnaround",
+          "scheduled_arrival_seconds": 0,
+          "scheduled_departure_seconds": 2700,
+          "service_tasks": [
+            {
+              "duration_seconds": 300,
+              "id": "OPS-N201AA-1",
+              "type": "pushback_preparation"
+            }
+          ],
+          "target_off_block_seconds": 2700,
+          "turnaround_id": "N201AA"
+        },
+        {
+          "arrival_exit": "twy_a_mid",
+          "gate": "GA-PARK-01",
+          "id": "N202AA",
+          "operation_type": "arrival_turnaround",
+          "scheduled_arrival_seconds": 3600,
+          "scheduled_departure_seconds": 6300,
+          "service_tasks": [
+            {
+              "duration_seconds": 300,
+              "id": "OPS-N202AA-1",
+              "type": "pushback_preparation"
+            }
+          ],
+          "target_off_block_seconds": 6300,
+          "turnaround_id": "N202AA"
+        },
+        {
+          "arrival_exit": "twy_a_mid",
+          "gate": "GA-PARK-01",
+          "id": "N203AA",
+          "operation_type": "arrival_turnaround",
+          "scheduled_arrival_seconds": 7200,
+          "scheduled_departure_seconds": 9900,
+          "service_tasks": [
+            {
+              "duration_seconds": 300,
+              "id": "OPS-N203AA-1",
+              "type": "pushback_preparation"
+            }
+          ],
+          "target_off_block_seconds": 9900,
+          "turnaround_id": "N203AA"
+        }
+      ],
+      "airport": {
+        "calibration": {
+          "coordinate_reference_system": "WGS 84 geographic 3D (EPSG:4979); horizontal outputs use airport-local ENU meters",
+          "origin": {
+            "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+            "ellipsoid_height_m": 208.22,
+            "field_elevation_ft_msl": 776.8,
+            "latitude_degrees": 32.61511111,
+            "longitude_degrees": -85.434,
+            "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+            "source_record": {
+              "ARPT_ID": "AUO",
+              "ARPT_PSN_SOURCE": "3RD PARTY SURVEY",
+              "EFF_DATE": "2026/10/01",
+              "ICAO_ID": "KAUO",
+              "POSITION_SRC_DATE": "2006/05/22",
+              "file": "APT_BASE.csv"
+            }
+          },
+          "runway_thresholds": {
+            "11": {
+              "x": -314.53713,
+              "y": 495.730459
+            },
+            "18": {
+              "x": -191.058895,
+              "y": 564.510565
+            },
+            "29": {
+              "x": 849.420982,
+              "y": 132.956881
+            },
+            "36": {
+              "x": -220.183588,
+              "y": -1039.622948
+            }
+          },
+          "scenario_axis_convention": "+X east, +Y north, meters; these are airport-local ENU coordinates.",
+          "source_classification": "Runway-end coordinates AUTHORITATIVE; runway centers/headings and intersection DERIVED; taxiway/apron/parking features APPROXIMATE."
+        },
+        "edges": [
+          {
+            "distance_m": 436.447,
+            "from": "rwy36_hold",
+            "id": "runway36_hold_twy_a_south",
+            "to": "twy_a_south",
+            "traversal_time_seconds": 88
+          },
+          {
+            "distance_m": 497.948,
+            "from": "twy_a_south",
+            "id": "twy_a_south_mid",
+            "to": "twy_a_mid",
+            "traversal_time_seconds": 100
+          },
+          {
+            "distance_m": 568.384,
+            "from": "twy_a_mid",
+            "id": "twy_a_mid_north",
+            "to": "twy_a_north",
+            "traversal_time_seconds": 114
+          },
+          {
+            "distance_m": 298.826,
+            "from": "twy_a_mid",
+            "id": "twy_a_mid_fbo_primary",
+            "to": "fbo_apron_junction",
+            "traversal_time_seconds": 60
+          },
+          {
+            "distance_m": 231.262,
+            "from": "twy_a_north",
+            "id": "twy_a_north_fbo_detour",
+            "to": "fbo_apron_detour",
+            "traversal_time_seconds": 47
+          },
+          {
+            "distance_m": 512.934,
+            "from": "fbo_apron_detour",
+            "id": "twy_c_fbo_detour",
+            "to": "fbo_apron_junction",
+            "traversal_time_seconds": 103
+          },
+          {
+            "distance_m": 137.058,
+            "from": "fbo_apron_junction",
+            "id": "fbo_junction_parking",
+            "to": "ga_parking_stand",
+            "traversal_time_seconds": 28
+          },
+          {
+            "distance_m": 531.498,
+            "from": "fbo_apron_junction",
+            "id": "fbo_junction_fuel_farm",
+            "to": "self_serve_fuel_farm",
+            "traversal_time_seconds": 107
+          }
+        ],
+        "features": {
+          "apron_center_local_m": {
+            "x": 97.436698,
+            "y": -121.196537
+          },
+          "apron_classification": "APPROXIMATE chart-graticule reference; not surveyed",
+          "apron_size_m": {
+            "x": 150,
+            "y": 145
+          },
+          "buildings": [
+            {
+              "center_local_m": {
+                "x": 115.848014,
+                "y": -138.108766
+              },
+              "heading_degrees": 5.7,
+              "name": "KAUO terminal/FBO",
+              "size_m": {
+                "x": 82,
+                "y": 28
+              }
+            },
+            {
+              "center_local_m": {
+                "x": 295.920468,
+                "y": 558.450572
+              },
+              "heading_degrees": 5.7,
+              "name": "KAUO north hangar complex",
+              "size_m": {
+                "x": 170,
+                "y": 85
+              }
+            },
+            {
+              "center_local_m": {
+                "x": -607.760583,
+                "y": -581.432122
+              },
+              "heading_degrees": 5.7,
+              "name": "KAUO college aviation hangar area",
+              "size_m": {
+                "x": 160,
+                "y": 90
+              }
+            }
+          ],
+          "geometry_status": "FAA surveyed runway ends; centerlines and intersection derived from those ends; taxiway/apron/parking nodes remain approximate chart-digitized ENU references.",
+          "kauo_calibrated": true,
+          "runway_intersection_classification": "DERIVED from authoritative FAA NASR runway-end coordinates",
+          "runway_intersection_local_m": {
+            "x": -192.99544,
+            "y": 457.849273
+          },
+          "runways": [
+            {
+              "center_local_m": {
+                "x": -205.621241,
+                "y": -237.556191
+              },
+              "identifier": "18/36",
+              "length_m": 1604.397886,
+              "published_length_m": 1604.4672,
+              "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading",
+              "true_heading_degrees_from_first_threshold": 181.040149,
+              "width_m": 30.48
+            },
+            {
+              "center_local_m": {
+                "x": 267.441926,
+                "y": 314.34367
+              },
+              "identifier": "11/29",
+              "length_m": 1219.181346,
+              "published_length_m": 1219.2,
+              "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading",
+              "true_heading_degrees_from_first_threshold": 107.310813,
+              "width_m": 22.86
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "id": "rwy18_36_mid",
+            "name": "Runway 18/36 reference midpoint (approximate FAA-diagram anchor)",
+            "x_m": -205.621241,
+            "y_m": -237.556191
+          },
+          {
+            "id": "rwy36_hold",
+            "name": "Runway 36 end / departure queue reference (approximate FAA-diagram anchor)",
+            "x_m": -220.183588,
+            "y_m": -1039.622948
+          },
+          {
+            "id": "twy_a_south",
+            "name": "Taxiway A south connector (approximate chart anchor)",
+            "x_m": -329.939582,
+            "y_m": -617.202097
+          },
+          {
+            "id": "twy_a_mid",
+            "name": "Taxiway A arrival exit reference (approximate chart anchor)",
+            "x_m": -324.459431,
+            "y_m": -119.284465
+          },
+          {
+            "id": "twy_a_north",
+            "name": "Taxiway A north connector (approximate chart anchor)",
+            "x_m": -319.987342,
+            "y_m": 449.081614
+          },
+          {
+            "id": "fbo_apron_junction",
+            "name": "East-side terminal/FBO apron access via Taxiway C (approximate chart anchor)",
+            "x_m": -29.34007,
+            "y_m": -72.36365
+          },
+          {
+            "id": "fbo_apron_detour",
+            "name": "North Taxiway C apron-side detour (approximate chart anchor)",
+            "x_m": -89.036988,
+            "y_m": 437.084363
+          },
+          {
+            "id": "ga_parking_stand",
+            "name": "Illustrative GA parking point on the east-side terminal/FBO apron",
+            "x_m": 93.160375,
+            "y_m": -133.834301
+          },
+          {
+            "id": "self_serve_fuel_farm",
+            "name": "Charted west-side self-serve fuel farm area (approximate chart anchor)",
+            "x_m": -544.048314,
+            "y_m": -204.898264
+          },
+          {
+            "id": "rwy18_threshold",
+            "name": "Runway 18 FAA NASR surveyed runway end",
+            "x_m": -191.058895,
+            "y_m": 564.510565
+          },
+          {
+            "id": "rwy11_threshold",
+            "name": "Runway 11 FAA NASR surveyed runway end",
+            "x_m": -314.53713,
+            "y_m": 495.730459
+          },
+          {
+            "id": "rwy29_threshold",
+            "name": "Runway 29 FAA NASR surveyed runway end",
+            "x_m": 849.420982,
+            "y_m": 132.956881
+          },
+          {
+            "id": "runway_intersection",
+            "name": "Derived runway centerline intersection",
+            "x_m": -192.99544,
+            "y_m": 457.849273
+          }
+        ]
+      },
+      "default_seed": 42,
+      "fleet": {
+        "vehicles": []
+      },
+      "gates": [
+        {
+          "id": "GA-PARK-01",
+          "node": "ga_parking_stand"
+        }
+      ],
+      "name": "airport_kauo",
+      "service_durations_seconds": {
+        "baggage": 240,
+        "baggage_load": 240,
+        "cabin_cleaning": 180,
+        "catering": 300,
+        "deboarding": 120,
+        "fueling": 300,
+        "pushback_preparation": 120
+      },
+      "surface_operations": {
+        "aircraft_routing_policy": "ADAPTIVE",
+        "aircraft_speed_mps": 5.0,
+        "arrival_exit": "twy_a_mid",
+        "arrival_rollout_seconds": 90,
+        "departure_handoff": "rwy36_hold",
+        "pushback_seconds": 20,
+        "runway_node": "rwy36_hold",
+        "runway_occupancy_seconds": 90
+      }
+    },
+    "support_matrix": {
+      "aircraft_type_and_dimensions": {
+        "reason": "The existing simulator does not vary movement behavior by canonical model, dimensions, or category.",
+        "status": "metadata only"
+      },
+      "canonical_airport_and_dataset": {
+        "reason": "Airport metadata is preserved; synthetic geometry is resolved by the mapping document.",
+        "status": "metadata only"
+      },
+      "catering_vehicle": {
+        "reason": "The generated native vehicle retains its catering label and is available to the current simulator, but dispatch treats non-fueling vehicles through generic baggage-delivery behavior; there is no distinct catering capability.",
+        "status": "supported with transformation"
+      },
+      "delayed_service": {
+        "reason": "A requirement target maps to its generated aircraft task and uses existing task duration disruption behavior.",
+        "status": "supported with transformation"
+      },
+      "equipment_outage": {
+        "reason": "An indefinite outage on a targeted mapped vehicle uses the existing vehicle outage event; finite outage windows are unsupported because the simulator cannot restore the vehicle at an end time.",
+        "status": "supported with transformation"
+      },
+      "flight_arrival_and_departure": {
+        "reason": "Paired legs for one canonical aircraft become the existing RampLab arrival-turnaround operation; IDs remain in identity-map.json.",
+        "status": "supported with transformation"
+      },
+      "flight_delay": {
+        "reason": "Delay minutes adjust the targeted scheduled time before conversion to simulation seconds.",
+        "status": "supported with transformation"
+      },
+      "flight_schedule": {
+        "reason": "UTC timestamps are converted to integer simulator seconds from the earliest canonical operational event.",
+        "status": "supported with transformation"
+      },
+      "fuel_vehicle_and_baggage_vehicle": {
+        "reason": "These canonical equipment types map to existing fueling and baggage fleet capabilities.",
+        "status": "supported with transformation"
+      },
+      "gate_unavailability": {
+        "reason": "RampLab has no safe validated gate-resource outage behavior.",
+        "status": "unsupported"
+      },
+      "gates": {
+        "reason": "Canonical gate IDs resolve to explicit existing gate resources in the mapping.",
+        "status": "supported with transformation"
+      },
+      "raw_source_provenance": {
+        "reason": "Goal 24A source filenames and hashes are copied by reference into the generated manifest.",
+        "status": "supported"
+      },
+      "route_closure": {
+        "reason": "Canonical route IDs must map to an existing edge and use the existing road event mechanism.",
+        "status": "supported with transformation"
+      },
+      "tug_service_cart_and_generic_vehicle": {
+        "reason": "No validated tug, pushback vehicle, or generic fleet behavior exists; equipment is retained in the identity map and warning summary.",
+        "status": "metadata only"
+      },
+      "turnaround_requirements": {
+        "reason": "Mapped service types generate existing RampLab turnaround tasks; fueling uses fueling dispatch, while other mobile services including baggage, catering, and pushback preparation use generic baggage-delivery dispatch. Unmapped required service types block generation.",
+        "status": "supported with transformation"
+      }
+    }
+  },
+  "schema_version": "1.0",
+  "seeds": {
+    "values": [
+      42
+    ]
+  },
+  "source_scenario": "airport_kauo",
+  "source_scenario_file": "scenario.json"
+}

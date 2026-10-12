@@ -2,7 +2,7 @@
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const state = { boot: null, scenario: null, view: "airport", selectedEdge: null, selectedVehicle: null, validation: null, runs: [], compare: null, compareIds:null, pollTimer: null, experimentPollTimer:null, toastTimer: null, flightFilter:"", flightSort:"time", experimentDraft:null, experiment:null, experimentMode:"configurations", operational:null };
+const state = { boot: null, scenario: null, view: "airport", selectedEdge: null, selectedVehicle: null, validation: null, runs: [], compare: null, compareIds:null, pollTimer: null, experimentPollTimer:null, toastTimer: null, flightFilter:"", flightSort:"time", experimentDraft:null, experiment:null, experimentMode:"configurations", operational:null, agentTrace:null, selectedAgent:null, selectedAgentRun:null };
 const titles = {
   airport: ["Airport overview", "Inspect the runway and taxiway network, then select a supported route to configure a closure."],
   flights: ["Flight schedule", "Review the schedule and edit fields that feed the RampLab scenario generator."],
@@ -12,6 +12,7 @@ const titles = {
   disruptions: ["Disruption plan", "Add supported changes, review map targets, and enable or remove each intervention."],
   validation: ["Validation & changes", "Check the configuration against the existing airport generator before you run it."],
   results: ["Results & comparison", "Review native RampLab outputs and compare a completed variant with its baseline run."],
+  agents: ["Operational agents", "Inspect real agent objectives, policies, routes, and deterministic decision traces from completed simulator runs."],
   operations: ["Operational day", "Import a schedule, replay observed events, or record local operational updates."],
   experiments: ["Experiments", "Generate registered scenario variants, run them through RampLab, and compare tested configurations."]
 };
@@ -86,6 +87,7 @@ function render() {
   if (state.view === "disruptions") renderDisruptions();
   if (state.view === "validation") renderValidation();
   if (state.view === "results") renderResults();
+  if (state.view === "agents") renderAgents();
   if (state.view === "operations" && window.RampOperationalView) window.RampOperationalView.render($("#view-operations"), state, { api, toast, nav, openScenario, runCurrent });
   if (state.view === "experiments") renderExperiments();
 }
@@ -110,9 +112,16 @@ function projectMap() {
   return { width, height, scale, point(x, y) { return [offsetX + (x - minX) * scale, height - offsetY - (y - minY) * scale]; } };
 }
 
-function drawMap() {
+function drawMap(targetSelector = "#airport-map") {
   const geometry = state.boot.geometry, p = projectMap();
+  const mapRoot = $(targetSelector);
+  if (!mapRoot) return;
   const nodes = new Map(geometry.nodes.map(item => [item.id, item]));
+  const selectedAgent = state.agentTrace?.agents?.find(item => item.agent_id === state.selectedAgent);
+  const routeNodes = selectedAgent?.route_nodes || [];
+  const routePairs = new Set(routeNodes.slice(1).map((node, index) => [String(routeNodes[index]), String(node)].sort().join("|")));
+  const oldRouteNodes = selectedAgent?.previous_route_nodes || [];
+  const oldRoutePairs = new Set(oldRouteNodes.slice(1).map((node, index) => [String(oldRouteNodes[index]), String(node)].sort().join("|")));
   const closed = new Set(activeDisruptions().filter(item => item.type === "route_closure").map(item => state.boot.capabilities.mapped_routes[item.resource_id]).filter(Boolean));
   const nodeLabels={rwy36_hold:"RWY 36",twy_a_south:"Taxiway A · S",twy_a_mid:"Taxiway A · Mid",twy_a_north:"Taxiway A · N",fbo_apron_detour:"Taxiway C"};
   const runwayShapes = (geometry.features.runways || []).map(runway => {
@@ -133,7 +142,9 @@ function drawMap() {
   const edges = geometry.edges.map(edge => {
     const a=nodes.get(edge.from),b=nodes.get(edge.to); if(!a||!b)return "";
     const [x1,y1]=p.point(a.x_m,a.y_m),[x2,y2]=p.point(b.x_m,b.y_m), isClosed=closed.has(edge.id), selected=state.selectedEdge===edge.id, mapped=!!mappedRouteForEdge(edge.id);
-    return `<g class="edge-hit ${mapped?"edge-supported":""}" data-edge="${esc(edge.id)}" role="button" tabindex="0" aria-label="${mapped?"Select supported taxiway edge":"Inspect unsupported taxiway edge"} ${esc(a.name)} to ${esc(b.name)}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-outline"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-line ${mapped?"supported":""} ${isClosed?"closed":""} ${selected?"selected":""}"/><circle cx="${(x1+x2)/2}" cy="${(y1+y2)/2}" r="${selected?10:8}" class="edge-target"/></g>`;
+    const onAgentRoute = routePairs.has([String(edge.from), String(edge.to)].sort().join("|"));
+    const onOldRoute = oldRoutePairs.has([String(edge.from), String(edge.to)].sort().join("|"));
+    return `<g class="edge-hit ${mapped?"edge-supported":""}" data-edge="${esc(edge.id)}" role="button" tabindex="0" aria-label="${mapped?"Select supported taxiway edge":"Inspect unsupported taxiway edge"} ${esc(a.name)} to ${esc(b.name)}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-outline"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-line ${mapped?"supported":""} ${isClosed?"closed":""} ${selected?"selected":""} ${onOldRoute&&!onAgentRoute?"agent-old-route":""} ${onAgentRoute?"agent-route":""}"/><circle cx="${(x1+x2)/2}" cy="${(y1+y2)/2}" r="${selected?10:8}" class="edge-target"/></g>`;
   }).join("");
   const nodeMarkers = geometry.nodes.map(node=>{
     const [x,y]=p.point(node.x_m,node.y_m), isGate=geometry.gates.some(g=>g.node===node.id);
@@ -142,8 +153,9 @@ function drawMap() {
   const gates = geometry.gates.map((g,index)=>{const n=nodes.get(g.node);if(!n)return "";const [x,y]=p.point(n.x_m,n.y_m);return `<g class="gate-tag" aria-label="Stand ${esc(g.id)}"><rect x="${x-10}" y="${y-22}" width="20" height="15" rx="3"/><text x="${x}" y="${y-11}" text-anchor="middle">S${index+1}</text><title>${esc(g.id)}</title></g>`;}).join("");
   const vehicles=all("equipment").filter(item=>state.boot.capabilities.vehicle_types[item.type]&&item.initial_location).map(item=>{const node=nodes.get(item.initial_location);if(!node)return "";const [x,y]=p.point(node.x_m,node.y_m),out=closedEquipment().has(item.equipment_id),selected=state.selectedVehicle===item.equipment_id;return `<g class="vehicle-marker ${out?"unavailable":""} ${selected?"selected":""}" data-vehicle="${esc(item.equipment_id)}" role="button" tabindex="0" aria-label="${out?"Unavailable":"Available"} ${esc(item.type.replaceAll("_"," "))} vehicle ${esc(item.equipment_id)}"><circle cx="${x}" cy="${y}" r="${selected?11:9}"/><text x="${x}" y="${y+3}" text-anchor="middle">${out?"!":"V"}</text><title>${esc(item.equipment_id)} · ${esc(item.type)} · ${out?"unavailable":"available"}</title></g>`;}).join("");
   const north = `<g transform="translate(48 48)"><text x="0" y="0" class="north-mark">N</text><path d="M0 8 L-7 29 L0 25 L7 29 Z" fill="#536873"/></g>`;
-  $("#airport-map").innerHTML = `<svg viewBox="0 0 ${p.width} ${p.height}" aria-label="Operational airport diagram"><defs><pattern id="map-grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#dde5e1" stroke-width=".8"/></pattern></defs><rect width="1000" height="640" fill="#eef2ed"/><rect width="1000" height="640" fill="url(#map-grid)"/>${north}${apron}${buildings}${edges}${runwayShapes}${nodeMarkers}${gates}${vehicles}<g transform="translate(38 590)"><path d="M0 0H150M0 -5V5M75 -4V4M150 -5V5" stroke="#596c74" stroke-width="2"/><text x="0" y="19" class="scale-label">0</text><text x="65" y="19" class="scale-label">500 m</text><text x="139" y="19" class="scale-label">1 km</text></g></svg>`;
-  $$(".edge-hit", $("#airport-map")).forEach(el=>{
+   mapRoot.innerHTML = `<svg viewBox="0 0 ${p.width} ${p.height}" aria-label="Operational airport diagram"><defs><pattern id="map-grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#dde5e1" stroke-width=".8"/></pattern></defs><rect width="1000" height="640" fill="#eef2ed"/><rect width="1000" height="640" fill="url(#map-grid)"/>${north}${apron}${buildings}${edges}${runwayShapes}${nodeMarkers}${gates}${vehicles}<g transform="translate(38 590)"><path d="M0 0H150M0 -5V5M75 -4V4M150 -5V5" stroke="#596c74" stroke-width="2"/><text x="0" y="19" class="scale-label">0</text><text x="65" y="19" class="scale-label">500 m</text><text x="139" y="19" class="scale-label">1 km</text></g></svg>`;
+  if (targetSelector !== "#airport-map") return;
+  $$(".edge-hit", mapRoot).forEach(el=>{
     el.addEventListener("click",()=>selectEdge(el.dataset.edge));
     el.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();selectEdge(el.dataset.edge);}});
   });
@@ -238,8 +250,9 @@ function renderTurnarounds() {
 function renderEnvironment() {
   const flights=all("flights"),ordered=[...flights].sort((a,b)=>String(a.scheduled_time).localeCompare(String(b.scheduled_time)));
   const runways=state.boot.airport.runways||[];
-  $("#view-environment").innerHTML=`<div class="split-panels"><div class="panel"><div class="panel-title"><div><h2>Simulation settings</h2><p>Only settings consumed by the current generator are editable.</p></div><span class="badge">Goal 24B</span></div><div class="field" style="max-width:260px"><label for="scenario-seed">Random seed</label><input id="scenario-seed" type="number" min="0" max="2147483647" step="1" value="${esc(state.scenario.seed)}"><span class="field-hint">The seed is written into generated RampLab scenario data and controls deterministic simulator initialization.</span></div><div class="inspector-separator"></div>${pair("Airport local timezone",state.boot.airport.timezone||"Not supplied")}${pair("Scheduled window start",ordered.length?niceTime(ordered[0].scheduled_time):"No flights")}${pair("Scheduled window end",ordered.length?niceTime(ordered[ordered.length-1].scheduled_time):"No flights")}${pair("Flight operations",flights.length)}</div><div class="panel"><div class="panel-title"><div><h2>Airport environment</h2><p>Source and modeled conditions for this experiment.</p></div></div>${runways.map(runway=>`<div class="inspection-pair"><span>Runway ${esc(runway.identifier)}</span><strong>${esc(runway.length_ft)} ft · ${esc(runway.surface)}</strong></div>`).join("")}<div class="notice warning" style="margin-top:14px"><strong>Weather is not modeled</strong><br>Weather selectors are unavailable because the current RampLab simulator does not apply weather assumptions.</div><p class="field-hint" style="margin-top:12px">Scenario start time is derived from the scheduled flight operations and active disruptions. It is not an independent simulator control.</p></div></div>`;
+  $("#view-environment").innerHTML=`<div class="split-panels"><div class="panel"><div class="panel-title"><div><h2>Simulation settings</h2><p>Only settings consumed by the current generator are editable.</p></div><span class="badge">Goal 24B</span></div><div class="field" style="max-width:260px"><label for="scenario-seed">Random seed</label><input id="scenario-seed" type="number" min="0" max="2147483647" step="1" value="${esc(state.scenario.seed)}"><span class="field-hint">The seed is written into generated RampLab scenario data and controls deterministic simulator initialization.</span></div><div class="inspector-separator"></div><div class="field" style="max-width:320px"><label for="aircraft-routing-policy">Aircraft surface routing policy</label><select id="aircraft-routing-policy"><option value="SCRIPTED" ${state.scenario.agent_policy?.aircraft_routing!=="ADAPTIVE"?"selected":""}>SCRIPTED · legacy route selection</option><option value="ADAPTIVE" ${state.scenario.agent_policy?.aircraft_routing==="ADAPTIVE"?"selected":""}>ADAPTIVE · congestion-aware replanning</option></select><span class="field-hint">Changes the policy used by native aircraft surface agents. Reservations and safety checks remain authoritative.</span></div><div class="inspector-separator"></div>${pair("Airport local timezone",state.boot.airport.timezone||"Not supplied")}${pair("Scheduled window start",ordered.length?niceTime(ordered[0].scheduled_time):"No flights")}${pair("Scheduled window end",ordered.length?niceTime(ordered[ordered.length-1].scheduled_time):"No flights")}${pair("Flight operations",flights.length)}</div><div class="panel"><div class="panel-title"><div><h2>Airport environment</h2><p>Source and modeled conditions for this experiment.</p></div></div>${runways.map(runway=>`<div class="inspection-pair"><span>Runway ${esc(runway.identifier)}</span><strong>${esc(runway.length_ft)} ft · ${esc(runway.surface)}</strong></div>`).join("")}<div class="notice warning" style="margin-top:14px"><strong>Weather is not modeled</strong><br>Weather selectors are unavailable because the current RampLab simulator does not apply weather assumptions.</div><p class="field-hint" style="margin-top:12px">Scenario start time is derived from the scheduled flight operations and active disruptions. It is not an independent simulator control.</p></div></div>`;
   $("#scenario-seed").addEventListener("change",event=>{const value=Number(event.target.value);if(!Number.isInteger(value)||value<0||value>2147483647){toast("Seed must be a whole number from 0 through 2,147,483,647.",true);event.target.value=state.scenario.seed;return;}state.scenario.seed=value;markEdited();render();});
+  $("#aircraft-routing-policy").addEventListener("change",event=>{state.scenario.agent_policy={...(state.scenario.agent_policy||{}),aircraft_routing:event.target.value};markEdited();toast(`Aircraft routing set to ${event.target.value}.`);});
 }
 
 function renderDisruptions() {
@@ -345,6 +358,35 @@ function renderResults() {
   $$(".export-run").forEach(button=>button.addEventListener("click",()=>downloadRun(button.dataset.run)));
   $$(".viewer-run").forEach(button=>button.addEventListener("click",async()=>{try{const result=await api("/api/studio/viewer",{run_id:button.dataset.run});toast(`${result.message} (process ${result.pid}).`);}catch(error){toast(error.message,true);}}));
   if(inProgress.length&&!state.pollTimer) state.pollTimer=setInterval(pollRuns,1600);
+}
+
+async function loadAgentTrace(runId){
+  state.selectedAgentRun=runId;
+  state.agentTrace=null;
+  try{state.agentTrace=(await api(`/api/studio/runs/${runId}/agents`)).agent_trace;state.selectedAgent=state.agentTrace.agents[0]?.agent_id||null;renderAgents();}
+  catch(error){toast(error.message,true);}
+}
+
+function renderAgents(){
+  const runs=state.runs.filter(run=>run.status==="complete");
+  if(!runs.length){$("#view-agents").innerHTML=`<div class="panel"><div class="empty-state"><span class="empty-symbol">◎</span><h3>No completed agent runs</h3><p>Run a scenario with aircraft surface operations to inspect its real decisions, objectives, and routes here.</p><button class="button outline" id="agents-environment">Configure routing policy</button></div></div>`;$("#agents-environment")?.addEventListener("click",()=>nav("environment"));return;}
+  const runId=state.selectedAgentRun&&runs.some(run=>run.id===state.selectedAgentRun)?state.selectedAgentRun:runs[0].id;
+  if(!state.agentTrace||state.selectedAgentRun!==runId){$("#view-agents").innerHTML=`<div class="panel"><p class="muted-copy">Loading agent decisions from the completed simulator event stream…</p></div>`;loadAgentTrace(runId);return;}
+  const trace=state.agentTrace,agents=trace.agents||[],selected=agents.find(agent=>agent.agent_id===state.selectedAgent)||agents[0];
+  state.selectedAgent=selected?.agent_id||null;
+  const decisions=(trace.decisions||[]).filter(item=>!selected||item.agent_id===selected.agent_id);
+  const replans=(trace.decisions||[]).filter(item=>["PLAN_ROUTE","REROUTE"].includes(item.decision)).length;
+  const failures=(trace.decisions||[]).filter(item=>item.decision==="FAIL_OBJECTIVE").length;
+  const latest=selected?.last_decision;
+  const route=(selected?.route_nodes||[]).join(" → ")||"No route recorded";
+  $("#view-agents").innerHTML=`<div class="panel agents-toolbar"><div class="field"><label for="agent-run-select">Completed simulator run</label><select id="agent-run-select">${runs.map(run=>`<option value="${esc(run.id)}" ${run.id===runId?"selected":""}>${esc(run.scenario_name)} · seed ${esc(run.seed)}</option>`).join("")}</select></div><span class="badge ${trace.policy==="ADAPTIVE"?"blue":""}">${esc(trace.policy)} ROUTING</span><span class="muted-copy">${esc(trace.scenario_name||"")}</span></div>
+    <div class="agent-summary"><div><span>Recorded decisions</span><strong>${trace.decisions.length}</strong></div><div><span>Route plans / replans</span><strong>${replans}</strong></div><div><span>Failed objectives</span><strong>${failures}</strong></div><div><span>Agents</span><strong>${agents.length}</strong></div></div>
+    ${trace.decisions.length?`<div class="agents-layout"><section class="panel"><div class="panel-title"><div><h2>Aircraft agents</h2><p>Stable agent identity, assigned objective, and active policy.</p></div></div><div class="agent-roster">${agents.map(agent=>`<button class="agent-roster-row ${agent.agent_id===selected?.agent_id?"selected":""}" data-agent="${esc(agent.agent_id)}"><span class="agent-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12.2 21 5l-5.3 14-3.1-5.5L3 12.2Zm9.6 1.3 2.3-4.3"/></svg></span><span><strong>${esc(agent.agent_id)}</strong><small>${esc(agent.agent_type)} · ${esc(agent.policy_id)}</small></span><span class="agent-count">${agent.decisions} decisions</span></button>`).join("")}</div></section>
+    <section class="panel agent-detail"><div class="panel-title"><div><h2>${esc(selected?.agent_id||"Agent details")}</h2><p>${esc(selected?.objective_id||"No objective recorded")}</p></div><span class="result-status">${esc(latest?.decision||"IDLE")}</span></div><div class="agent-facts"><div><span>Type</span><strong>${esc(selected?.agent_type||"—")}</strong></div><div><span>Policy</span><strong>${esc(selected?.policy_id||"—")}</strong></div><div><span>Latest reason</span><strong>${esc(latest?.reason_code||"—")}</strong></div><div><span>Last observed position</span><strong>${esc(latest?.observation_summary||"—")}</strong></div></div><div class="agent-route"><span>Latest selected route</span><strong>${esc(route)}</strong></div><div class="agent-map-wrap"><div class="map-toolbar-title"><strong>KAUO route context</strong><span class="quiet-label">Highlighted path is from the selected run</span></div><div id="agent-map" class="airport-map compact-agent-map"></div></div></section></div>
+    <section class="panel agent-timeline"><div class="panel-title"><div><h2>Decision trace</h2><p>Simulation-time events from the native RampLab event recorder.</p></div><span class="badge">${decisions.length} events</span></div>${decisions.length?`<ol class="decision-timeline">${decisions.map(event=>`<li><time>${esc(event.time_seconds)} s</time><div><strong>${esc(event.decision)} · ${esc(event.reason_code)}</strong><small>${esc(event.observation_summary||"")}</small><p>${esc(event.detail||"")}</p>${event.route_nodes?.length?`<code>${esc(event.route_nodes.join(" → "))}</code>`:""}</div></li>`).join("")}</ol>`:`<p class="muted-copy">This run produced no structured agent decisions.</p>`}</section>`:`<div class="panel empty-state"><h3>No surface-agent decisions in this run</h3><p>Scenario used no supported aircraft surface operation or produced no decisions.</p></div>`}`;
+  $("#agent-run-select").addEventListener("change",event=>loadAgentTrace(event.target.value));
+  $$(".agent-roster-row").forEach(button=>button.addEventListener("click",()=>{state.selectedAgent=button.dataset.agent;renderAgents();}));
+  if(selected)drawMap("#agent-map");
 }
 
 function formatMetric(key,value){if(typeof value!=="number")return String(value);if(key.includes("delay_minutes")||key.includes("turnaround_minutes"))return `${value.toFixed(1)} min`;if(key.endsWith("_m"))return `${value.toFixed(0)} m`;if(key.endsWith("_seconds"))return `${value.toFixed(0)} s`;return Number.isInteger(value)?String(value):value.toFixed(2);}
