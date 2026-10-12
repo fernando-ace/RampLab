@@ -6,13 +6,28 @@
   "equipment_types": {
     "fuel_vehicle": {"type": "fueling", "initial_node": "depot"},
     "baggage_vehicle": {"type": "baggage", "initial_node": "south"},
-    "catering_vehicle": {"type": "catering", "initial_node": "gate_a3"}
+    "catering_vehicle": {"type": "catering", "initial_node": "gate_a3"},
+    "lavatory_vehicle": {"type": "lavatory_service", "initial_node": "baggage_stand_a1"},
+    "potable_water_vehicle": {"type": "potable_water", "initial_node": "baggage_stand_a2"},
+    "ground_power_unit": {"type": "ground_power", "initial_node": "baggage_stand_a3"},
+    "tug": {"type": "pushback", "initial_node": "fuel_stand_a1"},
+    "stairs_vehicle": {"type": "passenger_stairs", "initial_node": "fuel_stand_a2"},
+    "air_start_unit": {"type": "air_start", "initial_node": "fuel_stand_a3"}
   },
   "service_types": {
     "fueling": "fueling",
     "baggage": "baggage",
     "catering": "catering",
-    "pushback": "pushback_preparation"
+    "pushback": "pushback",
+    "lavatory_service": "lavatory_service",
+    "potable_water": "potable_water",
+    "ground_power": "ground_power",
+    "passenger_stairs": "passenger_stairs",
+    "air_start": "air_start",
+    "deboarding": "deboarding",
+    "cabin_cleaning": "cabin_cleaning",
+    "maintenance_inspection": "maintenance_inspection",
+    "chocks": "chocks"
   },
   "arrival_exit_node": "north",
   "departure_handoff_node": "north",

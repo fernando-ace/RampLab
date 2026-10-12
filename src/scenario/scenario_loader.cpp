@@ -176,11 +176,11 @@ ScenarioDocument parse_document(const YAML::Node& root) {
     }
 
     const auto durations = required(root, "service_durations_seconds", "scenario");
-    for (const auto& name : {"fueling", "baggage", "deboarding", "catering", "cabin_cleaning", "baggage_load", "pushback_preparation"}) {
+    for (const auto& name : {"fueling", "baggage", "deboarding", "catering", "cabin_cleaning", "baggage_load", "pushback_preparation", "lavatory_service", "potable_water", "ground_power", "pushback", "passenger_stairs", "air_start", "maintenance_inspection", "chocks"}) {
         if (durations[name]) document.service_durations.emplace(name, scalar<std::int64_t>(durations, name, "service_durations_seconds"));
     }
-    if (!document.service_durations.contains("fueling") || !document.service_durations.contains("baggage")) {
-        throw ScenarioLoadError("service_durations_seconds requires fueling and baggage durations");
+    if (document.service_durations.empty()) {
+        throw ScenarioLoadError("service_durations_seconds requires at least one service duration");
     }
 
     if (const auto events = root["road_events"]) {
@@ -252,6 +252,14 @@ ServiceType parse_service(std::string_view value, std::string_view context) {
     if (value == "cabin_cleaning") return ServiceType::CabinCleaning;
     if (value == "baggage_load") return ServiceType::BaggageLoad;
     if (value == "pushback_preparation") return ServiceType::PushbackPreparation;
+    if (value == "lavatory_service") return ServiceType::LavatoryService;
+    if (value == "potable_water") return ServiceType::PotableWater;
+    if (value == "ground_power") return ServiceType::GroundPower;
+    if (value == "pushback") return ServiceType::Pushback;
+    if (value == "passenger_stairs") return ServiceType::PassengerStairs;
+    if (value == "air_start") return ServiceType::AirStart;
+    if (value == "maintenance_inspection") return ServiceType::MaintenanceInspection;
+    if (value == "chocks") return ServiceType::Chocks;
     throw ScenarioLoadError(std::format("{}: unknown service type '{}'", context, value));
 }
 
@@ -264,8 +272,31 @@ std::string service_key(ServiceType type) {
     case ServiceType::CabinCleaning: return "cabin_cleaning";
     case ServiceType::BaggageLoad: return "baggage_load";
     case ServiceType::PushbackPreparation: return "pushback_preparation";
+    case ServiceType::LavatoryService: return "lavatory_service";
+    case ServiceType::PotableWater: return "potable_water";
+    case ServiceType::GroundPower: return "ground_power";
+    case ServiceType::Pushback: return "pushback";
+    case ServiceType::PassengerStairs: return "passenger_stairs";
+    case ServiceType::AirStart: return "air_start";
+    case ServiceType::MaintenanceInspection: return "maintenance_inspection";
+    case ServiceType::Chocks: return "chocks";
     }
     return "";
+}
+
+std::string service_resource(ServiceType type) {
+    switch (type) {
+    case ServiceType::Fueling: return "fuel_truck";
+    case ServiceType::Baggage: case ServiceType::BaggageLoad: return "baggage_vehicle";
+    case ServiceType::Catering: return "catering_truck";
+    case ServiceType::LavatoryService: return "lavatory_truck";
+    case ServiceType::PotableWater: return "water_truck";
+    case ServiceType::GroundPower: return "gpu";
+    case ServiceType::Pushback: return "pushback_tug";
+    case ServiceType::PassengerStairs: return "passenger_stairs";
+    case ServiceType::AirStart: return "air_start_unit";
+    default: return "abstract_crew";
+    }
 }
 
 template <typename Map>
@@ -384,8 +415,7 @@ Scenario validate_and_build(const ScenarioDocument& document) {
             }
             built.duration = SimTime{*duration};
             built.required_resource = source.resource;
-            const auto expected_resource = type == ServiceType::Fueling ? "fuel_truck" :
-                type == ServiceType::Baggage ? "baggage_vehicle" : "abstract_crew";
+            const auto expected_resource = service_resource(type);
             if (!built.required_resource.empty() && built.required_resource != expected_resource) {
                 throw ScenarioLoadError(std::format("aircraft '{}' task '{}' requires unsupported resource type '{}'",
                     value.id, source.id, built.required_resource));
@@ -414,11 +444,15 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         const auto type = parse_service(name, "service_durations_seconds");
         scenario.service_durations.emplace(type, SimTime{seconds});
     }
-    for (const auto& type : {ServiceType::Deboarding, ServiceType::Catering, ServiceType::CabinCleaning,
-                             ServiceType::BaggageLoad, ServiceType::PushbackPreparation}) {
+    for (const auto& type : {ServiceType::Fueling, ServiceType::Baggage, ServiceType::Deboarding,
+                             ServiceType::Catering, ServiceType::CabinCleaning, ServiceType::BaggageLoad,
+                             ServiceType::PushbackPreparation, ServiceType::LavatoryService, ServiceType::PotableWater,
+                             ServiceType::GroundPower, ServiceType::Pushback, ServiceType::PassengerStairs,
+                             ServiceType::AirStart, ServiceType::MaintenanceInspection, ServiceType::Chocks})
         if (!scenario.service_durations.contains(type)) scenario.service_durations.emplace(type, SimTime{300});
+    for (const auto& type : {ServiceType::Deboarding, ServiceType::CabinCleaning,
+                             ServiceType::PushbackPreparation, ServiceType::MaintenanceInspection, ServiceType::Chocks})
         scenario.abstract_resource_capacity.emplace(type, 1U);
-    }
     // Resolve task references and reject cycles before the scenario reaches the core.
     for (std::size_t index = 0; index < document.aircraft.size(); ++index) {
         const auto& source = document.aircraft[index];

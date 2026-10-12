@@ -125,6 +125,30 @@ class ScenarioStudioTests(unittest.TestCase):
             scenario["turnaround_requirements"][0]["duration_minutes"] = before + 1
             self.assertEqual(studio.scenario_package(scenario)["turnaround_requirements"][0]["duration_minutes"], before + 1)
 
+    def test_service_type_and_fleet_quantity_change_generated_simulator_inputs(self):
+        scenario = studio.new_scenario("synthetic")
+        requirement = next(row for row in scenario["turnaround_requirements"] if row["requirement_id"] == "REQ-3")
+        requirement["service_type"] = "potable_water"
+        requirement["required_equipment_type"] = "potable_water_vehicle"
+        scenario["equipment"].append({"equipment_id": "WATER-1", "type": "potable_water_vehicle",
+                                      "status": "available", "initial_location": "baggage_stand_a1"})
+        self.assertTrue(studio.validate_scenario(scenario)["valid"])
+        with tempfile.TemporaryDirectory(prefix="ramplab-studio-gse-") as temp:
+            root = Path(temp)
+            package = root / "canonical.json"
+            package.write_text(json.dumps(studio.scenario_package(scenario)), encoding="utf-8")
+            baseline = generate(package, studio._mapping("synthetic"), root / "baseline", seed=42)["scenario"]
+            aircraft = next(row for row in baseline["aircraft"] if row["id"] == "N102RL")
+            self.assertIn("potable_water", {task["type"] for task in aircraft["service_tasks"]})
+            self.assertIn("potable_water", {vehicle["type"] for vehicle in baseline["fleet"]["vehicles"]})
+
+            scenario["equipment"].append({"equipment_id": "FUEL-2", "type": "fuel_vehicle",
+                                          "status": "available", "initial_location": "fuel_stand_a1"})
+            package.write_text(json.dumps(studio.scenario_package(scenario)), encoding="utf-8")
+            expanded = generate(package, studio._mapping("synthetic"), root / "expanded", seed=42)["scenario"]
+            fuel_count = lambda generated: sum(vehicle["type"] == "fueling" for vehicle in generated["fleet"]["vehicles"])
+            self.assertEqual(fuel_count(expanded), fuel_count(baseline) + 1)
+
     def test_map_selected_closure_generates_native_scenario(self):
         scenario = studio.new_scenario("kauo")
         scenario["disruptions"] = [{"disruption_id": "STUDIO-CLOSURE-A", "type": "route_closure",

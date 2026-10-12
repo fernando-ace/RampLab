@@ -53,7 +53,28 @@ SimulationEventRecord aircraft_event(SimulationEventType type, const Aircraft& a
 }
 
 bool uses_mobile_fleet(ServiceType type) {
-    return type == ServiceType::Fueling || type == ServiceType::Baggage || type == ServiceType::BaggageLoad;
+    switch (type) {
+    case ServiceType::Fueling: case ServiceType::Baggage: case ServiceType::Catering:
+    case ServiceType::BaggageLoad: case ServiceType::LavatoryService: case ServiceType::PotableWater:
+    case ServiceType::GroundPower: case ServiceType::Pushback: case ServiceType::PassengerStairs:
+    case ServiceType::AirStart: return true;
+    default: return false;
+    }
+}
+
+std::string fleet_capability(ServiceType type) {
+    switch (type) {
+    case ServiceType::Fueling: return "fuel_truck";
+    case ServiceType::Baggage: case ServiceType::BaggageLoad: return "baggage_vehicle";
+    case ServiceType::Catering: return "catering_truck";
+    case ServiceType::LavatoryService: return "lavatory_truck";
+    case ServiceType::PotableWater: return "water_truck";
+    case ServiceType::GroundPower: return "gpu";
+    case ServiceType::Pushback: return "pushback_tug";
+    case ServiceType::PassengerStairs: return "passenger_stairs";
+    case ServiceType::AirStart: return "air_start_unit";
+    default: return "";
+    }
 }
 
 }  // namespace
@@ -62,10 +83,15 @@ Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryP
     : scenario_(std::move(scenario)), seed_(seed), random_(seed),
       fuel_pool_(make_resource_pool(scenario_, ServiceType::Fueling)),
       baggage_pool_(make_resource_pool(scenario_, ServiceType::Baggage)), history_policy_(history_policy) {
-    for (const auto type : {ServiceType::Fueling, ServiceType::Baggage}) {
-        if (!scenario_.service_durations.contains(type) || duration(type) <= SimTime::zero()) {
-            throw std::invalid_argument("scenario requires positive service durations");
+    if (!scenario_.turnaround_orchestration) {
+        for (const auto type : {ServiceType::Fueling, ServiceType::Baggage}) {
+            if (!scenario_.service_durations.contains(type) || duration(type) <= SimTime::zero())
+                throw std::invalid_argument("legacy service scenarios require positive fuel and baggage durations");
         }
+    }
+    for (const auto& [type, service_duration] : scenario_.service_durations) {
+        static_cast<void>(type);
+        if (service_duration <= SimTime::zero()) throw std::invalid_argument("service durations must be positive");
     }
     for (const auto& flight : scenario_.aircraft) {
         [[maybe_unused]] const auto sequence = events_.schedule(
@@ -102,8 +128,8 @@ Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryP
         for (const auto& service_vehicle : scenario_.vehicles) {
             const auto& depot = scenario_.graph.node(service_vehicle.depot_node());
             const auto id = autonomy::VehicleId{std::to_string(service_vehicle.id().value())};
-            const auto capability = service_vehicle.capability() == ServiceType::Fueling
-                ? "fuel_truck" : "baggage_vehicle";
+            const auto capability = fleet_capability(service_vehicle.capability());
+            if (capability.empty()) throw std::invalid_argument("turnaround fleet vehicle has no mobile capability");
             const auto return_capability = "ramplab_return_" + id.value;
             std::optional<std::string> outage_safe_node;
             if (const auto refuge = service_vehicle.outage_safe_node())
@@ -522,6 +548,54 @@ SimulationResult Simulation::result() const {
             metrics.fleet_requests_created = fleet.dispatch.requests_created;
             metrics.fleet_requests_completed = fleet.dispatch.requests_completed;
             metrics.fleet_requests_failed = fleet.dispatch.requests_failed;
+            metrics.fleet_deadlock_unresolved = fleet.unresolved_deadlock;
+            metrics.fleet_failure_reason = fleet.failure_reason;
+            metrics.fleet_deadlock_count = fleet.deadlock_count;
+            for (const auto& dependency : fleet.wait_dependencies)
+                metrics.fleet_wait_dependencies.push_back(std::format("{} -> {} [{}] {:.2f}s",
+                    dependency.waiting_vehicle.value, dependency.blocking_vehicle.value,
+                    dependency.resource, dependency.wait_duration_s));
+            for (const auto& vehicle_id : fleet.deadlocked_vehicles)
+                metrics.fleet_deadlocked_vehicles.push_back(vehicle_id.value);
+            for (const auto& event : fleet.events) {
+                switch (event.kind) {
+                    case autonomy::TrafficEventKind::Waiting:
+                    case autonomy::TrafficEventKind::WaitEnded:
+                    case autonomy::TrafficEventKind::DeadlockDetected:
+                    case autonomy::TrafficEventKind::DeadlockRecovery:
+                    case autonomy::TrafficEventKind::RecoveryResolved:
+                    case autonomy::TrafficEventKind::RetreatSelected:
+                    case autonomy::TrafficEventKind::RetreatStarted:
+                    case autonomy::TrafficEventKind::RetreatResourceReleased:
+                    case autonomy::TrafficEventKind::RetreatCompleted:
+                    case autonomy::TrafficEventKind::MissionResumed:
+                    case autonomy::TrafficEventKind::RetreatFailed:
+                    case autonomy::TrafficEventKind::DeadlockUnresolved:
+                        metrics.fleet_recovery_events.push_back(std::format(
+                            "{:.2f}s {} vehicle={} other={} resource={} position={:.2f}:{:.2f} progress={:.2f}",
+                            event.time_s, autonomy::to_string(event.kind), event.vehicle.value,
+                            event.other.value, event.resource, event.position.x_m, event.position.y_m,
+                            event.progress_m));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            for (const auto& [resource, owner] : fleet.held_reservation_owners)
+                metrics.fleet_held_reservation_owners.push_back(std::format("{}={}", resource, owner.value));
+            for (const auto& vehicle_state : autonomy_fleet_->snapshots()) {
+                std::string route;
+                for (const auto& point : vehicle_state.autonomy.mission.waypoints) {
+                    if (!route.empty()) route += "->";
+                    route += std::format("{:.1f}:{:.1f}", point.x_m, point.y_m);
+                }
+                metrics.fleet_vehicle_diagnostics.push_back(std::format(
+                    "{} state={} request={} position={:.2f}:{:.2f} goal={} recovery={} resource={} route=[{}]",
+                    vehicle_state.id.value, autonomy::to_string(vehicle_state.dispatch_state),
+                    vehicle_state.current_request ? vehicle_state.current_request->value : "-",
+                    vehicle_state.autonomy.ground_truth.position.x_m, vehicle_state.autonomy.ground_truth.position.y_m,
+                    vehicle_state.goal_node, vehicle_state.recovery_state, vehicle_state.recovery_resource, route));
+            }
             metrics.unresolved_service_requests += fleet.dispatch.unfinished_requests;
         }
         if (scenario_.surface_operations) {
@@ -1025,7 +1099,9 @@ void Simulation::queue_vehicle_return(VehicleId id, NodeId origin, AircraftId ai
     request.required_capability = "ramplab_return_" + std::to_string(id.value());
     request.origin = from.name;
     request.destination = depot.name;
-    request.release_time_s = static_cast<double>(now_.count());
+    request.release_time_s = autonomy_fleet_->time_s();
+    // Dispatch priorities are ordered highest numeric value first; a depot return
+    // is part of releasing the just-completed assignment and must preempt queued work.
     request.priority = std::numeric_limits<int>::max();
     request.service_duration_s = 0.0;
     autonomy_fleet_->add_service_request(std::move(request));
@@ -1043,13 +1119,21 @@ void Simulation::queue_mobile_task(Aircraft& flight, ServiceTask& task_value, st
     const auto request_id = std::format("turnaround-{}-task-{}", flight.id().value(), task_value.id.value());
     if (fleet_task_requests_.contains(request_id)) return;
     auto node = scenario_.graph.node(flight.gate_node()).name;
-    if (task_value.type == ServiceType::Baggage || task_value.type == ServiceType::BaggageLoad) {
-        const auto staging_name = node + " Baggage Stand";
-        if (std::ranges::any_of(scenario_.graph.nodes(), [&](const auto& candidate) {
-                return candidate.name == staging_name;
-            })) node = staging_name;
-    } else if (task_value.type == ServiceType::Fueling) {
-        const auto staging_name = node + " Fuel Stand";
+    std::string service_staging;
+    switch (task_value.type) {
+    case ServiceType::Baggage: case ServiceType::BaggageLoad: service_staging = "Baggage Stand"; break;
+    case ServiceType::Fueling: service_staging = "Fuel Stand"; break;
+    case ServiceType::Catering: service_staging = "Catering Stand"; break;
+    case ServiceType::LavatoryService: service_staging = "Lavatory Stand"; break;
+    case ServiceType::PotableWater: service_staging = "Water Stand"; break;
+    case ServiceType::GroundPower: service_staging = "GPU Stand"; break;
+    case ServiceType::Pushback: service_staging = "Pushback Stand"; break;
+    case ServiceType::PassengerStairs: service_staging = "Stairs Stand"; break;
+    case ServiceType::AirStart: service_staging = "Air Start Stand"; break;
+    default: break;
+    }
+    if (!service_staging.empty()) {
+        const auto staging_name = node + " " + service_staging;
         if (std::ranges::any_of(scenario_.graph.nodes(), [&](const auto& candidate) {
                 return candidate.name == staging_name;
             })) node = staging_name;
@@ -1058,7 +1142,7 @@ void Simulation::queue_mobile_task(Aircraft& flight, ServiceTask& task_value, st
     request.id = autonomy::ServiceRequestId{request_id};
     request.kind = task_value.type == ServiceType::Fueling
         ? autonomy::ServiceKind::FuelService : autonomy::ServiceKind::BaggageDelivery;
-    request.required_capability = task_value.type == ServiceType::Fueling ? "fuel_truck" : "baggage_vehicle";
+    request.required_capability = fleet_capability(task_value.type);
     request.origin = node;
     request.destination = node;
     request.release_time_s = static_cast<double>(now_.count());
@@ -1086,11 +1170,15 @@ void Simulation::schedule_fleet_tick() {
 void Simulation::handle_fleet_tick() {
     if (!autonomy_fleet_) return;
     for (int frame = 0; frame < 50 && !autonomy_fleet_->finished(); ++frame) {
-        if (!autonomy_fleet_->advance()) break;
+        const bool more_work = autonomy_fleet_->advance();
+        // Observe completed service requests before FleetSimulation is allowed to
+        // dispatch another task on the next frame. This keeps the vehicle's return
+        // request tied to the service bay it actually occupies.
+        synchronize_fleet_state();
+        if (!more_work) break;
     }
-    synchronize_fleet_state();
     const auto requests = autonomy_fleet_->service_requests();
-    if (std::ranges::any_of(requests, [](const auto& request) {
+    if (!autonomy_fleet_->finished() && std::ranges::any_of(requests, [](const auto& request) {
             return request.state != autonomy::ServiceTaskState::Completed &&
                    request.state != autonomy::ServiceTaskState::Failed;
         })) schedule_fleet_tick();
@@ -1098,7 +1186,6 @@ void Simulation::handle_fleet_tick() {
 
 void Simulation::synchronize_fleet_state() {
     if (!autonomy_fleet_) return;
-    std::vector<std::tuple<VehicleId, NodeId, AircraftId, TaskId>> pending_returns;
     for (const auto& request : autonomy_fleet_->service_requests()) {
         const auto return_request = fleet_return_requests_.find(request.request.id.value);
         if (return_request != fleet_return_requests_.end()) {
@@ -1146,6 +1233,7 @@ void Simulation::synchronize_fleet_state() {
             }
             break;
         case autonomy::ServiceTaskState::Servicing:
+            if (task_value.status == TaskStatus::Failed || task_value.status == TaskStatus::Completed) break;
             if (task_value.status == TaskStatus::Assigned) {
                 flight.start_task(task_value.id, now_);
                 auto event = aircraft_event(SimulationEventType::TurnaroundTaskStarted, flight);
@@ -1158,6 +1246,7 @@ void Simulation::synchronize_fleet_state() {
             }
             break;
         case autonomy::ServiceTaskState::Completed:
+            if (task_value.status == TaskStatus::Failed) break;
             if (task_value.status != TaskStatus::Completed) {
                 if (task_value.status != TaskStatus::InProgress) {
                     if (!request.assigned_vehicle)
@@ -1178,8 +1267,16 @@ void Simulation::synchronize_fleet_state() {
                 }
                 const auto id = task_value.assigned_vehicle;
                 if (id && scenario_.surface_operations &&
-                    scenario_.surface_operations->return_service_vehicles_to_depot_after_task)
-                    pending_returns.emplace_back(*id, flight.gate_node(), flight.id(), task_value.id);
+                    scenario_.surface_operations->return_service_vehicles_to_depot_after_task) {
+                    const auto service_location = std::ranges::find(
+                        scenario_.graph.nodes(), request.request.destination, &AirportNode::name);
+                    if (service_location == scenario_.graph.nodes().end())
+                        throw std::logic_error("completed mobile service has an unknown service location");
+                    // The mobile vehicle finishes at its assigned service bay. Returning
+                    // it from the aircraft's gate center made it retrace through the
+                    // stand and could route through another parked GSE position.
+                    queue_vehicle_return(*id, service_location->id, flight.id(), task_value.id);
+                }
                 complete_turnaround_task(flight, task_value.id);
             }
             break;
@@ -1197,6 +1294,14 @@ void Simulation::synchronize_fleet_state() {
                 failed.turnaround_id = flight.turnaround_id();
                 failed.detail = flight.failure_reason();
                 emit(std::move(failed));
+                if (const auto surface = surface_aircraft_.find(flight.id()); surface != surface_aircraft_.end()) {
+                    surface->second.phase = SurfaceAircraftState::Phase::Failed;
+                    surface->second.route_edges.clear();
+                    surface->second.route_nodes.clear();
+                    std::erase_if(surface_edge_reservations_, [&](const auto& entry) { return entry.second == flight.id(); });
+                    std::erase_if(surface_node_reservations_, [&](const auto& entry) { return entry.second == flight.id(); });
+                    std::erase_if(gate_arrival_reservations_, [&](const auto& entry) { return entry.second == flight.id(); });
+                }
             }
             break;
         }
@@ -1214,8 +1319,6 @@ void Simulation::synchronize_fleet_state() {
             emit(std::move(event));
         }
     }
-    for (const auto& [vehicle_id, origin, aircraft_id, task_id] : pending_returns)
-        queue_vehicle_return(vehicle_id, origin, aircraft_id, task_id);
 }
 
 void Simulation::handle_task_eligibility(AircraftId id, TaskId task_id) {

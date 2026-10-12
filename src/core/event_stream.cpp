@@ -96,6 +96,14 @@ std::string_view to_string(ServiceType type) noexcept {
     case ServiceType::CabinCleaning: return "CabinCleaning";
     case ServiceType::BaggageLoad: return "BaggageLoad";
     case ServiceType::PushbackPreparation: return "PushbackPreparation";
+    case ServiceType::LavatoryService: return "LavatoryService";
+    case ServiceType::PotableWater: return "PotableWater";
+    case ServiceType::GroundPower: return "GroundPower";
+    case ServiceType::Pushback: return "Pushback";
+    case ServiceType::PassengerStairs: return "PassengerStairs";
+    case ServiceType::AirStart: return "AirStart";
+    case ServiceType::MaintenanceInspection: return "MaintenanceInspection";
+    case ServiceType::Chocks: return "Chocks";
     }
     return "Unknown";
 }

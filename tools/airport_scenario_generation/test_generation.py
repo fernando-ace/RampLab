@@ -96,9 +96,9 @@ class AirportScenarioGenerationTests(unittest.TestCase):
         result = generate(self.package, self.mapping, output)
         scenario = result["scenario"]
         self.assertEqual({x["gate"] for x in scenario["aircraft"]}, {"A1", "A2"})
-        self.assertEqual({x["type"] for x in scenario["fleet"]["vehicles"]}, {"fueling", "baggage", "catering"})
+        self.assertEqual({x["type"] for x in scenario["fleet"]["vehicles"]}, {"fueling", "baggage", "catering", "pushback"})
         vehicle_spawns = {x["id"]: x["depot_node"] for x in scenario["fleet"]["vehicles"]}
-        self.assertEqual(vehicle_spawns, {"FUEL-1": "depot", "BAG-1": "south", "CAT-1": "gate_a3"})
+        self.assertEqual(vehicle_spawns, {"FUEL-1": "depot", "BAG-1": "south", "CAT-1": "gate_a3", "TUG-1": "gate_a1"})
         self.assertEqual(len(set(vehicle_spawns.values())), len(vehicle_spawns))
         self.assertEqual(sum(len(x["service_tasks"]) for x in scenario["aircraft"]), 4)
         self.assertEqual(scenario["road_events"][0]["edge"], "north_south_taxi")
@@ -126,7 +126,24 @@ class AirportScenarioGenerationTests(unittest.TestCase):
         result = generate(self.package, self.mapping, self.root / "fuel-only")
         self.assertEqual([vehicle["type"] for vehicle in result["scenario"]["fleet"]["vehicles"]], ["fueling"])
 
+    def test_extended_gse_service_maps_to_a_finite_routed_vehicle(self):
+        package = copy.deepcopy(self.package_data)
+        package["equipment"].append({"equipment_id": "WATER-1", "type": "potable_water_vehicle",
+                                     "status": "available", "initial_location": "baggage_stand_a2"})
+        package["turnaround_requirements"].append({"requirement_id": "WATER-REQ", "aircraft_id": "N102RL",
+            "service_type": "potable_water", "duration_minutes": 5, "depends_on": "REQ-3"})
+        self.write_package(package)
+        result = generate(self.package, self.mapping, self.root / "extended-gse")
+        aircraft = next(row for row in result["scenario"]["aircraft"] if row["id"] == "N102RL")
+        self.assertIn({"id": "WATER-REQ", "type": "potable_water", "duration_seconds": 300,
+                       "prerequisites": ["REQ-3"]}, aircraft["service_tasks"])
+        self.assertIn({"id": "WATER-1", "name": "WATER-1", "type": "potable_water",
+                       "depot_node": "baggage_stand_a2", "speed_mps": 8.0}, result["scenario"]["fleet"]["vehicles"])
+
     def test_unsupported_metadata_and_outage_warning_are_explicit(self):
+        package = copy.deepcopy(self.package_data)
+        package["equipment"].append({"equipment_id": "UNMAPPED-1", "type": "ground_service_vehicle", "status": "available"})
+        self.write_package(package)
         result = generate(self.package, self.mapping, self.root / "generated")
         warnings = result["manifest"]["warnings"]
         self.assertTrue(any("EQUIPMENT_METADATA_ONLY" in warning for warning in warnings))
@@ -195,7 +212,7 @@ class AirportScenarioGenerationTests(unittest.TestCase):
         self.assertTrue(validate_generated(output)["valid"])
         inspected = inspect_generated(output)
         self.assertEqual(inspected["flights_mapped"], 4)
-        self.assertEqual(inspected["vehicles_generated"], 3)
+        self.assertEqual(inspected["vehicles_generated"], 4)
         with redirect_stdout(StringIO()) as stdout:
             self.assertEqual(main(["inspect", str(output)]), 0)
         self.assertIn("scenario_sha256", stdout.getvalue())

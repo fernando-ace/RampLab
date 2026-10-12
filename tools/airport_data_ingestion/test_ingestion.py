@@ -2,8 +2,10 @@ import hashlib
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from .core import canonical_bytes, load_dataset
+from zoneinfo import ZoneInfoNotFoundError
 
 EXAMPLE = Path(__file__).parent / "examples" / "synthetic" / "manifest.json"
 
@@ -77,7 +79,8 @@ class IngestionTests(unittest.TestCase):
             manifest["files"]["aircraft"] = "aircraft.json"; (root / "aircraft.json").write_text('[{"aircraft_id":"AC1","type":"jet","wingspan":1,"wingspan_unit":"yards"}]'); p.write_text(json.dumps(manifest))
             _, findings, _ = load_dataset(p); self.assertIn("UNIT_INVALID", {f["code"] for f in findings})
 
-    def test_naive_timezone_ambiguous_time_fails_without_database(self):
+    @patch(f"{__package__}.core.ZoneInfo", side_effect=ZoneInfoNotFoundError)
+    def test_naive_timezone_ambiguous_time_fails_without_database(self, _missing_database):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             for name, content in (("flights", '[{"flight_id":"F1","operation":"arrival","scheduled_time":"2026-01-01 09:00","aircraft_id":"AC1"}]'), ("aircraft", '[{"aircraft_id":"AC1","type":"jet"}]'), ("gates", '[{"gate_id":"G1"}]')):

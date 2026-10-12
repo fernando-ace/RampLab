@@ -1,0 +1,26 @@
+[
+  {
+    "gate_id": "GA-PARK-ILLUSTRATIVE-01",
+    "terminal": "approximate FBO apron",
+    "status": "available",
+    "remote": true,
+    "description": "Illustrative KAUO demonstration stand 1; not surveyed or an official stand ID.",
+    "classification": "APPROXIMATE / ASSUMED FOR SIMULATION"
+  },
+  {
+    "gate_id": "GA-PARK-ILLUSTRATIVE-02",
+    "terminal": "approximate FBO apron",
+    "status": "available",
+    "remote": true,
+    "description": "Illustrative KAUO demonstration stand 2; not surveyed or an official stand ID.",
+    "classification": "APPROXIMATE / ASSUMED FOR SIMULATION"
+  },
+  {
+    "gate_id": "GA-PARK-ILLUSTRATIVE-03",
+    "terminal": "approximate FBO apron",
+    "status": "available",
+    "remote": true,
+    "description": "Illustrative KAUO demonstration stand 3; not surveyed or an official stand ID.",
+    "classification": "APPROXIMATE / ASSUMED FOR SIMULATION"
+  }
+]

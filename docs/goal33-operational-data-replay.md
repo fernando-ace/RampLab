@@ -1,7 +1,7 @@
 # Goal 33: Operational Data, Replay, and Plan Mode
 
-Goal 33 adds an operational-data layer around the Goal 30/32 scenario and run
-interfaces. It imports schedules, creates native RampLab scenarios, replays
+Goal 33 adds an operational-data layer around the Goal 30 Scenario Studio and
+Goal 32 experiment/run interfaces, using the Goal 31 simulator foundation. It imports schedules, creates native RampLab scenarios, replays
 timestamped observations, accepts local live updates, and compares plans with
 observations. The simulator remains the source of simulated outcomes; imported
 facts and assumptions retain separate provenance.
@@ -178,15 +178,17 @@ it passes when run with the `tzdata` module deliberately unavailable. This
 environment has timezone data installed for Goal 33's DST conversion.
 Python compilation, JavaScript syntax, and `git diff --check` passed.
 
-## Goal 31 Compatibility
+## Goal 31 Integration
 
-Goal 33 was developed from the completed Goal 32 baseline while Goal 31's
-turnaround and GSE work was incomplete. No Goal 31 implementation is copied
-into this branch. Optional operational event payloads and provenance provide
-extension points for future GSE availability, service events, turnaround
-events, and resource assignments. Those fields can be registered and mapped
-at the ingestion/adapter boundary without coupling the operational store or
-replay engine to Goal 31's unfinished dispatch or safety behavior.
+Goal 33 was developed on the Goal 32 branch and is now integrated after Goal 31
+and Goal 32 became the canonical `main` foundation. Scenario creation uses the
+current canonical generator and native simulator path, including Goal 31's
+turnaround and routed GSE capabilities. The checked-in schedule fixture remains
+synthetic and models only its explicit schedule and pushback-preparation
+assumption; it does not claim observed GSE availability, service events, or
+resource assignments. Operational import and replay remain decoupled from fleet
+internals, while optional event payloads and provenance leave room for those
+records to be modeled explicitly when a source provides them.
 
 ## Known limitations
 
