@@ -22,6 +22,13 @@ Decision wait(ReasonCode reason, std::string explanation) {
 
 }  // namespace
 
+bool coordination_precedes(const CoordinationPriority& left, const CoordinationPriority& right) noexcept {
+    if (left.wait_age != right.wait_age) return left.wait_age > right.wait_age;
+    if (left.objective_priority != right.objective_priority)
+        return left.objective_priority > right.objective_priority;
+    return left.stable_agent_id < right.stable_agent_id;
+}
+
 std::string_view ScriptedRoutingPolicy::id() const noexcept { return "scripted-routing-v1"; }
 
 Decision ScriptedRoutingPolicy::decide(const Observation& observation,
@@ -131,21 +138,76 @@ Decision AdaptiveRoutingPolicy::decide(const Observation& observation,
 const DecisionPolicy& policy_for(AutonomyMode mode) {
     static const ScriptedRoutingPolicy scripted;
     static const AdaptiveRoutingPolicy adaptive;
+    static const CoordinatedAdaptiveRoutingPolicy coordinated;
     switch (mode) {
     case AutonomyMode::Scripted: return scripted;
     case AutonomyMode::Adaptive: return adaptive;
+    case AutonomyMode::CoordinatedAdaptive: return coordinated;
     }
     throw std::invalid_argument("unknown autonomy mode");
+}
+
+std::string_view CoordinatedAdaptiveRoutingPolicy::id() const noexcept {
+    return "coordinated-adaptive-routing-v1";
+}
+
+Decision CoordinatedAdaptiveRoutingPolicy::decide(const Observation& observation,
+    const Objective& objective, const PolicyMemory& memory) const {
+    if (observation.objective_satisfied)
+        return {ActionType::CompleteObjective, AgentStatus::Completed, ReasonCode::ObjectiveCompleted,
+            std::nullopt, "Objective reached."};
+    if (observation.route_invalidated || (memory.last_destination && *memory.last_destination != objective.destination)) {
+        const auto reason = observation.operator_triggered ? ReasonCode::OperatorIntervention :
+            observation.invalid_edge ? ReasonCode::RouteClosed :
+            memory.last_destination && *memory.last_destination != objective.destination
+                ? ReasonCode::DestinationChanged : ReasonCode::RouteInvalid;
+        return plan(observation, reason, "Invalidated route is replanned subject to authoritative safety constraints.");
+    }
+    if (observation.candidates.empty()) {
+        static const AdaptiveRoutingPolicy fallback;
+        return fallback.decide(observation, objective, memory);
+    }
+    const auto best = std::ranges::min_element(observation.candidates,
+        [](const auto& left, const auto& right) {
+            if (left.valid != right.valid) return left.valid;
+            if (left.estimated_system_cost_seconds != right.estimated_system_cost_seconds)
+                return left.estimated_system_cost_seconds < right.estimated_system_cost_seconds;
+            return left.score_seconds < right.score_seconds;
+        });
+    if (best == observation.candidates.end() || !best->valid)
+        return plan(observation, ReasonCode::ObjectiveCreated, "No feasible coordinated candidate; requesting a safe route.");
+    if (best->kind == CandidateKind::Wait)
+        return wait(ReasonCode::ReservationBlocked,
+            "Wait selected by shared-state system-cost arbitration; reservations and safety checks remain authoritative.");
+    if (!best->route) return wait(ReasonCode::ReservationBlocked, "Selected candidate has no route; hold safely.");
+    const auto current = std::ranges::find(observation.candidates, CandidateKind::ContinueCurrentRoute,
+        &CandidateEvaluation::kind);
+    if (best->kind == CandidateKind::ContinueCurrentRoute)
+        return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+            best->route, "Continue the route with the lowest estimated aggregate taxi and waiting cost."};
+    const bool cooldown_elapsed = !memory.last_replan_at ||
+        observation.time - *memory.last_replan_at >= SimTime{10};
+    const bool materially_better = current == observation.candidates.end() ||
+        best->estimated_system_cost_seconds + 30.0 < current->estimated_system_cost_seconds;
+    if (observation.current_route && (!cooldown_elapsed || !materially_better) &&
+        current != observation.candidates.end() && current->route)
+        return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+            current->route, "Keep the current route because coordinated improvement is below threshold or cooldown."};
+    const auto reason = best->affected_agents > 0 || best->estimated_system_cost_seconds > best->score_seconds
+        ? ReasonCode::Congestion : ReasonCode::ObjectiveCreated;
+    return {ActionType::PlanRoute, AgentStatus::Replanning, reason, best->route,
+        "Selected by deterministic aggregate-cost arbitration with shared route intents and stable candidate-order ties."};
 }
 
 AutonomyMode parse_autonomy_mode(std::string_view value) {
     if (value == "SCRIPTED") return AutonomyMode::Scripted;
     if (value == "ADAPTIVE") return AutonomyMode::Adaptive;
-    throw std::invalid_argument("routing policy must be SCRIPTED or ADAPTIVE");
+    if (value == "COORDINATED_ADAPTIVE") return AutonomyMode::CoordinatedAdaptive;
+    throw std::invalid_argument("routing policy must be SCRIPTED, ADAPTIVE, or COORDINATED_ADAPTIVE");
 }
 
 std::string_view to_string(AutonomyMode value) noexcept {
-    switch (value) { case AutonomyMode::Scripted: return "SCRIPTED"; case AutonomyMode::Adaptive: return "ADAPTIVE"; }
+    switch (value) { case AutonomyMode::Scripted: return "SCRIPTED"; case AutonomyMode::Adaptive: return "ADAPTIVE"; case AutonomyMode::CoordinatedAdaptive: return "COORDINATED_ADAPTIVE"; }
     return "UNKNOWN";
 }
 std::string_view to_string(AgentType value) noexcept {

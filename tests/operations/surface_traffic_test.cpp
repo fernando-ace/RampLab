@@ -335,6 +335,28 @@ TEST(SurfaceTrafficTest, AdaptiveAgentsReplanDeterministicallyAndCompleteAfterSc
     EXPECT_EQ(first_result.metrics.surface_departed_aircraft, 3U);
 }
 
+TEST(SurfaceTrafficTest, CoordinatedPolicyHandlesClosureWithoutBypassingSafetyOrLosingDeterminism) {
+    auto first_scenario = airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml"));
+    auto second_scenario = airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml"));
+    first_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::CoordinatedAdaptive;
+    second_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::CoordinatedAdaptive;
+    const auto first = airside::Simulation{std::move(first_scenario), 42}.run();
+    const auto second = airside::Simulation{std::move(second_scenario), 42}.run();
+
+    EXPECT_EQ(first.agent_decisions, second.agent_decisions);
+    EXPECT_EQ(first.events, second.events);
+    EXPECT_EQ(first.metrics.agent_objectives_failed, 0U);
+    EXPECT_EQ(first.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(first.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(first.metrics.surface_aircraft_ground_collisions, 0U);
+    EXPECT_EQ(first.metrics.surface_departed_aircraft, 3U);
+    EXPECT_TRUE(std::ranges::any_of(first.agent_decisions, [](const auto& decision) {
+        return decision.policy_id == "coordinated-adaptive-routing-v1" &&
+            decision.reason == airside::agents::ReasonCode::RouteClosed && decision.selected_route.has_value() &&
+            !decision.safety_constraints.empty();
+    }));
+}
+
 TEST(SurfaceTrafficTest, AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutcome) {
     auto adaptive_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));
     auto scripted_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));

@@ -442,20 +442,45 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
             << ",\"blocked_for_seconds\":" << event.observation.blocked_for.count()
             << ",\"current_route\":";
         route_json(event.observation.current_route);
-        output << "},\"candidates\":[";
+        output << ",\"shared_traffic\":[";
+        for (std::size_t j = 0; j < event.observation.shared_traffic.size(); ++j) {
+            const auto& traffic = event.observation.shared_traffic[j]; if (j) output << ',';
+            output << "{\"agent_id\":\"" << json_escape(traffic.agent_id) << "\",\"edge_id\":"
+                << traffic.edge.value() << ",\"destination\":" << traffic.destination.value()
+                << ",\"expected_release_seconds\":" << traffic.expected_release.count()
+                << ",\"wait_age_seconds\":" << traffic.wait_age.count()
+                << ",\"priority\":" << traffic.priority
+                << ",\"reserved\":" << (traffic.reserved ? "true" : "false") << '}';
+        }
+        output << "]},\"candidates\":[";
         for (std::size_t j = 0; j < event.candidates.size(); ++j) {
             const auto& candidate = event.candidates[j]; if (j) output << ',';
             output << "{\"kind\":\"" << airside::agents::to_string(candidate.kind) << "\",\"valid\":" << (candidate.valid ? "true" : "false")
                 << ",\"predicted_taxi_distance_m\":" << candidate.predicted_taxi_distance_m
                 << ",\"predicted_taxi_seconds\":" << candidate.predicted_taxi_time.count()
                 << ",\"expected_wait_seconds\":" << candidate.expected_wait.count()
-                << ",\"score_seconds\":" << candidate.score_seconds << ",\"scoring_basis\":\""
-                << json_escape(candidate.explanation) << "\",\"route\":";
+                << ",\"score_seconds\":" << candidate.score_seconds
+                << ",\"estimated_system_cost_seconds\":" << candidate.estimated_system_cost_seconds
+                << ",\"affected_agents\":" << candidate.affected_agents << ",\"conflicting_agent\":";
+            if (candidate.conflicting_agent) output << '"' << json_escape(*candidate.conflicting_agent) << '"';
+            else output << "null";
+            output << ",\"conflicting_edge\":";
+            if (candidate.conflicting_edge) output << candidate.conflicting_edge->value(); else output << "null";
+            output << ",\"scoring_basis\":\"" << json_escape(candidate.explanation) << "\",\"route\":";
             route_json(candidate.route); output << '}';
         }
         output << "],\"selected_candidate\":";
         if (event.selected_candidate) output << *event.selected_candidate; else output << "null";
-        output << ",\"action\":\"" << airside::agents::to_string(event.action) << "\",\"reason\":\""
+        output << ",\"coordination\":{\"rule\":\"" << json_escape(event.coordination_rule)
+            << "\",\"conflicting_agent\":";
+        if (event.coordination_conflict_agent) output << '"' << json_escape(*event.coordination_conflict_agent) << '"';
+        else output << "null";
+        output << ",\"conflicting_edge\":";
+        if (event.coordination_conflict_edge) output << event.coordination_conflict_edge->value(); else output << "null";
+        output << ",\"estimated_system_cost_seconds\":" << event.estimated_system_cost_seconds
+            << ",\"affected_agents\":" << event.affected_agents
+            << ",\"safety_constraints\":\"" << json_escape(event.safety_constraints) << "\"},\"action\":\""
+            << airside::agents::to_string(event.action) << "\",\"reason\":\""
             << airside::agents::to_string(event.reason) << "\",\"result\":\"" << json_escape(event.result)
             << "\",\"explanation\":\"" << json_escape(event.explanation) << "\",\"selected_route\":";
         route_json(event.selected_route); output << '}';

@@ -142,7 +142,69 @@ TEST(OperationalAgentPolicyTests, AutonomyModeParsingIsStableAndRejectsUnknownMo
     EXPECT_EQ(parse_autonomy_mode("SCRIPTED"), AutonomyMode::Scripted);
     EXPECT_EQ(parse_autonomy_mode("ADAPTIVE"), AutonomyMode::Adaptive);
     EXPECT_EQ(to_string(AutonomyMode::Adaptive), "ADAPTIVE");
+    EXPECT_EQ(parse_autonomy_mode("COORDINATED_ADAPTIVE"), AutonomyMode::CoordinatedAdaptive);
+    EXPECT_EQ(to_string(AutonomyMode::CoordinatedAdaptive), "COORDINATED_ADAPTIVE");
     EXPECT_THROW((void)parse_autonomy_mode("RANDOM"), std::invalid_argument);
+}
+
+TEST(OperationalAgentPolicyTests, CoordinatedPolicyCanTradeLocalCostForLowerSystemCost) {
+    CoordinatedAdaptiveRoutingPolicy policy;
+    auto observation = base_observation();
+    observation.current_route.reset();
+    observation.candidates = {
+        {CandidateKind::AlternateRoute, route({1, 2, 4}), 100.0, SimTime{80}, SimTime{0}, 82.0, true, "shared"},
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 120.0, SimTime{100}, SimTime{0}, 102.0, true, "clear"}
+    };
+    observation.candidates[0].estimated_system_cost_seconds = 182.0;
+    observation.candidates[0].affected_agents = 1;
+    observation.candidates[0].conflicting_agent = "aircraft-9";
+    observation.candidates[0].conflicting_edge = EdgeId{7};
+    observation.candidates[1].estimated_system_cost_seconds = 102.0;
+
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    ASSERT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, observation.candidates[1].route);
+    EXPECT_EQ(policy.decide(observation, destination_objective(), {}), decision);
+}
+
+TEST(OperationalAgentPolicyTests, CoordinatedPolicyUsesStableCandidateOrderOnSystemCostTie) {
+    CoordinatedAdaptiveRoutingPolicy policy;
+    auto observation = base_observation();
+    observation.current_route.reset();
+    observation.candidates = {
+        {CandidateKind::AlternateRoute, route({1, 2, 4}), 100.0, SimTime{80}, SimTime{0}, 82.0, true, "first"},
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 100.0, SimTime{80}, SimTime{0}, 82.0, true, "second"}
+    };
+    observation.candidates[0].estimated_system_cost_seconds = 82.0;
+    observation.candidates[1].estimated_system_cost_seconds = 82.0;
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.route, observation.candidates.front().route);
+}
+
+TEST(OperationalAgentPolicyTests, CoordinatedPolicyDoesNotTreatWaitAsZeroSystemCost) {
+    CoordinatedAdaptiveRoutingPolicy policy;
+    auto observation = base_observation();
+    observation.reservation_blocked = true;
+    observation.candidates = {
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 100.0, SimTime{100}, SimTime{0}, 102.0, true, "detour"},
+        {CandidateKind::Wait, route({1, 2, 4}), 100.0, SimTime{80}, SimTime{60}, 142.0, true, "wait"}
+    };
+    observation.candidates[0].estimated_system_cost_seconds = 102.0;
+    observation.candidates[1].estimated_system_cost_seconds = 142.0;
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, observation.candidates[0].route);
+}
+
+TEST(OperationalAgentPolicyTests, CoordinationPriorityUsesWaitThenObjectivePriorityThenStableId) {
+    const CoordinationPriority old_waiter{SimTime{30}, 0, 9};
+    const CoordinationPriority new_high_priority{SimTime{10}, 100, 1};
+    const CoordinationPriority high_priority{SimTime{30}, 1, 9};
+    const CoordinationPriority low_id{SimTime{30}, 1, 2};
+    EXPECT_TRUE(coordination_precedes(old_waiter, new_high_priority));
+    EXPECT_TRUE(coordination_precedes(high_priority, old_waiter));
+    EXPECT_TRUE(coordination_precedes(low_id, high_priority));
+    EXPECT_FALSE(coordination_precedes(high_priority, low_id));
 }
 
 }  // namespace

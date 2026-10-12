@@ -28,7 +28,7 @@ enum class ReasonCode {
     OperatorIntervention
 };
 enum class CandidateKind { ContinueCurrentRoute, AlternateRoute, Wait };
-enum class AutonomyMode { Scripted, Adaptive };
+enum class AutonomyMode { Scripted, Adaptive, CoordinatedAdaptive };
 
 struct Objective {
     std::string id;
@@ -47,8 +47,33 @@ struct CandidateEvaluation {
     double score_seconds{};
     bool valid{true};
     std::string explanation;
+    double estimated_system_cost_seconds{};
+    std::size_t affected_agents{};
+    std::optional<std::string> conflicting_agent;
+    std::optional<EdgeId> conflicting_edge;
     auto operator<=>(const CandidateEvaluation&) const = default;
 };
+
+struct SharedTrafficUse {
+    std::string agent_id;
+    EdgeId edge{};
+    NodeId destination{};
+    SimTime expected_release{};
+    SimTime wait_age{};
+    std::int64_t priority{};
+    bool reserved{};
+    auto operator<=>(const SharedTrafficUse&) const = default;
+};
+
+struct CoordinationPriority {
+    SimTime wait_age{};
+    std::int64_t objective_priority{};
+    std::uint64_t stable_agent_id{};
+    auto operator<=>(const CoordinationPriority&) const = default;
+};
+
+[[nodiscard]] bool coordination_precedes(const CoordinationPriority& left,
+    const CoordinationPriority& right) noexcept;
 
 // The simulator builds this agent-scoped view from authoritative state. Policies
 // never receive mutable simulation objects or reservation maps.
@@ -69,6 +94,7 @@ struct Observation {
     SimTime available_route_cost{};
     double aircraft_speed_mps{5.0};
     std::vector<CandidateEvaluation> candidates;
+    std::vector<SharedTrafficUse> shared_traffic;
     bool objective_satisfied{};
     bool operator_triggered{};
     auto operator<=>(const Observation&) const = default;
@@ -112,6 +138,12 @@ struct DecisionEvent {
     bool operator_triggered{};
     std::string result;
     std::string explanation;
+    std::string coordination_rule;
+    std::optional<std::string> coordination_conflict_agent;
+    std::optional<EdgeId> coordination_conflict_edge;
+    double estimated_system_cost_seconds{};
+    std::size_t affected_agents{};
+    std::string safety_constraints;
     auto operator<=>(const DecisionEvent&) const = default;
 };
 
@@ -154,6 +186,13 @@ public:
 private:
     SimTime minimum_improvement_;
     SimTime decision_cooldown_;
+};
+
+class CoordinatedAdaptiveRoutingPolicy final : public DecisionPolicy {
+public:
+    [[nodiscard]] std::string_view id() const noexcept override;
+    [[nodiscard]] Decision decide(const Observation& observation,
+        const Objective& objective, const PolicyMemory& memory) const override;
 };
 
 [[nodiscard]] const DecisionPolicy& policy_for(AutonomyMode mode);
