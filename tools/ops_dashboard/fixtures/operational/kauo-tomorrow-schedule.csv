@@ -1,0 +1,4 @@
+Flight No,Tail,Aircraft,Scheduled Arrival,Scheduled Departure,Gate,Flight Status,Actual Arrival,Actual Departure
+AX201,N201AA,C172,2026-10-12 07:00,2026-10-12 07:45,GA1,Scheduled,,
+AX202,N202AA,PA28,2026-10-12 08:00,2026-10-12 08:45,GA1,Scheduled,,
+AX203,N203AA,C172,2026-10-12 09:00,2026-10-12 09:45,GA1,Scheduled,,

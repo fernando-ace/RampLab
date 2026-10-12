@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "provenance": "synthetic operational demonstration data; not observed KAUO history",
+  "events": [
+    {"event_id": "demo-ax201-departure", "event_type": "actual_departure", "timestamp": "2026-10-12T12:53:00Z", "entity_id": "AX201", "payload": {}, "source": "synthetic-demo"},
+    {"event_id": "demo-ax201-service-complete", "event_type": "service_completed", "timestamp": "2026-10-12T12:25:00Z", "entity_id": "AX201", "payload": {}, "source": "synthetic-demo"},
+    {"event_id": "demo-ax201-arrival", "event_type": "actual_arrival", "timestamp": "2026-10-12T12:04:00Z", "entity_id": "AX201", "payload": {}, "source": "synthetic-demo", "confidence": 1.0},
+    {"event_id": "demo-ax201-stand", "event_type": "stand_arrival", "timestamp": "2026-10-12T12:09:00Z", "entity_id": "AX201", "payload": {"stand_id": "GA-PARK-ILLUSTRATIVE"}, "source": "synthetic-demo"},
+    {"event_id": "demo-ax201-service-start", "event_type": "service_started", "timestamp": "2026-10-12T12:11:00Z", "entity_id": "AX201", "payload": {}, "source": "synthetic-demo"},
+    {"event_id": "demo-ax201-pushback", "event_type": "pushback", "timestamp": "2026-10-12T12:47:00Z", "entity_id": "AX201", "payload": {}, "source": "synthetic-demo"},
+    {"event_id": "demo-ax202-gate-change", "event_type": "gate_changed", "timestamp": "2026-10-12T13:17:00Z", "entity_id": "AX202", "payload": {"stand_id": "GA-PARK-ILLUSTRATIVE"}, "source": "synthetic-demo"},
+    {"event_id": "demo-ax202-actual-arrival", "event_type": "actual_arrival", "timestamp": "2026-10-12T13:04:00Z", "entity_id": "AX202", "payload": {}, "source": "synthetic-demo"}
+  ]
+}

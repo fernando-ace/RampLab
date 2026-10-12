@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "profile_id": "kauo-demo-schedule",
+  "name": "KAUO demonstration schedule CSV",
+  "data_classification": "SYNTHETIC",
+  "scenario_defaults": {
+    "turnaround_services": [
+      {"service_type": "pushback_preparation", "duration_minutes": 5}
+    ]
+  },
+  "airport_id": "KAUO",
+  "ramp_mapping_key": "kauo",
+  "timezone": "America/Chicago",
+  "operational_date": "2026-10-12",
+  "source_format": "csv",
+  "timestamp_format": "%Y-%m-%d %H:%M",
+  "fields": {
+    "flight.id": "Flight No",
+    "aircraft.id": "Tail",
+    "aircraft.tail_number": "Tail",
+    "aircraft.type": "Aircraft",
+    "flight.scheduled_arrival": "Scheduled Arrival",
+    "flight.scheduled_departure": "Scheduled Departure",
+    "flight.stand_id": "Gate",
+    "flight.status": "Flight Status",
+    "flight.actual_arrival": "Actual Arrival",
+    "flight.actual_departure": "Actual Departure"
+  },
+  "value_maps": {
+    "flight.stand_id": {"GA1": "GA-PARK-ILLUSTRATIVE"},
+    "aircraft.type": {"C172": "C172", "PA28": "PA28"},
+    "flight.status": {"Scheduled": "SCHEDULED", "Delayed": "DELAYED", "Cancelled": "CANCELLED"}
+  },
+  "allowed_aircraft_types": ["C172", "PA28"],
+  "identifier_normalization": {
+    "flight.id": "uppercase",
+    "aircraft.id": "uppercase",
+    "aircraft.tail_number": "uppercase",
+    "flight.stand_id": "uppercase"
+  }
+}

@@ -18,16 +18,19 @@ try:
     from .live_session import LiveSession, LiveSessionError
     from . import scenario_studio
     from . import experiments as scenario_experiments
+    from . import operational_store as scenario_operational_store
 except ImportError:  # Direct `python tools/ops_dashboard/server.py` launch.
     from live_session import LiveSession, LiveSessionError
     import scenario_studio
     import experiments as scenario_experiments
+    import operational_store as scenario_operational_store
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
 REAL_DEMO_DIR: Path | None = None
 LIVE_SESSION = LiveSession()
 EXPERIMENTS = scenario_experiments.ExperimentManager(scenario_studio.HOME, scenario_studio)
+OPERATIONAL = scenario_operational_store.OperationalStore(scenario_studio.HOME, scenario_studio)
 ANALYZER_PATH = REPO / "tools" / "experiment_analysis" / "analyze.py"
 spec = importlib.util.spec_from_file_location("ramplab_experiment_analysis", ANALYZER_PATH)
 if spec is None or spec.loader is None:
@@ -233,6 +236,67 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, json.dumps(payload, ensure_ascii=False).encode(), "application/json; charset=utf-8")
             except (ValueError, OSError, KeyError, TypeError) as exc:
                 return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+        if path == "/api/studio/operational":
+            from urllib.parse import parse_qs
+            dataset_id = parse_qs(parsed_url.query).get("dataset_id", [None])[0]
+            payload = {"schema_version": "1.0", "profiles": OPERATIONAL.list_profiles(),
+                       "datasets": OPERATIONAL.list_datasets(), "replays": OPERATIONAL.list_replays(dataset_id),
+                       "live_sessions": OPERATIONAL.list_live_sessions(dataset_id),
+                       "timezone_requirements": {"iana_database": "tzdata dependency on platforms without system zoneinfo"}}
+            return self._send(200, json.dumps(payload, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/operational/profile/"):
+            try:
+                profile = OPERATIONAL.get_profile(path.rsplit("/", 1)[-1])
+                return self._send(200, json.dumps({"profile": profile}, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+            except (ValueError, OSError, KeyError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/operational/dataset/") and path.endswith("/export"):
+            try:
+                ident = path.split("/")[-2]
+                blob = OPERATIONAL.get_dataset_export(ident)
+                self.send_response(200); self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Disposition", f'attachment; filename="{ident}-operational-data.zip"')
+                self.send_header("Content-Length", str(len(blob))); self.send_header("Cache-Control", "no-store"); self.end_headers()
+                self.wfile.write(blob); return
+            except (ValueError, OSError, KeyError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/operational/dataset/"):
+            try:
+                ident = path.rsplit("/", 1)[-1]
+                data = OPERATIONAL.get_dataset(ident)
+                return self._send(200, json.dumps({"dataset": data}, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+            except (ValueError, OSError, KeyError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/operational/replay/") and path.endswith("/export"):
+            try:
+                ident = path.split("/")[-2]; blob = OPERATIONAL.export_replay(ident)
+                self.send_response(200); self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Disposition", f'attachment; filename="{ident}-replay.zip"')
+                self.send_header("Content-Length", str(len(blob))); self.send_header("Cache-Control", "no-store"); self.end_headers()
+                self.wfile.write(blob); return
+            except (ValueError, OSError, KeyError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/operational/replay/"):
+            try:
+                snapshot = OPERATIONAL.replay_snapshot(path.rsplit("/", 1)[-1])
+                return self._send(200, json.dumps({"replay": snapshot}, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+            except (ValueError, OSError, KeyError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/operational/live/") and path.endswith("/export"):
+            try:
+                ident = path.split("/")[-2]; blob = OPERATIONAL.export_session(ident)
+                self.send_response(200); self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Disposition", f'attachment; filename="{ident}-recording.zip"')
+                self.send_header("Content-Length", str(len(blob))); self.send_header("Cache-Control", "no-store"); self.end_headers()
+                self.wfile.write(blob); return
+            except (ValueError, OSError, KeyError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/operational/live/"):
+            try:
+                state = OPERATIONAL.live_state(path.rsplit("/", 1)[-1])
+                return self._send(200, json.dumps({"live": state}, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+            except (ValueError, OSError, KeyError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
         if path == "/api/studio/scenarios":
             payload = {"scenarios": scenario_studio.ScenarioStoreSingleton.list()}
             return self._send(200, json.dumps(payload, ensure_ascii=False).encode(), "application/json; charset=utf-8")
@@ -333,6 +397,45 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(200, target.read_bytes(), f"{mime}; charset=utf-8")
 
     def do_POST(self):
+        if self.path.startswith("/api/studio/operational/") or self.path == "/api/operational/v1/events":
+            length = int(self.headers.get("Content-Length", "0"))
+            if length <= 0 or length > 10 * 1024 * 1024:
+                return self._send(413, b'{"error":"Operational requests must be between 1 byte and 10 MB."}', "application/json; charset=utf-8")
+            try:
+                body = json.loads(self.rfile.read(length))
+                if not isinstance(body, dict): raise ValueError("Operational request must be a JSON object.")
+                if self.path == "/api/studio/operational/preview":
+                    payload = {"preview": OPERATIONAL.preview_schedule(str(body.get("filename", "")), str(body.get("content", "")))}
+                elif self.path == "/api/studio/operational/profile/save":
+                    payload = {"profile": OPERATIONAL.save_profile(body.get("profile", {}))}
+                elif self.path == "/api/studio/operational/import":
+                    profile = body.get("profile")
+                    if not isinstance(profile, dict): profile = OPERATIONAL.get_profile(str(body.get("profile_id", "")))
+                    payload = {"dataset": OPERATIONAL.import_schedule(str(body.get("filename", "")), str(body.get("content", "")), profile)}
+                elif self.path == "/api/studio/operational/events/import":
+                    payload = {"replay": OPERATIONAL.import_events(str(body.get("dataset_id", "")), str(body.get("filename", "")), str(body.get("content", "")))}
+                elif self.path == "/api/studio/operational/scenario/create":
+                    payload = OPERATIONAL.create_plan_scenario(str(body.get("dataset_id", "")))
+                    if payload.get("scenario") and payload.get("validation", {}).get("valid"):
+                        payload["parameter_registry"] = scenario_experiments.registry(payload["scenario"], scenario_studio)
+                elif self.path == "/api/studio/operational/counterfactual/create":
+                    payload = OPERATIONAL.create_counterfactual(str(body.get("dataset_id", "")), str(body.get("point_in_time", "")),
+                        str(body.get("route_id", "")), body.get("delay_minutes", 20), body.get("duration_minutes", 30), body.get("replay_id"))
+                elif self.path == "/api/studio/operational/replay/action":
+                    payload = {"replay": OPERATIONAL.control_replay(str(body.get("replay_id", "")), str(body.get("action", "")), body.get("value"))}
+                elif self.path == "/api/studio/operational/live/start":
+                    payload = {"live": OPERATIONAL.start_live_session(str(body.get("dataset_id", "")))}
+                elif self.path in {"/api/studio/operational/live/event", "/api/operational/v1/events"}:
+                    payload = OPERATIONAL.ingest_live_event(body)
+                elif self.path == "/api/studio/operational/live/close":
+                    payload = {"live": OPERATIONAL.close_live_session(str(body.get("session_id", "")))}
+                elif self.path == "/api/studio/operational/live/record-replay":
+                    payload = {"replay": OPERATIONAL.recorded_replay(str(body.get("session_id", "")))}
+                else:
+                    return self._send(404, b'{"error":"Not found"}', "application/json; charset=utf-8")
+                return self._send(200, json.dumps(payload, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+            except (ValueError, TypeError, KeyError, OSError, RuntimeError) as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
         if self.path.startswith("/api/studio/"):
             length = int(self.headers.get("Content-Length", "0"))
             if length <= 0 or length > 2 * 1024 * 1024:
