@@ -196,6 +196,61 @@ TEST(OperationalAgentPolicyTests, CoordinatedPolicyDoesNotTreatWaitAsZeroSystemC
     EXPECT_EQ(decision.route, observation.candidates[0].route);
 }
 
+TEST(OperationalAgentPolicyTests, CoordinatedPolicyCanTradeLocalCostForLowerSharedSystemCost) {
+    CoordinatedAdaptiveRoutingPolicy policy;
+    auto observation = base_observation();
+    observation.current_route.reset();
+    observation.candidates = {
+        {CandidateKind::AlternateRoute, route({1, 2, 4}), 100.0, SimTime{100}, SimTime{0}, 100.0, true, "short shared route"},
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 160.0, SimTime{160}, SimTime{0}, 160.0, true, "clear route"}
+    };
+    observation.candidates[0].estimated_system_cost_seconds = 250.0;
+    observation.candidates[0].estimated_wait_imposed_seconds = 150.0;
+    observation.candidates[0].affected_agents = 1;
+    observation.candidates[0].conflicting_agent = "aircraft-2";
+    observation.candidates[0].conflicting_edge = EdgeId{3};
+    observation.candidates[1].estimated_system_cost_seconds = 160.0;
+
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, observation.candidates[1].route);
+    EXPECT_EQ(decision.reason, ReasonCode::Congestion);
+}
+
+TEST(OperationalAgentPolicyTests, CoordinatedCostDecisionAndExplanationAreStable) {
+    CoordinatedAdaptiveRoutingPolicy policy;
+    auto observation = base_observation();
+    observation.current_route.reset();
+    observation.candidates = {
+        {CandidateKind::AlternateRoute, route({1, 2, 4}), 100.0, SimTime{100}, SimTime{0}, 100.0, true, "shared"},
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 160.0, SimTime{160}, SimTime{0}, 160.0, true, "clear"}
+    };
+    observation.candidates[0].estimated_system_cost_seconds = 251.0;
+    observation.candidates[0].estimated_wait_imposed_seconds = 151.0;
+    observation.candidates[0].affected_agents = 1;
+    observation.candidates[1].estimated_system_cost_seconds = 160.0;
+    const auto first = policy.decide(observation, destination_objective(), {});
+    const auto second = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(first, second);
+    EXPECT_NE(first.explanation.find("aggregate-cost arbitration"), std::string::npos);
+}
+
+TEST(OperationalAgentPolicyTests, CoordinatedPolicyCanTemporarilyHoldForLowerSharedCost) {
+    CoordinatedAdaptiveRoutingPolicy policy;
+    auto observation = base_observation();
+    observation.reservation_blocked = true;
+    observation.candidates = {
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 120.0, SimTime{120}, SimTime{0}, 122.0, true, "detour"},
+        {CandidateKind::Wait, route({1, 2, 4}), 100.0, SimTime{100}, SimTime{10}, 112.0, true, "short hold"}
+    };
+    observation.candidates[0].estimated_system_cost_seconds = 122.0;
+    observation.candidates[1].estimated_system_cost_seconds = 112.0;
+
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::Wait);
+    EXPECT_EQ(decision.reason, ReasonCode::ReservationBlocked);
+}
+
 TEST(OperationalAgentPolicyTests, CoordinationPriorityUsesWaitThenObjectivePriorityThenStableId) {
     const CoordinationPriority old_waiter{SimTime{30}, 0, 9};
     const CoordinationPriority new_high_priority{SimTime{10}, 100, 1};

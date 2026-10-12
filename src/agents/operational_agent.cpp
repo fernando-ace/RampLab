@@ -193,10 +193,28 @@ Decision CoordinatedAdaptiveRoutingPolicy::decide(const Observation& observation
         current != observation.candidates.end() && current->route)
         return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
             current->route, "Keep the current route because coordinated improvement is below threshold or cooldown."};
-    const auto reason = best->affected_agents > 0 || best->estimated_system_cost_seconds > best->score_seconds
+    const bool contention_detected = std::ranges::any_of(observation.candidates, [](const auto& candidate) {
+        return candidate.affected_agents > 0 || candidate.estimated_wait_imposed_seconds > 0.0;
+    });
+    const auto reason = contention_detected || best->estimated_system_cost_seconds > best->score_seconds
         ? ReasonCode::Congestion : ReasonCode::ObjectiveCreated;
-    return {ActionType::PlanRoute, AgentStatus::Replanning, reason, best->route,
-        "Selected by deterministic aggregate-cost arbitration with shared route intents and stable candidate-order ties."};
+    std::string explanation = "Selected by deterministic aggregate-cost arbitration; this route imposes an estimated " +
+        std::to_string(best->estimated_wait_imposed_seconds) + " seconds across " +
+        std::to_string(best->affected_agents) + " affected aircraft, with stable candidate-order ties.";
+    const auto local_best = std::ranges::min_element(observation.candidates,
+        [](const auto& left, const auto& right) {
+            if (left.valid != right.valid) return left.valid;
+            return left.score_seconds < right.score_seconds;
+        });
+    if (local_best != observation.candidates.end() && local_best != best && local_best->valid &&
+        local_best->estimated_system_cost_seconds > best->estimated_system_cost_seconds) {
+        explanation += " The lower local-cost alternative would impose an estimated " +
+            std::to_string(local_best->estimated_wait_imposed_seconds) + " seconds across " +
+            std::to_string(local_best->affected_agents) + " aircraft; its system cost was " +
+            std::to_string(local_best->estimated_system_cost_seconds) + " seconds versus " +
+            std::to_string(best->estimated_system_cost_seconds) + " seconds for the selected route.";
+    }
+    return {ActionType::PlanRoute, AgentStatus::Replanning, reason, best->route, std::move(explanation)};
 }
 
 AutonomyMode parse_autonomy_mode(std::string_view value) {
