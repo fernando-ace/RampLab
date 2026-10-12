@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
+
 if(NOT DEFINED AIRSIDE_CLI OR NOT DEFINED AIRSIDE_SOURCE_DIR OR NOT DEFINED AIRSIDE_OUTPUT_DIR)
     message(FATAL_ERROR "Surface export test requires CLI, source, and output paths")
 endif()

@@ -121,6 +121,22 @@ TEST(ScenarioLoaderTest, LoadsIntegratedArrivalTurnaroundOperation) {
     EXPECT_TRUE(scenario.surface_operations.has_value());
 }
 
+TEST(ScenarioLoaderTest, LoadsExtendedGroundServiceEquipmentTypes) {
+    auto contents = replaced(std::string{kValidScenario},
+        "    - { id: fuel, name: Fuel-1, type: fueling, depot_node: depot, speed_mps: 10 }\n",
+        "    - { id: fuel, name: Fuel-1, type: fueling, depot_node: depot, speed_mps: 10 }\n"
+        "    - { id: catering, name: Catering-1, type: catering, depot_node: depot, speed_mps: 8 }\n"
+        "    - { id: water, name: Water-1, type: potable_water, depot_node: depot, speed_mps: 8 }\n");
+    contents = replaced(std::move(contents),
+        "service_durations_seconds: { fueling: 480, baggage: 600 }",
+        "service_durations_seconds: { fueling: 480, baggage: 600, catering: 300, potable_water: 240 }");
+    const TemporaryScenario file{std::move(contents)};
+    const auto scenario = load_scenario(file.path());
+    ASSERT_EQ(scenario.vehicles.size(), 4U);
+    EXPECT_EQ(scenario.vehicles[1].capability(), ServiceType::Catering);
+    EXPECT_EQ(scenario.vehicles[2].capability(), ServiceType::PotableWater);
+}
+
 TEST(ScenarioLoaderTest, RejectsDuplicateIds) {
     const TemporaryScenario file{replaced(std::string{kValidScenario},
         "- { id: gate, x_m", "- { id: depot, x_m")};

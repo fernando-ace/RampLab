@@ -87,6 +87,14 @@ struct SimulationMetrics {
     std::size_t fleet_requests_created{0};
     std::size_t fleet_requests_completed{0};
     std::size_t fleet_requests_failed{0};
+    std::size_t fleet_deadlock_count{0};
+    bool fleet_deadlock_unresolved{false};
+    std::string fleet_failure_reason;
+    std::vector<std::string> fleet_wait_dependencies;
+    std::vector<std::string> fleet_deadlocked_vehicles;
+    std::vector<std::string> fleet_held_reservation_owners;
+    std::vector<std::string> fleet_vehicle_diagnostics;
+    std::vector<std::string> fleet_recovery_events;
     std::size_t surface_departed_aircraft{0};
     std::size_t surface_total_aircraft{0};
     double surface_departure_throughput_per_hour{0.0};

@@ -61,6 +61,8 @@ RunResult execute_one(const Scenario& base, const RunRequest& request) {
     result.fleet_requests_created = simulation_result.metrics.fleet_requests_created;
     result.fleet_requests_completed = simulation_result.metrics.fleet_requests_completed;
     result.fleet_requests_failed = simulation_result.metrics.fleet_requests_failed;
+    result.fleet_deadlock_unresolved = simulation_result.metrics.fleet_deadlock_unresolved;
+    result.fleet_failure_reason = simulation_result.metrics.fleet_failure_reason;
     result.surface_departed_aircraft = simulation_result.metrics.surface_departed_aircraft;
     result.surface_arrived_aircraft = simulation_result.metrics.surface_arrived_aircraft;
     result.gate_assignments = simulation_result.metrics.gate_assignments;

@@ -74,9 +74,9 @@ Validation from the clean Goal 30 baseline:
 - Python compilation, JavaScript syntax check, and `git diff --check` passed.
 - Scenario Studio UI created and completed a real 25-configuration, 75-run KAUO experiment. Screenshots below come from the clean local UI session and real run data.
 
-## Goal 31 Compatibility
+## Goal 31 Integration
 
-Goal 32 was intentionally developed from the clean Goal 30 baseline while Goal 31 was in progress. No Goal 31 implementation was copied into this branch. When Goal 31 is ready to integrate, its generator-backed GSE quantities and turnaround/service durations can be registered with IDs, units, typed validation, and adapters. The Cartesian expansion, seed replication, scheduler, cache, aggregation, ranking, Pareto, reporting, and UI components can remain unchanged. Unsupported or unavailable fields should remain absent from the registry rather than be guessed.
+Goal 32 was developed from the Goal 30 baseline and then integrated with Goal 31 after Goal 31 became the canonical `main` foundation. The experiment registry now discovers Goal 31 turnaround service durations and mapped GSE availability from the selected scenario, alongside the existing flight schedule and mapped route-closure inputs. Parameter choices remain limited to fields consumed by the scenario generator; required-equipment constraints and other unsupported fields are not inferred or exposed as experiment axes. The Cartesian expansion, seed replication, scheduler, cache, aggregation, ranking, Pareto, reporting, and UI components remain generic across both baselines.
 
 ## Screenshots
 

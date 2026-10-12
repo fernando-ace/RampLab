@@ -48,6 +48,7 @@ def _manifest(key: str) -> Path:
     choices = {
         "kauo": INGESTION / "examples" / "kauo" / "manifest.json",
         "kauo-goal27": INGESTION / "examples" / "kauo_goal27" / "manifest.json",
+        "kauo-goal31": INGESTION / "examples" / "kauo_goal31" / "manifest.json",
         "synthetic": INGESTION / "examples" / "synthetic" / "manifest.json",
     }
     try:
@@ -60,6 +61,7 @@ def _mapping(key: str) -> Path:
     choices = {
         "kauo": GENERATION / "mapping.kauo.json",
         "kauo-goal27": GENERATION / "mapping.kauo_goal27.json",
+        "kauo-goal31": GENERATION / "mapping.kauo_goal31.json",
         "synthetic": GENERATION / "mapping.synthetic.json",
     }
     return choices[key]
@@ -205,6 +207,14 @@ def validate_scenario(scenario: dict[str, Any]) -> dict[str, Any]:
             findings.append({"severity": "error", "code": "SERVICE_AIRCRAFT_UNKNOWN", "message": f"Service {req.get('requirement_id')} refers to an unknown aircraft."})
         if req.get("service_type") not in services:
             findings.append({"severity": "error", "code": "SERVICE_UNSUPPORTED", "message": f"{req.get('service_type')} is not supported by the selected scenario generator."})
+        required_equipment = str(req.get("required_equipment_type", "")).strip()
+        if required_equipment:
+            adapter = mapping.get("equipment_types", {}).get(required_equipment)
+            service_target = mapping.get("service_types", {}).get(str(req.get("service_type")))
+            if adapter is None:
+                findings.append({"severity": "error", "code": "REQUIRED_EQUIPMENT_UNSUPPORTED", "message": f"{required_equipment} has no simulator equipment mapping."})
+            elif service_target != adapter.get("type"):
+                findings.append({"severity": "error", "code": "REQUIRED_EQUIPMENT_MISMATCH", "message": f"{required_equipment} cannot provide {req.get('service_type')}."})
         if not isinstance(req.get("duration_minutes"), (int, float)) or isinstance(req.get("duration_minutes"), bool) or req["duration_minutes"] <= 0:
             findings.append({"severity": "error", "code": "SERVICE_DURATION_INVALID", "message": f"Service {req.get('requirement_id')} must have a duration greater than zero."})
     for item in data["equipment"]:
@@ -299,8 +309,13 @@ def scenario_diff(baseline: dict[str, Any], variant: dict[str, Any]) -> list[dic
                 changes.append({"area": "Fleet", "label": f"{ident} {label}", "before": before.get(key), "after": item.get(key)})
     for req in variant.get("turnaround_requirements", []):
         before = next((row for row in baseline.get("turnaround_requirements", []) if row.get("requirement_id") == req.get("requirement_id")), None)
-        if before and before.get("duration_minutes") != req.get("duration_minutes"):
-            changes.append({"area": "Turnarounds", "label": f"{req.get('requirement_id')} service duration", "before": before.get("duration_minutes"), "after": req.get("duration_minutes")})
+        if before:
+            for key, label in (("duration_minutes", "service duration"), ("service_type", "service type"),
+                               ("required_equipment_type", "equipment requirement"), ("prerequisites", "dependencies"),
+                               ("depends_on", "dependency")):
+                if before.get(key) != req.get(key):
+                    changes.append({"area": "Turnarounds", "label": f"{req.get('requirement_id')} {label}",
+                                    "before": before.get(key), "after": req.get(key)})
     for disruption in variant.get("disruptions", []):
         if disruption.get("type") == "route_closure":
             changes.append({"area": "Disruptions", "label": "Taxiway closure", "target": disruption.get("resource_id"),
@@ -465,8 +480,11 @@ class RunManager:
 
 
 def _resolve_cli(build: Path | None = None) -> Path:
-    build = build or ROOT / "build-goal30"
-    return next((path for path in (build / "Release" / "airside_cli.exe", build / "airside_cli.exe", build / "airside_cli") if path.is_file()), build / "Release" / "airside_cli.exe")
+    builds = [build] if build is not None else [ROOT / "build-goal31", ROOT / "build-goal30"]
+    candidates = [path for root in builds for path in
+                  (root / "Release" / "airside_cli.exe", root / "airside_cli.exe", root / "airside_cli")]
+    fallback = (builds[0] if builds else ROOT / "build-goal31") / "Release" / "airside_cli.exe"
+    return next((path for path in candidates if path.is_file()), fallback)
 
 
 def catalog() -> dict[str, Any]:
@@ -475,6 +493,7 @@ def catalog() -> dict[str, Any]:
             "available_bases": [
                 {"key": "kauo", "label": "KAUO · KAUO calibrated prototype", "provenance": "FAA runway references; approximate taxiway and apron geometry"},
                 {"key": "kauo-goal27", "label": "KAUO · two-aircraft operations prototype", "provenance": "Goal 27 scenario assumptions; approximate taxiway and apron geometry"},
+                {"key": "kauo-goal31", "label": "KAUO · three-aircraft turnaround/GSE demonstration", "provenance": "Goal 31 simulation assumptions; approximate service points and GSE fleet"},
                 {"key": "synthetic", "label": "Synthetic operations example", "provenance": "Synthetic regression fixture; not airport data"},
             ]}
 
@@ -491,7 +510,7 @@ def bootstrap(key: str = "kauo") -> dict[str, Any]:
             "geometry": {"nodes": geo.get("nodes", []), "edges": geo.get("edges", []), "features": geo.get("features", {}),
                          "gates": geometry.get("gates", []), "surface_operations": geometry.get("surface_operations", {})},
             "capabilities": {"mapped_routes": mapping.get("route_ids", {}), "vehicle_types": mapping.get("equipment_types", {}),
-                             "services": mapping.get("service_types", {})},
+                             "services": mapping.get("service_types", {}), "service_types": mapping.get("service_types", {})},
             "scenario": scenario, "catalog": catalog(), "saved": ScenarioStore().list(),
             "runs": RunManagerSingleton.list()}
 
