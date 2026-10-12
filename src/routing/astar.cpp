@@ -5,6 +5,7 @@
 #include <limits>
 #include <queue>
 #include <stdexcept>
+#include <set>
 #include <unordered_map>
 
 namespace airside {
@@ -126,6 +127,54 @@ std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId
     std::ranges::reverse(result.nodes);
     std::ranges::reverse(result.edges);
     return result;
+}
+
+std::vector<Route> find_route_candidates(const AirportGraph& graph, NodeId origin, NodeId destination,
+    std::size_t maximum_candidates, const std::unordered_map<EdgeId, SimTime>& expected_wait) {
+    if (maximum_candidates == 0) return {};
+    if (!graph.has_node(origin) || !graph.has_node(destination))
+        throw std::invalid_argument("route endpoint is not in the graph");
+    for (const auto& [edge, wait] : expected_wait) {
+        (void)graph.edge(edge);
+        if (wait < SimTime::zero()) throw std::invalid_argument("route expected wait cannot be negative");
+    }
+    std::vector<Route> routes;
+    std::vector<NodeId> nodes{origin};
+    std::vector<EdgeId> edges;
+    std::set<NodeId> visited{origin};
+    // Airport taxi graphs are small; cap path length and candidate count so
+    // cyclic or unusually dense graphs cannot make policy evaluation unbounded.
+    const auto maximum_depth = std::min<std::size_t>(graph.nodes().size(), 32U);
+    const auto visit = [&](const auto& self, NodeId node, double distance, std::int64_t cost) -> void {
+        if (routes.size() >= 256U) return;
+        if (node == destination) {
+            routes.push_back({nodes, edges, distance, SimTime{cost}});
+            return;
+        }
+        if (edges.size() >= maximum_depth) return;
+        for (const auto edge_id : graph.adjacent_edges(node)) {
+            const auto& edge = graph.edge(edge_id);
+            if (!edge.available || (edge.one_way && edge.from != node)) continue;
+            const auto next = graph.other_endpoint(edge, node);
+            if (visited.contains(next)) continue;
+            const auto wait = expected_wait.find(edge_id);
+            visited.insert(next); nodes.push_back(next); edges.push_back(edge_id);
+            self(self, next, distance + edge.distance_m, cost + edge.traversal_cost.count() +
+                (wait == expected_wait.end() ? 0 : wait->second.count()));
+            edges.pop_back(); nodes.pop_back(); visited.erase(next);
+            if (routes.size() >= 256U) return;
+        }
+    };
+    visit(visit, origin, 0.0, 0);
+    std::ranges::stable_sort(routes, [](const Route& left, const Route& right) {
+        if (left.travel_time != right.travel_time) return left.travel_time < right.travel_time;
+        if (left.distance_m != right.distance_m) return left.distance_m < right.distance_m;
+        return left.nodes < right.nodes;
+    });
+    std::set<std::vector<NodeId>> seen_paths;
+    std::erase_if(routes, [&](const Route& route) { return !seen_paths.insert(route.nodes).second; });
+    if (routes.size() > maximum_candidates) routes.resize(maximum_candidates);
+    return routes;
 }
 
 }  // namespace airside

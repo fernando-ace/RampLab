@@ -335,6 +335,41 @@ TEST(SurfaceTrafficTest, AdaptiveAgentsReplanDeterministicallyAndCompleteAfterSc
     EXPECT_EQ(first_result.metrics.surface_departed_aircraft, 3U);
 }
 
+TEST(SurfaceTrafficTest, AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutcome) {
+    auto adaptive_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));
+    auto scripted_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));
+    adaptive_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Adaptive;
+    scripted_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Scripted;
+    const auto adaptive = airside::Simulation{std::move(adaptive_scenario), 42}.run();
+    const auto scripted = airside::Simulation{std::move(scripted_scenario), 42}.run();
+    const auto choice = [](const auto& result) {
+        return std::ranges::find_if(result.agent_decisions, [](const auto& event) {
+            return event.agent_id == "aircraft-3" && event.time == airside::SimTime{548} &&
+                event.action == airside::agents::ActionType::PlanRoute;
+        });
+    };
+    const auto adaptive_choice = choice(adaptive);
+    const auto scripted_choice = choice(scripted);
+    ASSERT_NE(adaptive_choice, adaptive.agent_decisions.end());
+    ASSERT_NE(scripted_choice, scripted.agent_decisions.end());
+    ASSERT_TRUE(adaptive_choice->selected_route);
+    ASSERT_TRUE(scripted_choice->selected_route);
+    EXPECT_NE(adaptive_choice->selected_route->nodes, scripted_choice->selected_route->nodes);
+    EXPECT_GT(adaptive_choice->selected_route->distance_m, scripted_choice->selected_route->distance_m);
+    const auto aircraft_metrics = [](const auto& result) {
+        return std::ranges::find(result.metrics.aircraft, "AX303", &airside::AircraftMetrics::flight_number);
+    };
+    const auto adaptive_aircraft = aircraft_metrics(adaptive);
+    const auto scripted_aircraft = aircraft_metrics(scripted);
+    ASSERT_NE(adaptive_aircraft, adaptive.metrics.aircraft.end());
+    ASSERT_NE(scripted_aircraft, scripted.metrics.aircraft.end());
+    EXPECT_LT(adaptive_aircraft->surface_departure_time, scripted_aircraft->surface_departure_time);
+    EXPECT_EQ(adaptive.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(scripted.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(adaptive.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(scripted.metrics.surface_aircraft_aircraft_collisions, 0U);
+}
+
 TEST(SurfaceTrafficTest, OperatorClosureIsObservedAndRecordedByAffectedAgent) {
     auto scenario = airside::load_scenario(scenario_file("surface_traffic_disrupted.yaml"));
     scenario.road_events.clear();

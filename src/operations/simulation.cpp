@@ -1521,6 +1521,7 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
     observation.invalid_edge = invalid_edge;
     observation.reservation_blocked = reservation_blocked;
     observation.operator_triggered = operator_triggered;
+    observation.aircraft_speed_mps = scenario_.surface_operations->aircraft_speed_mps;
     if (reservation_blocked && state.wait_started) observation.blocked_for = now_ - *state.wait_started;
     if (state.edge_index < state.route_edges.size() && state.edge_index < state.route_nodes.size()) {
         Route current;
@@ -1545,6 +1546,105 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
         scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::Adaptive
             ? expected_wait : std::unordered_map<EdgeId, SimTime>{});
     if (observation.available_route) observation.available_route_cost = observation.available_route->travel_time;
+    std::unordered_map<EdgeId, SimTime> route_waits;
+    for (const auto& [edge, owner] : surface_edge_reservations_) {
+        if (owner == id) continue;
+        SimTime wait{30};
+        const auto& owner_state = surface_aircraft_.at(owner);
+        if (owner_state.phase_end && *owner_state.phase_end > now_)
+            wait = std::max(wait, *owner_state.phase_end - now_);
+        route_waits.emplace(edge, wait);
+    }
+    // Aircraft agents with already selected plans contribute a deterministic
+    // congestion forecast before they acquire hard reservations. This lets a
+    // later decision in the same event timestamp account for competing demand.
+    for (const auto& [other_id, other_agent] : surface_agents_) {
+        if (other_id == id || !other_agent.plan) continue;
+        const auto& other_state = surface_aircraft_.at(other_id);
+        if (other_state.phase == SurfaceAircraftState::Phase::Failed ||
+            other_state.phase == SurfaceAircraftState::Phase::Departed ||
+            other_state.phase == SurfaceAircraftState::Phase::Arrived ||
+            other_state.phase == SurfaceAircraftState::Phase::WaitingForRunway) continue;
+        for (const auto edge : other_agent.plan->edges) {
+            if (surface_edge_reservations_.contains(edge)) continue;
+            const auto& edge_data = scenario_.graph.edge(edge);
+            const auto travel = static_cast<std::int64_t>(std::ceil(edge_data.distance_m /
+                std::max(0.1, observation.aircraft_speed_mps)));
+            const auto pushback = other_state.phase == SurfaceAircraftState::Phase::WaitingForPushback
+                ? scenario_.surface_operations->pushback_duration : SimTime::zero();
+            route_waits[edge] += pushback + SimTime{travel};
+        }
+    }
+    for (const auto& [node, owner] : surface_node_reservations_) {
+        if (owner == id) continue;
+        const auto& owner_state = surface_aircraft_.at(owner);
+        SimTime wait{30};
+        if (owner_state.phase_end && *owner_state.phase_end > now_)
+            wait = std::max(wait, *owner_state.phase_end - now_);
+        for (const auto edge_id : scenario_.graph.adjacent_edges(state.node)) {
+            const auto& edge = scenario_.graph.edge(edge_id);
+            if (scenario_.graph.other_endpoint(edge, state.node) == node)
+                route_waits[edge_id] = std::max(route_waits[edge_id], wait);
+        }
+    }
+    const auto taxi_seconds = [&](const Route& route) {
+        return SimTime{static_cast<std::int64_t>(std::ceil(route.distance_m /
+            std::max(0.1, observation.aircraft_speed_mps)))};
+    };
+    const auto make_candidate = [&](agents::CandidateKind kind, const Route& route) {
+        agents::CandidateEvaluation candidate;
+        candidate.kind = kind;
+        candidate.route = route;
+        candidate.predicted_taxi_distance_m = route.distance_m;
+        candidate.predicted_taxi_time = taxi_seconds(route);
+        for (const auto edge : route.edges) {
+            const auto wait = route_waits.find(edge);
+            if (wait != route_waits.end()) candidate.expected_wait += wait->second;
+        }
+        // One second per 50 m gives a small distance preference while predicted
+        // time and operational waiting remain the dominant terms.
+        candidate.score_seconds = static_cast<double>(candidate.predicted_taxi_time.count() +
+            candidate.expected_wait.count()) + candidate.predicted_taxi_distance_m / 50.0;
+        candidate.explanation = "taxi_time + expected_reservation_wait + distance_m/50";
+        return candidate;
+    };
+    if (!observation.objective_satisfied) {
+        const auto alternatives = find_route_candidates(scenario_.graph, state.node, destination, 6U, route_waits);
+        if (observation.current_route) {
+            auto candidate = make_candidate(agents::CandidateKind::ContinueCurrentRoute,
+                *observation.current_route);
+            if (route_invalidated) {
+                candidate.valid = false;
+                candidate.explanation = "rejected: current route was invalidated by a closure or route change";
+            }
+            observation.candidates.push_back(std::move(candidate));
+        }
+        for (const auto& route : alternatives) {
+            if (observation.current_route && route.edges == observation.current_route->edges) continue;
+            observation.candidates.push_back(make_candidate(agents::CandidateKind::AlternateRoute, route));
+        }
+        if (reservation_blocked) {
+            SimTime wait{30};
+            if (observation.current_route) {
+                for (const auto edge : observation.current_route->edges) {
+                    const auto estimate = route_waits.find(edge);
+                    if (estimate != route_waits.end()) wait = std::max(wait, estimate->second);
+                }
+            }
+            agents::CandidateEvaluation candidate;
+            candidate.kind = agents::CandidateKind::Wait;
+            candidate.route = observation.current_route;
+            candidate.expected_wait = wait;
+            if (observation.current_route) {
+                candidate.predicted_taxi_distance_m = observation.current_route->distance_m;
+                candidate.predicted_taxi_time = taxi_seconds(*observation.current_route);
+            }
+            candidate.score_seconds = static_cast<double>(wait.count() + candidate.predicted_taxi_time.count()) +
+                candidate.predicted_taxi_distance_m / 50.0;
+            candidate.explanation = "wait estimate + remaining current-route taxi time + distance_m/50";
+            observation.candidates.push_back(std::move(candidate));
+        }
+    }
     observation.objective_satisfied = state.node == destination;
     return observation;
 }
@@ -1559,6 +1659,20 @@ void Simulation::record_agent_decision(AircraftId id, const agents::Observation&
     trace.agent_type = agent.type;
     trace.policy_id = agent.policy_id;
     trace.objective = agent.objective;
+    trace.observation = observation;
+    trace.candidates = observation.candidates;
+    if (decision.action == agents::ActionType::Wait) {
+        const auto selected = std::ranges::find(trace.candidates, agents::CandidateKind::Wait,
+            &agents::CandidateEvaluation::kind);
+        if (selected != trace.candidates.end()) trace.selected_candidate =
+            static_cast<std::size_t>(std::distance(trace.candidates.begin(), selected));
+    } else if (decision.route) {
+        const auto selected = std::ranges::find_if(trace.candidates, [&](const auto& candidate) {
+            return candidate.route && candidate.route->edges == decision.route->edges;
+        });
+        if (selected != trace.candidates.end()) trace.selected_candidate =
+            static_cast<std::size_t>(std::distance(trace.candidates.begin(), selected));
+    }
     trace.action = decision.action;
     trace.status = decision.status;
     trace.reason = decision.reason;

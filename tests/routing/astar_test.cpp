@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <chrono>
 
 namespace airside {
@@ -70,6 +71,21 @@ TEST(AStarTest, OneWayEdgesCanOnlyBeTraversedFromTheirConfiguredOrigin) {
     graph.add_edge({EdgeId{1}, NodeId{1}, NodeId{2}, 100.0, 10s, true, true});
     ASSERT_TRUE(find_route(graph, NodeId{1}, NodeId{2}).has_value());
     EXPECT_FALSE(find_route(graph, NodeId{2}, NodeId{1}).has_value());
+}
+
+TEST(AStarTest, CandidateRoutesAreBoundedDeterministicAndExcludeClosedEdges) {
+    auto graph = make_graph();
+    const auto first = find_route_candidates(graph, NodeId{1}, NodeId{4}, 6U);
+    const auto replay = find_route_candidates(graph, NodeId{1}, NodeId{4}, 6U);
+    ASSERT_EQ(first.size(), 3U);
+    EXPECT_EQ(first, replay);
+    EXPECT_EQ(first.front().nodes, (std::vector{NodeId{1}, NodeId{2}, NodeId{4}}));
+    graph.set_edge_available(EdgeId{2}, false);
+    const auto after_closure = find_route_candidates(graph, NodeId{1}, NodeId{4}, 6U);
+    ASSERT_FALSE(after_closure.empty());
+    EXPECT_TRUE(std::ranges::all_of(after_closure, [](const Route& route) {
+        return std::ranges::find(route.edges, EdgeId{2}) == route.edges.end();
+    }));
 }
 
 }  // namespace

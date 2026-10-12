@@ -1,5 +1,7 @@
 #include "airside/agents/operational_agent.hpp"
 
+#include <algorithm>
+#include <ranges>
 #include <stdexcept>
 
 namespace airside::agents {
@@ -71,15 +73,51 @@ Decision AdaptiveRoutingPolicy::decide(const Observation& observation,
             : observation.invalid_edge ? "Closure invalidated the current route; selecting a safe replacement."
             : "The objective changed; selecting a safe route to its new destination.");
     }
+    if (!observation.candidates.empty()) {
+        const auto best = std::ranges::min_element(observation.candidates, {}, &CandidateEvaluation::score_seconds);
+        const auto current = std::ranges::find(observation.candidates, CandidateKind::ContinueCurrentRoute,
+            &CandidateEvaluation::kind);
+        if (best != observation.candidates.end() && best->valid) {
+            if (best->kind == CandidateKind::Wait)
+                return wait(ReasonCode::ReservationBlocked,
+                    "The deterministic wait estimate scores below route alternatives while the reservation remains active.");
+            if (best->kind == CandidateKind::ContinueCurrentRoute && best->route)
+                return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+                    best->route, "Continue the current route because its weighted operational score is lowest."};
+            if (best->kind == CandidateKind::AlternateRoute && observation.current_route) {
+                const bool cooldown_elapsed = !memory.last_replan_at ||
+                    observation.time - *memory.last_replan_at >= decision_cooldown_;
+                const bool materially_better = current == observation.candidates.end() ||
+                    best->score_seconds + static_cast<double>(minimum_improvement_.count()) < current->score_seconds;
+                if (cooldown_elapsed && materially_better && best->route)
+                    return {ActionType::PlanRoute, AgentStatus::Replanning, ReasonCode::Congestion,
+                        best->route, "Alternate route has the lowest weighted taxi, distance, and reservation-wait score."};
+                if (current != observation.candidates.end() && current->route)
+                    return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+                        current->route, "Continue the current route; alternatives do not exceed the improvement threshold."};
+            }
+            if (best->route) {
+                const bool avoided_forecast_wait = std::ranges::any_of(observation.candidates,
+                    [&](const CandidateEvaluation& candidate) {
+                        return candidate.route && candidate.score_seconds > best->score_seconds &&
+                            candidate.expected_wait > best->expected_wait;
+                    });
+                return {ActionType::PlanRoute, AgentStatus::Replanning,
+                    avoided_forecast_wait ? ReasonCode::Congestion : ReasonCode::ObjectiveCreated,
+                    best->route, avoided_forecast_wait
+                        ? "Selected the lowest-scoring route after accounting for forecast reservation waiting."
+                        : "Selected the lowest-scoring currently valid route candidate."};
+            }
+        }
+    }
     if (!observation.current_route)
         return plan(observation, ReasonCode::ObjectiveCreated,
             "Objective has no route yet; selecting the best currently observed route.");
     if (observation.reservation_blocked) {
         const bool cooldown_elapsed = !memory.last_replan_at ||
             observation.time - *memory.last_replan_at >= decision_cooldown_;
-        const auto required_improvement = minimum_improvement_;
         const bool materially_better = observation.available_route && cooldown_elapsed &&
-            observation.available_route_cost + required_improvement < observation.current_route_cost;
+            observation.available_route_cost + minimum_improvement_ < observation.current_route_cost;
         if (materially_better)
             return plan(observation, ReasonCode::Congestion,
                 "A clear alternative exceeds the configured improvement threshold after sustained blockage.");
@@ -150,6 +188,15 @@ std::string route_string(const std::optional<Route>& route) {
         result += std::to_string(node.value());
     }
     return result;
+}
+
+std::string_view to_string(CandidateKind value) noexcept {
+    switch (value) {
+    case CandidateKind::ContinueCurrentRoute: return "CONTINUE_CURRENT_ROUTE";
+    case CandidateKind::AlternateRoute: return "ALTERNATE_ROUTE";
+    case CandidateKind::Wait: return "WAIT";
+    }
+    return "UNKNOWN";
 }
 
 }  // namespace airside::agents

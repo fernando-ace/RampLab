@@ -25,6 +25,7 @@ struct Options {
     std::optional<std::filesystem::path> event_recording;
     std::optional<std::filesystem::path> metrics_json;
     std::optional<std::filesystem::path> metrics_csv;
+    std::optional<std::filesystem::path> agent_decisions;
     bool verbose{true};
     bool dump_snapshots{false};
     bool progress{false};
@@ -35,7 +36,7 @@ void print_usage() {
     std::cout
         << "Usage: airside_cli [--scenario FILE] [--seed NUMBER] [--quiet]\n"
         << "                   [--dump-snapshots] [--record-events FILE]\n"
-        << "                   [--metrics-json FILE] [--metrics-csv FILE] [--progress] [--help]\n";
+        << "                   [--metrics-json FILE] [--metrics-csv FILE] [--agent-decisions FILE] [--progress] [--help]\n";
 }
 
 Options parse_options(int argc, char* argv[]) {
@@ -48,13 +49,14 @@ Options parse_options(int argc, char* argv[]) {
         if (argument == "--progress") { result.progress = true; continue; }
         if (argument == "--live-control") { result.live_control = true; result.verbose = false; continue; }
         if (argument == "--scenario" || argument == "--record-events" || argument == "--seed" ||
-            argument == "--metrics-json" || argument == "--metrics-csv") {
+            argument == "--metrics-json" || argument == "--metrics-csv" || argument == "--agent-decisions") {
             if (++index >= argc) throw std::invalid_argument(std::format("{} requires a value", argument));
             const std::string value{argv[index]};
             if (argument == "--scenario") result.scenario = value;
             else if (argument == "--record-events") result.event_recording = value;
             else if (argument == "--metrics-json") result.metrics_json = value;
             else if (argument == "--metrics-csv") result.metrics_csv = value;
+            else if (argument == "--agent-decisions") result.agent_decisions = value;
             else {
                 std::size_t consumed = 0;
                 result.seed = std::stoull(value, &consumed);
@@ -95,6 +97,7 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
             << ",\"agent_objectives_completed\":" << metrics.agent_objectives_completed
             << ",\"agent_objectives_failed\":" << metrics.agent_objectives_failed
             << ",\"agent_operator_interventions\":" << metrics.agent_operator_interventions
+            << ",\"mean_departure_delay_seconds\":" << metrics.mean_departure_delay_seconds
             << ",\"total_turnarounds\":" << metrics.total_turnarounds
             << ",\"completed_turnarounds\":" << metrics.completed_turnarounds
             << ",\"delayed_turnarounds\":" << metrics.delayed_turnarounds
@@ -410,6 +413,54 @@ std::string json_escape(std::string_view text) {
         }
     }
     return result;
+}
+
+void write_agent_decisions(const std::filesystem::path& path, const airside::SimulationResult& result) {
+    if (!path.parent_path().empty()) std::filesystem::create_directories(path.parent_path());
+    std::ofstream output{path};
+    if (!output) throw std::runtime_error("cannot create agent decision trace: " + path.string());
+    const auto route_json = [&](const std::optional<airside::Route>& route) {
+        if (!route) { output << "null"; return; }
+        output << "{\"nodes\":[";
+        for (std::size_t i = 0; i < route->nodes.size(); ++i) { if (i) output << ','; output << route->nodes[i].value(); }
+        output << "],\"edges\":[";
+        for (std::size_t i = 0; i < route->edges.size(); ++i) { if (i) output << ','; output << route->edges[i].value(); }
+        output << "],\"distance_m\":" << route->distance_m << ",\"planner_cost_seconds\":" << route->travel_time.count() << '}';
+    };
+    output << std::fixed << std::setprecision(3) << "{\"schema_version\":1,\"seed\":" << result.seed << ",\"decisions\":[";
+    for (std::size_t i = 0; i < result.agent_decisions.size(); ++i) {
+        const auto& event = result.agent_decisions[i];
+        if (i) output << ',';
+        output << "{\"event_id\":\"" << json_escape(event.event_id) << "\",\"time_seconds\":" << event.time.count()
+            << ",\"agent_id\":\"" << json_escape(event.agent_id) << "\",\"policy\":\"" << json_escape(event.policy_id)
+            << "\",\"objective\":{\"id\":\"" << json_escape(event.objective.id) << "\",\"type\":\""
+            << airside::agents::to_string(event.objective.type) << "\",\"destination\":" << event.objective.destination.value()
+            << "},\"observation\":{\"current_node\":" << event.observation.current_node.value()
+            << ",\"destination\":" << event.observation.destination.value()
+            << ",\"route_invalidated\":" << (event.observation.route_invalidated ? "true" : "false")
+            << ",\"reservation_blocked\":" << (event.observation.reservation_blocked ? "true" : "false")
+            << ",\"blocked_for_seconds\":" << event.observation.blocked_for.count()
+            << ",\"current_route\":";
+        route_json(event.observation.current_route);
+        output << "},\"candidates\":[";
+        for (std::size_t j = 0; j < event.candidates.size(); ++j) {
+            const auto& candidate = event.candidates[j]; if (j) output << ',';
+            output << "{\"kind\":\"" << airside::agents::to_string(candidate.kind) << "\",\"valid\":" << (candidate.valid ? "true" : "false")
+                << ",\"predicted_taxi_distance_m\":" << candidate.predicted_taxi_distance_m
+                << ",\"predicted_taxi_seconds\":" << candidate.predicted_taxi_time.count()
+                << ",\"expected_wait_seconds\":" << candidate.expected_wait.count()
+                << ",\"score_seconds\":" << candidate.score_seconds << ",\"scoring_basis\":\""
+                << json_escape(candidate.explanation) << "\",\"route\":";
+            route_json(candidate.route); output << '}';
+        }
+        output << "],\"selected_candidate\":";
+        if (event.selected_candidate) output << *event.selected_candidate; else output << "null";
+        output << ",\"action\":\"" << airside::agents::to_string(event.action) << "\",\"reason\":\""
+            << airside::agents::to_string(event.reason) << "\",\"result\":\"" << json_escape(event.result)
+            << "\",\"explanation\":\"" << json_escape(event.explanation) << "\",\"selected_route\":";
+        route_json(event.selected_route); output << '}';
+    }
+    output << "]}\n";
 }
 
 class JsonLinesEventSink final : public airside::ISimulationEventSink {
@@ -779,6 +830,7 @@ int main(int argc, char* argv[]) {
             write_metrics(options.metrics_json.value_or(std::filesystem::path{}),
                 options.metrics_csv.value_or(std::filesystem::path{}), result, simulation.snapshot());
         }
+        if (options.agent_decisions) write_agent_decisions(*options.agent_decisions, result);
         const auto elapsed = std::chrono::duration<double>(
             std::chrono::steady_clock::now() - started).count();
         if (console_sink.failed() || (recording_sink && recording_sink->failed())) {
