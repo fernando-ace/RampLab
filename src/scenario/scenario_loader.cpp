@@ -225,8 +225,9 @@ ScenarioDocument parse_document(const YAML::Node& root) {
         config.return_vehicles_after_task = optional_bool(surface, "return_service_vehicles_to_depot_after_task", false, "surface_operations");
         if (surface["aircraft_routing_policy"])
             config.aircraft_routing_policy = scalar<std::string>(surface, "aircraft_routing_policy", "surface_operations");
-        if (config.aircraft_routing_policy != "SCRIPTED" && config.aircraft_routing_policy != "ADAPTIVE")
-            throw ScenarioLoadError("surface_operations.aircraft_routing_policy must be SCRIPTED or ADAPTIVE");
+        if (config.aircraft_routing_policy != "SCRIPTED" && config.aircraft_routing_policy != "ADAPTIVE" &&
+            config.aircraft_routing_policy != "COORDINATED_ADAPTIVE")
+            throw ScenarioLoadError("surface_operations.aircraft_routing_policy must be SCRIPTED, ADAPTIVE, or COORDINATED_ADAPTIVE");
         document.surface_operations = std::move(config);
     }
     return document;

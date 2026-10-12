@@ -1542,8 +1542,9 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
     for (const auto& [edge, owner] : surface_edge_reservations_) {
         if (owner != id) expected_wait.emplace(edge, SimTime{30});
     }
+    const bool adaptive_policy = scenario_.surface_operations->aircraft_routing_policy != agents::AutonomyMode::Scripted;
     observation.available_route = find_route(scenario_.graph, state.node, destination,
-        scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::Adaptive
+        adaptive_policy
             ? expected_wait : std::unordered_map<EdgeId, SimTime>{});
     if (observation.available_route) observation.available_route_cost = observation.available_route->travel_time;
     std::unordered_map<EdgeId, SimTime> route_waits;
@@ -1565,7 +1566,22 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
             other_state.phase == SurfaceAircraftState::Phase::Departed ||
             other_state.phase == SurfaceAircraftState::Phase::Arrived ||
             other_state.phase == SurfaceAircraftState::Phase::WaitingForRunway) continue;
-        for (const auto edge : other_agent.plan->edges) {
+        for (std::size_t route_index = other_state.edge_index;
+             route_index < other_agent.plan->edges.size(); ++route_index) {
+            const auto edge = other_agent.plan->edges[route_index];
+            if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive &&
+                observation.shared_traffic.size() < 32U) {
+                const auto edge_reservation = surface_edge_reservations_.find(edge);
+                SimTime release = now_ + SimTime{30};
+                if (edge_reservation != surface_edge_reservations_.end()) {
+                    if (other_state.phase_end && *other_state.phase_end > now_) release = *other_state.phase_end;
+                }
+                observation.shared_traffic.push_back({std::format("aircraft-{}", other_id.value()), edge,
+                    surface_agents_.at(other_id).objective.destination, release,
+                    other_state.wait_started ? now_ - *other_state.wait_started : SimTime::zero(),
+                    surface_agents_.at(other_id).objective.priority,
+                    edge_reservation != surface_edge_reservations_.end()});
+            }
             if (surface_edge_reservations_.contains(edge)) continue;
             const auto& edge_data = scenario_.graph.edge(edge);
             const auto travel = static_cast<std::int64_t>(std::ceil(edge_data.distance_m /
@@ -1605,7 +1621,41 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
         // time and operational waiting remain the dominant terms.
         candidate.score_seconds = static_cast<double>(candidate.predicted_taxi_time.count() +
             candidate.expected_wait.count()) + candidate.predicted_taxi_distance_m / 50.0;
+        candidate.estimated_system_cost_seconds = candidate.score_seconds;
+        if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive) {
+            std::map<AircraftId, EdgeId> conflicting_agents;
+            for (const auto& [other_id, other_agent] : surface_agents_) {
+                if (other_id == id || !other_agent.plan) continue;
+                const auto& other_state = surface_aircraft_.at(other_id);
+                if (other_state.phase == SurfaceAircraftState::Phase::Failed ||
+                    other_state.phase == SurfaceAircraftState::Phase::Departed ||
+                    other_state.phase == SurfaceAircraftState::Phase::Arrived ||
+                    other_state.phase == SurfaceAircraftState::Phase::WaitingForRunway) continue;
+                for (std::size_t route_index = other_state.edge_index;
+                     route_index < other_agent.plan->edges.size(); ++route_index) {
+                    const auto shared_edge = other_agent.plan->edges[route_index];
+                    if (std::ranges::find(route.edges, shared_edge) == route.edges.end()) continue;
+                    conflicting_agents.emplace(other_id, shared_edge);
+                    break;
+                }
+            }
+            candidate.affected_agents = conflicting_agents.size();
+            if (!conflicting_agents.empty()) {
+                const auto& [other_id, edge] = *conflicting_agents.begin();
+                candidate.conflicting_agent = std::format("aircraft-{}", other_id.value());
+                candidate.conflicting_edge = edge;
+                for (const auto& [other_id_key, conflict_edge] : conflicting_agents) {
+                    (void)other_id_key;
+                    const auto wait = route_waits.find(conflict_edge);
+                    candidate.estimated_system_cost_seconds += wait != route_waits.end()
+                        ? static_cast<double>(wait->second.count())
+                        : static_cast<double>(taxi_seconds(route).count());
+                }
+            }
+        }
         candidate.explanation = "taxi_time + expected_reservation_wait + distance_m/50";
+        if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive)
+            candidate.explanation += " + estimated delay imposed on active route intents";
         return candidate;
     };
     if (!observation.objective_satisfied) {
@@ -1641,6 +1691,8 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
             }
             candidate.score_seconds = static_cast<double>(wait.count() + candidate.predicted_taxi_time.count()) +
                 candidate.predicted_taxi_distance_m / 50.0;
+            if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive)
+                candidate.estimated_system_cost_seconds = candidate.score_seconds;
             candidate.explanation = "wait estimate + remaining current-route taxi time + distance_m/50";
             observation.candidates.push_back(std::move(candidate));
         }
@@ -1684,6 +1736,17 @@ void Simulation::record_agent_decision(AircraftId id, const agents::Observation&
     trace.operator_triggered = observation.operator_triggered;
     trace.result = std::move(result);
     trace.explanation = decision.explanation;
+    if (trace.selected_candidate) {
+        const auto& selected = trace.candidates[*trace.selected_candidate];
+        trace.estimated_system_cost_seconds = selected.estimated_system_cost_seconds;
+        trace.affected_agents = selected.affected_agents;
+        trace.coordination_conflict_agent = selected.conflicting_agent;
+        trace.coordination_conflict_edge = selected.conflicting_edge;
+        if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive)
+            trace.coordination_rule = "minimize local taxi cost plus estimated shared-route delay; route candidates retain stable order for ties; resource contention uses oldest wait, then higher objective priority, then aircraft ID";
+        if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive)
+            trace.safety_constraints = "closed-edge rejection; exclusive edge and node reservations; aircraft and ground-vehicle clearance checks; safe failure on no feasible route";
+    }
     agent.status = decision.status;
     agent.current_action = decision.action;
     agent.last_reason = decision.reason;
@@ -1965,7 +2028,28 @@ void Simulation::handle_surface_tick() {
         }
     }
 
-    for (auto& [id, state] : surface_aircraft_) {
+    std::vector<AircraftId> movement_order;
+    movement_order.reserve(surface_aircraft_.size());
+    for (const auto& [id, state] : surface_aircraft_) {
+        (void)state;
+        movement_order.push_back(id);
+    }
+    if (config.aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive) {
+        std::ranges::stable_sort(movement_order, [&](AircraftId left, AircraftId right) {
+            const auto& lhs = surface_aircraft_.at(left);
+            const auto& rhs = surface_aircraft_.at(right);
+            const auto lhs_age = lhs.wait_started ? now_ - *lhs.wait_started : SimTime::zero();
+            const auto rhs_age = rhs.wait_started ? now_ - *rhs.wait_started : SimTime::zero();
+            const auto lhs_agent = surface_agents_.find(left);
+            const auto rhs_agent = surface_agents_.find(right);
+            const auto lhs_priority = lhs_agent == surface_agents_.end() ? 0 : lhs_agent->second.objective.priority;
+            const auto rhs_priority = rhs_agent == surface_agents_.end() ? 0 : rhs_agent->second.objective.priority;
+            return agents::coordination_precedes({lhs_age, lhs_priority, left.value()},
+                {rhs_age, rhs_priority, right.value()});
+        });
+    }
+    for (const auto id : movement_order) {
+        auto& state = surface_aircraft_.at(id);
         if (state.phase == Phase::WaitingForGate) {
             const auto& assigned_gate = gate(aircraft(id).gate());
             const auto reservation = gate_arrival_reservations_.find(aircraft(id).gate());
@@ -2015,7 +2099,7 @@ void Simulation::handle_surface_tick() {
                     event_for(SimulationEventType::SurfaceWaitingForPushback, id);
                 }
                 const auto agent = surface_agents_.find(id);
-                if (config.aircraft_routing_policy == agents::AutonomyMode::Adaptive && state.wait_started &&
+                if (config.aircraft_routing_policy != agents::AutonomyMode::Scripted && state.wait_started &&
                     (agent == surface_agents_.end() || !agent->second.memory.last_blockage_decision_at ||
                      now_ - *agent->second.memory.last_blockage_decision_at >= SimTime{30}) &&
                     now_ - *state.wait_started >= SimTime{30}) {
@@ -2106,7 +2190,7 @@ void Simulation::handle_surface_tick() {
                 event_for(SimulationEventType::SurfaceWaitingForTraffic, id, edge_id);
             }
             const auto agent = surface_agents_.find(id);
-            if (config.aircraft_routing_policy == agents::AutonomyMode::Adaptive && state.wait_started &&
+            if (config.aircraft_routing_policy != agents::AutonomyMode::Scripted && state.wait_started &&
                 (agent == surface_agents_.end() || !agent->second.memory.last_blockage_decision_at ||
                  now_ - *agent->second.memory.last_blockage_decision_at >= SimTime{30}) &&
                 now_ - *state.wait_started >= SimTime{30}) {
