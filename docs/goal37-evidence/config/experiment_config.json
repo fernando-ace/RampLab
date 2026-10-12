@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "policies": [
+    "SCRIPTED",
+    "ADAPTIVE",
+    "COORDINATED_ADAPTIVE"
+  ],
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "serial_runs": 90,
+  "parallel_replay_workers": 4,
+  "configuration_delta": "surface_operations.aircraft_routing_policy only",
+  "scenarios": {
+    "shared_bottleneck": {
+      "source": "scenarios/surface_traffic.yaml",
+      "purpose": "Competing aircraft use a constrained taxiway and node.",
+      "source_sha256": "e00aa18b8c020bc64cd782aea6ff0b8528d964267a1c701dc15a28fa001f7d24",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/shared_bottleneck-scripted.yaml",
+          "sha256": "73bf6fdb6cae2c4cce26418428ac2fe6c4bd0facff67d7a2df3e5c75ea908071"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/shared_bottleneck-adaptive.yaml",
+          "sha256": "8f876cb4c6c548d9b1678c3dfd20a05416733b4831a671222353addf4fe2e372"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/shared_bottleneck-coordinated_adaptive.yaml",
+          "sha256": "846e46031c29475f29e932cd7ad1f945a7e9d2a8de07eb367f0c90b4f5fad938"
+        }
+      }
+    },
+    "route_choice_interaction": {
+      "source": "scenarios/goal35_route_choice_demo.yaml",
+      "purpose": "An agent can choose a direct or shared route.",
+      "source_sha256": "bd88be99cbc19b32edd63458551f1a1e3e449a84755ca82da2a75aca89df839e",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/route_choice_interaction-scripted.yaml",
+          "sha256": "ae79daf9f8cbfd0ea0f286063f38433a0a69eed8ccf1a0d6339cb86bef573cb8"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/route_choice_interaction-adaptive.yaml",
+          "sha256": "ba3c7f47545f329c9b6f12c5523899a4b4a6b07b8268692925e6c8b7667db62f"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/route_choice_interaction-coordinated_adaptive.yaml",
+          "sha256": "a6643e43dcc0efe913c955a049abc28a60a08984edc1a772c1f3971f57bbe3fe"
+        }
+      }
+    },
+    "closure_disruption": {
+      "source": "scenarios/surface_traffic_disrupted.yaml",
+      "purpose": "A deterministic route closure affects active traffic.",
+      "source_sha256": "4e718ed4650fea98d3269283c97d7ca15f675a652898e26374a57cda62313fb2",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/closure_disruption-scripted.yaml",
+          "sha256": "ca6255cac7609ffdcd58168d55d7951127b85bda00829e6c418a8317ab5e63fc"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/closure_disruption-adaptive.yaml",
+          "sha256": "0ecd1d26a109f6c607e396b66617292a3e40bda812c59dbbbef25b91909623f2"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/closure_disruption-coordinated_adaptive.yaml",
+          "sha256": "c6598a603ecc96fcaf1f0379f505df7311174b34e2c1ea843d88a62231ebfdad"
+        }
+      }
+    },
+    "priority_conflict": {
+      "source": "scenarios/mixed_runway_operations.yaml",
+      "purpose": "Arrivals and departures compete for shared surface access.",
+      "source_sha256": "28aa91615161db09694ee94449fa8fd3585f7b30aa9f93f4d3ef7ffed4f4e545",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/priority_conflict-scripted.yaml",
+          "sha256": "ea3f05464d0e877121f0cb4c42761f74f22ef619c0f7d8e0e688f16027a2206f"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/priority_conflict-adaptive.yaml",
+          "sha256": "26c5b04f9f3a6aff25b09adf5f153088d3266ea3681dcbfc08e31c6b75579ea1"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/priority_conflict-coordinated_adaptive.yaml",
+          "sha256": "dd7da721fa6d96f3425533f394fc48318645460eb10ab6445ab97db96856609e"
+        }
+      }
+    },
+    "fairness_contention": {
+      "source": "scenarios/surface_traffic.yaml",
+      "purpose": "Repeated bottleneck contention is used to inspect wait aging and completion order.",
+      "source_sha256": "e00aa18b8c020bc64cd782aea6ff0b8528d964267a1c701dc15a28fa001f7d24",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/fairness_contention-scripted.yaml",
+          "sha256": "73bf6fdb6cae2c4cce26418428ac2fe6c4bd0facff67d7a2df3e5c75ea908071"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/fairness_contention-adaptive.yaml",
+          "sha256": "8f876cb4c6c548d9b1678c3dfd20a05416733b4831a671222353addf4fe2e372"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/fairness_contention-coordinated_adaptive.yaml",
+          "sha256": "846e46031c29475f29e932cd7ad1f945a7e9d2a8de07eb367f0c90b4f5fad938"
+        }
+      }
+    },
+    "non_beneficial_coordination": {
+      "source": "scenarios/turnaround_lifecycle.yaml",
+      "purpose": "Low-conflict baseline where coordination may add cost without benefit.",
+      "source_sha256": "c2c2242531c53b6f006324b3fc6ccff771515529989f950d69e0a73ac39eaeda",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/non_beneficial_coordination-scripted.yaml",
+          "sha256": "9e6967800dd87c33db7c1df53c9152faca1c06e7906e3f45a77be48371cbb1e7"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/non_beneficial_coordination-adaptive.yaml",
+          "sha256": "a3302206ca79a686340e962a5d57b6309e95aed19fc01a0329fac5b4588df696"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/non_beneficial_coordination-coordinated_adaptive.yaml",
+          "sha256": "6bf90681622f8237c017c3ecf9d7b80de9249d85033c29331d398645a349d7ba"
+        }
+      }
+    },
+    "shared_runway_entry_queue": {
+      "source": "scenarios/goal37_shared_runway_entry_queue.yaml",
+      "purpose": "Synthetic extended runway-entry occupancy creates a longer shared-edge queue.",
+      "source_sha256": "94178a41927f84a61279d66206e7aff063639b631c89cedd337976010e9ed75a",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/shared_runway_entry_queue-scripted.yaml",
+          "sha256": "c1d8a80bfc92255a2d0ca03e231aff6305718373f432a690c7bae266ae378b17"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/shared_runway_entry_queue-adaptive.yaml",
+          "sha256": "28a8cc79f0accbf70ebf5c98b6b00e2159893e3591c18dae076d94f8805ba11b"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/shared_runway_entry_queue-coordinated_adaptive.yaml",
+          "sha256": "a8c2732e384547c836974c1fa9e0c796cac98e2b48f4f24bff2ee4e07f69ce36"
+        }
+      }
+    },
+    "long_shared_corridor": {
+      "source": "scenarios/goal37_long_shared_corridor.yaml",
+      "purpose": "Synthetic longer merge corridor makes route overlap more costly.",
+      "source_sha256": "8863a85a587fcb4a2b501a9952f0084c9c2947041d85038f60449ed9e9a20507",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/long_shared_corridor-scripted.yaml",
+          "sha256": "323c5008cc89b167ce0f39f327bcb88fd7c1b6ea7c65e4576618dc7c0d20c14b"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/long_shared_corridor-adaptive.yaml",
+          "sha256": "a749f7a2630d39709342dd49ccba4830528416ba1544c44afa4b1cbbc4ab57bf"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/long_shared_corridor-coordinated_adaptive.yaml",
+          "sha256": "9e5e8ee79f1c61d5b771118ab09a9b52c605134495ae3dafc83d1ddbd8d0c47d"
+        }
+      }
+    },
+    "early_closure_merge": {
+      "source": "scenarios/goal37_early_closure_merge.yaml",
+      "purpose": "Synthetic early edge closure forces active routes to converge.",
+      "source_sha256": "7c6a3410d57c05b1b47851e5b9c3c1a385a3e28f278513571b78d3cabacba6c2",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/early_closure_merge-scripted.yaml",
+          "sha256": "a3d3d5d5d4671122135ef0a5a429ceaf421a77e7106875ece044c17e2abf785a"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/early_closure_merge-adaptive.yaml",
+          "sha256": "e3f4343698bd062745256d1f0c793fa678d6ce1ea1af8b1ee1f47aedab029df8"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/early_closure_merge-coordinated_adaptive.yaml",
+          "sha256": "01083d7d6365fe64d90086bf484f07b3452f3c89cca4cfbd80393a126d051c97"
+        }
+      }
+    },
+    "coordinated_route_choice": {
+      "source": "scenarios/goal37_coordinated_route_choice.yaml",
+      "purpose": "Synthetic route-choice case where shared-route cost changes one movement decision.",
+      "source_sha256": "6bc6e6e0daa038950ce0140f4a6d171be934c7a4a618195ceb2515fd08917e07",
+      "configured_scenarios": {
+        "SCRIPTED": {
+          "path": "config/scenarios/coordinated_route_choice-scripted.yaml",
+          "sha256": "546cb5830213b262016e1d5dde9ee575173c335a960d1d718309f0a37d127d65"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/coordinated_route_choice-adaptive.yaml",
+          "sha256": "952c0ab2bd39503b9892873e244adb84b481639619f6c25950bd3529c3150ebe"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/coordinated_route_choice-coordinated_adaptive.yaml",
+          "sha256": "360bb4537e53e1660fab3e45d060a30bc9a65a18200d3176535128f907748fb0"
+        }
+      }
+    }
+  }
+}

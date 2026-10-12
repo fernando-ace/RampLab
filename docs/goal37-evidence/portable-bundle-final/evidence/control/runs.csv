@@ -1,0 +1,4 @@
+scenario,seed,simulated_duration_seconds,agent_decisions,agent_route_selections,agent_replans,agent_objectives_completed,agent_objectives_failed,mean_departure_delay_seconds,surface_departed_aircraft,surface_total_aircraft,surface_reroutes,surface_wait_events,surface_wait_seconds,surface_taxi_distance_m,surface_taxi_seconds,runway_queue_seconds,surface_safe_failures,max_simultaneous_taxiing_aircraft,surface_aircraft_aircraft_collisions,surface_aircraft_ground_collisions,minimum_aircraft_separation_m,minimum_aircraft_ground_separation_m
+coordinated_route_choice,42,1119,9,6,0,3,0,549.0,3,3,0,1,213,780.0,396,206,0,2,0,0,30.0,80.083478
+coordinated_route_choice,43,1119,9,6,0,3,0,549.0,3,3,0,1,213,780.0,396,206,0,2,0,0,30.0,80.088471
+coordinated_route_choice,44,1118,9,6,0,3,0,548.0,3,3,0,1,213,780.0,396,206,0,2,0,0,30.0,80.121314
