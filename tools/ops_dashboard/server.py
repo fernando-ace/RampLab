@@ -9,20 +9,25 @@ import mimetypes
 import subprocess
 import sys
 import tempfile
+from io import BytesIO
+from zipfile import ZIP_DEFLATED, ZipFile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 try:
     from .live_session import LiveSession, LiveSessionError
     from . import scenario_studio
+    from . import experiments as scenario_experiments
 except ImportError:  # Direct `python tools/ops_dashboard/server.py` launch.
     from live_session import LiveSession, LiveSessionError
     import scenario_studio
+    import experiments as scenario_experiments
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
 REAL_DEMO_DIR: Path | None = None
 LIVE_SESSION = LiveSession()
+EXPERIMENTS = scenario_experiments.ExperimentManager(scenario_studio.HOME, scenario_studio)
 ANALYZER_PATH = REPO / "tools" / "experiment_analysis" / "analyze.py"
 spec = importlib.util.spec_from_file_location("ramplab_experiment_analysis", ANALYZER_PATH)
 if spec is None or spec.loader is None:
@@ -221,6 +226,10 @@ class Handler(BaseHTTPRequestHandler):
                 key = parse_qs(parsed_url.query).get("airport", ["kauo"])[0]
                 payload = scenario_studio.bootstrap(key)
                 payload["runs"] = scenario_studio.RunManagerSingleton.list()
+                payload["parameter_registry"] = scenario_experiments.registry(payload["scenario"], scenario_studio)
+                payload["experiment_metrics"] = [{"id": key, "label": metric.label, "unit": metric.unit, "category": metric.category,
+                                                   "lower_is_better": metric.lower_is_better}
+                                                  for key, metric in sorted(analyzer.METRICS.items())]
                 return self._send(200, json.dumps(payload, ensure_ascii=False).encode(), "application/json; charset=utf-8")
             except (ValueError, OSError, KeyError, TypeError) as exc:
                 return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
@@ -235,6 +244,36 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(404, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
         if path == "/api/studio/runs":
             return self._send(200, json.dumps({"runs": scenario_studio.RunManagerSingleton.list()}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if path == "/api/studio/experiments":
+            return self._send(200, json.dumps({"experiments": EXPERIMENTS.list()}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/experiments/") and path.endswith("/export"):
+            try:
+                ident = path.split("/")[-2]
+                data = EXPERIMENTS.get(ident)
+                buffer = BytesIO()
+                with ZipFile(buffer, "w", ZIP_DEFLATED) as archive:
+                    archive.writestr("experiment.json", json.dumps(data, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+                    archive.writestr("report.md", scenario_experiments.report_markdown(data))
+                    for config in data.get("configurations", []):
+                        archive.writestr(f"configurations/{config['configuration_id']}/scenario.json",
+                                         json.dumps(config.get("scenario", {}), ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+                blob = buffer.getvalue()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Disposition", f'attachment; filename="ramplab-experiment-{ident}.zip"')
+                self.send_header("Content-Length", str(len(blob)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(blob)
+                return
+            except (ValueError, FileNotFoundError, OSError, KeyError, json.JSONDecodeError) as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/experiments/"):
+            try:
+                experiment = EXPERIMENTS.get(path.rsplit("/", 1)[-1])
+                return self._send(200, json.dumps({"experiment": experiment}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+            except (ValueError, FileNotFoundError, OSError, json.JSONDecodeError) as exc:
+                return self._send(404, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
         if path.startswith("/api/studio/runs/") and path.endswith("/export"):
             try:
                 data = scenario_studio.export_run(path.split("/")[-2])
@@ -336,6 +375,12 @@ class Handler(BaseHTTPRequestHandler):
                     payload = {"comparison": scenario_studio.compare_runs(str(body.get("baseline_id", "")), str(body.get("variant_id", "")))}
                 elif self.path == "/api/studio/viewer":
                     payload = scenario_studio.launch_viewer(str(body.get("run_id", "")))
+                elif self.path == "/api/studio/experiments/create":
+                    payload = {"experiment": EXPERIMENTS.create(body.get("definition", {}))}
+                elif self.path == "/api/studio/experiments/start":
+                    payload = {"experiment": EXPERIMENTS.start(str(body.get("id", "")), body.get("workers"))}
+                elif self.path == "/api/studio/experiments/control":
+                    payload = {"experiment": EXPERIMENTS.control(str(body.get("id", "")), str(body.get("action", "")))}
                 else:
                     return self._send(404, b'{"error":"Not found"}', "application/json; charset=utf-8")
                 return self._send(200, json.dumps(payload, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
