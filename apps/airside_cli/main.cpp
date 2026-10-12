@@ -105,7 +105,35 @@ void write_metrics(const std::filesystem::path& json_path, const std::filesystem
             << ",\"reassignments\":" << metrics.fleet_reassignments
             << ",\"requests_created\":" << metrics.fleet_requests_created
             << ",\"requests_completed\":" << metrics.fleet_requests_completed
-            << ",\"requests_failed\":" << metrics.fleet_requests_failed << "},\"surface\":{\"departed_aircraft\":"
+            << ",\"requests_failed\":" << metrics.fleet_requests_failed
+            << ",\"deadlock_count\":" << metrics.fleet_deadlock_count
+            << ",\"unresolved_deadlock\":" << (metrics.fleet_deadlock_unresolved ? "true" : "false")
+            << ",\"failure_reason\":\"" << json_escape(metrics.fleet_failure_reason) << "\",\"wait_dependencies\":[";
+        for (std::size_t i = 0; i < metrics.fleet_wait_dependencies.size(); ++i) {
+            if (i) output << ',';
+            output << '\"' << json_escape(metrics.fleet_wait_dependencies[i]) << '\"';
+        }
+        output << "],\"deadlocked_vehicles\":[";
+        for (std::size_t i = 0; i < metrics.fleet_deadlocked_vehicles.size(); ++i) {
+            if (i) output << ',';
+            output << '\"' << json_escape(metrics.fleet_deadlocked_vehicles[i]) << '\"';
+        }
+        output << "],\"held_reservations\":[";
+        for (std::size_t i = 0; i < metrics.fleet_held_reservation_owners.size(); ++i) {
+            if (i) output << ',';
+            output << '\"' << json_escape(metrics.fleet_held_reservation_owners[i]) << '\"';
+        }
+        output << "],\"vehicle_diagnostics\":[";
+        for (std::size_t i = 0; i < metrics.fleet_vehicle_diagnostics.size(); ++i) {
+            if (i) output << ',';
+            output << '\"' << json_escape(metrics.fleet_vehicle_diagnostics[i]) << '\"';
+        }
+        output << "],\"recovery_events\":[";
+        for (std::size_t i = 0; i < metrics.fleet_recovery_events.size(); ++i) {
+            if (i) output << ',';
+            output << '\"' << json_escape(metrics.fleet_recovery_events[i]) << '\"';
+        }
+        output << "]},\"surface\":{\"departed_aircraft\":"
             << metrics.surface_departed_aircraft << ",\"total_aircraft\":" << metrics.surface_total_aircraft
             << ",\"departure_throughput_per_hour\":" << metrics.surface_departure_throughput_per_hour
             << ",\"reroutes\":" << metrics.surface_reroutes << ",\"wait_events\":" << metrics.surface_wait_events

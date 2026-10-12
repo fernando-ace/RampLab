@@ -9,10 +9,10 @@ The machine-readable form is [support_matrix.json](support_matrix.json). Support
 | UTC schedule | Supported with transformation | Absolute timestamps map to deterministic integer simulation seconds. |
 | Aircraft IDs/types/dimensions/registration | IDs supported; descriptive attributes metadata only | Existing aircraft behavior is used; no physical size/performance model is inferred. |
 | Gates | Supported with transformation | Explicit canonical-to-existing gate mapping. |
-| Fuel/baggage equipment | Supported with transformation | Maps to existing fueling/baggage dispatch capabilities and geometry spawn nodes. |
-| Catering equipment | Supported with transformation, using generic behavior | The generated vehicle retains its catering label, but current dispatch treats non-fueling vehicles through generic baggage-delivery behavior; there is no distinct catering capability. |
-| Tug, service cart, generic ground service vehicle | Metadata only | No validated matching fleet behavior exists. |
-| Fuel, baggage, catering, deboarding, cleaning, baggage load, pushback service tasks | Supported with transformation when mapped | Requirement minutes become task seconds; fueling uses fueling dispatch, and other mobile tasks currently use generic baggage-delivery dispatch. A missing required service mapping blocks generation. |
+| Fuel, baggage, catering, lavatory, potable-water, GPU, tug, stairs, air-start equipment | Supported with transformation when mapped | Each equipment mapping selects a distinct simulator service capability and spawn node; mobile resources use the existing routed fleet and safety system. |
+| Service cart and generic ground service vehicle | Metadata only unless explicitly mapped | Unmapped equipment is retained as metadata and warned about; no capability is inferred from its label. |
+| Fuel, baggage, catering, lavatory, potable-water, GPU, pushback, stairs, air-start tasks | Supported with transformation when mapped | Requirement minutes become task seconds and require a finite matching vehicle capability. A missing service or equipment mapping blocks generation. |
+| Deboarding, cabin cleaning, maintenance inspection, chocks, pushback preparation | Supported with transformation when mapped | These use finite abstract crew capacity; no mobile GSE is fabricated. |
 | Equipment outage | Supported with transformation only for an indefinite outage on mapped equipment | Uses native vehicle outage event; finite outage windows cannot restore a vehicle and are warned as unsupported. |
 | Route closure | Supported with transformation when route maps | Uses native road edge close event; unresolved route produces a warning. |
 | Delayed service | Supported with transformation when one generated task resolves | Uses the native task-duration disruption event. |

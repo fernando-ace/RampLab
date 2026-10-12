@@ -29,7 +29,7 @@ The output directory contains:
 - `identity-map.json`: canonical flight, aircraft, gate, equipment, turnaround requirement, and disruption identifiers mapped to simulator identifiers.
 - `support-matrix.json`: the feature support contract included with this generated scenario.
 
-Service semantics follow the current native simulator: fueling dispatches to the fuel-truck capability; other mobile tasks use generic baggage-delivery dispatch. Generated vehicle labels such as `catering` are retained, but they do not add a distinct simulator capability or performance model.
+Turnaround service and vehicle types are resolved through the selected mapping. Fuel, baggage, catering, lavatory, potable-water, GPU, tug/pushback, passenger-stairs, and air-start tasks can use distinct finite vehicle capabilities and the existing routed fleet dispatcher. Deboarding, cabin cleaning, maintenance inspection, chocks, and pushback preparation use finite abstract crew capacity. Airport mappings remain responsible for declaring which capabilities and spawn nodes exist. The generator's service durations are deterministic simulation assumptions; task-specific durations override them and none are measured KAUO operating data.
 
 Repeated generation with identical package bytes, mapping, geometry, seed, and disruption option produces identical output files. No timestamp or machine path is embedded in generated artifacts. The scenario epoch is the earliest flight operation timestamp or canonical disruption timestamp, including when generating a matched no-disruption control. This keeps flight schedules aligned across control and disruption variants. UTC instants become rounded integer seconds from that epoch; local timezone interpretation is not performed here.
 

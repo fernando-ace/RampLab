@@ -1,0 +1,65 @@
+[
+  {
+    "equipment_id": "G31-FUEL-01",
+    "type": "fuel_vehicle",
+    "status": "available",
+    "initial_location": "fbo_service_staging_fuel",
+    "classification": "ASSUMED FOR SIMULATION; no KAUO equipment inventory or dispatch location is asserted"
+  },
+  {
+    "equipment_id": "G31-FUEL-02",
+    "type": "fuel_vehicle",
+    "status": "available",
+    "initial_location": "gse_fuel_depot_02",
+    "classification": "ASSUMED FOR SIMULATION; control fleet quantity is two fuel trucks"
+  },
+  {
+    "equipment_id": "G31-BAG-01",
+    "type": "baggage_vehicle",
+    "status": "available",
+    "initial_location": "fbo_service_staging_west",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "equipment_id": "G31-LOAD-01",
+    "type": "service_cart",
+    "status": "available",
+    "initial_location": "fbo_service_staging_east",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "equipment_id": "G31-CATER-01",
+    "type": "catering_vehicle",
+    "status": "available",
+    "initial_location": "gse_catering_depot",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "equipment_id": "G31-LAV-01",
+    "type": "lavatory_vehicle",
+    "status": "available",
+    "initial_location": "gse_lavatory_depot",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "equipment_id": "G31-WATER-01",
+    "type": "potable_water_vehicle",
+    "status": "available",
+    "initial_location": "gse_water_depot",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "equipment_id": "G31-GPU-01",
+    "type": "ground_power_unit",
+    "status": "available",
+    "initial_location": "gse_gpu_depot",
+    "classification": "ASSUMED FOR SIMULATION"
+  },
+  {
+    "equipment_id": "G31-TUG-01",
+    "type": "tug",
+    "status": "available",
+    "initial_location": "gse_tug_depot",
+    "classification": "ASSUMED FOR SIMULATION"
+  }
+]
