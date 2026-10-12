@@ -1,0 +1,274 @@
+{
+  "determinism": {
+    "0": {
+      "status": "byte_identical"
+    },
+    "1": {
+      "status": "byte_identical"
+    },
+    "2": {
+      "status": "byte_identical"
+    },
+    "3": {
+      "status": "byte_identical"
+    },
+    "4": {
+      "status": "byte_identical"
+    },
+    "5": {
+      "status": "byte_identical"
+    },
+    "6": {
+      "status": "byte_identical"
+    },
+    "7": {
+      "status": "byte_identical"
+    },
+    "8": {
+      "status": "byte_identical"
+    },
+    "9": {
+      "status": "byte_identical"
+    },
+    "10": {
+      "status": "byte_identical"
+    },
+    "11": {
+      "status": "byte_identical"
+    },
+    "12": {
+      "status": "byte_identical"
+    },
+    "13": {
+      "status": "byte_identical"
+    },
+    "14": {
+      "status": "byte_identical"
+    },
+    "15": {
+      "status": "byte_identical"
+    },
+    "16": {
+      "status": "byte_identical"
+    },
+    "17": {
+      "status": "byte_identical"
+    },
+    "18": {
+      "status": "byte_identical"
+    },
+    "19": {
+      "status": "byte_identical"
+    },
+    "20": {
+      "status": "byte_identical"
+    },
+    "21": {
+      "status": "byte_identical"
+    },
+    "22": {
+      "status": "byte_identical"
+    },
+    "23": {
+      "status": "byte_identical"
+    },
+    "24": {
+      "status": "byte_identical"
+    },
+    "25": {
+      "status": "byte_identical"
+    },
+    "26": {
+      "status": "byte_identical"
+    },
+    "27": {
+      "status": "byte_identical"
+    },
+    "28": {
+      "status": "byte_identical"
+    },
+    "29": {
+      "status": "byte_identical"
+    },
+    "30": {
+      "status": "byte_identical"
+    },
+    "31": {
+      "status": "byte_identical"
+    },
+    "32": {
+      "status": "byte_identical"
+    },
+    "33": {
+      "status": "byte_identical"
+    },
+    "34": {
+      "status": "byte_identical"
+    },
+    "35": {
+      "status": "byte_identical"
+    },
+    "36": {
+      "status": "byte_identical"
+    },
+    "37": {
+      "status": "byte_identical"
+    },
+    "38": {
+      "status": "byte_identical"
+    },
+    "39": {
+      "status": "byte_identical"
+    },
+    "40": {
+      "status": "byte_identical"
+    },
+    "41": {
+      "status": "byte_identical"
+    },
+    "42": {
+      "status": "byte_identical"
+    },
+    "43": {
+      "status": "byte_identical"
+    },
+    "44": {
+      "status": "byte_identical"
+    },
+    "45": {
+      "status": "byte_identical"
+    },
+    "46": {
+      "status": "byte_identical"
+    },
+    "47": {
+      "status": "byte_identical"
+    },
+    "48": {
+      "status": "byte_identical"
+    },
+    "49": {
+      "status": "byte_identical"
+    },
+    "50": {
+      "status": "byte_identical"
+    },
+    "51": {
+      "status": "byte_identical"
+    },
+    "52": {
+      "status": "byte_identical"
+    },
+    "53": {
+      "status": "byte_identical"
+    },
+    "54": {
+      "status": "byte_identical"
+    },
+    "55": {
+      "status": "byte_identical"
+    },
+    "56": {
+      "status": "byte_identical"
+    },
+    "57": {
+      "status": "byte_identical"
+    },
+    "58": {
+      "status": "byte_identical"
+    },
+    "59": {
+      "status": "byte_identical"
+    },
+    "60": {
+      "status": "byte_identical"
+    },
+    "61": {
+      "status": "byte_identical"
+    },
+    "62": {
+      "status": "byte_identical"
+    },
+    "63": {
+      "status": "byte_identical"
+    },
+    "64": {
+      "status": "byte_identical"
+    },
+    "65": {
+      "status": "byte_identical"
+    },
+    "66": {
+      "status": "byte_identical"
+    },
+    "67": {
+      "status": "byte_identical"
+    },
+    "68": {
+      "status": "byte_identical"
+    },
+    "69": {
+      "status": "byte_identical"
+    },
+    "70": {
+      "status": "byte_identical"
+    },
+    "71": {
+      "status": "byte_identical"
+    },
+    "72": {
+      "status": "byte_identical"
+    },
+    "73": {
+      "status": "byte_identical"
+    },
+    "74": {
+      "status": "byte_identical"
+    },
+    "75": {
+      "status": "byte_identical"
+    },
+    "76": {
+      "status": "byte_identical"
+    },
+    "77": {
+      "status": "byte_identical"
+    },
+    "78": {
+      "status": "byte_identical"
+    },
+    "79": {
+      "status": "byte_identical"
+    },
+    "80": {
+      "status": "byte_identical"
+    },
+    "81": {
+      "status": "byte_identical"
+    },
+    "82": {
+      "status": "byte_identical"
+    },
+    "83": {
+      "status": "byte_identical"
+    },
+    "84": {
+      "status": "byte_identical"
+    },
+    "85": {
+      "status": "byte_identical"
+    },
+    "86": {
+      "status": "byte_identical"
+    },
+    "87": {
+      "status": "byte_identical"
+    },
+    "88": {
+      "status": "byte_identical"
+    },
+    "89": {
+      "status": "byte_identical"
+    }
+  }
+}

@@ -367,7 +367,7 @@ TEST(SurfaceTrafficTest, AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutc
     const auto choice = [](const auto& result) {
         return std::ranges::find_if(result.agent_decisions, [](const auto& event) {
             return event.agent_id == "aircraft-3" && event.time == airside::SimTime{548} &&
-                event.action == airside::agents::ActionType::PlanRoute;
+                    event.action == airside::agents::ActionType::PlanRoute;
         });
     };
     const auto adaptive_choice = choice(adaptive);
@@ -390,6 +390,47 @@ TEST(SurfaceTrafficTest, AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutc
     EXPECT_EQ(scripted.metrics.surface_safe_failures, 0U);
     EXPECT_EQ(adaptive.metrics.surface_aircraft_aircraft_collisions, 0U);
     EXPECT_EQ(scripted.metrics.surface_aircraft_aircraft_collisions, 0U);
+}
+
+TEST(SurfaceTrafficTest, CoordinatedChoiceReducesTaxiTimeOnSyntheticSharedRouteContention) {
+    for (const std::uint32_t seed : {42U, 43U, 44U}) {
+        auto adaptive_scenario = airside::load_scenario(scenario_file("goal37_coordinated_route_choice.yaml"));
+        auto coordinated_scenario = airside::load_scenario(scenario_file("goal37_coordinated_route_choice.yaml"));
+        adaptive_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Adaptive;
+        coordinated_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::CoordinatedAdaptive;
+        const auto adaptive = airside::Simulation{std::move(adaptive_scenario), seed}.run();
+        const auto coordinated = airside::Simulation{std::move(coordinated_scenario), seed}.run();
+
+        const auto find_first_choice = [](const auto& result) {
+            return std::ranges::find_if(result.agent_decisions, [](const auto& event) {
+                return event.agent_id == "aircraft-3" &&
+                    event.action == airside::agents::ActionType::PlanRoute;
+            });
+        };
+        const auto adaptive_choice = find_first_choice(adaptive);
+        const auto coordinated_choice = find_first_choice(coordinated);
+        ASSERT_NE(adaptive_choice, adaptive.agent_decisions.end());
+        ASSERT_NE(coordinated_choice, coordinated.agent_decisions.end());
+        ASSERT_TRUE(adaptive_choice->selected_route);
+        ASSERT_TRUE(coordinated_choice->selected_route);
+        EXPECT_NE(adaptive_choice->selected_route->edges, coordinated_choice->selected_route->edges);
+        EXPECT_TRUE(std::ranges::any_of(coordinated_choice->candidates, [](const auto& candidate) {
+            return candidate.affected_agents > 0 && candidate.estimated_wait_imposed_seconds > 0.0;
+        }));
+        EXPECT_EQ(coordinated_choice->reason, airside::agents::ReasonCode::Congestion);
+        EXPECT_NE(coordinated_choice->explanation.find("lower local-cost alternative"), std::string::npos);
+        EXPECT_EQ(coordinated_choice->safety_constraints.empty(), false);
+
+        EXPECT_EQ(adaptive.metrics.surface_wait_seconds, coordinated.metrics.surface_wait_seconds);
+        EXPECT_EQ(adaptive.metrics.mean_departure_delay_seconds, coordinated.metrics.mean_departure_delay_seconds);
+        EXPECT_EQ(adaptive.metrics.surface_taxi_seconds - coordinated.metrics.surface_taxi_seconds, 6);
+        for (const auto* result : {&adaptive, &coordinated}) {
+            EXPECT_EQ(result->metrics.agent_objectives_failed, 0U);
+            EXPECT_EQ(result->metrics.surface_safe_failures, 0U);
+            EXPECT_EQ(result->metrics.surface_aircraft_aircraft_collisions, 0U);
+            EXPECT_EQ(result->metrics.surface_aircraft_ground_collisions, 0U);
+        }
+    }
 }
 
 TEST(SurfaceTrafficTest, OperatorClosureIsObservedAndRecordedByAffectedAgent) {

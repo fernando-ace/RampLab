@@ -1,0 +1,173 @@
+{
+  "checks": [
+    {
+      "check": "run_count_consistency",
+      "detail": "Observed 3 run rows.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "seed_consistency",
+      "detail": "JSON=['42', '43', '44'], CSV=['42', '43', '44'], declared=['42', '43', '44'].",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "aircraft_totals",
+      "detail": "Aircraft rows 3; KPI 3.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "collision_evidence",
+      "detail": "Collision KPI(s): surface_aircraft_aircraft_collisions, surface_aircraft_ground_collisions",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "minimum_separation_evidence",
+      "detail": "Minimum separation KPI present.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "determinism_evidence",
+      "detail": "Independent repeat-run evidence supplied; see determinism.json. Repeated-run report contains 90 checks: byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "event_file_parseability",
+      "detail": "Parsed 513 ordered events.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "json_readability",
+      "detail": "Parsed experiment.json.",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "scenario_identity",
+      "detail": "JSON source scenario coordinated_route_choice.yaml; CSV scenario values ['coordinated_route_choice'].",
+      "experiment": "control",
+      "status": "PASS"
+    },
+    {
+      "check": "run_count_consistency",
+      "detail": "Observed 3 run rows.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "seed_consistency",
+      "detail": "JSON=['42', '43', '44'], CSV=['42', '43', '44'], declared=['42', '43', '44'].",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "aircraft_totals",
+      "detail": "Aircraft rows 3; KPI 3.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "collision_evidence",
+      "detail": "Collision KPI(s): surface_aircraft_aircraft_collisions, surface_aircraft_ground_collisions",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "minimum_separation_evidence",
+      "detail": "Minimum separation KPI present.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "determinism_evidence",
+      "detail": "Independent repeat-run evidence supplied; see determinism.json. Repeated-run report contains 90 checks: byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "event_file_parseability",
+      "detail": "Parsed 519 ordered events.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "json_readability",
+      "detail": "Parsed experiment.json.",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "scenario_identity",
+      "detail": "JSON source scenario coordinated_route_choice.yaml; CSV scenario values ['coordinated_route_choice'].",
+      "experiment": "disruption",
+      "status": "PASS"
+    },
+    {
+      "check": "repeat_run_determinism",
+      "detail": "Repeated-run report contains 90 checks: byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical, byte_identical",
+      "experiment": "comparison",
+      "status": "PASS"
+    }
+  ],
+  "hash_verification": {
+    "files_checked": 9,
+    "status": "PASS"
+  },
+  "missing_evidence": [
+    {
+      "artifact": "summary.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "control"
+    },
+    {
+      "artifact": "interventions.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "unreal-live.png",
+      "experiment": "control"
+    },
+    {
+      "artifact": "unreal-live.log",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "interventions.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "unreal-live.png",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "unreal-live.log",
+      "experiment": "disruption"
+    }
+  ],
+  "status": "PASS"
+}

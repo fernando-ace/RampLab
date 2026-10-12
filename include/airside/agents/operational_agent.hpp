@@ -48,6 +48,7 @@ struct CandidateEvaluation {
     bool valid{true};
     std::string explanation;
     double estimated_system_cost_seconds{};
+    double estimated_wait_imposed_seconds{};
     std::size_t affected_agents{};
     std::optional<std::string> conflicting_agent;
     std::optional<EdgeId> conflicting_edge;
@@ -89,6 +90,7 @@ struct Observation {
     std::optional<EdgeId> invalid_edge;
     bool reservation_blocked{};
     SimTime blocked_for{};
+    SimTime accumulated_wait_age{};
     SimTime current_route_cost{};
     std::optional<Route> available_route;
     SimTime available_route_cost{};

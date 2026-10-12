@@ -435,11 +435,13 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
             << ",\"agent_id\":\"" << json_escape(event.agent_id) << "\",\"policy\":\"" << json_escape(event.policy_id)
             << "\",\"objective\":{\"id\":\"" << json_escape(event.objective.id) << "\",\"type\":\""
             << airside::agents::to_string(event.objective.type) << "\",\"destination\":" << event.objective.destination.value()
+            << ",\"priority\":" << event.objective.priority
             << "},\"observation\":{\"current_node\":" << event.observation.current_node.value()
             << ",\"destination\":" << event.observation.destination.value()
             << ",\"route_invalidated\":" << (event.observation.route_invalidated ? "true" : "false")
             << ",\"reservation_blocked\":" << (event.observation.reservation_blocked ? "true" : "false")
             << ",\"blocked_for_seconds\":" << event.observation.blocked_for.count()
+            << ",\"accumulated_wait_age_seconds\":" << event.observation.accumulated_wait_age.count()
             << ",\"current_route\":";
         route_json(event.observation.current_route);
         output << ",\"shared_traffic\":[";
@@ -455,13 +457,27 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
         output << "]},\"candidates\":[";
         for (std::size_t j = 0; j < event.candidates.size(); ++j) {
             const auto& candidate = event.candidates[j]; if (j) output << ',';
+            const bool selected = event.selected_candidate && *event.selected_candidate == j;
+            std::string rejection_reason;
+            if (!selected) {
+                if (!candidate.valid) rejection_reason = candidate.explanation;
+                else if (event.selected_candidate && candidate.estimated_system_cost_seconds >
+                    event.candidates[*event.selected_candidate].estimated_system_cost_seconds)
+                    rejection_reason = "higher estimated system cost than the selected candidate";
+                else if (event.action == airside::agents::ActionType::FollowRoute)
+                    rejection_reason = "current route retained by adaptive cooldown or improvement threshold";
+                else rejection_reason = "equal system cost; stable candidate order retained the selected candidate";
+            }
             output << "{\"kind\":\"" << airside::agents::to_string(candidate.kind) << "\",\"valid\":" << (candidate.valid ? "true" : "false")
                 << ",\"predicted_taxi_distance_m\":" << candidate.predicted_taxi_distance_m
                 << ",\"predicted_taxi_seconds\":" << candidate.predicted_taxi_time.count()
                 << ",\"expected_wait_seconds\":" << candidate.expected_wait.count()
                 << ",\"score_seconds\":" << candidate.score_seconds
                 << ",\"estimated_system_cost_seconds\":" << candidate.estimated_system_cost_seconds
-                << ",\"affected_agents\":" << candidate.affected_agents << ",\"conflicting_agent\":";
+                << ",\"estimated_wait_imposed_seconds\":" << candidate.estimated_wait_imposed_seconds
+                << ",\"affected_agents\":" << candidate.affected_agents
+                << ",\"selected\":" << (selected ? "true" : "false")
+                << ",\"rejection_reason\":\"" << json_escape(rejection_reason) << "\",\"conflicting_agent\":";
             if (candidate.conflicting_agent) output << '"' << json_escape(*candidate.conflicting_agent) << '"';
             else output << "null";
             output << ",\"conflicting_edge\":";

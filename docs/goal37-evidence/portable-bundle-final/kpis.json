@@ -1,0 +1,182 @@
+{
+  "comparison": {
+    "baseline": "control",
+    "comparison": "disruption",
+    "metrics": {
+      "agent_decisions": {
+        "absolute_change": 2.0,
+        "baseline": 9.0,
+        "comparison": 11.0,
+        "percent_change": 22.22222222222222
+      },
+      "agent_objectives_completed": {
+        "absolute_change": 0.0,
+        "baseline": 3.0,
+        "comparison": 3.0,
+        "percent_change": 0.0
+      },
+      "agent_objectives_failed": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "agent_replans": {
+        "absolute_change": 1.0,
+        "baseline": 0.0,
+        "comparison": 1.0,
+        "percent_change": null
+      },
+      "agent_route_selections": {
+        "absolute_change": 0.0,
+        "baseline": 6.0,
+        "comparison": 6.0,
+        "percent_change": 0.0
+      },
+      "max_simultaneous_taxiing_aircraft": {
+        "absolute_change": 0.0,
+        "baseline": 2.0,
+        "comparison": 2.0,
+        "percent_change": 0.0
+      },
+      "mean_departure_delay_seconds": {
+        "absolute_change": 0.0,
+        "baseline": 548.6666666666666,
+        "comparison": 548.6666666666666,
+        "percent_change": 0.0
+      },
+      "minimum_aircraft_ground_separation_m": {
+        "absolute_change": 0.0,
+        "baseline": 80.09775433333333,
+        "comparison": 80.09775433333333,
+        "percent_change": 0.0
+      },
+      "minimum_aircraft_separation_m": {
+        "absolute_change": 0.0,
+        "baseline": 30.0,
+        "comparison": 30.0,
+        "percent_change": 0.0
+      },
+      "runway_queue_seconds": {
+        "absolute_change": -55.0,
+        "baseline": 206.0,
+        "comparison": 151.0,
+        "percent_change": -26.699029126213592
+      },
+      "simulated_duration_seconds": {
+        "absolute_change": 0.0,
+        "baseline": 1118.6666666666667,
+        "comparison": 1118.6666666666667,
+        "percent_change": 0.0
+      },
+      "surface_aircraft_aircraft_collisions": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "surface_aircraft_ground_collisions": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "surface_departed_aircraft": {
+        "absolute_change": 0.0,
+        "baseline": 3.0,
+        "comparison": 3.0,
+        "percent_change": 0.0
+      },
+      "surface_reroutes": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "surface_safe_failures": {
+        "absolute_change": 0.0,
+        "baseline": 0.0,
+        "comparison": 0.0,
+        "percent_change": null
+      },
+      "surface_taxi_distance_m": {
+        "absolute_change": 0.0,
+        "baseline": 780.0,
+        "comparison": 780.0,
+        "percent_change": 0.0
+      },
+      "surface_taxi_seconds": {
+        "absolute_change": -6.0,
+        "baseline": 396.0,
+        "comparison": 390.0,
+        "percent_change": -1.5151515151515151
+      },
+      "surface_total_aircraft": {
+        "absolute_change": 0.0,
+        "baseline": 3.0,
+        "comparison": 3.0,
+        "percent_change": 0.0
+      },
+      "surface_wait_events": {
+        "absolute_change": 0.0,
+        "baseline": 1.0,
+        "comparison": 1.0,
+        "percent_change": 0.0
+      },
+      "surface_wait_seconds": {
+        "absolute_change": 0.0,
+        "baseline": 213.0,
+        "comparison": 213.0,
+        "percent_change": 0.0
+      }
+    }
+  },
+  "experiments": {
+    "control": {
+      "agent_decisions": 9.0,
+      "agent_objectives_completed": 3.0,
+      "agent_objectives_failed": 0.0,
+      "agent_replans": 0.0,
+      "agent_route_selections": 6.0,
+      "max_simultaneous_taxiing_aircraft": 2.0,
+      "mean_departure_delay_seconds": 548.6666666666666,
+      "minimum_aircraft_ground_separation_m": 80.09775433333333,
+      "minimum_aircraft_separation_m": 30.0,
+      "runway_queue_seconds": 206.0,
+      "simulated_duration_seconds": 1118.6666666666667,
+      "surface_aircraft_aircraft_collisions": 0.0,
+      "surface_aircraft_ground_collisions": 0.0,
+      "surface_departed_aircraft": 3.0,
+      "surface_reroutes": 0.0,
+      "surface_safe_failures": 0.0,
+      "surface_taxi_distance_m": 780.0,
+      "surface_taxi_seconds": 396.0,
+      "surface_total_aircraft": 3.0,
+      "surface_wait_events": 1.0,
+      "surface_wait_seconds": 213.0
+    },
+    "disruption": {
+      "agent_decisions": 11.0,
+      "agent_objectives_completed": 3.0,
+      "agent_objectives_failed": 0.0,
+      "agent_replans": 1.0,
+      "agent_route_selections": 6.0,
+      "max_simultaneous_taxiing_aircraft": 2.0,
+      "mean_departure_delay_seconds": 548.6666666666666,
+      "minimum_aircraft_ground_separation_m": 80.09775433333333,
+      "minimum_aircraft_separation_m": 30.0,
+      "runway_queue_seconds": 151.0,
+      "simulated_duration_seconds": 1118.6666666666667,
+      "surface_aircraft_aircraft_collisions": 0.0,
+      "surface_aircraft_ground_collisions": 0.0,
+      "surface_departed_aircraft": 3.0,
+      "surface_reroutes": 0.0,
+      "surface_safe_failures": 0.0,
+      "surface_taxi_distance_m": 780.0,
+      "surface_taxi_seconds": 390.0,
+      "surface_total_aircraft": 3.0,
+      "surface_wait_events": 1.0,
+      "surface_wait_seconds": 213.0
+    }
+  }
+}

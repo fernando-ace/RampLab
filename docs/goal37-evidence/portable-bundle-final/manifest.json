@@ -1,0 +1,183 @@
+{
+  "analysis_files": [
+    "kpis.json",
+    "validation.json",
+    "timeline.json"
+  ],
+  "creation_metadata": {
+    "created_at_utc": "2026-10-12T19:08:36+00:00"
+  },
+  "determinism_status": "PASS",
+  "format_version": "1.0",
+  "generated_outputs": [
+    "README.md",
+    "manifest.json",
+    "index.html",
+    "kpis.json",
+    "validation.json",
+    "timeline.json",
+    "determinism.json"
+  ],
+  "input_files": [
+    {
+      "bundle_path": "evidence/control/experiment.json",
+      "experiment": "control",
+      "sha256": "5dd48f30acf66877f15ff04ccc3ad7da78f3a7350eb85ae9fddb751f4cd4aa3d",
+      "size_bytes": 2999,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\adaptive\\experiment.json"
+    },
+    {
+      "bundle_path": "evidence/control/runs.csv",
+      "experiment": "control",
+      "sha256": "095d99e519c76d32f690452e495693bfc43ec33915196657fab36c21abb45115",
+      "size_bytes": 840,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\adaptive\\runs.csv"
+    },
+    {
+      "bundle_path": "evidence/control/aircraft.csv",
+      "experiment": "control",
+      "sha256": "0e1bd4221748738d86ebaf6099f23fc6310fe1a9a311f9098a8740977e585979",
+      "size_bytes": 1362,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\adaptive\\aircraft.csv"
+    },
+    {
+      "bundle_path": "evidence/control/events.jsonl",
+      "experiment": "control",
+      "sha256": "b0ffd66d0e99d7ed93d8c102da33dcc27e8eb6c88872ba944ed4481aca4a1b7c",
+      "size_bytes": 129084,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\adaptive\\events.jsonl"
+    },
+    {
+      "bundle_path": "evidence/disruption/experiment.json",
+      "experiment": "disruption",
+      "sha256": "74a9dc955845fbbd6e34914f1646528a26e34e14bf307326720581feb32a38b1",
+      "size_bytes": 3014,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\coordinated\\experiment.json"
+    },
+    {
+      "bundle_path": "evidence/disruption/runs.csv",
+      "experiment": "disruption",
+      "sha256": "d5cea3b8b957719bc40f3219c15bcc93ebf7bc9c8aae0d85f7d1daf15c39b469",
+      "size_bytes": 843,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\coordinated\\runs.csv"
+    },
+    {
+      "bundle_path": "evidence/disruption/aircraft.csv",
+      "experiment": "disruption",
+      "sha256": "01710b89016e7f5afb54ea1784677f785e49a322ecfb1f07481236a7ab66f434",
+      "size_bytes": 1398,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\coordinated\\aircraft.csv"
+    },
+    {
+      "bundle_path": "evidence/disruption/events.jsonl",
+      "experiment": "disruption",
+      "sha256": "83e9b2156482ad1eb669bb6f265f867e9b73fb29cb60e56e2bca5e212f6382fa",
+      "size_bytes": 141720,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\coordinated\\events.jsonl"
+    },
+    {
+      "bundle_path": "determinism.json",
+      "experiment": "comparison",
+      "sha256": "a5515f799cff0f34f2fe33e086096b3e3386d4df224d617bb5195aa2d5f8c0ec",
+      "size_bytes": 4970,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\af4d\\RampLab\\build-goal37\\goal37-bundle-a256mvkm\\determinism.json"
+    }
+  ],
+  "inputs": [
+    {
+      "completion_status": null,
+      "label": "control",
+      "name": "Goal 37 ADAPTIVE coordinated route-choice fixture",
+      "run_count": 3,
+      "safety_status": "NO RECORDED COLLISIONS",
+      "scenario": "coordinated_route_choice.yaml",
+      "seeds": [
+        42,
+        43,
+        44
+      ]
+    },
+    {
+      "completion_status": null,
+      "label": "disruption",
+      "name": "Goal 37 COORDINATED_ADAPTIVE coordinated route-choice fixture",
+      "run_count": 3,
+      "safety_status": "NO RECORDED COLLISIONS",
+      "scenario": "coordinated_route_choice.yaml",
+      "seeds": [
+        42,
+        43,
+        44
+      ]
+    }
+  ],
+  "missing_optional_artifacts": [
+    {
+      "artifact": "summary.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "control"
+    },
+    {
+      "artifact": "interventions.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "unreal-live.png",
+      "experiment": "control"
+    },
+    {
+      "artifact": "unreal-live.log",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "interventions.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "unreal-live.png",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "unreal-live.log",
+      "experiment": "disruption"
+    }
+  ],
+  "recognized_artifact_types": {
+    "control": [
+      "experiment.json",
+      "runs.csv",
+      "aircraft.csv",
+      "events.jsonl"
+    ],
+    "disruption": [
+      "experiment.json",
+      "runs.csv",
+      "aircraft.csv",
+      "events.jsonl"
+    ]
+  },
+  "safety_status": {
+    "control": "NO RECORDED COLLISIONS",
+    "disruption": "NO RECORDED COLLISIONS"
+  },
+  "warnings": []
+}
