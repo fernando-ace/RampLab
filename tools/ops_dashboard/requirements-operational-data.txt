@@ -1,0 +1,2 @@
+# Cross-platform IANA timezone database for Python installations without OS zoneinfo files (notably Windows).
+tzdata==2026.5

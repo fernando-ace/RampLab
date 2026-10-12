@@ -113,6 +113,23 @@ def scenario_package(scenario: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"{name.replace('_', ' ').title()} must be a list.")
         data[name] = deepcopy(value)
     data["disruptions"] = [row for row in data["disruptions"] if row.get("enabled") is not False]
+    operational = scenario.get("operational_provenance")
+    if isinstance(operational, dict) and operational.get("dataset_id"):
+        data["dataset"]["dataset_id"] = str(operational["dataset_id"])
+        data["dataset"]["description"] = "Imported operational schedule; source provenance is recorded below."
+        data["dataset"]["operational_provenance"] = deepcopy(operational)
+        data["operational_provenance"] = deepcopy(operational)
+        source_name = operational.get("source_filename")
+        source_hash = operational.get("source_sha256")
+        if source_name and source_hash:
+            data["sources"].append({"filename": str(source_name), "type": str(operational.get("source_format", "unknown")),
+                                    "sha256": str(source_hash), "record_count": int(operational.get("record_count", 0)),
+                                    "accepted_record_count": int(operational.get("accepted_count", operational.get("record_count", 0))),
+                                    "rejected_record_count": int(operational.get("rejected_count", 0)),
+                                    "data_classification": "SCHEDULED", "mapping_profile_sha256": operational.get("mapping_profile_sha256")})
+        if scenario.get("operational_schedule"):
+            data["dataset"]["operational_date"] = scenario["operational_schedule"].get("operational_date")
+            data["dataset"]["operational_timezone"] = scenario["operational_schedule"].get("timezone")
     data["schema_version"] = "1.0"
     return data
 

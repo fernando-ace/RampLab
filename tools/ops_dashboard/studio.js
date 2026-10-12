@@ -2,7 +2,7 @@
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const state = { boot: null, scenario: null, view: "airport", selectedEdge: null, selectedVehicle: null, validation: null, runs: [], compare: null, compareIds:null, pollTimer: null, experimentPollTimer:null, toastTimer: null, flightFilter:"", flightSort:"time", experimentDraft:null, experiment:null, experimentMode:"configurations" };
+const state = { boot: null, scenario: null, view: "airport", selectedEdge: null, selectedVehicle: null, validation: null, runs: [], compare: null, compareIds:null, pollTimer: null, experimentPollTimer:null, toastTimer: null, flightFilter:"", flightSort:"time", experimentDraft:null, experiment:null, experimentMode:"configurations", operational:null };
 const titles = {
   airport: ["Airport overview", "Inspect the runway and taxiway network, then select a supported route to configure a closure."],
   flights: ["Flight schedule", "Review the schedule and edit fields that feed the RampLab scenario generator."],
@@ -12,6 +12,7 @@ const titles = {
   disruptions: ["Disruption plan", "Add supported changes, review map targets, and enable or remove each intervention."],
   validation: ["Validation & changes", "Check the configuration against the existing airport generator before you run it."],
   results: ["Results & comparison", "Review native RampLab outputs and compare a completed variant with its baseline run."],
+  operations: ["Operational day", "Import a schedule, replay observed events, or record local operational updates."],
   experiments: ["Experiments", "Generate registered scenario variants, run them through RampLab, and compare tested configurations."]
 };
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -85,6 +86,7 @@ function render() {
   if (state.view === "disruptions") renderDisruptions();
   if (state.view === "validation") renderValidation();
   if (state.view === "results") renderResults();
+  if (state.view === "operations" && window.RampOperationalView) window.RampOperationalView.render($("#view-operations"), state, { api, toast, nav, openScenario, runCurrent });
   if (state.view === "experiments") renderExperiments();
 }
 
@@ -187,6 +189,16 @@ function addClosure(resourceId) {
 }
 
 function nav(view) { state.view=view; render(); }
+function openScenario(scenario, validation, parameterRegistry) {
+  state.scenario = clone(scenario);
+  state.boot.scenario = state.scenario;
+  state.boot.parameter_registry = parameterRegistry || state.boot.parameter_registry;
+  state.validation = validation || state.scenario.validation || null;
+  state.selectedEdge = null; state.selectedVehicle = null; state.compare = null;
+  $("#scenario-name").value = state.scenario.name || "Imported operational scenario";
+  state.experimentDraft = null;
+  nav("airport");
+}
 function niceTime(value) { if(!value)return "—";const date=new Date(value);return Number.isNaN(+date)?String(value):new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(date); }
 function dateInput(value) { const date=new Date(value);if(Number.isNaN(+date))return "";const pad=n=>String(n).padStart(2,"0");return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`; }
 function fromDateInput(value) { const date=new Date(value);return Number.isNaN(+date)?"":date.toISOString(); }
@@ -349,6 +361,12 @@ async function pollRuns() {
 }
 
 function defaultExperimentDraft(){
+  if(state.scenario.operational_schedule){
+    const date=state.scenario.operational_schedule.operational_date;
+    return {name:`${state.scenario.airport_key.toUpperCase()} imported schedule study`,description:"Compare mapped taxiway closure timing and duration against the imported schedule baseline.",
+      axes:[{id:"disruption.route_closure.start_time",values:[`${date}T14:00:00Z`,`${date}T14:30:00Z`]},{id:"disruption.route_closure.duration_minutes",values:[15,30]}],
+      seeds:[42,43],workers:4,cacheEnabled:true,includeBaseline:true,detail:null};
+  }
   const departure=(state.scenario.flights||[]).find(f=>f.operation==="departure");
   const flightParameter=state.boot.parameter_registry.find(item=>item.category==="Flight timing"&&item.flight_id===departure?.flight_id);
   const start=(state.scenario.flights||[]).find(f=>f.operation==="arrival")?.scheduled_time||"2026-10-09T14:00:00Z";

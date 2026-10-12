@@ -7,6 +7,7 @@
   <title>Scenario Studio · RampLab</title>
   <link rel="stylesheet" href="/studio.css">
   <link rel="stylesheet" href="/experiment.css">
+  <link rel="stylesheet" href="/operational.css">
 </head>
 <body>
   <div class="app-shell">
@@ -29,6 +30,7 @@
         <button class="nav-item" data-view="disruptions"><span>△</span>Disruptions</button>
         <button class="nav-item" data-view="validation"><span>✓</span>Validation & changes</button>
         <button class="nav-item" data-view="results"><span>▥</span>Results & compare</button>
+        <button class="nav-item" data-view="operations"><span class="nav-number">OPS</span>Plan · Replay · Live</button>
         <button class="nav-item" data-view="experiments"><span class="nav-number">32</span>Experiments</button>
       </nav>
       <div class="sidebar-bottom"><div class="status-dot"></div><div><strong>Local workspace</strong><small>Scenarios stay on this computer</small></div></div>
@@ -59,6 +61,7 @@
       <section id="view-disruptions" class="view"></section>
       <section id="view-validation" class="view"></section>
       <section id="view-results" class="view"></section>
+      <section id="view-operations" class="view"></section>
       <section id="view-experiments" class="view"></section>
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </main>
@@ -66,5 +69,6 @@
   <dialog id="saved-dialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><span class="section-label">SAVED SCENARIOS</span><h2>Open a scenario</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div><div id="saved-list" class="saved-list"></div></form></dialog>
   <dialog id="confirm-dialog" class="dialog compact"><form method="dialog"><div class="dialog-head"><div><span class="section-label">SCENARIO STUDIO</span><h2 id="confirm-title">Confirm action</h2></div></div><p id="confirm-copy"></p><div class="dialog-actions"><button class="button outline" value="cancel">Cancel</button><button id="confirm-accept" class="button primary" value="accept">Continue</button></div></form></dialog>
   <script src="/studio.js" defer></script>
+  <script src="/operational.js" defer></script>
 </body>
 </html>
