@@ -77,6 +77,8 @@ struct RunResult {
     std::size_t fleet_requests_created{0};
     std::size_t fleet_requests_completed{0};
     std::size_t fleet_requests_failed{0};
+    bool fleet_deadlock_unresolved{false};
+    std::string fleet_failure_reason;
     std::size_t surface_departed_aircraft{0};
     std::size_t surface_arrived_aircraft{0};
     std::size_t gate_assignments{0};

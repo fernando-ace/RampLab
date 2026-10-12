@@ -19,7 +19,9 @@ enum class AircraftState {
 enum class AircraftOperationType { Turnaround, ArrivalOnly, ArrivalTurnaround };
 
 enum class ServiceType {
-    Fueling, Baggage, Deboarding, Catering, CabinCleaning, BaggageLoad, PushbackPreparation
+    Fueling, Baggage, Deboarding, Catering, CabinCleaning, BaggageLoad, PushbackPreparation,
+    LavatoryService, PotableWater, GroundPower, Pushback, PassengerStairs, AirStart,
+    MaintenanceInspection, Chocks
 };
 enum class TaskStatus { Blocked, Pending, Waiting, Assigned, InProgress, Completed, Failed };
 enum class TurnaroundState { Scheduled, Arrived, Servicing, ReadyForDeparture, Departed, Delayed, Failed };

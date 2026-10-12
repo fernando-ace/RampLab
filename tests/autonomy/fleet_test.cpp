@@ -140,14 +140,18 @@ TEST(FleetScenarioTest, ThreeVehicleWaitForCycleTriggersPersistentRecovery){
     EXPECT_EQ(result.collisions,0U);EXPECT_GT(result.minimum_separation_m,2.0);
     EXPECT_TRUE(result.wait_dependencies.empty());EXPECT_TRUE(result.deadlocked_vehicles.empty());
     EXPECT_EQ(result.outstanding_reservations,0U);
-    const auto detected=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::DeadlockDetected;});
-    const auto recovery=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::DeadlockRecovery;});
-    const auto selected=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatSelected;});
-    const auto started=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatStarted;});
-    const auto completed=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatCompleted;});
-    const auto released=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatResourceReleased;});
-    const auto resumed=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::MissionResumed;});
-    const auto resolved=std::ranges::find_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RecoveryResolved;});
+    const VehicleId yielding_vehicle{"tug_01"};
+    const auto for_yielding_vehicle=[&](const auto& event, TrafficEventKind kind){
+        return event.kind==kind&&event.vehicle==yielding_vehicle;
+    };
+    const auto detected=std::ranges::find_if(result.events,[&](const auto& event){return for_yielding_vehicle(event,TrafficEventKind::DeadlockDetected);});
+    const auto recovery=std::ranges::find_if(result.events,[&](const auto& event){return for_yielding_vehicle(event,TrafficEventKind::DeadlockRecovery);});
+    const auto selected=std::ranges::find_if(result.events,[&](const auto& event){return for_yielding_vehicle(event,TrafficEventKind::RetreatSelected);});
+    const auto started=std::ranges::find_if(result.events,[&](const auto& event){return for_yielding_vehicle(event,TrafficEventKind::RetreatStarted);});
+    const auto completed=std::ranges::find_if(result.events,[&](const auto& event){return for_yielding_vehicle(event,TrafficEventKind::RetreatCompleted);});
+    const auto released=std::ranges::find_if(result.events,[&](const auto& event){return for_yielding_vehicle(event,TrafficEventKind::RetreatResourceReleased);});
+    const auto resumed=std::ranges::find_if(result.events,[&](const auto& event){return for_yielding_vehicle(event,TrafficEventKind::MissionResumed);});
+    const auto resolved=std::ranges::find_if(result.events,[&](const auto& event){return for_yielding_vehicle(event,TrafficEventKind::RecoveryResolved);});
     ASSERT_NE(detected,result.events.end());ASSERT_NE(recovery,result.events.end());ASSERT_NE(selected,result.events.end());
     ASSERT_NE(started,result.events.end());ASSERT_NE(completed,result.events.end());ASSERT_NE(released,result.events.end());
     ASSERT_NE(resumed,result.events.end());ASSERT_NE(resolved,result.events.end());
@@ -168,7 +172,8 @@ TEST(FleetScenarioTest, ThreeVehicleWaitForCycleTriggersPersistentRecovery){
     EXPECT_EQ(yielding_mission->metrics.result,MissionResult::Success);
     EXPECT_EQ(opposing_mission->metrics.result,MissionResult::Success);
     EXPECT_LT(std::distance(result.events.begin(),detected),std::distance(result.events.begin(),recovery));
-    EXPECT_LT(std::distance(result.events.begin(),recovery),std::distance(result.events.begin(),selected));
+    // A recovery is recorded only after a safe retreat path has been selected.
+    EXPECT_LT(std::distance(result.events.begin(),selected),std::distance(result.events.begin(),recovery));
     EXPECT_LT(std::distance(result.events.begin(),selected),std::distance(result.events.begin(),started));
     EXPECT_LT(std::distance(result.events.begin(),started),std::distance(result.events.begin(),completed));
     EXPECT_LT(std::distance(result.events.begin(),completed),std::distance(result.events.begin(),released));
@@ -194,9 +199,10 @@ TEST(FleetScenarioTest, UnrecoverableCycleFailsSafelyWithoutRetryLoop){
     std::size_t steps=0;
     while(fleet.advance()&&++steps<15001){}
     const auto result=fleet.result();
-    EXPECT_LT(steps,15001U);EXPECT_EQ(result.deadlock_count,1U);EXPECT_EQ(result.recovery_attempts,1U);
+    EXPECT_LT(steps,15001U);EXPECT_EQ(result.deadlock_count,1U);EXPECT_EQ(result.recovery_attempts,0U);
     EXPECT_EQ(result.retreat_count,0U);EXPECT_EQ(result.safe_timeouts,3U);EXPECT_EQ(result.collisions,0U);
-    EXPECT_EQ(std::ranges::count_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatFailed;}),1);
+    EXPECT_EQ(std::ranges::count_if(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatFailed;}),0);
+    EXPECT_TRUE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::DeadlockUnresolved;}));
     EXPECT_FALSE(std::ranges::any_of(result.events,[](const auto& event){return event.kind==TrafficEventKind::RetreatStarted;}));
 }
 TEST(FleetExperimentTest, ThreeVehicleDeadlockRecoveryIsIdenticalAcrossSerialAndParallelWorkers){
@@ -321,6 +327,40 @@ TEST(FleetDeadlockTest, DetectsEveryVehicleInCycleButNotVehiclesMerelyBlockedByI
         {VehicleId{"tug_b"},{VehicleId{"tug_c"}}},
         {VehicleId{"tug_c"},{}}}).empty());
 }
+TEST(FleetDeadlockTest, DetectsTwoAndFourVehicleCyclesInStableOrder){
+    const auto two = find_deadlocked_vehicles({
+        {VehicleId{"tug_b"},{VehicleId{"tug_a"}}},
+        {VehicleId{"tug_a"},{VehicleId{"tug_b"}}}});
+    ASSERT_EQ(two.size(), 2U);
+    EXPECT_EQ(two[0].value, "tug_a"); EXPECT_EQ(two[1].value, "tug_b");
+    const auto four = find_deadlocked_vehicles({
+        {VehicleId{"tug_d"},{VehicleId{"tug_a"}}},
+        {VehicleId{"tug_b"},{VehicleId{"tug_c"}}},
+        {VehicleId{"tug_a"},{VehicleId{"tug_b"}}},
+        {VehicleId{"tug_c"},{VehicleId{"tug_d"}}}});
+    ASSERT_EQ(four.size(), 4U);
+    EXPECT_EQ(four[0].value, "tug_a"); EXPECT_EQ(four[3].value, "tug_d");
+}
+TEST(FleetDeadlockTest, FailedRetreatVehicleIsIdentifiedWhenItBlocksAnotherVehicle){
+    const std::vector<FleetWaitDependency> dependencies{
+        {VehicleId{"tug_05"}, VehicleId{"tug_07"}, "edge/52", 20.0},
+        {VehicleId{"tug_07"}, VehicleId{"tug_01"}, "intersection/6", 18.0}};
+    const auto blockers = find_failed_retreat_blockers(dependencies,
+        {VehicleId{"tug_01"}, VehicleId{"tug_09"}});
+    ASSERT_EQ(blockers.size(), 1U);
+    EXPECT_EQ(blockers.front().value, "tug_01");
+    EXPECT_TRUE(find_failed_retreat_blockers(dependencies, {VehicleId{"tug_09"}}).empty());
+}
+TEST(FleetDeadlockTest, LivenessThresholdExcludesIntentionalServiceWaits){
+    const std::vector<FleetWaitDependency> dependencies{
+        {VehicleId{"tug_05"}, VehicleId{"tug_07"}, "edge/52", 121.0},
+        {VehicleId{"tug_09"}, VehicleId{"tug_01"}, "intersection/6", 400.0}};
+    const auto stalled = find_stalled_dependencies(dependencies, 120.0, {VehicleId{"tug_01"}});
+    ASSERT_EQ(stalled.size(), 1U);
+    EXPECT_EQ(stalled.front().waiting_vehicle.value, "tug_05");
+    EXPECT_EQ(stalled.front().resource, "edge/52");
+    EXPECT_THROW((void)find_stalled_dependencies(dependencies, 0.0), std::invalid_argument);
+}
 TEST(FleetDeadlockTest, SelectsYieldVehicleByPriorityWaitThenStableId){
     const auto selected=choose_recovery_vehicle({
         {VehicleId{"tug_c"},3,100.0},{VehicleId{"tug_b"},5,4.0},
@@ -401,6 +441,7 @@ TEST(FleetDispatcherIntegrationTest, UnavailableVehicleReassignsTaskAndBackupCom
     EXPECT_EQ(task.state,ServiceTaskState::Completed);ASSERT_TRUE(task.assigned_vehicle);EXPECT_EQ(task.assigned_vehicle->value,"baggage_backup");
     EXPECT_EQ(task.reassignments,1U);EXPECT_EQ(result.dispatch.reassignments,1U);EXPECT_EQ(result.dispatch.requests_failed,0U);
     EXPECT_EQ(result.collisions,0U);EXPECT_EQ(result.outstanding_reservations,0U);EXPECT_TRUE(result.deadlocked_vehicles.empty());
+    EXPECT_FALSE(result.unresolved_deadlock) << result.failure_reason;
     EXPECT_TRUE(std::ranges::any_of(result.dispatch.events,[](const auto& e){return e.kind==DispatchEventKind::Reassigned&&e.vehicle.value=="baggage_backup";}));
 }
 TEST(FleetDispatcherIntegrationTest, DependencyUnlockedRequestUsesLiveReservationsAndCollisionChecks){

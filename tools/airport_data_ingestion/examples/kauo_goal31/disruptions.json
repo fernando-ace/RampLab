@@ -1,0 +1,11 @@
+[
+  {
+    "disruption_id": "KAUO-G27-TWY-A-APRON-CLOSURE",
+    "type": "route_closure",
+    "resource_id": "KAUO-TWY-A-RAMP-CONNECTOR",
+    "start_time": "2026-10-09T14:00:15Z",
+    "end_time": "2026-10-09T14:38:00Z",
+    "reason": "Controlled scenario-only closure of the mapped primary taxiway-to-apron connector. It is not a reported, planned, or current KAUO closure.",
+    "classification": "ASSUMED FOR SIMULATION"
+  }
+]

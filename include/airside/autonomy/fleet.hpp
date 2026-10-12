@@ -36,7 +36,7 @@ struct FleetScenario {
 
 [[nodiscard]] FleetScenario load_fleet_scenario(const std::filesystem::path& path);
 
-enum class TrafficEventKind { Request, Granted, Deferred, Waiting, WaitEnded, EnteredConflict, ReleasedConflict, Collision, DeadlockDetected, DeadlockRecovery, RecoveryResolved, Retreat, RetreatSelected, RetreatStarted, RetreatProgress, RetreatResourceReleased, RetreatCompleted, MissionResumed, RetreatFailed, Reroute, RoadClosed, RoadReopened, NearConflict, ForcedSafetyStop };
+enum class TrafficEventKind { Request, Granted, Deferred, Waiting, WaitEnded, EnteredConflict, ReleasedConflict, Collision, DeadlockDetected, DeadlockRecovery, RecoveryResolved, Retreat, RetreatSelected, RetreatStarted, RetreatProgress, RetreatResourceReleased, RetreatCompleted, MissionResumed, RetreatFailed, Reroute, RoadClosed, RoadReopened, NearConflict, ForcedSafetyStop, DeadlockUnresolved };
 struct ReservationRequest {
     VehicleId vehicle;
     double time_s{};
@@ -88,6 +88,12 @@ struct FleetWaitDependency {
     double wait_duration_s{};
     bool operator==(const FleetWaitDependency&) const = default;
 };
+[[nodiscard]] std::vector<VehicleId> find_failed_retreat_blockers(
+    const std::vector<FleetWaitDependency>& dependencies,
+    const std::vector<VehicleId>& failed_retreat_vehicles);
+[[nodiscard]] std::vector<FleetWaitDependency> find_stalled_dependencies(
+    const std::vector<FleetWaitDependency>& dependencies, double threshold_s,
+    const std::vector<VehicleId>& servicing_vehicles = {});
 struct FleetRecoveryCandidate {
     VehicleId vehicle;
     int mission_priority{};
@@ -158,6 +164,9 @@ struct FleetMetrics {
     std::vector<FleetVehicleResult> vehicles;
     std::vector<TrafficEvent> events;
     FleetDispatchMetrics dispatch;
+    bool unresolved_deadlock{};
+    std::string failure_reason;
+    std::vector<std::pair<std::string, VehicleId>> held_reservation_owners;
     std::uint64_t deterministic_digest{};
     bool operator==(const FleetMetrics&) const = default;
 };
