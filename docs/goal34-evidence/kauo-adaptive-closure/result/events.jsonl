@@ -1,0 +1,158 @@
+{"sequence":0,"time_seconds":0,"type":"RunwayRequest","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","detail":"arrival"}
+{"sequence":1,"time_seconds":0,"type":"SurfaceRunwayQueueEntered","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":2,"time_seconds":1,"type":"AircraftLanded","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":3,"time_seconds":1,"type":"SurfaceRunwayClearance","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":4,"time_seconds":1,"type":"RunwayGrant","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":5,"time_seconds":1,"type":"RunwayOccupied","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":6,"time_seconds":91,"type":"RunwayReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","detail":"arrival rollout complete"}
+{"sequence":7,"time_seconds":91,"type":"ArrivalRunwayExit","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","detail":"runway exit 4"}
+{"sequence":8,"time_seconds":91,"type":"GateAssigned","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","detail":"arrival gate reserved"}
+{"sequence":9,"time_seconds":91,"type":"AgentDecision","aircraft_id":1,"agent_id":"aircraft-1","event_id":"agent-decision-0","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-1-arrival-stand","decision":"PLAN_ROUTE","reason_code":"OBJECTIVE_CREATED","observation_summary":"node=4 destination=8 blocked=false operator=false","result":"ROUTE_SELECTED","detail":"Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED","route_nodes":[4,6,8]}
+{"sequence":10,"time_seconds":91,"type":"ArrivalTaxiInStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":11,"time_seconds":91,"type":"SurfaceTaxiRouteAssigned","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","route_nodes":[4,6,8]}
+{"sequence":12,"time_seconds":91,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":4}
+{"sequence":13,"time_seconds":151,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":4}
+{"sequence":14,"time_seconds":151,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":7}
+{"sequence":15,"time_seconds":179,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":7}
+{"sequence":16,"time_seconds":179,"type":"AgentDecision","aircraft_id":1,"agent_id":"aircraft-1","event_id":"agent-decision-1","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-1-arrival-stand","decision":"COMPLETE_OBJECTIVE","reason_code":"OBJECTIVE_COMPLETED","observation_summary":"node=8 destination=8 blocked=false operator=false","result":"OBJECTIVE_COMPLETED","detail":"Objective reached. result=OBJECTIVE_COMPLETED"}
+{"sequence":17,"time_seconds":179,"type":"ArrivalAtGate","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","detail":"gate occupied"}
+{"sequence":18,"time_seconds":179,"type":"AircraftArrived","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":19,"time_seconds":179,"type":"AircraftStateChanged","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":20,"time_seconds":179,"type":"TurnaroundStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":21,"time_seconds":179,"type":"TurnaroundCreated","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":22,"time_seconds":179,"type":"TurnaroundCriticalPathChanged","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","estimated_ready_time_seconds":599,"schedule_slack_seconds":121}
+{"sequence":23,"time_seconds":179,"type":"TurnaroundTaskReady","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","task_id":1,"service":"Fueling"}
+{"sequence":24,"time_seconds":179,"type":"ResourceWaitStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","task_id":1,"service":"Fueling"}
+{"sequence":25,"time_seconds":240,"type":"RunwayRequest","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","detail":"arrival"}
+{"sequence":26,"time_seconds":240,"type":"SurfaceRunwayQueueEntered","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":27,"time_seconds":241,"type":"AircraftLanded","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":28,"time_seconds":241,"type":"SurfaceRunwayClearance","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":29,"time_seconds":241,"type":"RunwayGrant","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":30,"time_seconds":241,"type":"RunwayOccupied","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":31,"time_seconds":331,"type":"RunwayReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","detail":"arrival rollout complete"}
+{"sequence":32,"time_seconds":331,"type":"ArrivalRunwayExit","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","detail":"runway exit 4"}
+{"sequence":33,"time_seconds":331,"type":"GateAssigned","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","detail":"arrival gate reserved"}
+{"sequence":34,"time_seconds":331,"type":"AgentDecision","aircraft_id":2,"agent_id":"aircraft-2","event_id":"agent-decision-2","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-2-arrival-stand","decision":"PLAN_ROUTE","reason_code":"OBJECTIVE_CREATED","observation_summary":"node=4 destination=10 blocked=false operator=false","result":"ROUTE_SELECTED","detail":"Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED","route_nodes":[4,6,10]}
+{"sequence":35,"time_seconds":331,"type":"ArrivalTaxiInStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":36,"time_seconds":331,"type":"SurfaceTaxiRouteAssigned","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","route_nodes":[4,6,10]}
+{"sequence":37,"time_seconds":331,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":4}
+{"sequence":38,"time_seconds":359,"type":"TurnaroundTaskDispatched","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":2,"vehicle":"KAUO-SIM-FUEL-01","turnaround_id":"KAUO-SIM-GA-01","task_id":1,"service":"Fueling"}
+{"sequence":39,"time_seconds":374,"type":"TurnaroundTaskStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":2,"vehicle":"KAUO-SIM-FUEL-01","turnaround_id":"KAUO-SIM-GA-01","task_id":1,"service":"Fueling"}
+{"sequence":40,"time_seconds":391,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":4}
+{"sequence":41,"time_seconds":391,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":9}
+{"sequence":42,"time_seconds":431,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":9}
+{"sequence":43,"time_seconds":431,"type":"AgentDecision","aircraft_id":2,"agent_id":"aircraft-2","event_id":"agent-decision-3","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-2-arrival-stand","decision":"COMPLETE_OBJECTIVE","reason_code":"OBJECTIVE_COMPLETED","observation_summary":"node=10 destination=10 blocked=false operator=false","result":"OBJECTIVE_COMPLETED","detail":"Objective reached. result=OBJECTIVE_COMPLETED"}
+{"sequence":44,"time_seconds":431,"type":"ArrivalAtGate","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","detail":"gate occupied"}
+{"sequence":45,"time_seconds":431,"type":"AircraftArrived","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":46,"time_seconds":431,"type":"AircraftStateChanged","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":47,"time_seconds":431,"type":"TurnaroundStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":48,"time_seconds":431,"type":"TurnaroundCreated","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":49,"time_seconds":431,"type":"TurnaroundCriticalPathChanged","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","estimated_ready_time_seconds":851,"schedule_slack_seconds":109}
+{"sequence":50,"time_seconds":431,"type":"TurnaroundTaskReady","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","task_id":5,"service":"Fueling"}
+{"sequence":51,"time_seconds":431,"type":"ResourceWaitStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","task_id":5,"service":"Fueling"}
+{"sequence":52,"time_seconds":494,"type":"TurnaroundTaskCompleted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":2,"vehicle":"KAUO-SIM-FUEL-01","turnaround_id":"KAUO-SIM-GA-01","task_id":1,"service":"Fueling"}
+{"sequence":53,"time_seconds":494,"type":"TurnaroundPredictedLate","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","estimated_ready_time_seconds":794,"schedule_slack_seconds":-74}
+{"sequence":54,"time_seconds":494,"type":"TurnaroundTaskReady","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","task_id":4,"service":"BaggageUnload"}
+{"sequence":55,"time_seconds":494,"type":"ResourceWaitStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","task_id":4,"service":"BaggageUnload"}
+{"sequence":56,"time_seconds":611,"type":"TurnaroundTaskDispatched","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":2,"vehicle":"KAUO-SIM-FUEL-01","turnaround_id":"KAUO-SIM-GA-02","task_id":5,"service":"Fueling"}
+{"sequence":57,"time_seconds":654,"type":"TurnaroundTaskStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":2,"vehicle":"KAUO-SIM-FUEL-01","turnaround_id":"KAUO-SIM-GA-02","task_id":5,"service":"Fueling"}
+{"sequence":58,"time_seconds":674,"type":"TurnaroundTaskDispatched","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-01","task_id":4,"service":"BaggageUnload"}
+{"sequence":59,"time_seconds":689,"type":"TurnaroundTaskStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-01","task_id":4,"service":"BaggageUnload"}
+{"sequence":60,"time_seconds":774,"type":"TurnaroundTaskCompleted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":2,"vehicle":"KAUO-SIM-FUEL-01","turnaround_id":"KAUO-SIM-GA-02","task_id":5,"service":"Fueling"}
+{"sequence":61,"time_seconds":774,"type":"TurnaroundCriticalPathChanged","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","estimated_ready_time_seconds":989,"schedule_slack_seconds":-269}
+{"sequence":62,"time_seconds":774,"type":"TurnaroundPredictedLate","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","estimated_ready_time_seconds":1074,"schedule_slack_seconds":-114}
+{"sequence":63,"time_seconds":774,"type":"TurnaroundTaskReady","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","task_id":8,"service":"BaggageUnload"}
+{"sequence":64,"time_seconds":774,"type":"ResourceWaitStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","task_id":8,"service":"BaggageUnload"}
+{"sequence":65,"time_seconds":809,"type":"TurnaroundTaskCompleted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-01","task_id":4,"service":"BaggageUnload"}
+{"sequence":66,"time_seconds":809,"type":"TurnaroundTaskReady","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","task_id":2,"service":"BaggageLoad"}
+{"sequence":67,"time_seconds":809,"type":"ResourceWaitStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","task_id":2,"service":"BaggageLoad"}
+{"sequence":68,"time_seconds":809,"type":"TurnaroundCriticalPathChanged","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","estimated_ready_time_seconds":1109,"schedule_slack_seconds":-149}
+{"sequence":69,"time_seconds":954,"type":"TurnaroundTaskDispatched","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":3,"vehicle":"KAUO-SIM-LOAD-01","turnaround_id":"KAUO-SIM-GA-02","task_id":8,"service":"BaggageUnload"}
+{"sequence":70,"time_seconds":966,"type":"TurnaroundTaskStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":3,"vehicle":"KAUO-SIM-LOAD-01","turnaround_id":"KAUO-SIM-GA-02","task_id":8,"service":"BaggageUnload"}
+{"sequence":71,"time_seconds":1005,"type":"TurnaroundTaskDispatched","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-01","task_id":2,"service":"BaggageLoad"}
+{"sequence":72,"time_seconds":1021,"type":"TurnaroundTaskStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-01","task_id":2,"service":"BaggageLoad"}
+{"sequence":73,"time_seconds":1086,"type":"TurnaroundTaskCompleted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":3,"vehicle":"KAUO-SIM-LOAD-01","turnaround_id":"KAUO-SIM-GA-02","task_id":8,"service":"BaggageUnload"}
+{"sequence":74,"time_seconds":1086,"type":"TurnaroundCriticalPathChanged","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","estimated_ready_time_seconds":1201,"schedule_slack_seconds":-481}
+{"sequence":75,"time_seconds":1086,"type":"TurnaroundTaskReady","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","task_id":6,"service":"BaggageLoad"}
+{"sequence":76,"time_seconds":1086,"type":"ResourceWaitStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","task_id":6,"service":"BaggageLoad"}
+{"sequence":77,"time_seconds":1141,"type":"TurnaroundTaskCompleted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-01","task_id":2,"service":"BaggageLoad"}
+{"sequence":78,"time_seconds":1141,"type":"TurnaroundTaskReady","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","task_id":3,"service":"PushbackPreparation"}
+{"sequence":79,"time_seconds":1141,"type":"TurnaroundTaskStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle":"crew:PushbackPreparation:1","turnaround_id":"KAUO-SIM-GA-01","task_id":3,"service":"PushbackPreparation"}
+{"sequence":80,"time_seconds":1141,"type":"TurnaroundCriticalPathChanged","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","estimated_ready_time_seconds":1321,"schedule_slack_seconds":-361}
+{"sequence":81,"time_seconds":1201,"type":"TurnaroundTaskCompleted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","vehicle":"crew:PushbackPreparation:1","turnaround_id":"KAUO-SIM-GA-01","task_id":3,"service":"PushbackPreparation"}
+{"sequence":82,"time_seconds":1201,"type":"TurnaroundReadyForDeparture","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":83,"time_seconds":1201,"type":"AircraftReadyForPushback","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":84,"time_seconds":1266,"type":"TurnaroundTaskDispatched","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-02","task_id":6,"service":"BaggageLoad"}
+{"sequence":85,"time_seconds":1309,"type":"TurnaroundTaskStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-02","task_id":6,"service":"BaggageLoad"}
+{"sequence":86,"time_seconds":1429,"type":"TurnaroundTaskCompleted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle_id":1,"vehicle":"KAUO-SIM-BAG-01","turnaround_id":"KAUO-SIM-GA-02","task_id":6,"service":"BaggageLoad"}
+{"sequence":87,"time_seconds":1429,"type":"TurnaroundTaskReady","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","task_id":7,"service":"PushbackPreparation"}
+{"sequence":88,"time_seconds":1429,"type":"TurnaroundTaskStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle":"crew:PushbackPreparation:1","turnaround_id":"KAUO-SIM-GA-02","task_id":7,"service":"PushbackPreparation"}
+{"sequence":89,"time_seconds":1483,"type":"AgentDecision","aircraft_id":1,"agent_id":"aircraft-1","event_id":"agent-decision-4","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-1-departure","decision":"PLAN_ROUTE","reason_code":"DESTINATION_CHANGED","observation_summary":"node=8 destination=2 blocked=false operator=false","result":"ROUTE_SELECTED","detail":"The objective changed; selecting a safe route to its new destination. result=ROUTE_SELECTED","route_nodes":[8,6,4,3,2]}
+{"sequence":90,"time_seconds":1483,"type":"SurfacePushbackRequested","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":91,"time_seconds":1484,"type":"SurfacePushbackStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":92,"time_seconds":1484,"type":"PushbackTaxiOutStarted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":93,"time_seconds":1484,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":7}
+{"sequence":94,"time_seconds":1489,"type":"TurnaroundTaskCompleted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","vehicle":"crew:PushbackPreparation:1","turnaround_id":"KAUO-SIM-GA-02","task_id":7,"service":"PushbackPreparation"}
+{"sequence":95,"time_seconds":1489,"type":"TurnaroundReadyForDeparture","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":96,"time_seconds":1489,"type":"AircraftReadyForPushback","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":97,"time_seconds":1504,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":7}
+{"sequence":98,"time_seconds":1504,"type":"SurfacePushbackCompleted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":99,"time_seconds":1504,"type":"AgentDecision","aircraft_id":1,"agent_id":"aircraft-1","event_id":"agent-decision-5","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-1-departure","decision":"PLAN_ROUTE","reason_code":"OBJECTIVE_CREATED","observation_summary":"node=8 destination=2 blocked=false operator=false","result":"ROUTE_SELECTED","detail":"Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED","route_nodes":[8,6,4,3,2]}
+{"sequence":100,"time_seconds":1504,"type":"SurfaceTaxiRouteAssigned","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","route_nodes":[8,6,4,3,2]}
+{"sequence":101,"time_seconds":1504,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":7}
+{"sequence":102,"time_seconds":1512,"type":"RoadClosed","edge_id":4}
+{"sequence":103,"time_seconds":1532,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":7}
+{"sequence":104,"time_seconds":1532,"type":"SurfaceRouteInvalidated","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":4}
+{"sequence":105,"time_seconds":1532,"type":"AgentDecision","aircraft_id":1,"agent_id":"aircraft-1","event_id":"agent-decision-6","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-1-departure","decision":"PLAN_ROUTE","reason_code":"ROUTE_CLOSED","observation_summary":"node=6 destination=2 blocked=false operator=false","result":"ROUTE_SELECTED","detail":"Closure invalidated the current route; selecting a safe replacement. result=ROUTE_SELECTED","route_nodes":[6,7,5,4,3,2],"previous_route_nodes":[6,4,3,2]}
+{"sequence":106,"time_seconds":1532,"type":"SurfaceRerouted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","route_nodes":[6,7,5,4,3,2]}
+{"sequence":107,"time_seconds":1532,"type":"SurfaceTaxiRouteAssigned","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","route_nodes":[6,7,5,4,3,2]}
+{"sequence":108,"time_seconds":1532,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":6}
+{"sequence":109,"time_seconds":1609,"type":"AgentDecision","aircraft_id":2,"agent_id":"aircraft-2","event_id":"agent-decision-7","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-2-departure","decision":"PLAN_ROUTE","reason_code":"DESTINATION_CHANGED","observation_summary":"node=10 destination=2 blocked=false operator=false","result":"ROUTE_SELECTED","detail":"The objective changed; selecting a safe route to its new destination. result=ROUTE_SELECTED","route_nodes":[10,6,7,5,4,3,2]}
+{"sequence":110,"time_seconds":1609,"type":"SurfacePushbackRequested","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":111,"time_seconds":1610,"type":"SurfacePushbackStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":112,"time_seconds":1610,"type":"PushbackTaxiOutStarted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":113,"time_seconds":1610,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":9}
+{"sequence":114,"time_seconds":1630,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":9}
+{"sequence":115,"time_seconds":1630,"type":"SurfacePushbackCompleted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":116,"time_seconds":1630,"type":"AgentDecision","aircraft_id":2,"agent_id":"aircraft-2","event_id":"agent-decision-8","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-2-departure","decision":"PLAN_ROUTE","reason_code":"OBJECTIVE_CREATED","observation_summary":"node=10 destination=2 blocked=false operator=false","result":"ROUTE_SELECTED","detail":"Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED","route_nodes":[10,6,7,5,4,3,2]}
+{"sequence":117,"time_seconds":1630,"type":"SurfaceTaxiRouteAssigned","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","route_nodes":[10,6,7,5,4,3,2]}
+{"sequence":118,"time_seconds":1630,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":9}
+{"sequence":119,"time_seconds":1635,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":6}
+{"sequence":120,"time_seconds":1635,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":5}
+{"sequence":121,"time_seconds":1670,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":9}
+{"sequence":122,"time_seconds":1670,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":6}
+{"sequence":123,"time_seconds":1682,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":5}
+{"sequence":124,"time_seconds":1682,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":3}
+{"sequence":125,"time_seconds":1773,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":6}
+{"sequence":126,"time_seconds":1773,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":5}
+{"sequence":127,"time_seconds":1796,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":3}
+{"sequence":128,"time_seconds":1796,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":2}
+{"sequence":129,"time_seconds":1820,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":5}
+{"sequence":130,"time_seconds":1820,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":3}
+{"sequence":131,"time_seconds":1896,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":2}
+{"sequence":132,"time_seconds":1896,"type":"SurfaceReservationAcquired","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":1}
+{"sequence":133,"time_seconds":1934,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":3}
+{"sequence":134,"time_seconds":1934,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":2}
+{"sequence":135,"time_seconds":1984,"type":"SurfaceReservationReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","edge_id":1}
+{"sequence":136,"time_seconds":1984,"type":"AgentDecision","aircraft_id":1,"agent_id":"aircraft-1","event_id":"agent-decision-9","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-1-departure","decision":"COMPLETE_OBJECTIVE","reason_code":"OBJECTIVE_COMPLETED","observation_summary":"node=2 destination=2 blocked=false operator=false","result":"OBJECTIVE_COMPLETED","detail":"Objective reached. result=OBJECTIVE_COMPLETED"}
+{"sequence":137,"time_seconds":1984,"type":"RunwayRequest","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","detail":"departure"}
+{"sequence":138,"time_seconds":1984,"type":"SurfaceRunwayQueueEntered","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":139,"time_seconds":1984,"type":"SurfaceRunwayClearance","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":140,"time_seconds":1984,"type":"RunwayGrant","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":141,"time_seconds":1984,"type":"RunwayOccupied","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":142,"time_seconds":2034,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":2}
+{"sequence":143,"time_seconds":2034,"type":"SurfaceReservationAcquired","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":1}
+{"sequence":144,"time_seconds":2074,"type":"RunwayReleased","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01","detail":"departure interval complete"}
+{"sequence":145,"time_seconds":2074,"type":"AircraftStateChanged","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":146,"time_seconds":2074,"type":"AircraftDeparted","aircraft_id":1,"aircraft":"KAUO-SIM-GA-01","turnaround_id":"KAUO-SIM-GA-01"}
+{"sequence":147,"time_seconds":2122,"type":"SurfaceReservationReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","edge_id":1}
+{"sequence":148,"time_seconds":2122,"type":"AgentDecision","aircraft_id":2,"agent_id":"aircraft-2","event_id":"agent-decision-10","agent_type":"AIRCRAFT_SURFACE","policy_id":"adaptive-routing-v1","objective_id":"aircraft-2-departure","decision":"COMPLETE_OBJECTIVE","reason_code":"OBJECTIVE_COMPLETED","observation_summary":"node=2 destination=2 blocked=false operator=false","result":"OBJECTIVE_COMPLETED","detail":"Objective reached. result=OBJECTIVE_COMPLETED"}
+{"sequence":149,"time_seconds":2122,"type":"RunwayRequest","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","detail":"departure"}
+{"sequence":150,"time_seconds":2122,"type":"SurfaceRunwayQueueEntered","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":151,"time_seconds":2122,"type":"SurfaceRunwayClearance","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":152,"time_seconds":2122,"type":"RunwayGrant","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":153,"time_seconds":2122,"type":"RunwayOccupied","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":154,"time_seconds":2212,"type":"RunwayReleased","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02","detail":"departure interval complete"}
+{"sequence":155,"time_seconds":2212,"type":"AircraftStateChanged","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":156,"time_seconds":2212,"type":"AircraftDeparted","aircraft_id":2,"aircraft":"KAUO-SIM-GA-02","turnaround_id":"KAUO-SIM-GA-02"}
+{"sequence":157,"time_seconds":2400,"type":"RoadOpened","edge_id":4}

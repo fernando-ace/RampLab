@@ -1,0 +1,2757 @@
+{
+  "events": [
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "detail": "arrival",
+      "sequence": 0,
+      "time_seconds": 0,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 1,
+      "time_seconds": 0,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 2,
+      "time_seconds": 1,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "AircraftLanded"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 3,
+      "time_seconds": 1,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 4,
+      "time_seconds": 1,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 5,
+      "time_seconds": 1,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "detail": "arrival rollout complete",
+      "sequence": 6,
+      "time_seconds": 91,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "detail": "runway exit 4",
+      "sequence": 7,
+      "time_seconds": 91,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "ArrivalRunwayExit"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "detail": "arrival gate reserved",
+      "sequence": 8,
+      "time_seconds": 91,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "GateAssigned"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-0",
+      "objective_id": "aircraft-1-arrival-stand",
+      "observation_summary": "node=4 destination=8 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        4,
+        6,
+        8
+      ],
+      "sequence": 9,
+      "time_seconds": 91,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 10,
+      "time_seconds": 91,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "ArrivalTaxiInStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "route_nodes": [
+        4,
+        6,
+        8
+      ],
+      "sequence": 11,
+      "time_seconds": 91,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 4,
+      "sequence": 12,
+      "time_seconds": 91,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 4,
+      "sequence": 13,
+      "time_seconds": 151,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 14,
+      "time_seconds": 151,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 15,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-1",
+      "objective_id": "aircraft-1-arrival-stand",
+      "observation_summary": "node=8 destination=8 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 16,
+      "time_seconds": 179,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "detail": "gate occupied",
+      "sequence": 17,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "ArrivalAtGate"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 18,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "AircraftArrived"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 19,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 20,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 21,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundCreated"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "estimated_ready_time_seconds": 599,
+      "schedule_slack_seconds": 121,
+      "sequence": 22,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 23,
+      "service": "Fueling",
+      "task_id": 1,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 24,
+      "service": "Fueling",
+      "task_id": 1,
+      "time_seconds": 179,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "ResourceWaitStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "detail": "arrival",
+      "sequence": 25,
+      "time_seconds": 240,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 26,
+      "time_seconds": 240,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 27,
+      "time_seconds": 241,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "AircraftLanded"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 28,
+      "time_seconds": 241,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 29,
+      "time_seconds": 241,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 30,
+      "time_seconds": 241,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "detail": "arrival rollout complete",
+      "sequence": 31,
+      "time_seconds": 331,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "detail": "runway exit 4",
+      "sequence": 32,
+      "time_seconds": 331,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "ArrivalRunwayExit"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "detail": "arrival gate reserved",
+      "sequence": 33,
+      "time_seconds": 331,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "GateAssigned"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-2",
+      "objective_id": "aircraft-2-arrival-stand",
+      "observation_summary": "node=4 destination=10 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        4,
+        6,
+        10
+      ],
+      "sequence": 34,
+      "time_seconds": 331,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 35,
+      "time_seconds": 331,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "ArrivalTaxiInStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "route_nodes": [
+        4,
+        6,
+        10
+      ],
+      "sequence": 36,
+      "time_seconds": 331,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 4,
+      "sequence": 37,
+      "time_seconds": 331,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 38,
+      "service": "Fueling",
+      "task_id": 1,
+      "time_seconds": 359,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskDispatched",
+      "vehicle": "KAUO-SIM-FUEL-01",
+      "vehicle_id": 2
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 39,
+      "service": "Fueling",
+      "task_id": 1,
+      "time_seconds": 374,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "KAUO-SIM-FUEL-01",
+      "vehicle_id": 2
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 4,
+      "sequence": 40,
+      "time_seconds": 391,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 9,
+      "sequence": 41,
+      "time_seconds": 391,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 9,
+      "sequence": 42,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-3",
+      "objective_id": "aircraft-2-arrival-stand",
+      "observation_summary": "node=10 destination=10 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 43,
+      "time_seconds": 431,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "detail": "gate occupied",
+      "sequence": 44,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "ArrivalAtGate"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 45,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "AircraftArrived"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 46,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 47,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 48,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundCreated"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "estimated_ready_time_seconds": 851,
+      "schedule_slack_seconds": 109,
+      "sequence": 49,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 50,
+      "service": "Fueling",
+      "task_id": 5,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 51,
+      "service": "Fueling",
+      "task_id": 5,
+      "time_seconds": 431,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "ResourceWaitStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 52,
+      "service": "Fueling",
+      "task_id": 1,
+      "time_seconds": 494,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "KAUO-SIM-FUEL-01",
+      "vehicle_id": 2
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "estimated_ready_time_seconds": 794,
+      "schedule_slack_seconds": -74,
+      "sequence": 53,
+      "time_seconds": 494,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundPredictedLate"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 54,
+      "service": "BaggageUnload",
+      "task_id": 4,
+      "time_seconds": 494,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 55,
+      "service": "BaggageUnload",
+      "task_id": 4,
+      "time_seconds": 494,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "ResourceWaitStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 56,
+      "service": "Fueling",
+      "task_id": 5,
+      "time_seconds": 611,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskDispatched",
+      "vehicle": "KAUO-SIM-FUEL-01",
+      "vehicle_id": 2
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 57,
+      "service": "Fueling",
+      "task_id": 5,
+      "time_seconds": 654,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "KAUO-SIM-FUEL-01",
+      "vehicle_id": 2
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 58,
+      "service": "BaggageUnload",
+      "task_id": 4,
+      "time_seconds": 674,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskDispatched",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 59,
+      "service": "BaggageUnload",
+      "task_id": 4,
+      "time_seconds": 689,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 60,
+      "service": "Fueling",
+      "task_id": 5,
+      "time_seconds": 774,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "KAUO-SIM-FUEL-01",
+      "vehicle_id": 2
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "estimated_ready_time_seconds": 989,
+      "schedule_slack_seconds": -269,
+      "sequence": 61,
+      "time_seconds": 774,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "estimated_ready_time_seconds": 1074,
+      "schedule_slack_seconds": -114,
+      "sequence": 62,
+      "time_seconds": 774,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundPredictedLate"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 63,
+      "service": "BaggageUnload",
+      "task_id": 8,
+      "time_seconds": 774,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 64,
+      "service": "BaggageUnload",
+      "task_id": 8,
+      "time_seconds": 774,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "ResourceWaitStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 65,
+      "service": "BaggageUnload",
+      "task_id": 4,
+      "time_seconds": 809,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 66,
+      "service": "BaggageLoad",
+      "task_id": 2,
+      "time_seconds": 809,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 67,
+      "service": "BaggageLoad",
+      "task_id": 2,
+      "time_seconds": 809,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "ResourceWaitStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "estimated_ready_time_seconds": 1109,
+      "schedule_slack_seconds": -149,
+      "sequence": 68,
+      "time_seconds": 809,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 69,
+      "service": "BaggageUnload",
+      "task_id": 8,
+      "time_seconds": 954,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskDispatched",
+      "vehicle": "KAUO-SIM-LOAD-01",
+      "vehicle_id": 3
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 70,
+      "service": "BaggageUnload",
+      "task_id": 8,
+      "time_seconds": 966,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "KAUO-SIM-LOAD-01",
+      "vehicle_id": 3
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 71,
+      "service": "BaggageLoad",
+      "task_id": 2,
+      "time_seconds": 1005,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskDispatched",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 72,
+      "service": "BaggageLoad",
+      "task_id": 2,
+      "time_seconds": 1021,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 73,
+      "service": "BaggageUnload",
+      "task_id": 8,
+      "time_seconds": 1086,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "KAUO-SIM-LOAD-01",
+      "vehicle_id": 3
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "estimated_ready_time_seconds": 1201,
+      "schedule_slack_seconds": -481,
+      "sequence": 74,
+      "time_seconds": 1086,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 75,
+      "service": "BaggageLoad",
+      "task_id": 6,
+      "time_seconds": 1086,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 76,
+      "service": "BaggageLoad",
+      "task_id": 6,
+      "time_seconds": 1086,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "ResourceWaitStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 77,
+      "service": "BaggageLoad",
+      "task_id": 2,
+      "time_seconds": 1141,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 78,
+      "service": "PushbackPreparation",
+      "task_id": 3,
+      "time_seconds": 1141,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 79,
+      "service": "PushbackPreparation",
+      "task_id": 3,
+      "time_seconds": 1141,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "estimated_ready_time_seconds": 1321,
+      "schedule_slack_seconds": -361,
+      "sequence": 80,
+      "time_seconds": 1141,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundCriticalPathChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 81,
+      "service": "PushbackPreparation",
+      "task_id": 3,
+      "time_seconds": 1201,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 82,
+      "time_seconds": 1201,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "TurnaroundReadyForDeparture"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 83,
+      "time_seconds": 1201,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "AircraftReadyForPushback"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 84,
+      "service": "BaggageLoad",
+      "task_id": 6,
+      "time_seconds": 1266,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskDispatched",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 85,
+      "service": "BaggageLoad",
+      "task_id": 6,
+      "time_seconds": 1309,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 86,
+      "service": "BaggageLoad",
+      "task_id": 6,
+      "time_seconds": 1429,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "KAUO-SIM-BAG-01",
+      "vehicle_id": 1
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 87,
+      "service": "PushbackPreparation",
+      "task_id": 7,
+      "time_seconds": 1429,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskReady"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 88,
+      "service": "PushbackPreparation",
+      "task_id": 7,
+      "time_seconds": 1429,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskStarted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "PLAN_ROUTE",
+      "detail": "The objective changed; selecting a safe route to its new destination. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-4",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=8 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "DESTINATION_CHANGED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 89,
+      "time_seconds": 1483,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 90,
+      "time_seconds": 1483,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfacePushbackRequested"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 91,
+      "time_seconds": 1484,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfacePushbackStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 92,
+      "time_seconds": 1484,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "PushbackTaxiOutStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 93,
+      "time_seconds": 1484,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 94,
+      "service": "PushbackPreparation",
+      "task_id": 7,
+      "time_seconds": 1489,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundTaskCompleted",
+      "vehicle": "crew:PushbackPreparation:1"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 95,
+      "time_seconds": 1489,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "TurnaroundReadyForDeparture"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 96,
+      "time_seconds": 1489,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "AircraftReadyForPushback"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 97,
+      "time_seconds": 1504,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 98,
+      "time_seconds": 1504,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfacePushbackCompleted"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-5",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=8 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 99,
+      "time_seconds": 1504,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "route_nodes": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "sequence": 100,
+      "time_seconds": 1504,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 101,
+      "time_seconds": 1504,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "edge_id": 4,
+      "sequence": 102,
+      "time_seconds": 1512,
+      "type": "RoadClosed"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 7,
+      "sequence": 103,
+      "time_seconds": 1532,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 4,
+      "sequence": 104,
+      "time_seconds": 1532,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceRouteInvalidated"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "PLAN_ROUTE",
+      "detail": "Closure invalidated the current route; selecting a safe replacement. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-6",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=6 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "previous_route_nodes": [
+        6,
+        4,
+        3,
+        2
+      ],
+      "reason_code": "ROUTE_CLOSED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        6,
+        7,
+        5,
+        4,
+        3,
+        2
+      ],
+      "sequence": 105,
+      "time_seconds": 1532,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "route_nodes": [
+        6,
+        7,
+        5,
+        4,
+        3,
+        2
+      ],
+      "sequence": 106,
+      "time_seconds": 1532,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceRerouted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "route_nodes": [
+        6,
+        7,
+        5,
+        4,
+        3,
+        2
+      ],
+      "sequence": 107,
+      "time_seconds": 1532,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 6,
+      "sequence": 108,
+      "time_seconds": 1532,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "PLAN_ROUTE",
+      "detail": "The objective changed; selecting a safe route to its new destination. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-7",
+      "objective_id": "aircraft-2-departure",
+      "observation_summary": "node=10 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "DESTINATION_CHANGED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        10,
+        6,
+        7,
+        5,
+        4,
+        3,
+        2
+      ],
+      "sequence": 109,
+      "time_seconds": 1609,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 110,
+      "time_seconds": 1609,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfacePushbackRequested"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 111,
+      "time_seconds": 1610,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfacePushbackStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 112,
+      "time_seconds": 1610,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "PushbackTaxiOutStarted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 9,
+      "sequence": 113,
+      "time_seconds": 1610,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 9,
+      "sequence": 114,
+      "time_seconds": 1630,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 115,
+      "time_seconds": 1630,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfacePushbackCompleted"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "PLAN_ROUTE",
+      "detail": "Objective has no route yet; selecting the best currently observed route. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-8",
+      "objective_id": "aircraft-2-departure",
+      "observation_summary": "node=10 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_CREATED",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        10,
+        6,
+        7,
+        5,
+        4,
+        3,
+        2
+      ],
+      "sequence": 116,
+      "time_seconds": 1630,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "route_nodes": [
+        10,
+        6,
+        7,
+        5,
+        4,
+        3,
+        2
+      ],
+      "sequence": 117,
+      "time_seconds": 1630,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceTaxiRouteAssigned"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 9,
+      "sequence": 118,
+      "time_seconds": 1630,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 6,
+      "sequence": 119,
+      "time_seconds": 1635,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 5,
+      "sequence": 120,
+      "time_seconds": 1635,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 9,
+      "sequence": 121,
+      "time_seconds": 1670,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 6,
+      "sequence": 122,
+      "time_seconds": 1670,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 5,
+      "sequence": 123,
+      "time_seconds": 1682,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 3,
+      "sequence": 124,
+      "time_seconds": 1682,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 6,
+      "sequence": 125,
+      "time_seconds": 1773,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 5,
+      "sequence": 126,
+      "time_seconds": 1773,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 3,
+      "sequence": 127,
+      "time_seconds": 1796,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 2,
+      "sequence": 128,
+      "time_seconds": 1796,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 5,
+      "sequence": 129,
+      "time_seconds": 1820,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 3,
+      "sequence": 130,
+      "time_seconds": 1820,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 2,
+      "sequence": 131,
+      "time_seconds": 1896,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 1,
+      "sequence": 132,
+      "time_seconds": 1896,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 3,
+      "sequence": 133,
+      "time_seconds": 1934,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 2,
+      "sequence": 134,
+      "time_seconds": 1934,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "edge_id": 1,
+      "sequence": 135,
+      "time_seconds": 1984,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-9",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=2 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 136,
+      "time_seconds": 1984,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "detail": "departure",
+      "sequence": 137,
+      "time_seconds": 1984,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 138,
+      "time_seconds": 1984,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 139,
+      "time_seconds": 1984,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 140,
+      "time_seconds": 1984,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 141,
+      "time_seconds": 1984,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 2,
+      "sequence": 142,
+      "time_seconds": 2034,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 1,
+      "sequence": 143,
+      "time_seconds": 2034,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationAcquired"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "detail": "departure interval complete",
+      "sequence": 144,
+      "time_seconds": 2074,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 145,
+      "time_seconds": 2074,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-01",
+      "aircraft_id": 1,
+      "sequence": 146,
+      "time_seconds": 2074,
+      "turnaround_id": "KAUO-SIM-GA-01",
+      "type": "AircraftDeparted"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "edge_id": 1,
+      "sequence": 147,
+      "time_seconds": 2122,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceReservationReleased"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-10",
+      "objective_id": "aircraft-2-departure",
+      "observation_summary": "node=2 destination=2 blocked=false operator=false",
+      "policy_id": "adaptive-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 148,
+      "time_seconds": 2122,
+      "type": "AgentDecision"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "detail": "departure",
+      "sequence": 149,
+      "time_seconds": 2122,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "RunwayRequest"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 150,
+      "time_seconds": 2122,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceRunwayQueueEntered"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 151,
+      "time_seconds": 2122,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "SurfaceRunwayClearance"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 152,
+      "time_seconds": 2122,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "RunwayGrant"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 153,
+      "time_seconds": 2122,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "RunwayOccupied"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "detail": "departure interval complete",
+      "sequence": 154,
+      "time_seconds": 2212,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "RunwayReleased"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 155,
+      "time_seconds": 2212,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "AircraftStateChanged"
+    },
+    {
+      "aircraft": "KAUO-SIM-GA-02",
+      "aircraft_id": 2,
+      "sequence": 156,
+      "time_seconds": 2212,
+      "turnaround_id": "KAUO-SIM-GA-02",
+      "type": "AircraftDeparted"
+    },
+    {
+      "edge_id": 4,
+      "sequence": 157,
+      "time_seconds": 2400,
+      "type": "RoadOpened"
+    }
+  ],
+  "experiment_name": "airport_kauo",
+  "native_metrics": {
+    "agent_decisions": 11,
+    "agent_objectives_completed": 4,
+    "agent_objectives_failed": 0,
+    "agent_operator_interventions": 0,
+    "agent_replans": 3,
+    "agent_route_selections": 7,
+    "aircraft_operations": [
+      {
+        "actual_arrival_seconds": 1,
+        "aircraft_id": 1,
+        "arrival_gate_time_seconds": 179,
+        "arrival_runway_clearance_time_seconds": 1,
+        "arrival_runway_release_time_seconds": 91,
+        "arrival_runway_request_time_seconds": 0,
+        "arrival_runway_wait_seconds": 1,
+        "arrival_taxi_completed_at_seconds": 179,
+        "arrival_taxi_distance_m": 435.884,
+        "arrival_taxi_started_at_seconds": 91,
+        "arrival_to_departure_seconds": 2073,
+        "departure_runway_clearance_time_seconds": 1984,
+        "departure_runway_release_time_seconds": 2074,
+        "departure_runway_request_time_seconds": 1984,
+        "departure_runway_wait_seconds": 0,
+        "departure_taxi_completed_at_seconds": 1984,
+        "departure_taxi_distance_m": 2384.033,
+        "departure_taxi_started_at_seconds": 1504,
+        "departure_time_seconds": 2074,
+        "flight_number": "KAUO-SIM-GA-01",
+        "gate_id": 1,
+        "gate_occupancy_seconds": 1305,
+        "gate_released_at_seconds": 1484,
+        "gate_wait_seconds": 0,
+        "operation_type": "arrival_turnaround",
+        "pushback_completed_at_seconds": 1504,
+        "pushback_started_at_seconds": 1484,
+        "runway_clearance_time_seconds": 1984,
+        "runway_release_time_seconds": 2074,
+        "runway_request_time_seconds": 1984,
+        "runway_wait_seconds": 0,
+        "surface_state": "Departed",
+        "taxi_distance_m": 2819.917
+      },
+      {
+        "actual_arrival_seconds": 241,
+        "aircraft_id": 2,
+        "arrival_gate_time_seconds": 431,
+        "arrival_runway_clearance_time_seconds": 241,
+        "arrival_runway_release_time_seconds": 331,
+        "arrival_runway_request_time_seconds": 240,
+        "arrival_runway_wait_seconds": 1,
+        "arrival_taxi_completed_at_seconds": 431,
+        "arrival_taxi_distance_m": 498.566,
+        "arrival_taxi_started_at_seconds": 331,
+        "arrival_to_departure_seconds": 1971,
+        "departure_runway_clearance_time_seconds": 2122,
+        "departure_runway_release_time_seconds": 2212,
+        "departure_runway_request_time_seconds": 2122,
+        "departure_runway_wait_seconds": 0,
+        "departure_taxi_completed_at_seconds": 2122,
+        "departure_taxi_distance_m": 2446.715,
+        "departure_taxi_started_at_seconds": 1630,
+        "departure_time_seconds": 2212,
+        "flight_number": "KAUO-SIM-GA-02",
+        "gate_id": 2,
+        "gate_occupancy_seconds": 1179,
+        "gate_released_at_seconds": 1610,
+        "gate_wait_seconds": 0,
+        "operation_type": "arrival_turnaround",
+        "pushback_completed_at_seconds": 1630,
+        "pushback_started_at_seconds": 1610,
+        "runway_clearance_time_seconds": 2122,
+        "runway_release_time_seconds": 2212,
+        "runway_request_time_seconds": 2122,
+        "runway_wait_seconds": 0,
+        "surface_state": "Departed",
+        "taxi_distance_m": 2945.281
+      }
+    ],
+    "completed_turnarounds": 2,
+    "delayed_turnarounds": 2,
+    "disruption_triggered_replans": 0,
+    "failed_or_timed_out_turnarounds": 0,
+    "fleet": {
+      "collisions": 0,
+      "minimum_separation_m": 2.051324,
+      "outstanding_reservations": 0,
+      "reassignments": 0,
+      "requests_completed": 12,
+      "requests_created": 12,
+      "requests_failed": 0,
+      "reservation_contentions": 1,
+      "reservation_requests": 2,
+      "unfinished_requests": 0
+    },
+    "seed": 42,
+    "simulated_duration_seconds": 2400,
+    "surface": {
+      "aircraft_aircraft_collisions": 0,
+      "aircraft_ground_collisions": 0,
+      "arrival_runway_wait_seconds": 2,
+      "arrival_taxi_distance_m": 934.45,
+      "arrival_taxi_seconds": 188,
+      "arrival_to_departure_seconds": 4044,
+      "arrivals_completed": 2,
+      "average_runway_wait_seconds": 0.5,
+      "departed_aircraft": 2,
+      "departure_runway_wait_seconds": 0,
+      "departure_taxi_distance_m": 4830.748,
+      "departure_taxi_seconds": 972,
+      "departure_throughput_per_hour": 3.0,
+      "gate_assignments": 2,
+      "gate_occupancy_seconds": 2484,
+      "gate_wait_seconds": 0,
+      "max_simultaneous_taxiing": 2,
+      "maximum_runway_queue_depth": 0,
+      "minimum_aircraft_ground_separation_m": 43.885946,
+      "minimum_aircraft_separation_m": 236.97868,
+      "reroutes": 1,
+      "runway_occupied_seconds": 360,
+      "runway_operations_completed": 4,
+      "runway_queue_seconds": 2,
+      "runway_utilization": 0.15,
+      "safe_failures": 0,
+      "taxi_distance_m": 5765.198,
+      "taxi_seconds": 1160,
+      "total_aircraft": 2,
+      "wait_events": 0,
+      "wait_seconds": 4
+    },
+    "task_reassignments": 0,
+    "total_turnarounds": 2,
+    "turnarounds": [
+      {
+        "actual_arrival_seconds": 1,
+        "actual_departure_seconds": 2074,
+        "aircraft_id": 1,
+        "completed_required_tasks": 4,
+        "critical_path_task_ids": [
+          2,
+          3
+        ],
+        "departure_delay_seconds": 1354,
+        "estimated_ready_time_seconds": 1201,
+        "failure_reason": "",
+        "gate_id": 1,
+        "gate_occupancy_seconds": 1305,
+        "gate_wait_seconds": 0,
+        "predicted_late": true,
+        "pushback_completed_at_seconds": 1504,
+        "pushback_started_at_seconds": 1484,
+        "runway_queue_entered_at_seconds": 1984,
+        "schedule_slack_seconds": -481,
+        "scheduled_arrival_seconds": 0,
+        "scheduled_departure_seconds": 720,
+        "state": "Departed",
+        "surface_reroutes": 1,
+        "surface_state": "Departed",
+        "surface_wait_seconds": 2,
+        "tasks": [
+          {
+            "assigned_resource": "KAUO-SIM-FUEL-01",
+            "completed_at_seconds": 494,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 179,
+            "service_type": "Fueling",
+            "started_at_seconds": 374,
+            "state": "Completed",
+            "task_id": 1
+          },
+          {
+            "assigned_resource": "KAUO-SIM-BAG-01",
+            "completed_at_seconds": 1141,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 809,
+            "service_type": "BaggageLoad",
+            "started_at_seconds": 1021,
+            "state": "Completed",
+            "task_id": 2
+          },
+          {
+            "assigned_resource": "crew:PushbackPreparation:1",
+            "completed_at_seconds": 1201,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 1141,
+            "service_type": "PushbackPreparation",
+            "started_at_seconds": 1141,
+            "state": "Completed",
+            "task_id": 3
+          },
+          {
+            "assigned_resource": "KAUO-SIM-BAG-01",
+            "completed_at_seconds": 809,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 494,
+            "service_type": "BaggageUnload",
+            "started_at_seconds": 689,
+            "state": "Completed",
+            "task_id": 4
+          }
+        ],
+        "taxi_completed_at_seconds": 1984,
+        "taxi_distance_m": 2819.917,
+        "taxi_started_at_seconds": 91,
+        "turnaround_id": "KAUO-SIM-GA-01",
+        "unfinished_required_tasks": 0
+      },
+      {
+        "actual_arrival_seconds": 241,
+        "actual_departure_seconds": 2212,
+        "aircraft_id": 2,
+        "completed_required_tasks": 4,
+        "critical_path_task_ids": [
+          6,
+          7
+        ],
+        "departure_delay_seconds": 1252,
+        "estimated_ready_time_seconds": 1489,
+        "failure_reason": "",
+        "gate_id": 2,
+        "gate_occupancy_seconds": 1179,
+        "gate_wait_seconds": 0,
+        "predicted_late": true,
+        "pushback_completed_at_seconds": 1630,
+        "pushback_started_at_seconds": 1610,
+        "runway_queue_entered_at_seconds": 2122,
+        "schedule_slack_seconds": -529,
+        "scheduled_arrival_seconds": 240,
+        "scheduled_departure_seconds": 960,
+        "state": "Departed",
+        "surface_reroutes": 0,
+        "surface_state": "Departed",
+        "surface_wait_seconds": 2,
+        "tasks": [
+          {
+            "assigned_resource": "KAUO-SIM-FUEL-01",
+            "completed_at_seconds": 774,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 431,
+            "service_type": "Fueling",
+            "started_at_seconds": 654,
+            "state": "Completed",
+            "task_id": 5
+          },
+          {
+            "assigned_resource": "KAUO-SIM-BAG-01",
+            "completed_at_seconds": 1429,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 1086,
+            "service_type": "BaggageLoad",
+            "started_at_seconds": 1309,
+            "state": "Completed",
+            "task_id": 6
+          },
+          {
+            "assigned_resource": "crew:PushbackPreparation:1",
+            "completed_at_seconds": 1489,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 1429,
+            "service_type": "PushbackPreparation",
+            "started_at_seconds": 1429,
+            "state": "Completed",
+            "task_id": 7
+          },
+          {
+            "assigned_resource": "KAUO-SIM-LOAD-01",
+            "completed_at_seconds": 1086,
+            "latest_desirable_completion_seconds": null,
+            "reassignments": 0,
+            "requested_at_seconds": 774,
+            "service_type": "BaggageUnload",
+            "started_at_seconds": 966,
+            "state": "Completed",
+            "task_id": 8
+          }
+        ],
+        "taxi_completed_at_seconds": 2122,
+        "taxi_distance_m": 2945.281,
+        "taxi_started_at_seconds": 331,
+        "turnaround_id": "KAUO-SIM-GA-02",
+        "unfinished_required_tasks": 0
+      }
+    ],
+    "unresolved_service_requests": 0
+  },
+  "run_count": 1,
+  "runs": [
+    {
+      "aircraft_count": 2,
+      "arrival_runway_wait_seconds": 2,
+      "arrival_taxi_distance_m": 934.45,
+      "arrival_taxi_seconds": 188,
+      "arrival_to_departure_seconds": 4044,
+      "average_runway_wait_seconds": 0.5,
+      "avg_departure_delay_minutes": 21.716666666666665,
+      "avg_service_waiting_minutes": 2.5833333333333335,
+      "avg_turnaround_minutes": 20.4,
+      "completed_turnarounds": 2,
+      "delayed_aircraft": 2,
+      "delayed_turnarounds": 2,
+      "departure_runway_wait_seconds": 0,
+      "departure_taxi_distance_m": 4830.748,
+      "departure_taxi_seconds": 972,
+      "disruption_triggered_replans": 0,
+      "failed_or_timed_out_turnarounds": 0,
+      "fleet_collisions": 0,
+      "fleet_minimum_separation_m": 2.051324,
+      "fleet_outstanding_reservations": 0,
+      "fleet_reassignments": 0,
+      "fleet_requests_completed": 12,
+      "fleet_requests_created": 12,
+      "fleet_requests_failed": 0,
+      "fleet_reservation_contentions": 1,
+      "fleet_unfinished_requests": 0,
+      "gate_assignments": 2,
+      "gate_occupancy_seconds": 2484,
+      "gate_wait_seconds": 0,
+      "max_simultaneous_taxiing_aircraft": 2,
+      "maximum_runway_queue_depth": 0,
+      "maximum_service_task_wait_seconds": 223.0,
+      "minimum_aircraft_ground_separation_m": 43.885946,
+      "minimum_aircraft_separation_m": 236.97868,
+      "ordinal": 1,
+      "road_closure_events": 1,
+      "runway_operations_completed": 4,
+      "runway_queue_seconds": 2,
+      "runway_utilization": 0.15,
+      "scenario": "airport_kauo",
+      "seed": 42,
+      "simulated_duration_seconds": 2400,
+      "surface_aircraft_aircraft_collisions": 0,
+      "surface_aircraft_ground_collisions": 0,
+      "surface_arrived_aircraft": 2,
+      "surface_departed_aircraft": 2,
+      "surface_departure_throughput_per_hour": 3.0,
+      "surface_reroutes": 1,
+      "surface_safe_failures": 0,
+      "surface_taxi_distance_m": 5765.198,
+      "surface_taxi_seconds": 1160,
+      "surface_total_aircraft": 2,
+      "surface_wait_events": 0,
+      "surface_wait_seconds": 4,
+      "task_reassignments": 0,
+      "total_service_task_wait_seconds": 1240.0,
+      "total_turnarounds": 2,
+      "unresolved_service_requests": 0
+    }
+  ],
+  "scenario_generation": {
+    "identity_map": {
+      "aircraft": {
+        "KAUO-SIM-GA-01": "KAUO-SIM-GA-01",
+        "KAUO-SIM-GA-02": "KAUO-SIM-GA-02"
+      },
+      "disruptions": {
+        "GOAL34-CLOSE-A": {
+          "end_time_seconds": 2400,
+          "simulator_edge_id": "twy_a_mid_fbo_primary",
+          "time_seconds": 1512,
+          "type": "route_closure"
+        }
+      },
+      "equipment": {
+        "KAUO-SIM-BAG-01": "KAUO-SIM-BAG-01",
+        "KAUO-SIM-FUEL-01": "KAUO-SIM-FUEL-01",
+        "KAUO-SIM-LOAD-01": "KAUO-SIM-LOAD-01"
+      },
+      "flights": {
+        "KAUO-SIM-GA-01-ARR": {
+          "canonical_aircraft_id": "KAUO-SIM-GA-01",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-01",
+          "operation": "arrival",
+          "simulator_aircraft_id": "KAUO-SIM-GA-01",
+          "simulator_gate_id": "GA-PARK-01"
+        },
+        "KAUO-SIM-GA-01-DEP": {
+          "canonical_aircraft_id": "KAUO-SIM-GA-01",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-01",
+          "operation": "departure",
+          "simulator_aircraft_id": "KAUO-SIM-GA-01",
+          "simulator_gate_id": "GA-PARK-01"
+        },
+        "KAUO-SIM-GA-02-ARR": {
+          "canonical_aircraft_id": "KAUO-SIM-GA-02",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-02",
+          "operation": "arrival",
+          "simulator_aircraft_id": "KAUO-SIM-GA-02",
+          "simulator_gate_id": "GA-PARK-02"
+        },
+        "KAUO-SIM-GA-02-DEP": {
+          "canonical_aircraft_id": "KAUO-SIM-GA-02",
+          "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-02",
+          "operation": "departure",
+          "simulator_aircraft_id": "KAUO-SIM-GA-02",
+          "simulator_gate_id": "GA-PARK-02"
+        }
+      },
+      "gates": {
+        "GA-PARK-ILLUSTRATIVE-01": "GA-PARK-01",
+        "GA-PARK-ILLUSTRATIVE-02": "GA-PARK-02"
+      },
+      "turnaround_requirements": {
+        "KAUO-GA01-FUEL": {
+          "aircraft": "KAUO-SIM-GA-01",
+          "task": "KAUO-GA01-FUEL"
+        },
+        "KAUO-GA01-LOAD": {
+          "aircraft": "KAUO-SIM-GA-01",
+          "task": "KAUO-GA01-LOAD"
+        },
+        "KAUO-GA01-PUSH": {
+          "aircraft": "KAUO-SIM-GA-01",
+          "task": "KAUO-GA01-PUSH"
+        },
+        "KAUO-GA01-UNLOAD": {
+          "aircraft": "KAUO-SIM-GA-01",
+          "task": "KAUO-GA01-UNLOAD"
+        },
+        "KAUO-GA02-FUEL": {
+          "aircraft": "KAUO-SIM-GA-02",
+          "task": "KAUO-GA02-FUEL"
+        },
+        "KAUO-GA02-LOAD": {
+          "aircraft": "KAUO-SIM-GA-02",
+          "task": "KAUO-GA02-LOAD"
+        },
+        "KAUO-GA02-PUSH": {
+          "aircraft": "KAUO-SIM-GA-02",
+          "task": "KAUO-GA02-PUSH"
+        },
+        "KAUO-GA02-UNLOAD": {
+          "aircraft": "KAUO-SIM-GA-02",
+          "task": "KAUO-GA02-UNLOAD"
+        }
+      }
+    },
+    "manifest": {
+      "airport": {
+        "airport_id": "KAUO",
+        "field_elevation_ft": 776.8,
+        "field_elevation_m": 236.785,
+        "iata": "AUO",
+        "icao": "KAUO",
+        "local_timezone": "America/Chicago",
+        "name": "Auburn University Regional Airport",
+        "operational_areas": [
+          {
+            "classification": "APPROXIMATE chart-informed operational area; boundary is not surveyed",
+            "id": "primary_fbo_apron",
+            "label": "Terminal/FBO apron"
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; stand positions are not published FAA stands",
+            "id": "ga_parking_area",
+            "label": "Illustrative general aviation parking positions"
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; not verified vehicle locations",
+            "id": "service_staging_area",
+            "label": "Illustrative apron service staging"
+          }
+        ],
+        "reference_latitude": 32.61511111,
+        "reference_longitude": -85.434,
+        "runways": [
+          {
+            "classification": "FAA published",
+            "identifier": "18/36",
+            "length_ft": 5264,
+            "surface": "asphalt, grooved",
+            "width_ft": 100
+          },
+          {
+            "classification": "FAA published",
+            "identifier": "11/29",
+            "length_ft": 4000,
+            "surface": "asphalt",
+            "width_ft": 75
+          }
+        ],
+        "timezone": "UTC"
+      },
+      "entities": {
+        "aircraft": 2,
+        "flights": 4,
+        "gates": 2,
+        "ground_vehicles": 3,
+        "turnaround_tasks": 8
+      },
+      "generated_disruptions": {
+        "delayed_services": 0,
+        "equipment_outages": 0,
+        "flight_delays": 0,
+        "route_closures": 1
+      },
+      "generated_scenario_id": "airport-66a78f257cd05c0b",
+      "generator_schema_version": "1.0.0",
+      "geometry_configuration_sha256": "767771965fe15a79bdf2c6d294b86022fcda894f9b803b75a93a4d2a861afd1f",
+      "identity_map_file": "identity-map.json",
+      "mapping_configuration_sha256": "0cb6f1bebd24aff3a05fbe1b8544bab477fb4451efa3e5429e741fd5fea7d5c5",
+      "output_file_sha256": {
+        "identity-map.json": "2b5144a57667176042627b44aaca2f212c3811187d92b45a01958a2f68f3a189",
+        "scenario.json": "da62952f1625dd52d92e7a6534552b69787aadd1392a6271d1ee2708f1f22b88",
+        "support-matrix.json": "499de98624d814999812663821f00dfe32203efa716a9308ff17aa9cb1487ba1"
+      },
+      "scenario_epoch_utc": "2026-10-09T14:00:00Z",
+      "scenario_name": "airport_kauo",
+      "seed": 42,
+      "source_canonical_schema_version": "1.0",
+      "source_canonical_sha256": "1f13b1f4a4efa891263b847864a791b410ef8a293c6f1605806ece879e5e895d",
+      "source_dataset_id": "kauo-operational-digital-twin-goal27-2026-10-09",
+      "source_provenance": [
+        {
+          "accepted_record_count": 2,
+          "filename": "aircraft.json",
+          "record_count": 2,
+          "rejected_record_count": 0,
+          "sha256": "75f426ea214e518640601bce6bb3ff881add11966781c9ba5d67bd24be0da4f2",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 1,
+          "filename": "disruptions.json",
+          "record_count": 1,
+          "rejected_record_count": 0,
+          "sha256": "4278f43138830d2101cb3e2cbd935cd317ac85ac57ecaa39c26701173953de3c",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 3,
+          "filename": "equipment.json",
+          "record_count": 3,
+          "rejected_record_count": 0,
+          "sha256": "cbf99f38b66960d231404bfdc77dec9ff4928df6964037f5d6870d19ee7c0eb3",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 4,
+          "filename": "flights.json",
+          "record_count": 4,
+          "rejected_record_count": 0,
+          "sha256": "b01c5945d5db71feeb34795b2f37cf7b62c280fa33e7c350dfe9d80186378fe0",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 2,
+          "filename": "gates.json",
+          "record_count": 2,
+          "rejected_record_count": 0,
+          "sha256": "4f9ccbd33d015a6d608a38a84634059d86ff1eb0b91beb683c2fe7a56cd2b82f",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 8,
+          "filename": "turnaround.json",
+          "record_count": 8,
+          "rejected_record_count": 0,
+          "sha256": "176311954e32642764710534da3bfeef7d75f4a0d7fdd49d48b369914dd0dbe3",
+          "type": "json"
+        }
+      ],
+      "unsupported_metadata": {
+        "aircraft": [
+          "KAUO-SIM-GA-01",
+          "KAUO-SIM-GA-02"
+        ],
+        "equipment_without_simulator_vehicle": []
+      },
+      "warnings": [
+        "AIRCRAFT_METADATA_ONLY: KAUO-SIM-GA-01.category preserved in manifest; movement behavior is unchanged",
+        "AIRCRAFT_METADATA_ONLY: KAUO-SIM-GA-02.category preserved in manifest; movement behavior is unchanged"
+      ]
+    },
+    "scenario_document": {
+      "aircraft": [
+        {
+          "arrival_exit": "twy_a_mid",
+          "gate": "GA-PARK-01",
+          "id": "KAUO-SIM-GA-01",
+          "operation_type": "arrival_turnaround",
+          "scheduled_arrival_seconds": 0,
+          "scheduled_departure_seconds": 720,
+          "service_tasks": [
+            {
+              "duration_seconds": 120,
+              "id": "KAUO-GA01-FUEL",
+              "type": "fueling"
+            },
+            {
+              "duration_seconds": 120,
+              "id": "KAUO-GA01-LOAD",
+              "prerequisites": [
+                "KAUO-GA01-UNLOAD"
+              ],
+              "type": "baggage_load"
+            },
+            {
+              "duration_seconds": 60,
+              "id": "KAUO-GA01-PUSH",
+              "prerequisites": [
+                "KAUO-GA01-LOAD"
+              ],
+              "type": "pushback_preparation"
+            },
+            {
+              "duration_seconds": 120,
+              "id": "KAUO-GA01-UNLOAD",
+              "prerequisites": [
+                "KAUO-GA01-FUEL"
+              ],
+              "type": "baggage"
+            }
+          ],
+          "target_off_block_seconds": 720,
+          "turnaround_id": "KAUO-SIM-GA-01"
+        },
+        {
+          "arrival_exit": "twy_a_mid",
+          "gate": "GA-PARK-02",
+          "id": "KAUO-SIM-GA-02",
+          "operation_type": "arrival_turnaround",
+          "scheduled_arrival_seconds": 240,
+          "scheduled_departure_seconds": 960,
+          "service_tasks": [
+            {
+              "duration_seconds": 120,
+              "id": "KAUO-GA02-FUEL",
+              "type": "fueling"
+            },
+            {
+              "duration_seconds": 120,
+              "id": "KAUO-GA02-LOAD",
+              "prerequisites": [
+                "KAUO-GA02-UNLOAD"
+              ],
+              "type": "baggage_load"
+            },
+            {
+              "duration_seconds": 60,
+              "id": "KAUO-GA02-PUSH",
+              "prerequisites": [
+                "KAUO-GA02-LOAD"
+              ],
+              "type": "pushback_preparation"
+            },
+            {
+              "duration_seconds": 120,
+              "id": "KAUO-GA02-UNLOAD",
+              "prerequisites": [
+                "KAUO-GA02-FUEL"
+              ],
+              "type": "baggage"
+            }
+          ],
+          "target_off_block_seconds": 960,
+          "turnaround_id": "KAUO-SIM-GA-02"
+        }
+      ],
+      "airport": {
+        "calibration": {
+          "coordinate_reference_system": "WGS 84 geographic 3D (EPSG:4979); horizontal outputs use airport-local ENU meters",
+          "origin": {
+            "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+            "ellipsoid_height_m": 208.22,
+            "field_elevation_ft_msl": 776.8,
+            "latitude_degrees": 32.61511111,
+            "longitude_degrees": -85.434,
+            "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+            "source_record": {
+              "ARPT_ID": "AUO",
+              "ARPT_PSN_SOURCE": "3RD PARTY SURVEY",
+              "EFF_DATE": "2026/10/01",
+              "ICAO_ID": "KAUO",
+              "POSITION_SRC_DATE": "2006/05/22",
+              "file": "APT_BASE.csv"
+            }
+          },
+          "runway_thresholds": {
+            "11": {
+              "x": -314.53713,
+              "y": 495.730459
+            },
+            "18": {
+              "x": -191.058895,
+              "y": 564.510565
+            },
+            "29": {
+              "x": 849.420982,
+              "y": 132.956881
+            },
+            "36": {
+              "x": -220.183588,
+              "y": -1039.622948
+            }
+          },
+          "scenario_axis_convention": "+X east, +Y north, meters; these are airport-local ENU coordinates.",
+          "source_classification": "Runway-end coordinates AUTHORITATIVE; runway centers/headings and intersection DERIVED; taxiway/apron/parking features APPROXIMATE."
+        },
+        "edges": [
+          {
+            "distance_m": 436.447,
+            "from": "rwy36_hold",
+            "id": "runway36_hold_twy_a_south",
+            "to": "twy_a_south",
+            "traversal_time_seconds": 88
+          },
+          {
+            "distance_m": 497.948,
+            "from": "twy_a_south",
+            "id": "twy_a_south_mid",
+            "to": "twy_a_mid",
+            "traversal_time_seconds": 100
+          },
+          {
+            "distance_m": 568.384,
+            "from": "twy_a_mid",
+            "id": "twy_a_mid_north",
+            "to": "twy_a_north",
+            "traversal_time_seconds": 114
+          },
+          {
+            "distance_m": 298.826,
+            "from": "twy_a_mid",
+            "id": "twy_a_mid_fbo_primary",
+            "to": "fbo_apron_junction",
+            "traversal_time_seconds": 60
+          },
+          {
+            "distance_m": 231.262,
+            "from": "twy_a_north",
+            "id": "twy_a_north_fbo_detour",
+            "to": "fbo_apron_detour",
+            "traversal_time_seconds": 47
+          },
+          {
+            "distance_m": 512.934,
+            "from": "fbo_apron_detour",
+            "id": "twy_c_fbo_detour",
+            "to": "fbo_apron_junction",
+            "traversal_time_seconds": 103
+          },
+          {
+            "distance_m": 137.058,
+            "from": "fbo_apron_junction",
+            "id": "fbo_junction_parking",
+            "to": "ga_parking_stand",
+            "traversal_time_seconds": 28
+          },
+          {
+            "distance_m": 531.498,
+            "from": "fbo_apron_junction",
+            "id": "fbo_junction_fuel_farm",
+            "to": "self_serve_fuel_farm",
+            "traversal_time_seconds": 107
+          },
+          {
+            "classification": "APPROXIMATE connector to an illustrative parking position",
+            "distance_m": 199.74,
+            "from": "fbo_apron_junction",
+            "id": "fbo_apron_parking_02",
+            "to": "ga_parking_stand_02",
+            "traversal_time_seconds": 40
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION short service staging spur",
+            "distance_m": 74.0,
+            "from": "ga_parking_stand",
+            "id": "fbo_service_staging_fuel_link",
+            "to": "fbo_service_staging_fuel",
+            "traversal_time_seconds": 15
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION short service staging spur",
+            "distance_m": 77.07,
+            "from": "ga_parking_stand",
+            "id": "fbo_service_staging_west_link",
+            "to": "fbo_service_staging_west",
+            "traversal_time_seconds": 16
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION short service staging spur",
+            "distance_m": 44.0,
+            "from": "ga_parking_stand_02",
+            "id": "fbo_service_staging_east_link",
+            "to": "fbo_service_staging_east",
+            "traversal_time_seconds": 9
+          }
+        ],
+        "features": {
+          "apron_center_local_m": {
+            "x": 97.436698,
+            "y": -121.196537
+          },
+          "apron_classification": "APPROXIMATE chart-graticule reference; not surveyed",
+          "apron_size_m": {
+            "x": 150,
+            "y": 145
+          },
+          "buildings": [
+            {
+              "center_local_m": {
+                "x": 115.848014,
+                "y": -138.108766
+              },
+              "heading_degrees": 5.7,
+              "name": "KAUO terminal/FBO",
+              "size_m": {
+                "x": 82,
+                "y": 28
+              }
+            },
+            {
+              "center_local_m": {
+                "x": 295.920468,
+                "y": 558.450572
+              },
+              "heading_degrees": 5.7,
+              "name": "KAUO north hangar complex",
+              "size_m": {
+                "x": 170,
+                "y": 85
+              }
+            },
+            {
+              "center_local_m": {
+                "x": -607.760583,
+                "y": -581.432122
+              },
+              "heading_degrees": 5.7,
+              "name": "KAUO college aviation hangar area",
+              "size_m": {
+                "x": 160,
+                "y": 90
+              }
+            }
+          ],
+          "geometry_status": "FAA surveyed runway ends; centerlines and intersection derived from those ends; taxiway/apron/parking nodes remain approximate chart-digitized ENU references.",
+          "kauo_calibrated": true,
+          "runway_intersection_classification": "DERIVED from authoritative FAA NASR runway-end coordinates",
+          "runway_intersection_local_m": {
+            "x": -192.99544,
+            "y": 457.849273
+          },
+          "runways": [
+            {
+              "center_local_m": {
+                "x": -205.621241,
+                "y": -237.556191
+              },
+              "identifier": "18/36",
+              "length_m": 1604.397886,
+              "published_length_m": 1604.4672,
+              "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading",
+              "true_heading_degrees_from_first_threshold": 181.040149,
+              "width_m": 30.48
+            },
+            {
+              "center_local_m": {
+                "x": 267.441926,
+                "y": 314.34367
+              },
+              "identifier": "11/29",
+              "length_m": 1219.181346,
+              "published_length_m": 1219.2,
+              "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading",
+              "true_heading_degrees_from_first_threshold": 107.310813,
+              "width_m": 22.86
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "id": "rwy18_36_mid",
+            "name": "Runway 18/36 reference midpoint (approximate FAA-diagram anchor)",
+            "x_m": -205.621241,
+            "y_m": -237.556191
+          },
+          {
+            "id": "rwy36_hold",
+            "name": "Runway 36 end / departure queue reference (approximate FAA-diagram anchor)",
+            "x_m": -220.183588,
+            "y_m": -1039.622948
+          },
+          {
+            "id": "twy_a_south",
+            "name": "Taxiway A south connector (approximate chart anchor)",
+            "x_m": -329.939582,
+            "y_m": -617.202097
+          },
+          {
+            "id": "twy_a_mid",
+            "name": "Taxiway A arrival exit reference (approximate chart anchor)",
+            "x_m": -324.459431,
+            "y_m": -119.284465
+          },
+          {
+            "id": "twy_a_north",
+            "name": "Taxiway A north connector (approximate chart anchor)",
+            "x_m": -319.987342,
+            "y_m": 449.081614
+          },
+          {
+            "id": "fbo_apron_junction",
+            "name": "East-side terminal/FBO apron access via Taxiway C (approximate chart anchor)",
+            "x_m": -29.34007,
+            "y_m": -72.36365
+          },
+          {
+            "id": "fbo_apron_detour",
+            "name": "North Taxiway C apron-side detour (approximate chart anchor)",
+            "x_m": -89.036988,
+            "y_m": 437.084363
+          },
+          {
+            "id": "ga_parking_stand",
+            "name": "Illustrative GA parking point on the east-side terminal/FBO apron",
+            "x_m": 93.160375,
+            "y_m": -133.834301
+          },
+          {
+            "id": "self_serve_fuel_farm",
+            "name": "Charted west-side self-serve fuel farm area (approximate chart anchor)",
+            "x_m": -544.048314,
+            "y_m": -204.898264
+          },
+          {
+            "classification": "APPROXIMATE / ASSUMED FOR SIMULATION; no surveyed stand position is available",
+            "id": "ga_parking_stand_02",
+            "name": "Illustrative GA parking point 02 on approximate FBO apron",
+            "x_m": 170.0,
+            "y_m": -85.0
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance",
+            "id": "fbo_service_staging_west",
+            "name": "Approximate baggage vehicle staging point southwest of illustrative GA stand 01",
+            "x_m": 30.0,
+            "y_m": -178.0
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance",
+            "id": "fbo_service_staging_east",
+            "name": "Approximate load cart staging point south of illustrative GA stand 02",
+            "x_m": 170.0,
+            "y_m": -129.0
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance",
+            "id": "fbo_service_staging_fuel",
+            "name": "Approximate fuel vehicle staging point south of illustrative GA stand 01",
+            "x_m": 93.160375,
+            "y_m": -207.834301
+          },
+          {
+            "id": "rwy18_threshold",
+            "name": "Runway 18 FAA NASR surveyed runway end",
+            "x_m": -191.058895,
+            "y_m": 564.510565
+          },
+          {
+            "id": "rwy11_threshold",
+            "name": "Runway 11 FAA NASR surveyed runway end",
+            "x_m": -314.53713,
+            "y_m": 495.730459
+          },
+          {
+            "id": "rwy29_threshold",
+            "name": "Runway 29 FAA NASR surveyed runway end",
+            "x_m": 849.420982,
+            "y_m": 132.956881
+          },
+          {
+            "id": "runway_intersection",
+            "name": "Derived runway centerline intersection",
+            "x_m": -192.99544,
+            "y_m": 457.849273
+          }
+        ]
+      },
+      "default_seed": 42,
+      "fleet": {
+        "vehicles": [
+          {
+            "depot_node": "fbo_service_staging_west",
+            "id": "KAUO-SIM-BAG-01",
+            "name": "KAUO-SIM-BAG-01",
+            "speed_mps": 8.0,
+            "type": "baggage"
+          },
+          {
+            "depot_node": "fbo_service_staging_fuel",
+            "id": "KAUO-SIM-FUEL-01",
+            "name": "KAUO-SIM-FUEL-01",
+            "speed_mps": 8.0,
+            "type": "fueling"
+          },
+          {
+            "depot_node": "fbo_service_staging_east",
+            "id": "KAUO-SIM-LOAD-01",
+            "name": "KAUO-SIM-LOAD-01",
+            "speed_mps": 8.0,
+            "type": "baggage_load"
+          }
+        ]
+      },
+      "gates": [
+        {
+          "id": "GA-PARK-01",
+          "node": "ga_parking_stand"
+        },
+        {
+          "id": "GA-PARK-02",
+          "node": "ga_parking_stand_02"
+        }
+      ],
+      "name": "airport_kauo",
+      "road_events": [
+        {
+          "edge": "twy_a_mid_fbo_primary",
+          "enabled": false,
+          "time_seconds": 1512
+        },
+        {
+          "edge": "twy_a_mid_fbo_primary",
+          "enabled": true,
+          "time_seconds": 2400
+        }
+      ],
+      "service_durations_seconds": {
+        "baggage": 240,
+        "baggage_load": 240,
+        "cabin_cleaning": 180,
+        "catering": 300,
+        "deboarding": 120,
+        "fueling": 300,
+        "pushback_preparation": 120
+      },
+      "surface_operations": {
+        "aircraft_routing_policy": "ADAPTIVE",
+        "aircraft_speed_mps": 5.0,
+        "arrival_exit": "twy_a_mid",
+        "arrival_rollout_seconds": 90,
+        "departure_handoff": "rwy36_hold",
+        "pushback_seconds": 20,
+        "return_service_vehicles_to_depot_after_task": true,
+        "runway_node": "rwy36_hold",
+        "runway_occupancy_seconds": 90
+      }
+    },
+    "support_matrix": {
+      "aircraft_type_and_dimensions": {
+        "reason": "The existing simulator does not vary movement behavior by canonical model, dimensions, or category.",
+        "status": "metadata only"
+      },
+      "canonical_airport_and_dataset": {
+        "reason": "Airport metadata is preserved; synthetic geometry is resolved by the mapping document.",
+        "status": "metadata only"
+      },
+      "catering_vehicle": {
+        "reason": "The generated native vehicle retains its catering label and is available to the current simulator, but dispatch treats non-fueling vehicles through generic baggage-delivery behavior; there is no distinct catering capability.",
+        "status": "supported with transformation"
+      },
+      "delayed_service": {
+        "reason": "A requirement target maps to its generated aircraft task and uses existing task duration disruption behavior.",
+        "status": "supported with transformation"
+      },
+      "equipment_outage": {
+        "reason": "An indefinite outage on a targeted mapped vehicle uses the existing vehicle outage event; finite outage windows are unsupported because the simulator cannot restore the vehicle at an end time.",
+        "status": "supported with transformation"
+      },
+      "flight_arrival_and_departure": {
+        "reason": "Paired legs for one canonical aircraft become the existing RampLab arrival-turnaround operation; IDs remain in identity-map.json.",
+        "status": "supported with transformation"
+      },
+      "flight_delay": {
+        "reason": "Delay minutes adjust the targeted scheduled time before conversion to simulation seconds.",
+        "status": "supported with transformation"
+      },
+      "flight_schedule": {
+        "reason": "UTC timestamps are converted to integer simulator seconds from the earliest canonical operational event.",
+        "status": "supported with transformation"
+      },
+      "fuel_vehicle_and_baggage_vehicle": {
+        "reason": "These canonical equipment types map to existing fueling and baggage fleet capabilities.",
+        "status": "supported with transformation"
+      },
+      "gate_unavailability": {
+        "reason": "RampLab has no safe validated gate-resource outage behavior.",
+        "status": "unsupported"
+      },
+      "gates": {
+        "reason": "Canonical gate IDs resolve to explicit existing gate resources in the mapping.",
+        "status": "supported with transformation"
+      },
+      "raw_source_provenance": {
+        "reason": "Goal 24A source filenames and hashes are copied by reference into the generated manifest.",
+        "status": "supported"
+      },
+      "route_closure": {
+        "reason": "Canonical route IDs must map to an existing edge and use the existing road event mechanism.",
+        "status": "supported with transformation"
+      },
+      "tug_service_cart_and_generic_vehicle": {
+        "reason": "No validated tug, pushback vehicle, or generic fleet behavior exists; equipment is retained in the identity map and warning summary.",
+        "status": "metadata only"
+      },
+      "turnaround_requirements": {
+        "reason": "Mapped service types generate existing RampLab turnaround tasks; fueling uses fueling dispatch, while other mobile services including baggage, catering, and pushback preparation use generic baggage-delivery dispatch. Unmapped required service types block generation.",
+        "status": "supported with transformation"
+      }
+    }
+  },
+  "schema_version": "1.0",
+  "seeds": {
+    "values": [
+      42
+    ]
+  },
+  "source_scenario": "airport_kauo",
+  "source_scenario_file": "scenario.json"
+}

@@ -1,0 +1,137 @@
+{
+  "airport": {
+    "airport_id": "KAUO",
+    "field_elevation_ft": 776.8,
+    "field_elevation_m": 236.785,
+    "iata": "AUO",
+    "icao": "KAUO",
+    "local_timezone": "America/Chicago",
+    "name": "Auburn University Regional Airport",
+    "operational_areas": [
+      {
+        "classification": "APPROXIMATE chart-informed operational area; boundary is not surveyed",
+        "id": "primary_fbo_apron",
+        "label": "Terminal/FBO apron"
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION; stand positions are not published FAA stands",
+        "id": "ga_parking_area",
+        "label": "Illustrative general aviation parking positions"
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION; not verified vehicle locations",
+        "id": "service_staging_area",
+        "label": "Illustrative apron service staging"
+      }
+    ],
+    "reference_latitude": 32.61511111,
+    "reference_longitude": -85.434,
+    "runways": [
+      {
+        "classification": "FAA published",
+        "identifier": "18/36",
+        "length_ft": 5264,
+        "surface": "asphalt, grooved",
+        "width_ft": 100
+      },
+      {
+        "classification": "FAA published",
+        "identifier": "11/29",
+        "length_ft": 4000,
+        "surface": "asphalt",
+        "width_ft": 75
+      }
+    ],
+    "timezone": "UTC"
+  },
+  "entities": {
+    "aircraft": 2,
+    "flights": 4,
+    "gates": 2,
+    "ground_vehicles": 3,
+    "turnaround_tasks": 8
+  },
+  "generated_disruptions": {
+    "delayed_services": 0,
+    "equipment_outages": 0,
+    "flight_delays": 0,
+    "route_closures": 1
+  },
+  "generated_scenario_id": "airport-66a78f257cd05c0b",
+  "generator_schema_version": "1.0.0",
+  "geometry_configuration_sha256": "767771965fe15a79bdf2c6d294b86022fcda894f9b803b75a93a4d2a861afd1f",
+  "identity_map_file": "identity-map.json",
+  "mapping_configuration_sha256": "0cb6f1bebd24aff3a05fbe1b8544bab477fb4451efa3e5429e741fd5fea7d5c5",
+  "output_file_sha256": {
+    "identity-map.json": "2b5144a57667176042627b44aaca2f212c3811187d92b45a01958a2f68f3a189",
+    "scenario.json": "da62952f1625dd52d92e7a6534552b69787aadd1392a6271d1ee2708f1f22b88",
+    "support-matrix.json": "499de98624d814999812663821f00dfe32203efa716a9308ff17aa9cb1487ba1"
+  },
+  "scenario_epoch_utc": "2026-10-09T14:00:00Z",
+  "scenario_name": "airport_kauo",
+  "seed": 42,
+  "source_canonical_schema_version": "1.0",
+  "source_canonical_sha256": "1f13b1f4a4efa891263b847864a791b410ef8a293c6f1605806ece879e5e895d",
+  "source_dataset_id": "kauo-operational-digital-twin-goal27-2026-10-09",
+  "source_provenance": [
+    {
+      "accepted_record_count": 2,
+      "filename": "aircraft.json",
+      "record_count": 2,
+      "rejected_record_count": 0,
+      "sha256": "75f426ea214e518640601bce6bb3ff881add11966781c9ba5d67bd24be0da4f2",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 1,
+      "filename": "disruptions.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "4278f43138830d2101cb3e2cbd935cd317ac85ac57ecaa39c26701173953de3c",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 3,
+      "filename": "equipment.json",
+      "record_count": 3,
+      "rejected_record_count": 0,
+      "sha256": "cbf99f38b66960d231404bfdc77dec9ff4928df6964037f5d6870d19ee7c0eb3",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 4,
+      "filename": "flights.json",
+      "record_count": 4,
+      "rejected_record_count": 0,
+      "sha256": "b01c5945d5db71feeb34795b2f37cf7b62c280fa33e7c350dfe9d80186378fe0",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 2,
+      "filename": "gates.json",
+      "record_count": 2,
+      "rejected_record_count": 0,
+      "sha256": "4f9ccbd33d015a6d608a38a84634059d86ff1eb0b91beb683c2fe7a56cd2b82f",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 8,
+      "filename": "turnaround.json",
+      "record_count": 8,
+      "rejected_record_count": 0,
+      "sha256": "176311954e32642764710534da3bfeef7d75f4a0d7fdd49d48b369914dd0dbe3",
+      "type": "json"
+    }
+  ],
+  "unsupported_metadata": {
+    "aircraft": [
+      "KAUO-SIM-GA-01",
+      "KAUO-SIM-GA-02"
+    ],
+    "equipment_without_simulator_vehicle": []
+  },
+  "warnings": [
+    "AIRCRAFT_METADATA_ONLY: KAUO-SIM-GA-01.category preserved in manifest; movement behavior is unchanged",
+    "AIRCRAFT_METADATA_ONLY: KAUO-SIM-GA-02.category preserved in manifest; movement behavior is unchanged"
+  ]
+}

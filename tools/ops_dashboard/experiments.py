@@ -39,6 +39,10 @@ def digest(value: Any) -> str:
 def registry(scenario: dict[str, Any], studio: Any) -> list[dict[str, Any]]:
     """Return only inputs that Goal 30's scenario generator consumes."""
     entries: list[dict[str, Any]] = []
+    entries.append({"id": "agent_policy.aircraft_routing", "name": "Aircraft routing policy",
+                    "category": "Autonomy", "adapter": "path", "path": ["agent_policy", "aircraft_routing"],
+                    "type": "categorical", "allowed_values": ["SCRIPTED", "ADAPTIVE"], "units": "policy",
+                    "restart_required": True, "description": "Selects the deterministic aircraft surface routing policy."})
     for flight in scenario.get("flights", []):
         ident = str(flight.get("flight_id", ""))
         if ident:

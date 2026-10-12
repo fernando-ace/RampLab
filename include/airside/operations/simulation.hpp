@@ -1,6 +1,7 @@
 #pragma once
 
 #include "airside/agents/aircraft.hpp"
+#include "airside/agents/operational_agent.hpp"
 #include "airside/agents/service_vehicle.hpp"
 #include "airside/core/event_queue.hpp"
 #include "airside/core/event_stream.hpp"
@@ -52,6 +53,7 @@ struct SurfaceOperationsConfig {
     double aircraft_speed_mps{5.0};
     double departure_queue_spacing_m{30.0};
     bool return_service_vehicles_to_depot_after_task{false};
+    agents::AutonomyMode aircraft_routing_policy{agents::AutonomyMode::Scripted};
 };
 
 struct Scenario {
@@ -78,6 +80,7 @@ struct SimulationResult {
     std::vector<std::string> event_log;
     std::vector<SimulationEventRecord> events;
     SimulationMetrics metrics;
+    std::vector<agents::DecisionEvent> agent_decisions;
 
 };
 
@@ -111,7 +114,7 @@ private:
     void handle_vehicle_arrival(VehicleId id);
     void handle_service_completed(VehicleId id);
     void handle_vehicle_return(VehicleId id);
-    void handle_road_event(EdgeId id, bool available);
+    void handle_road_event(EdgeId id, bool available, bool operator_triggered = false);
     void handle_departure(AircraftId id);
     void complete_arrival_at_gate(AircraftId id);
     void start_arrival_taxi_in(AircraftId id);
@@ -120,6 +123,19 @@ private:
     void handle_task_duration_change(TaskId task, SimTime duration);
     void handle_vehicle_outage(VehicleId vehicle);
     void handle_surface_tick();
+    [[nodiscard]] agents::OperationalAgent& surface_agent(AircraftId id, NodeId destination,
+        agents::ObjectiveType objective_type);
+    [[nodiscard]] agents::Observation observe_surface_agent(AircraftId id, NodeId destination,
+        bool route_invalidated = false, std::optional<EdgeId> invalid_edge = std::nullopt,
+        bool reservation_blocked = false, bool operator_triggered = false) const;
+    [[nodiscard]] agents::Decision decide_surface_agent(AircraftId id, NodeId destination,
+        agents::ObjectiveType objective_type, bool route_invalidated = false,
+        std::optional<EdgeId> invalid_edge = std::nullopt, bool reservation_blocked = false,
+        bool operator_triggered = false);
+    void apply_surface_agent_route(AircraftId id, NodeId destination, const agents::Decision& decision);
+    void record_agent_decision(AircraftId id, const agents::Observation& observation,
+        const agents::Decision& decision, std::string result);
+    void complete_surface_agent(AircraftId id);
     void request_surface_departure(AircraftId aircraft);
     void finish_surface_departure(AircraftId aircraft);
     void handle_fleet_tick();
@@ -182,6 +198,7 @@ private:
         SimTime accumulated_wait{};
         bool pushback_wait_reported{false};
         bool clearance_waiting{false};
+        bool operator_triggered_invalidation{false};
         bool arrival_operation{false};
         std::optional<SimTime> pushback_started_at;
         std::optional<SimTime> pushback_completed_at;
@@ -219,6 +236,8 @@ private:
         std::size_t reroutes{};
     };
     std::map<AircraftId, SurfaceAircraftState> surface_aircraft_;
+    std::map<AircraftId, agents::OperationalAgent> surface_agents_;
+    std::vector<agents::DecisionEvent> agent_decisions_;
     std::map<EdgeId, AircraftId> surface_edge_reservations_;
     std::map<NodeId, AircraftId> surface_node_reservations_;
     std::map<GateId, AircraftId> gate_arrival_reservations_;

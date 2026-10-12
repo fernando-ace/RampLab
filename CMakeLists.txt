@@ -38,6 +38,7 @@ add_library(airside_sim STATIC
     src/routing/astar.cpp
     src/agents/aircraft.cpp
     src/agents/service_vehicle.cpp
+    src/agents/operational_agent.cpp
     src/operations/resource_pool.cpp
     src/operations/simulation.cpp
     src/metrics/metrics.cpp
@@ -140,6 +141,7 @@ if(BUILD_TESTING)
         tests/scenario/scenario_loader_test.cpp
         tests/routing/astar_test.cpp
         tests/agents/state_machine_test.cpp
+        tests/agents/operational_agent_test.cpp
         tests/operations/resource_pool_test.cpp
         tests/operations/simulation_test.cpp
         tests/operations/turnaround_test.cpp

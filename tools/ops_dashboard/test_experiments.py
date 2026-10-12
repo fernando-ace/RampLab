@@ -35,7 +35,7 @@ def base_scenario():
     return {"schema_version": 1, "airport_key": "kauo", "dataset_id": "test-dataset", "seed": 42,
             "flights": [{"flight_id": "ARR", "operation": "arrival", "scheduled_time": "2026-10-09T14:00:00Z"},
                         {"flight_id": "DEP", "operation": "departure", "scheduled_time": "2026-10-09T15:00:00Z"}],
-            "disruptions": []}
+            "disruptions": [], "agent_policy": {"aircraft_routing": "SCRIPTED"}}
 
 
 def definition(**updates):
@@ -54,6 +54,10 @@ class ExperimentDefinitionTests(unittest.TestCase):
         entries = experiments.registry(base_scenario(), FakeStudio)
         self.assertEqual({item["adapter"] for item in entries}, {"path", "closure_start", "closure_duration"})
         self.assertEqual(entries[-2]["route_id"], "ROUTE-A")
+        policy = next(item for item in entries if item["id"] == "agent_policy.aircraft_routing")
+        self.assertEqual(policy["allowed_values"], ["SCRIPTED", "ADAPTIVE"])
+        varied = experiments._apply_parameters(base_scenario(), {policy["id"]: "ADAPTIVE"}, {policy["id"]: policy})
+        self.assertEqual(varied["agent_policy"]["aircraft_routing"], "ADAPTIVE")
 
     def test_cartesian_generation_seed_expansion_and_stable_ids(self):
         left = experiments._configurations(definition(), FakeStudio)[0]

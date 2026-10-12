@@ -1,0 +1,121 @@
+{
+  "artifact_sha256": {
+    "aircraft.csv": "50bc683d8b0f306502c290116b39d38b8bf90472c1b83239ab91334b31365074",
+    "events.jsonl": "0752903509b6e4034920246fe847f5c28c9bc78d525e695650f91b150e54bf24",
+    "experiment.json": "ba5d77853e6c8ec477942d8624d6f819ff4b21e7ef4b561d76c88a0cf568f3db",
+    "interventions.json": "cb2d5325c371bd56af327551e403f4488a77ea105c36db13e4ca820506aee6e7",
+    "runs.csv": "6de21dcf29a0699fe53c2f730525a67b4a741617cabcfda3d21293dae64a1111",
+    "simulator-metrics.csv": "b087b9b974129c7009c04bec08eda5d9fcacb6fa04c57f95171ca62a34431b32",
+    "simulator-metrics.json": "6e6d10c928049be7d8d08438ebc5c2db369bb37b08dc456930e56671913e60cc"
+  },
+  "assumption": "KAUO Goal 27 assumed schedule and approximate chart-informed taxiway geometry; simulation fixture, not observed operations",
+  "completion_decisions": [
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-1",
+      "objective_id": "aircraft-1-arrival-stand",
+      "observation_summary": "node=8 destination=8 blocked=false operator=false",
+      "policy_id": "scripted-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 16,
+      "time_seconds": 179,
+      "type": "AgentDecision"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-3",
+      "objective_id": "aircraft-2-arrival-stand",
+      "observation_summary": "node=10 destination=10 blocked=false operator=false",
+      "policy_id": "scripted-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 43,
+      "time_seconds": 431,
+      "type": "AgentDecision"
+    },
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-9",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=2 destination=2 blocked=false operator=false",
+      "policy_id": "scripted-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 137,
+      "time_seconds": 1984,
+      "type": "AgentDecision"
+    },
+    {
+      "agent_id": "aircraft-2",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 2,
+      "decision": "COMPLETE_OBJECTIVE",
+      "detail": "Objective reached. result=OBJECTIVE_COMPLETED",
+      "event_id": "agent-decision-10",
+      "objective_id": "aircraft-2-departure",
+      "observation_summary": "node=2 destination=2 blocked=false operator=false",
+      "policy_id": "scripted-routing-v1",
+      "reason_code": "OBJECTIVE_COMPLETED",
+      "result": "OBJECTIVE_COMPLETED",
+      "sequence": 149,
+      "time_seconds": 2122,
+      "type": "AgentDecision"
+    }
+  ],
+  "interventions": [
+    {
+      "detail": "surface_closure target=edge:4 available=false result=accepted",
+      "edge_id": 4,
+      "sequence": 102,
+      "time_seconds": 1504,
+      "type": "OperatorIntervention"
+    }
+  ],
+  "operator_response_decisions": [
+    {
+      "agent_id": "aircraft-1",
+      "agent_type": "AIRCRAFT_SURFACE",
+      "aircraft_id": 1,
+      "decision": "PLAN_ROUTE",
+      "detail": "Operator intervention invalidated the planned route; selecting a safe replacement. result=ROUTE_SELECTED",
+      "event_id": "agent-decision-6",
+      "objective_id": "aircraft-1-departure",
+      "observation_summary": "node=6 destination=2 blocked=false operator=true",
+      "policy_id": "scripted-routing-v1",
+      "previous_route_nodes": [
+        6,
+        4,
+        3,
+        2
+      ],
+      "reason_code": "OPERATOR_INTERVENTION",
+      "result": "ROUTE_SELECTED",
+      "route_nodes": [
+        6,
+        7,
+        5,
+        4,
+        3,
+        2
+      ],
+      "sequence": 106,
+      "time_seconds": 1532,
+      "type": "AgentDecision"
+    }
+  ],
+  "run_label": "Interactive KAUO Goal 28 operator session used for Goal 34 response check",
+  "simulator_policy": "scripted-routing-v1"
+}

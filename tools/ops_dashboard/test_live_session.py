@@ -12,11 +12,45 @@ from unittest.mock import patch
 from tools.ops_dashboard.live_session import LiveSession, LiveSessionError
 
 ROOT = Path(__file__).resolve().parents[2]
-CLI = ROOT / "build-goal28/Release/airside_cli.exe"
+CLI = ROOT / "build-goal34/Release/airside_cli.exe"
+AGENT_CLI = CLI
 
 
 @unittest.skipUnless(CLI.is_file(), "Build Release airside_cli before live-session integration tests.")
 class LiveSessionTests(unittest.TestCase):
+    @unittest.skipUnless(AGENT_CLI.is_file(), "Build Goal 34 Release airside_cli before adaptive live-update tests.")
+    def test_goal33_route_update_triggers_adaptive_agent_replan(self):
+        with TemporaryDirectory(prefix="goal34-operational-update-") as directory:
+            session = LiveSession(AGENT_CLI, Path(directory))
+            try:
+                state = session.start("ADAPTIVE")
+                self.assertEqual(state["aircraft_routing_policy"], "ADAPTIVE")
+                while state["simulated_time_seconds"] < 1504:
+                    state = session.advance()
+                self.assertEqual(state["simulated_time_seconds"], 1504)
+                self.assertEqual(state["aircraft_routing_policy"], "ADAPTIVE")
+                state = session.apply_operational_update({
+                    "event_id": "goal33-closure-001", "event_type": "closure_started",
+                    "entity_id": "KAUO-TWY-A-RAMP-CONNECTOR", "timestamp": "2026-10-12T14:25:12Z",
+                    "source": "Goal 33 live operational feed", "payload": {"route_id": "KAUO-TWY-A-RAMP-CONNECTOR"}})
+                self.assertEqual(state["applied_operational_update"]["source_event_id"], "goal33-closure-001")
+                duplicate = session.apply_operational_update({
+                    "event_id": "goal33-closure-001", "event_type": "closure_started",
+                    "entity_id": "KAUO-TWY-A-RAMP-CONNECTOR", "timestamp": "2026-10-12T14:25:12Z",
+                    "payload": {"route_id": "KAUO-TWY-A-RAMP-CONNECTOR"}})
+                self.assertTrue(duplicate["duplicate"])
+                result = session.finish()
+                event_rows = [json.loads(line) for line in (session.output_dir / "events.jsonl").read_text(encoding="utf-8").splitlines()]
+                replans = [event for event in event_rows if event.get("type") == "AgentDecision"
+                           and event.get("reason_code") == "OPERATOR_INTERVENTION"]
+                self.assertTrue(replans, "Goal 33 route closure must be observed by the adaptive aircraft agent.")
+                metrics = json.loads((session.output_dir / "simulator-metrics.json").read_text(encoding="utf-8"))
+                self.assertEqual(metrics["surface"]["safe_failures"], 0)
+                self.assertEqual(metrics["surface"]["aircraft_aircraft_collisions"], 0)
+                self.assertEqual(metrics["surface"]["aircraft_ground_collisions"], 0)
+            finally:
+                session.close()
+
     def test_live_state_replace_retries_a_transient_reader_lock(self):
         with TemporaryDirectory(prefix="goal28-state-file-") as directory:
             session = LiveSession(CLI, Path(directory))

@@ -1,0 +1,251 @@
+{
+  "agent_policy": {
+    "aircraft_routing": "ADAPTIVE"
+  },
+  "aircraft": [
+    {
+      "aircraft_id": "N201AA",
+      "registration": "N201AA",
+      "type": "C172"
+    },
+    {
+      "aircraft_id": "N202AA",
+      "registration": "N202AA",
+      "type": "PA28"
+    },
+    {
+      "aircraft_id": "N203AA",
+      "registration": "N203AA",
+      "type": "C172"
+    }
+  ],
+  "airport": {
+    "airport_id": "KAUO",
+    "field_elevation_ft": 776.8,
+    "field_elevation_m": 236.785,
+    "iata": "AUO",
+    "icao": "KAUO",
+    "local_timezone": "America/Chicago",
+    "name": "Auburn University Regional Airport",
+    "reference_latitude": 32.61511111,
+    "reference_longitude": -85.434,
+    "runways": [
+      {
+        "classification": "FAA published",
+        "identifier": "18/36",
+        "length_ft": 5264,
+        "surface": "asphalt, grooved",
+        "width_ft": 100
+      },
+      {
+        "classification": "FAA published",
+        "identifier": "11/29",
+        "length_ft": 4000,
+        "surface": "asphalt",
+        "width_ft": 75
+      }
+    ],
+    "timezone": "UTC"
+  },
+  "dataset": {
+    "dataset_id": "ops_bb2d85a392da7bca2738",
+    "description": "Imported operational schedule; source provenance is recorded below.",
+    "operational_date": "2026-10-12",
+    "operational_provenance": {
+      "dataset_id": "ops_bb2d85a392da7bca2738",
+      "mapping_profile_sha256": "1757a9bfa611145b27a307509e91b1f1717556f8f583cfb29493df4fb941dabf",
+      "normalized_sha256": "bb2d85a392da7bca2738217ecfddd33165625a8a474724f3a9844a556d5832b0",
+      "operational_date": "2026-10-12",
+      "record_count": 3,
+      "schema_version": "1.0",
+      "source_filename": "kauo-tomorrow-schedule.csv",
+      "source_format": "csv",
+      "source_sha256": "6552326f62a9c95c3dad04d43d67552917be6d0644fc2707390d758014601e54",
+      "timezone": "America/Chicago"
+    },
+    "operational_timezone": "America/Chicago"
+  },
+  "disruptions": [],
+  "equipment": [],
+  "flights": [
+    {
+      "aircraft_id": "N201AA",
+      "flight_id": "AX201::ARR",
+      "flight_number": "AX201",
+      "gate_id": "GA-PARK-ILLUSTRATIVE",
+      "operation": "arrival",
+      "operational_dataset_id": "ops_bb2d85a392da7bca2738",
+      "scheduled_time": "2026-10-12T12:00:00Z"
+    },
+    {
+      "aircraft_id": "N201AA",
+      "flight_id": "AX201::DEP",
+      "flight_number": "AX201",
+      "gate_id": "GA-PARK-ILLUSTRATIVE",
+      "operation": "departure",
+      "operational_dataset_id": "ops_bb2d85a392da7bca2738",
+      "scheduled_time": "2026-10-12T12:45:00Z"
+    },
+    {
+      "aircraft_id": "N202AA",
+      "flight_id": "AX202::ARR",
+      "flight_number": "AX202",
+      "gate_id": "GA-PARK-ILLUSTRATIVE",
+      "operation": "arrival",
+      "operational_dataset_id": "ops_bb2d85a392da7bca2738",
+      "scheduled_time": "2026-10-12T13:00:00Z"
+    },
+    {
+      "aircraft_id": "N202AA",
+      "flight_id": "AX202::DEP",
+      "flight_number": "AX202",
+      "gate_id": "GA-PARK-ILLUSTRATIVE",
+      "operation": "departure",
+      "operational_dataset_id": "ops_bb2d85a392da7bca2738",
+      "scheduled_time": "2026-10-12T13:45:00Z"
+    },
+    {
+      "aircraft_id": "N203AA",
+      "flight_id": "AX203::ARR",
+      "flight_number": "AX203",
+      "gate_id": "GA-PARK-ILLUSTRATIVE",
+      "operation": "arrival",
+      "operational_dataset_id": "ops_bb2d85a392da7bca2738",
+      "scheduled_time": "2026-10-12T14:00:00Z"
+    },
+    {
+      "aircraft_id": "N203AA",
+      "flight_id": "AX203::DEP",
+      "flight_number": "AX203",
+      "gate_id": "GA-PARK-ILLUSTRATIVE",
+      "operation": "departure",
+      "operational_dataset_id": "ops_bb2d85a392da7bca2738",
+      "scheduled_time": "2026-10-12T14:45:00Z"
+    }
+  ],
+  "gates": [
+    {
+      "gate_id": "GA-PARK-ILLUSTRATIVE",
+      "status": "available"
+    }
+  ],
+  "operational_provenance": {
+    "dataset_id": "ops_bb2d85a392da7bca2738",
+    "mapping_profile_sha256": "1757a9bfa611145b27a307509e91b1f1717556f8f583cfb29493df4fb941dabf",
+    "normalized_sha256": "bb2d85a392da7bca2738217ecfddd33165625a8a474724f3a9844a556d5832b0",
+    "operational_date": "2026-10-12",
+    "record_count": 3,
+    "schema_version": "1.0",
+    "source_filename": "kauo-tomorrow-schedule.csv",
+    "source_format": "csv",
+    "source_sha256": "6552326f62a9c95c3dad04d43d67552917be6d0644fc2707390d758014601e54",
+    "timezone": "America/Chicago"
+  },
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "accepted_record_count": 1,
+      "filename": "aircraft.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "df5ccafb8bf2be44f60ed32aacfc1410d333f2d90722f45d880bb610c31d7a92",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 1,
+      "filename": "disruptions.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "4cc5588d7afd53a7b2f1f087d7d85c98b0da854562a01bc51bc2e9a9583dc619",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 0,
+      "filename": "equipment.json",
+      "record_count": 0,
+      "rejected_record_count": 0,
+      "sha256": "a5338d955b09046ec0b16f3a9625b7955c763aae07dc722e474e6078745f932f",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 2,
+      "filename": "flights.json",
+      "record_count": 2,
+      "rejected_record_count": 0,
+      "sha256": "991684bad8717448a99e1c25bd31c32e505c59b6e27d2ef7cf37c7fb5604a07c",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 1,
+      "filename": "gates.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "a3481a07fb2662689dfd26fd4bbc9dfbb5955d740127f53ea08ecd2cbb787fa0",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 1,
+      "filename": "turnaround.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "d702a8deb9feecad8e9a9ba0d86eb9569707d9f5b7e0a2819905f6b30998f63a",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 3,
+      "data_classification": "SCHEDULED",
+      "filename": "kauo-tomorrow-schedule.csv",
+      "mapping_profile_sha256": "1757a9bfa611145b27a307509e91b1f1717556f8f583cfb29493df4fb941dabf",
+      "record_count": 3,
+      "rejected_record_count": 0,
+      "sha256": "6552326f62a9c95c3dad04d43d67552917be6d0644fc2707390d758014601e54",
+      "type": "csv"
+    }
+  ],
+  "turnaround_requirements": [
+    {
+      "aircraft_id": "N201AA",
+      "duration_minutes": 5,
+      "requirement_id": "OPS-N201AA-1",
+      "service_type": "pushback_preparation"
+    },
+    {
+      "aircraft_id": "N202AA",
+      "duration_minutes": 5,
+      "requirement_id": "OPS-N202AA-1",
+      "service_type": "pushback_preparation"
+    },
+    {
+      "aircraft_id": "N203AA",
+      "duration_minutes": 5,
+      "requirement_id": "OPS-N203AA-1",
+      "service_type": "pushback_preparation"
+    }
+  ],
+  "validation": {
+    "counts": {
+      "aircraft": 1,
+      "disruptions": 1,
+      "equipment": 0,
+      "flights": 2,
+      "gates": 1,
+      "turnaround_requirements": 1
+    },
+    "error_count": 0,
+    "findings": [
+      {
+        "code": "ROUTE_REFERENCE_UNRESOLVED",
+        "field": "resource_id",
+        "message": "route/resource ID is structurally retained but cannot be checked against airport geometry in Goal 24A",
+        "record": null,
+        "severity": "info",
+        "source": "",
+        "value": "KAUO-TWY-A-RAMP-CONNECTOR"
+      }
+    ],
+    "info_count": 1,
+    "schema_version": "1.0",
+    "status": "valid",
+    "warning_count": 0
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "adaptive_vs_scripted_median_ratio": 0.991486888397907,
+  "cli_sha256": "f710a5313075a5396859a200eba66c7e8e3fc65f841bc55edd62866e49af2ef6",
+  "cpu_count": 22,
+  "interpretation": "Timing is specific to this host and tiny fixture; it is not a general simulator performance claim.",
+  "method": "Real native CLI repeated scenario execution; one warm-up per policy excluded; 10 measured samples per policy alternated in order; process wall time includes CLI startup, simulation, and metric/event output.",
+  "modes": {
+    "ADAPTIVE": {
+      "mean_simulator_reported_seconds": 0.4882363,
+      "mean_wall_seconds": 0.5178115500602871,
+      "median_wall_seconds": 0.5165202999487519,
+      "samples_wall_seconds": [
+        0.5421414002776146,
+        0.5398622998036444,
+        0.5125241000205278,
+        0.5007941001094878,
+        0.5436299000866711,
+        0.5324734002351761,
+        0.520516499876976,
+        0.49422500003129244,
+        0.5102671999484301,
+        0.48168160021305084
+      ],
+      "stdev_wall_seconds": 0.020501750036481293
+    },
+    "SCRIPTED": {
+      "mean_simulator_reported_seconds": 0.4946473,
+      "mean_wall_seconds": 0.5222752700559795,
+      "median_wall_seconds": 0.520955250132829,
+      "samples_wall_seconds": [
+        0.5447086999192834,
+        0.5357943000271916,
+        0.4848331999965012,
+        0.5791176003403962,
+        0.5274501000531018,
+        0.5555665004067123,
+        0.5144604002125561,
+        0.5002740998752415,
+        0.5046923998743296,
+        0.4758553998544812
+      ],
+      "stdev_wall_seconds": 0.030762237087703346
+    }
+  },
+  "platform": "Windows-10-10.0.26200-SP0",
+  "runs_per_policy": 10,
+  "scenario_hashes": {
+    "adaptive": "da62952f1625dd52d92e7a6534552b69787aadd1392a6271d1ee2708f1f22b88",
+    "scripted": "55eb3c672b918451a90e2bf56167858a963631ef128a7b0701519ba54134a3e1"
+  },
+  "seed": 42
+}

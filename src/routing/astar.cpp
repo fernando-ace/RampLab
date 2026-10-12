@@ -50,6 +50,11 @@ struct Predecessor {
 }  // namespace
 
 std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId destination) {
+    return find_route(graph, origin, destination, {});
+}
+
+std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId destination,
+    const std::unordered_map<EdgeId, SimTime>& expected_wait) {
     if (!graph.has_node(origin) || !graph.has_node(destination)) {
         throw std::invalid_argument("route endpoint is not in the graph");
     }
@@ -86,7 +91,11 @@ std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId
             }
             if (edge.one_way && edge.from != current.node) continue;
             const auto next = graph.other_endpoint(edge, current.node);
-            const auto new_cost = current.cost + edge.traversal_cost.count();
+            const auto delay = expected_wait.find(edge_id);
+            if (delay != expected_wait.end() && delay->second < SimTime::zero())
+                throw std::invalid_argument("route expected wait cannot be negative");
+            const auto new_cost = current.cost + edge.traversal_cost.count() +
+                (delay == expected_wait.end() ? 0 : delay->second.count());
             const auto known = costs.find(next);
             const bool improves = known == costs.end() || new_cost < known->second;
             const bool deterministic_tie = known != costs.end() && new_cost == known->second &&

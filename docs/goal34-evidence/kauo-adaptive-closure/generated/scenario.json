@@ -1,0 +1,476 @@
+{
+  "aircraft": [
+    {
+      "arrival_exit": "twy_a_mid",
+      "gate": "GA-PARK-01",
+      "id": "KAUO-SIM-GA-01",
+      "operation_type": "arrival_turnaround",
+      "scheduled_arrival_seconds": 0,
+      "scheduled_departure_seconds": 720,
+      "service_tasks": [
+        {
+          "duration_seconds": 120,
+          "id": "KAUO-GA01-FUEL",
+          "type": "fueling"
+        },
+        {
+          "duration_seconds": 120,
+          "id": "KAUO-GA01-LOAD",
+          "prerequisites": [
+            "KAUO-GA01-UNLOAD"
+          ],
+          "type": "baggage_load"
+        },
+        {
+          "duration_seconds": 60,
+          "id": "KAUO-GA01-PUSH",
+          "prerequisites": [
+            "KAUO-GA01-LOAD"
+          ],
+          "type": "pushback_preparation"
+        },
+        {
+          "duration_seconds": 120,
+          "id": "KAUO-GA01-UNLOAD",
+          "prerequisites": [
+            "KAUO-GA01-FUEL"
+          ],
+          "type": "baggage"
+        }
+      ],
+      "target_off_block_seconds": 720,
+      "turnaround_id": "KAUO-SIM-GA-01"
+    },
+    {
+      "arrival_exit": "twy_a_mid",
+      "gate": "GA-PARK-02",
+      "id": "KAUO-SIM-GA-02",
+      "operation_type": "arrival_turnaround",
+      "scheduled_arrival_seconds": 240,
+      "scheduled_departure_seconds": 960,
+      "service_tasks": [
+        {
+          "duration_seconds": 120,
+          "id": "KAUO-GA02-FUEL",
+          "type": "fueling"
+        },
+        {
+          "duration_seconds": 120,
+          "id": "KAUO-GA02-LOAD",
+          "prerequisites": [
+            "KAUO-GA02-UNLOAD"
+          ],
+          "type": "baggage_load"
+        },
+        {
+          "duration_seconds": 60,
+          "id": "KAUO-GA02-PUSH",
+          "prerequisites": [
+            "KAUO-GA02-LOAD"
+          ],
+          "type": "pushback_preparation"
+        },
+        {
+          "duration_seconds": 120,
+          "id": "KAUO-GA02-UNLOAD",
+          "prerequisites": [
+            "KAUO-GA02-FUEL"
+          ],
+          "type": "baggage"
+        }
+      ],
+      "target_off_block_seconds": 960,
+      "turnaround_id": "KAUO-SIM-GA-02"
+    }
+  ],
+  "airport": {
+    "calibration": {
+      "coordinate_reference_system": "WGS 84 geographic 3D (EPSG:4979); horizontal outputs use airport-local ENU meters",
+      "origin": {
+        "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+        "ellipsoid_height_m": 208.22,
+        "field_elevation_ft_msl": 776.8,
+        "latitude_degrees": 32.61511111,
+        "longitude_degrees": -85.434,
+        "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+        "source_record": {
+          "ARPT_ID": "AUO",
+          "ARPT_PSN_SOURCE": "3RD PARTY SURVEY",
+          "EFF_DATE": "2026/10/01",
+          "ICAO_ID": "KAUO",
+          "POSITION_SRC_DATE": "2006/05/22",
+          "file": "APT_BASE.csv"
+        }
+      },
+      "runway_thresholds": {
+        "11": {
+          "x": -314.53713,
+          "y": 495.730459
+        },
+        "18": {
+          "x": -191.058895,
+          "y": 564.510565
+        },
+        "29": {
+          "x": 849.420982,
+          "y": 132.956881
+        },
+        "36": {
+          "x": -220.183588,
+          "y": -1039.622948
+        }
+      },
+      "scenario_axis_convention": "+X east, +Y north, meters; these are airport-local ENU coordinates.",
+      "source_classification": "Runway-end coordinates AUTHORITATIVE; runway centers/headings and intersection DERIVED; taxiway/apron/parking features APPROXIMATE."
+    },
+    "edges": [
+      {
+        "distance_m": 436.447,
+        "from": "rwy36_hold",
+        "id": "runway36_hold_twy_a_south",
+        "to": "twy_a_south",
+        "traversal_time_seconds": 88
+      },
+      {
+        "distance_m": 497.948,
+        "from": "twy_a_south",
+        "id": "twy_a_south_mid",
+        "to": "twy_a_mid",
+        "traversal_time_seconds": 100
+      },
+      {
+        "distance_m": 568.384,
+        "from": "twy_a_mid",
+        "id": "twy_a_mid_north",
+        "to": "twy_a_north",
+        "traversal_time_seconds": 114
+      },
+      {
+        "distance_m": 298.826,
+        "from": "twy_a_mid",
+        "id": "twy_a_mid_fbo_primary",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 231.262,
+        "from": "twy_a_north",
+        "id": "twy_a_north_fbo_detour",
+        "to": "fbo_apron_detour",
+        "traversal_time_seconds": 47
+      },
+      {
+        "distance_m": 512.934,
+        "from": "fbo_apron_detour",
+        "id": "twy_c_fbo_detour",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 103
+      },
+      {
+        "distance_m": 137.058,
+        "from": "fbo_apron_junction",
+        "id": "fbo_junction_parking",
+        "to": "ga_parking_stand",
+        "traversal_time_seconds": 28
+      },
+      {
+        "distance_m": 531.498,
+        "from": "fbo_apron_junction",
+        "id": "fbo_junction_fuel_farm",
+        "to": "self_serve_fuel_farm",
+        "traversal_time_seconds": 107
+      },
+      {
+        "classification": "APPROXIMATE connector to an illustrative parking position",
+        "distance_m": 199.74,
+        "from": "fbo_apron_junction",
+        "id": "fbo_apron_parking_02",
+        "to": "ga_parking_stand_02",
+        "traversal_time_seconds": 40
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION short service staging spur",
+        "distance_m": 74.0,
+        "from": "ga_parking_stand",
+        "id": "fbo_service_staging_fuel_link",
+        "to": "fbo_service_staging_fuel",
+        "traversal_time_seconds": 15
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION short service staging spur",
+        "distance_m": 77.07,
+        "from": "ga_parking_stand",
+        "id": "fbo_service_staging_west_link",
+        "to": "fbo_service_staging_west",
+        "traversal_time_seconds": 16
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION short service staging spur",
+        "distance_m": 44.0,
+        "from": "ga_parking_stand_02",
+        "id": "fbo_service_staging_east_link",
+        "to": "fbo_service_staging_east",
+        "traversal_time_seconds": 9
+      }
+    ],
+    "features": {
+      "apron_center_local_m": {
+        "x": 97.436698,
+        "y": -121.196537
+      },
+      "apron_classification": "APPROXIMATE chart-graticule reference; not surveyed",
+      "apron_size_m": {
+        "x": 150,
+        "y": 145
+      },
+      "buildings": [
+        {
+          "center_local_m": {
+            "x": 115.848014,
+            "y": -138.108766
+          },
+          "heading_degrees": 5.7,
+          "name": "KAUO terminal/FBO",
+          "size_m": {
+            "x": 82,
+            "y": 28
+          }
+        },
+        {
+          "center_local_m": {
+            "x": 295.920468,
+            "y": 558.450572
+          },
+          "heading_degrees": 5.7,
+          "name": "KAUO north hangar complex",
+          "size_m": {
+            "x": 170,
+            "y": 85
+          }
+        },
+        {
+          "center_local_m": {
+            "x": -607.760583,
+            "y": -581.432122
+          },
+          "heading_degrees": 5.7,
+          "name": "KAUO college aviation hangar area",
+          "size_m": {
+            "x": 160,
+            "y": 90
+          }
+        }
+      ],
+      "geometry_status": "FAA surveyed runway ends; centerlines and intersection derived from those ends; taxiway/apron/parking nodes remain approximate chart-digitized ENU references.",
+      "kauo_calibrated": true,
+      "runway_intersection_classification": "DERIVED from authoritative FAA NASR runway-end coordinates",
+      "runway_intersection_local_m": {
+        "x": -192.99544,
+        "y": 457.849273
+      },
+      "runways": [
+        {
+          "center_local_m": {
+            "x": -205.621241,
+            "y": -237.556191
+          },
+          "identifier": "18/36",
+          "length_m": 1604.397886,
+          "published_length_m": 1604.4672,
+          "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading",
+          "true_heading_degrees_from_first_threshold": 181.040149,
+          "width_m": 30.48
+        },
+        {
+          "center_local_m": {
+            "x": 267.441926,
+            "y": 314.34367
+          },
+          "identifier": "11/29",
+          "length_m": 1219.181346,
+          "published_length_m": 1219.2,
+          "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading",
+          "true_heading_degrees_from_first_threshold": 107.310813,
+          "width_m": 22.86
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "id": "rwy18_36_mid",
+        "name": "Runway 18/36 reference midpoint (approximate FAA-diagram anchor)",
+        "x_m": -205.621241,
+        "y_m": -237.556191
+      },
+      {
+        "id": "rwy36_hold",
+        "name": "Runway 36 end / departure queue reference (approximate FAA-diagram anchor)",
+        "x_m": -220.183588,
+        "y_m": -1039.622948
+      },
+      {
+        "id": "twy_a_south",
+        "name": "Taxiway A south connector (approximate chart anchor)",
+        "x_m": -329.939582,
+        "y_m": -617.202097
+      },
+      {
+        "id": "twy_a_mid",
+        "name": "Taxiway A arrival exit reference (approximate chart anchor)",
+        "x_m": -324.459431,
+        "y_m": -119.284465
+      },
+      {
+        "id": "twy_a_north",
+        "name": "Taxiway A north connector (approximate chart anchor)",
+        "x_m": -319.987342,
+        "y_m": 449.081614
+      },
+      {
+        "id": "fbo_apron_junction",
+        "name": "East-side terminal/FBO apron access via Taxiway C (approximate chart anchor)",
+        "x_m": -29.34007,
+        "y_m": -72.36365
+      },
+      {
+        "id": "fbo_apron_detour",
+        "name": "North Taxiway C apron-side detour (approximate chart anchor)",
+        "x_m": -89.036988,
+        "y_m": 437.084363
+      },
+      {
+        "id": "ga_parking_stand",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron",
+        "x_m": 93.160375,
+        "y_m": -133.834301
+      },
+      {
+        "id": "self_serve_fuel_farm",
+        "name": "Charted west-side self-serve fuel farm area (approximate chart anchor)",
+        "x_m": -544.048314,
+        "y_m": -204.898264
+      },
+      {
+        "classification": "APPROXIMATE / ASSUMED FOR SIMULATION; no surveyed stand position is available",
+        "id": "ga_parking_stand_02",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron",
+        "x_m": 170.0,
+        "y_m": -85.0
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance",
+        "id": "fbo_service_staging_west",
+        "name": "Approximate baggage vehicle staging point southwest of illustrative GA stand 01",
+        "x_m": 30.0,
+        "y_m": -178.0
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance",
+        "id": "fbo_service_staging_east",
+        "name": "Approximate load cart staging point south of illustrative GA stand 02",
+        "x_m": 170.0,
+        "y_m": -129.0
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION; offset from taxi centerline for vehicle clearance",
+        "id": "fbo_service_staging_fuel",
+        "name": "Approximate fuel vehicle staging point south of illustrative GA stand 01",
+        "x_m": 93.160375,
+        "y_m": -207.834301
+      },
+      {
+        "id": "rwy18_threshold",
+        "name": "Runway 18 FAA NASR surveyed runway end",
+        "x_m": -191.058895,
+        "y_m": 564.510565
+      },
+      {
+        "id": "rwy11_threshold",
+        "name": "Runway 11 FAA NASR surveyed runway end",
+        "x_m": -314.53713,
+        "y_m": 495.730459
+      },
+      {
+        "id": "rwy29_threshold",
+        "name": "Runway 29 FAA NASR surveyed runway end",
+        "x_m": 849.420982,
+        "y_m": 132.956881
+      },
+      {
+        "id": "runway_intersection",
+        "name": "Derived runway centerline intersection",
+        "x_m": -192.99544,
+        "y_m": 457.849273
+      }
+    ]
+  },
+  "default_seed": 42,
+  "fleet": {
+    "vehicles": [
+      {
+        "depot_node": "fbo_service_staging_west",
+        "id": "KAUO-SIM-BAG-01",
+        "name": "KAUO-SIM-BAG-01",
+        "speed_mps": 8.0,
+        "type": "baggage"
+      },
+      {
+        "depot_node": "fbo_service_staging_fuel",
+        "id": "KAUO-SIM-FUEL-01",
+        "name": "KAUO-SIM-FUEL-01",
+        "speed_mps": 8.0,
+        "type": "fueling"
+      },
+      {
+        "depot_node": "fbo_service_staging_east",
+        "id": "KAUO-SIM-LOAD-01",
+        "name": "KAUO-SIM-LOAD-01",
+        "speed_mps": 8.0,
+        "type": "baggage_load"
+      }
+    ]
+  },
+  "gates": [
+    {
+      "id": "GA-PARK-01",
+      "node": "ga_parking_stand"
+    },
+    {
+      "id": "GA-PARK-02",
+      "node": "ga_parking_stand_02"
+    }
+  ],
+  "name": "airport_kauo",
+  "road_events": [
+    {
+      "edge": "twy_a_mid_fbo_primary",
+      "enabled": false,
+      "time_seconds": 1512
+    },
+    {
+      "edge": "twy_a_mid_fbo_primary",
+      "enabled": true,
+      "time_seconds": 2400
+    }
+  ],
+  "service_durations_seconds": {
+    "baggage": 240,
+    "baggage_load": 240,
+    "cabin_cleaning": 180,
+    "catering": 300,
+    "deboarding": 120,
+    "fueling": 300,
+    "pushback_preparation": 120
+  },
+  "surface_operations": {
+    "aircraft_routing_policy": "ADAPTIVE",
+    "aircraft_speed_mps": 5.0,
+    "arrival_exit": "twy_a_mid",
+    "arrival_rollout_seconds": 90,
+    "departure_handoff": "rwy36_hold",
+    "pushback_seconds": 20,
+    "return_service_vehicles_to_depot_after_task": true,
+    "runway_node": "rwy36_hold",
+    "runway_occupancy_seconds": 90
+  }
+}

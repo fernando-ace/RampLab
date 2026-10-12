@@ -351,6 +351,12 @@ class Handler(BaseHTTPRequestHandler):
                 return
             except (ValueError, FileNotFoundError, OSError) as exc:
                 return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+        if path.startswith("/api/studio/runs/") and path.endswith("/agents"):
+            try:
+                trace = scenario_studio.agent_trace(path.split("/")[-2])
+                return self._send(200, json.dumps({"agent_trace": trace}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+            except (ValueError, FileNotFoundError, OSError) as exc:
+                return self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
         if path.startswith("/api/studio/runs/"):
             try:
                 run = scenario_studio.RunManagerSingleton.get(path.rsplit("/", 1)[-1])
@@ -427,6 +433,14 @@ class Handler(BaseHTTPRequestHandler):
                     payload = {"live": OPERATIONAL.start_live_session(str(body.get("dataset_id", "")))}
                 elif self.path in {"/api/studio/operational/live/event", "/api/operational/v1/events"}:
                     payload = OPERATIONAL.ingest_live_event(body)
+                    update_payload = body.get("payload", {})
+                    if isinstance(update_payload, dict) and update_payload.get("simulation_action") == "apply":
+                        try:
+                            simulation_response = LIVE_SESSION.apply_operational_update(payload["event"])
+                            simulation_response["status"] = "duplicate" if simulation_response.get("duplicate") else "applied"
+                            payload["simulation_response"] = simulation_response
+                        except LiveSessionError as exc:
+                            payload["simulation_response"] = {"status": "not_applied", "reason": str(exc)}
                 elif self.path == "/api/studio/operational/live/close":
                     payload = {"live": OPERATIONAL.close_live_session(str(body.get("session_id", "")))}
                 elif self.path == "/api/studio/operational/live/record-replay":
@@ -506,7 +520,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not isinstance(body, dict):
                     raise LiveSessionError("Session command must be a JSON object.")
                 if self.path.endswith("/start"):
-                    state = LIVE_SESSION.start()
+                    state = LIVE_SESSION.start(body.get("aircraft_routing_policy", "SCRIPTED"))
                 elif self.path.endswith("/pause"):
                     state = LIVE_SESSION.pause()
                 elif self.path.endswith("/resume"):

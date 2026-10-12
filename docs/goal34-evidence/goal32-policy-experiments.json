@@ -1,0 +1,320 @@
+[
+  {
+    "configuration_count": 2,
+    "constraints": [
+      {
+        "metric": "surface_aircraft_aircraft_collisions",
+        "op": "eq",
+        "value": 0
+      },
+      {
+        "metric": "surface_safe_failures",
+        "op": "eq",
+        "value": 0
+      }
+    ],
+    "counts": {
+      "cached": 0,
+      "cancelled": 0,
+      "completed": 2,
+      "configurations": 2,
+      "failed": 0,
+      "invalid": 0,
+      "queued": 0,
+      "running": 0,
+      "seeds": 1,
+      "total": 2
+    },
+    "experiment_id": "8476cb0cb8d57cc1b67c",
+    "name": "Goal34 SCRIPTED vs ADAPTIVE KAUO closure rerun",
+    "parameters": [
+      {
+        "adapter": "path",
+        "allowed_values": [
+          "SCRIPTED",
+          "ADAPTIVE"
+        ],
+        "category": "Autonomy",
+        "description": "Selects the deterministic aircraft surface routing policy.",
+        "id": "agent_policy.aircraft_routing",
+        "name": "Aircraft routing policy",
+        "path": [
+          "agent_policy",
+          "aircraft_routing"
+        ],
+        "restart_required": true,
+        "type": "categorical",
+        "units": "policy",
+        "values": [
+          "SCRIPTED",
+          "ADAPTIVE"
+        ]
+      }
+    ],
+    "ranking": {
+      "objectives": [
+        {
+          "direction": "minimize",
+          "metric": "avg_departure_delay_minutes"
+        }
+      ]
+    },
+    "run_count": 2,
+    "runs": [
+      {
+        "configuration_id": "config_0be31bd7b82b",
+        "metrics": {
+          "avg_departure_delay_minutes": 21.716666666666665,
+          "surface_aircraft_aircraft_collisions": 0.0,
+          "surface_reroutes": 1.0,
+          "surface_safe_failures": 0.0
+        },
+        "parameters": {
+          "agent_policy.aircraft_routing": "SCRIPTED"
+        },
+        "result_digest": "b88676f40385b6ef82410d6df9e486afca38dbaf35b912a5ab73289caffdae92",
+        "run_id": "run_1ff5261f834bcce6",
+        "run_identity": "864ea0a26d4a8e727af37af193c2b8a4306105005ee25505ef97254a54539684",
+        "seed": 42,
+        "status": "COMPLETED",
+        "validation_status": "VALID"
+      },
+      {
+        "configuration_id": "config_1ca131c1d200",
+        "metrics": {
+          "avg_departure_delay_minutes": 21.716666666666665,
+          "surface_aircraft_aircraft_collisions": 0.0,
+          "surface_reroutes": 1.0,
+          "surface_safe_failures": 0.0
+        },
+        "parameters": {
+          "agent_policy.aircraft_routing": "ADAPTIVE"
+        },
+        "result_digest": "c33371630670f1dad390011ad08fb961bf6e87826ac779c9c827ccac29dc9835",
+        "run_id": "run_f96601ed00964e61",
+        "run_identity": "950ae79a76192c0cd2aea0fc95aa831ab05e7ba498d38ecd2295792ad771fb53",
+        "seed": 42,
+        "status": "COMPLETED",
+        "validation_status": "VALID"
+      }
+    ],
+    "seed_count": 1,
+    "seeds": [
+      42
+    ],
+    "status": "COMPLETED",
+    "workers": 1
+  },
+  {
+    "configuration_count": 2,
+    "constraints": [
+      {
+        "metric": "surface_aircraft_aircraft_collisions",
+        "op": "eq",
+        "value": 0
+      },
+      {
+        "metric": "surface_safe_failures",
+        "op": "eq",
+        "value": 0
+      }
+    ],
+    "counts": {
+      "cached": 0,
+      "cancelled": 0,
+      "completed": 2,
+      "configurations": 2,
+      "failed": 0,
+      "invalid": 0,
+      "queued": 0,
+      "running": 0,
+      "seeds": 1,
+      "total": 2
+    },
+    "experiment_id": "1e0d7c9f3309509f7f8e",
+    "name": "Goal34 adaptive policy serial-parallel parity",
+    "parameters": [
+      {
+        "adapter": "path",
+        "allowed_values": [
+          "SCRIPTED",
+          "ADAPTIVE"
+        ],
+        "category": "Autonomy",
+        "description": "Selects the deterministic aircraft surface routing policy.",
+        "id": "agent_policy.aircraft_routing",
+        "name": "Aircraft routing policy",
+        "path": [
+          "agent_policy",
+          "aircraft_routing"
+        ],
+        "restart_required": true,
+        "type": "categorical",
+        "units": "policy",
+        "values": [
+          "SCRIPTED",
+          "ADAPTIVE"
+        ]
+      }
+    ],
+    "ranking": {
+      "objectives": [
+        {
+          "direction": "minimize",
+          "metric": "avg_departure_delay_minutes"
+        }
+      ]
+    },
+    "run_count": 2,
+    "runs": [
+      {
+        "configuration_id": "config_c72dc7c09c3f",
+        "metrics": {
+          "avg_departure_delay_minutes": 21.716666666666665,
+          "surface_aircraft_aircraft_collisions": 0.0,
+          "surface_reroutes": 1.0,
+          "surface_safe_failures": 0.0
+        },
+        "parameters": {
+          "agent_policy.aircraft_routing": "SCRIPTED"
+        },
+        "result_digest": "b88676f40385b6ef82410d6df9e486afca38dbaf35b912a5ab73289caffdae92",
+        "run_id": "run_457ae9b1da26e355",
+        "run_identity": "864ea0a26d4a8e727af37af193c2b8a4306105005ee25505ef97254a54539684",
+        "seed": 42,
+        "status": "COMPLETED",
+        "validation_status": "VALID"
+      },
+      {
+        "configuration_id": "config_b0b4f0c279dc",
+        "metrics": {
+          "avg_departure_delay_minutes": 21.716666666666665,
+          "surface_aircraft_aircraft_collisions": 0.0,
+          "surface_reroutes": 1.0,
+          "surface_safe_failures": 0.0
+        },
+        "parameters": {
+          "agent_policy.aircraft_routing": "ADAPTIVE"
+        },
+        "result_digest": "c33371630670f1dad390011ad08fb961bf6e87826ac779c9c827ccac29dc9835",
+        "run_id": "run_7259881777ae9b0b",
+        "run_identity": "950ae79a76192c0cd2aea0fc95aa831ab05e7ba498d38ecd2295792ad771fb53",
+        "seed": 42,
+        "status": "COMPLETED",
+        "validation_status": "VALID"
+      }
+    ],
+    "seed_count": 1,
+    "seeds": [
+      42
+    ],
+    "status": "COMPLETED",
+    "workers": 1
+  },
+  {
+    "configuration_count": 2,
+    "constraints": [
+      {
+        "metric": "surface_aircraft_aircraft_collisions",
+        "op": "eq",
+        "value": 0
+      },
+      {
+        "metric": "surface_safe_failures",
+        "op": "eq",
+        "value": 0
+      }
+    ],
+    "counts": {
+      "cached": 0,
+      "cancelled": 0,
+      "completed": 2,
+      "configurations": 2,
+      "failed": 0,
+      "invalid": 0,
+      "queued": 0,
+      "running": 0,
+      "seeds": 1,
+      "total": 2
+    },
+    "experiment_id": "43864ed4ca475ccecce3",
+    "name": "Goal34 adaptive policy serial-parallel parity",
+    "parameters": [
+      {
+        "adapter": "path",
+        "allowed_values": [
+          "SCRIPTED",
+          "ADAPTIVE"
+        ],
+        "category": "Autonomy",
+        "description": "Selects the deterministic aircraft surface routing policy.",
+        "id": "agent_policy.aircraft_routing",
+        "name": "Aircraft routing policy",
+        "path": [
+          "agent_policy",
+          "aircraft_routing"
+        ],
+        "restart_required": true,
+        "type": "categorical",
+        "units": "policy",
+        "values": [
+          "SCRIPTED",
+          "ADAPTIVE"
+        ]
+      }
+    ],
+    "ranking": {
+      "objectives": [
+        {
+          "direction": "minimize",
+          "metric": "avg_departure_delay_minutes"
+        }
+      ]
+    },
+    "run_count": 2,
+    "runs": [
+      {
+        "configuration_id": "config_c72dc7c09c3f",
+        "metrics": {
+          "avg_departure_delay_minutes": 21.716666666666665,
+          "surface_aircraft_aircraft_collisions": 0.0,
+          "surface_reroutes": 1.0,
+          "surface_safe_failures": 0.0
+        },
+        "parameters": {
+          "agent_policy.aircraft_routing": "SCRIPTED"
+        },
+        "result_digest": "b88676f40385b6ef82410d6df9e486afca38dbaf35b912a5ab73289caffdae92",
+        "run_id": "run_457ae9b1da26e355",
+        "run_identity": "864ea0a26d4a8e727af37af193c2b8a4306105005ee25505ef97254a54539684",
+        "seed": 42,
+        "status": "COMPLETED",
+        "validation_status": "VALID"
+      },
+      {
+        "configuration_id": "config_b0b4f0c279dc",
+        "metrics": {
+          "avg_departure_delay_minutes": 21.716666666666665,
+          "surface_aircraft_aircraft_collisions": 0.0,
+          "surface_reroutes": 1.0,
+          "surface_safe_failures": 0.0
+        },
+        "parameters": {
+          "agent_policy.aircraft_routing": "ADAPTIVE"
+        },
+        "result_digest": "c33371630670f1dad390011ad08fb961bf6e87826ac779c9c827ccac29dc9835",
+        "run_id": "run_7259881777ae9b0b",
+        "run_identity": "950ae79a76192c0cd2aea0fc95aa831ab05e7ba498d38ecd2295792ad771fb53",
+        "seed": 42,
+        "status": "COMPLETED",
+        "validation_status": "VALID"
+      }
+    ],
+    "seed_count": 1,
+    "seeds": [
+      42
+    ],
+    "status": "COMPLETED",
+    "workers": 2
+  }
+]

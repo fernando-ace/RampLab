@@ -59,6 +59,7 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::TurnaroundStarted: return "TurnaroundStarted";
     case SimulationEventType::PushbackTaxiOutStarted: return "PushbackTaxiOutStarted";
     case SimulationEventType::OperatorIntervention: return "OperatorIntervention";
+    case SimulationEventType::AgentDecision: return "AgentDecision";
     }
     return "Unknown";
 }
@@ -236,6 +237,8 @@ std::string format_event(const SimulationEventRecord& event) {
     case SimulationEventType::SurfaceReservationAcquired: return std::format("{} acquired surface edge {}", aircraft, event.edge ? event.edge->value() : 0U);
     case SimulationEventType::SurfaceReservationReleased: return std::format("{} released surface edge {}", aircraft, event.edge ? event.edge->value() : 0U);
     case SimulationEventType::SurfaceWaitingForPushback: return std::format("{} waiting for a safe pushback window", aircraft);
+    case SimulationEventType::AgentDecision:
+        return std::format("{} {}: {}", event.agent_id, event.decision, event.reason_code);
     }
     return "unknown simulation event";
 }

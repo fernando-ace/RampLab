@@ -28,7 +28,7 @@ enum class SimulationEventType {
     RunwayRequest, RunwayGrant, RunwayOccupied, RunwayReleased,
     ArrivalRunwayExit, ArrivalTaxiInStarted, ArrivalAtGate,
     GateWaitStarted, GateAssigned, AircraftLanded, TurnaroundStarted, PushbackTaxiOutStarted,
-    OperatorIntervention,
+    OperatorIntervention, AgentDecision,
 };
 
 struct SimulationEventRecord {
@@ -50,8 +50,18 @@ struct SimulationEventRecord {
     std::optional<VehicleState> previous_vehicle_state;
     std::optional<VehicleState> vehicle_state;
     std::optional<Route> route;
+    std::optional<Route> previous_route;
     std::string aircraft_name;
     std::string vehicle_name;
+    std::string agent_id;
+    std::string agent_event_id;
+    std::string agent_type;
+    std::string policy_id;
+    std::string objective_id;
+    std::string decision;
+    std::string reason_code;
+    std::string observation_summary;
+    std::string decision_result;
     std::string detail;
 
     SimulationEventRecord() = default;

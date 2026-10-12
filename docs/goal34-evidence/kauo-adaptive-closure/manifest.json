@@ -1,0 +1,40 @@
+{
+  "agent_policy": {
+    "aircraft_routing": "ADAPTIVE"
+  },
+  "airport_key": "kauo-goal27",
+  "artifacts_sha256": {
+    "canonical.json": "1f13b1f4a4efa891263b847864a791b410ef8a293c6f1605806ece879e5e895d",
+    "generated/manifest.json": "0753c6146413768802729c86c83683db9d302802416ce2298197659eeb977ab9",
+    "generated/scenario.json": "da62952f1625dd52d92e7a6534552b69787aadd1392a6271d1ee2708f1f22b88",
+    "result/events.jsonl": "10465e03cc22a55f8c2a25ff31b5e36bca4ad84aeca900a9dfdd2553732a42c1",
+    "result/experiment.json": "ec9609eac42a785b9fc44ef3801b8afc530faba1e0c5f79aec9a84202846f6d8",
+    "result/release-run.json": "da899388a2d1b1fb46dc8a8396a984cdda44ab5465de815cf56d2dad1d479a83",
+    "result/simulator-metrics.csv": "43c53ca202db407b1cee6a8f7b3608f9a9ebdf262e174e85f18d0823e634505d",
+    "result/simulator-metrics.json": "fc04e56618bfee2d02c1117a515cfa1dba37a50e9c8ddb581b212f66fdc3e19e"
+  },
+  "dataset_id": "kauo-operational-digital-twin-goal27-2026-10-09",
+  "disruptions": [
+    {
+      "disruption_id": "GOAL34-CLOSE-A",
+      "enabled": true,
+      "end_time": "2026-10-09T14:40:00Z",
+      "resource_id": "KAUO-TWY-A-RAMP-CONNECTOR",
+      "start_time": "2026-10-09T14:25:12Z",
+      "type": "route_closure"
+    }
+  ],
+  "metrics": {
+    "agent_decisions": 11,
+    "agent_objectives_completed": 4,
+    "agent_objectives_failed": 0,
+    "agent_operator_interventions": 0,
+    "agent_replans": 3,
+    "agent_route_selections": 7
+  },
+  "operational_provenance": null,
+  "run_id": "c2930e2070f3473da65a13c4669c6268",
+  "scenario_name": "Goal 34 browser trace Â· assumed KAUO schedule",
+  "seed": 42,
+  "status": "complete"
+}
