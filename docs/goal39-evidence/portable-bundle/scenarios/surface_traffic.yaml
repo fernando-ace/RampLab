@@ -1,0 +1,90 @@
+name: surface_traffic
+default_seed: 42
+airport:
+  nodes:
+    - { id: depot, name: Service Depot, x_m: 0.0, y_m: 0.0 }
+    - { id: north, name: North Junction, x_m: 100.0, y_m: 80.0 }
+    - { id: south, name: South Junction, x_m: 100.0, y_m: -80.0 }
+    - { id: gate_a1, name: Gate A1, x_m: 220.0, y_m: 80.0 }
+    - { id: gate_a2, name: Gate A2, x_m: 220.0, y_m: -80.0 }
+    - { id: gate_a3, name: Gate A3, x_m: 340.0, y_m: 0.0 }
+    - { id: baggage_stand_a1, name: Gate A1 Baggage Stand, x_m: 220.0, y_m: 160.0 }
+    - { id: baggage_stand_a2, name: Gate A2 Baggage Stand, x_m: 220.0, y_m: -160.0 }
+    - { id: baggage_stand_a3, name: Gate A3 Baggage Stand, x_m: 340.0, y_m: 80.0 }
+    - { id: fuel_stand_a1, name: Gate A1 Fuel Stand, x_m: 220.0, y_m: 220.0 }
+    - { id: fuel_stand_a2, name: Gate A2 Fuel Stand, x_m: 220.0, y_m: -220.0 }
+    - { id: fuel_stand_a3, name: Gate A3 Fuel Stand, x_m: 400.0, y_m: 80.0 }
+  edges:
+    - { id: depot_north, from: depot, to: north, distance_m: 128.0, traversal_time_seconds: 60 }
+    - { id: depot_south, from: depot, to: south, distance_m: 128.0, traversal_time_seconds: 60 }
+    - { id: north_a1, from: north, to: gate_a1, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: south_a2, from: south, to: gate_a2, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: north_depot, from: north, to: depot, distance_m: 128.0, traversal_time_seconds: 60 }
+    - { id: north_south_taxi, from: north, to: south, distance_m: 160.0, traversal_time_seconds: 90 }
+    - { id: south_depot, from: south, to: depot, distance_m: 128.0, traversal_time_seconds: 60 }
+    - { id: a1_north, from: gate_a1, to: north, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: a2_south, from: gate_a2, to: south, distance_m: 120.0, traversal_time_seconds: 60 }
+    - { id: north_baggage_a1, from: north, to: baggage_stand_a1, distance_m: 121.7, traversal_time_seconds: 60 }
+    - { id: south_baggage_a2, from: south, to: baggage_stand_a2, distance_m: 121.7, traversal_time_seconds: 60 }
+    - { id: north_a3, from: north, to: gate_a3, distance_m: 272.0, traversal_time_seconds: 120 }
+    - { id: a3_north, from: gate_a3, to: north, distance_m: 272.0, traversal_time_seconds: 120 }
+    - { id: north_baggage_a3, from: north, to: baggage_stand_a3, distance_m: 241.7, traversal_time_seconds: 120 }
+    - { id: north_fuel_a1, from: north, to: fuel_stand_a1, distance_m: 184.4, traversal_time_seconds: 100 }
+    - { id: south_fuel_a2, from: south, to: fuel_stand_a2, distance_m: 184.4, traversal_time_seconds: 100 }
+    - { id: north_fuel_a3, from: north, to: fuel_stand_a3, distance_m: 300.0, traversal_time_seconds: 160 }
+gates:
+  - { id: A1, node: gate_a1 }
+  - { id: A2, node: gate_a2 }
+  - { id: A3, node: gate_a3 }
+fleet:
+  vehicles:
+    - { id: fuel_1, name: FuelTruck-1, type: fueling, depot_node: baggage_stand_a2, speed_mps: 10.0 }
+    - { id: baggage_1, name: BaggageCart-1, type: baggage, depot_node: baggage_stand_a1, speed_mps: 8.0 }
+aircraft:
+  - id: AX101
+    turnaround_id: TO-AX101
+    gate: A1
+    scheduled_arrival_seconds: 0
+    scheduled_departure_seconds: 400
+    target_off_block_seconds: 300
+    service_tasks:
+      - { id: deboard, type: deboarding, duration_seconds: 20 }
+      - { id: fuel, type: fueling, duration_seconds: 30 }
+      - { id: baggage_unload, type: baggage, duration_seconds: 20, prerequisites: [deboard] }
+      - { id: clean, type: cabin_cleaning, duration_seconds: 15, prerequisites: [deboard] }
+      - { id: baggage_load, type: baggage_load, duration_seconds: 20, prerequisites: [baggage_unload, clean] }
+      - { id: pushback, type: pushback_preparation, duration_seconds: 120, prerequisites: [fuel, baggage_load] }
+  - id: AX202
+    turnaround_id: TO-AX202
+    gate: A2
+    scheduled_arrival_seconds: 0
+    scheduled_departure_seconds: 400
+    target_off_block_seconds: 300
+    service_tasks:
+      - { id: deboard, type: deboarding, duration_seconds: 20 }
+      - { id: fuel, type: fueling, duration_seconds: 30 }
+      - { id: baggage_unload, type: baggage, duration_seconds: 20, prerequisites: [deboard] }
+      - { id: clean, type: cabin_cleaning, duration_seconds: 15, prerequisites: [deboard] }
+      - { id: baggage_load, type: baggage_load, duration_seconds: 20, prerequisites: [baggage_unload, clean] }
+      - { id: pushback, type: pushback_preparation, duration_seconds: 120, prerequisites: [fuel, baggage_load] }
+  - id: AX303
+    turnaround_id: TO-AX303
+    gate: A3
+    scheduled_arrival_seconds: 0
+    scheduled_departure_seconds: 400
+    target_off_block_seconds: 300
+    service_tasks:
+      - { id: deboard, type: deboarding, duration_seconds: 20 }
+      - { id: fuel, type: fueling, duration_seconds: 30 }
+      - { id: baggage_unload, type: baggage, duration_seconds: 20, prerequisites: [deboard] }
+      - { id: clean, type: cabin_cleaning, duration_seconds: 15, prerequisites: [deboard] }
+      - { id: baggage_load, type: baggage_load, duration_seconds: 20, prerequisites: [baggage_unload, clean] }
+      - { id: pushback, type: pushback_preparation, duration_seconds: 120, prerequisites: [fuel, baggage_load] }
+surface_operations: { departure_handoff: north, pushback_seconds: 30, runway_occupancy_seconds: 170, aircraft_speed_mps: 1.0 }
+service_durations_seconds:
+  fueling: 30
+  baggage: 20
+  deboarding: 20
+  cabin_cleaning: 15
+  baggage_load: 20
+  pushback_preparation: 10

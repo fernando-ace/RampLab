@@ -140,13 +140,76 @@ const DecisionPolicy& policy_for(AutonomyMode mode) {
     static const AdaptiveRoutingPolicy adaptive;
     static const CoordinatedAdaptiveRoutingPolicy coordinated;
     static const RollingHorizonCoordinatedPolicy rolling;
+    static const CounterfactualPolicy counterfactual;
     switch (mode) {
     case AutonomyMode::Scripted: return scripted;
     case AutonomyMode::Adaptive: return adaptive;
     case AutonomyMode::CoordinatedAdaptive: return coordinated;
     case AutonomyMode::RollingHorizonCoordinated: return rolling;
+    case AutonomyMode::Counterfactual: return counterfactual;
     }
     throw std::invalid_argument("unknown autonomy mode");
+}
+
+std::string_view CounterfactualPolicy::id() const noexcept { return "counterfactual-operational-planning-v1"; }
+
+Decision CounterfactualPolicy::decide(const Observation& observation,
+    const Objective& objective, const PolicyMemory& memory) const {
+    if (observation.objective_satisfied)
+        return {ActionType::CompleteObjective, AgentStatus::Completed, ReasonCode::ObjectiveCompleted,
+            std::nullopt, "Objective reached."};
+    if (observation.route_invalidated || (memory.last_destination && *memory.last_destination != objective.destination)) {
+        const auto reason = observation.operator_triggered ? ReasonCode::OperatorIntervention :
+            observation.invalid_edge ? ReasonCode::RouteClosed :
+            memory.last_destination && *memory.last_destination != objective.destination
+                ? ReasonCode::DestinationChanged : ReasonCode::RouteInvalid;
+        return plan(observation, reason, "Invalidated route is replanned through authoritative feasible route candidates.");
+    }
+    if (observation.candidates.empty())
+        return observation.reservation_blocked
+            ? wait(ReasonCode::ReservationBlocked, "No feasible candidate exists; hold for authoritative reservations.")
+            : plan(observation, ReasonCode::ObjectiveCreated, "No feasible candidate exists; request the safe route fallback.");
+
+    const auto best = std::ranges::min_element(observation.candidates, [](const auto& left, const auto& right) {
+        if (left.valid != right.valid) return left.valid;
+        if (left.rollout_completed_objectives != right.rollout_completed_objectives)
+            return left.rollout_completed_objectives > right.rollout_completed_objectives;
+        if (left.rollout_blocked_objectives != right.rollout_blocked_objectives)
+            return left.rollout_blocked_objectives < right.rollout_blocked_objectives;
+        if (left.rollout_wait != right.rollout_wait) return left.rollout_wait < right.rollout_wait;
+        if (left.rollout_taxi_time != right.rollout_taxi_time) return left.rollout_taxi_time < right.rollout_taxi_time;
+        if (left.rollout_distance_m != right.rollout_distance_m) return left.rollout_distance_m < right.rollout_distance_m;
+        return false; // stable enumeration order is the final tie break
+    });
+    if (best == observation.candidates.end() || !best->valid)
+        return plan(observation, ReasonCode::NoSafeRoute, "All candidates were rejected by feasibility; safety fallback requested.");
+    if (best->kind == CandidateKind::Wait)
+        return wait(ReasonCode::ReservationBlocked, "Private rollout selected a temporary hold among safe candidate actions.");
+    if (!best->route)
+        return wait(ReasonCode::ReservationBlocked, "Selected candidate has no route; hold safely.");
+    if (best->kind == CandidateKind::ContinueCurrentRoute)
+        return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+            best->route, "Private rollout selected the current feasible route by lexicographic downstream outcome."};
+    const auto current = std::ranges::find(observation.candidates, CandidateKind::ContinueCurrentRoute,
+        &CandidateEvaluation::kind);
+    const bool cooldown_elapsed = !memory.last_replan_at || observation.time - *memory.last_replan_at >= SimTime{10};
+    const bool materially_better = current == observation.candidates.end() ||
+        best->rollout_completed_objectives > current->rollout_completed_objectives ||
+        best->rollout_blocked_objectives < current->rollout_blocked_objectives ||
+        (best->rollout_completed_objectives == current->rollout_completed_objectives &&
+         best->rollout_blocked_objectives == current->rollout_blocked_objectives &&
+         (best->rollout_wait + SimTime{15} < current->rollout_wait ||
+          (best->rollout_wait == current->rollout_wait &&
+           (best->rollout_taxi_time + SimTime{15} < current->rollout_taxi_time ||
+            (best->rollout_taxi_time == current->rollout_taxi_time &&
+             best->rollout_distance_m < current->rollout_distance_m)))));
+    if (observation.current_route && (!cooldown_elapsed || !materially_better) &&
+        current != observation.candidates.end() && current->route)
+        return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+            current->route, "Preserve the current route because the safe alternate has no material rollout advantage or cooldown remains."};
+    return {ActionType::PlanRoute, AgentStatus::Replanning,
+        best->rollout_wait > SimTime::zero() ? ReasonCode::Congestion : ReasonCode::ObjectiveCreated,
+        best->route, "Selected a safe route by lexicographic comparison of bounded private simulation rollouts."};
 }
 
 std::string_view RollingHorizonCoordinatedPolicy::id() const noexcept {
@@ -273,11 +336,12 @@ AutonomyMode parse_autonomy_mode(std::string_view value) {
     if (value == "ADAPTIVE") return AutonomyMode::Adaptive;
     if (value == "COORDINATED_ADAPTIVE") return AutonomyMode::CoordinatedAdaptive;
     if (value == "ROLLING_HORIZON_COORDINATED") return AutonomyMode::RollingHorizonCoordinated;
-    throw std::invalid_argument("routing policy must be SCRIPTED, ADAPTIVE, COORDINATED_ADAPTIVE, or ROLLING_HORIZON_COORDINATED");
+    if (value == "COUNTERFACTUAL") return AutonomyMode::Counterfactual;
+    throw std::invalid_argument("routing policy must be SCRIPTED, ADAPTIVE, COORDINATED_ADAPTIVE, ROLLING_HORIZON_COORDINATED, or COUNTERFACTUAL");
 }
 
 std::string_view to_string(AutonomyMode value) noexcept {
-    switch (value) { case AutonomyMode::Scripted: return "SCRIPTED"; case AutonomyMode::Adaptive: return "ADAPTIVE"; case AutonomyMode::CoordinatedAdaptive: return "COORDINATED_ADAPTIVE"; case AutonomyMode::RollingHorizonCoordinated: return "ROLLING_HORIZON_COORDINATED"; }
+    switch (value) { case AutonomyMode::Scripted: return "SCRIPTED"; case AutonomyMode::Adaptive: return "ADAPTIVE"; case AutonomyMode::CoordinatedAdaptive: return "COORDINATED_ADAPTIVE"; case AutonomyMode::RollingHorizonCoordinated: return "ROLLING_HORIZON_COORDINATED"; case AutonomyMode::Counterfactual: return "COUNTERFACTUAL"; }
     return "UNKNOWN";
 }
 std::string_view to_string(AgentType value) noexcept {

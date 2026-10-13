@@ -146,7 +146,55 @@ TEST(OperationalAgentPolicyTests, AutonomyModeParsingIsStableAndRejectsUnknownMo
     EXPECT_EQ(to_string(AutonomyMode::CoordinatedAdaptive), "COORDINATED_ADAPTIVE");
     EXPECT_EQ(parse_autonomy_mode("ROLLING_HORIZON_COORDINATED"), AutonomyMode::RollingHorizonCoordinated);
     EXPECT_EQ(to_string(AutonomyMode::RollingHorizonCoordinated), "ROLLING_HORIZON_COORDINATED");
+    EXPECT_EQ(parse_autonomy_mode("COUNTERFACTUAL"), AutonomyMode::Counterfactual);
+    EXPECT_EQ(to_string(AutonomyMode::Counterfactual), "COUNTERFACTUAL");
     EXPECT_THROW((void)parse_autonomy_mode("RANDOM"), std::invalid_argument);
+}
+
+TEST(OperationalAgentPolicyTests, SyntheticDownstreamOutcomeCanOverrideLocallyCheapestRoute) {
+    CounterfactualPolicy policy;
+    auto observation = base_observation();
+    CandidateEvaluation locally_cheapest;
+    locally_cheapest.kind = CandidateKind::AlternateRoute;
+    locally_cheapest.route = route({1, 3, 4});
+    locally_cheapest.score_seconds = 20.0; // attractive one-step score
+    locally_cheapest.counterfactual_evaluated = true;
+    locally_cheapest.rollout_blocked_objectives = 1U;
+    locally_cheapest.rollout_wait = SimTime{90};
+    locally_cheapest.rollout_taxi_time = SimTime{80};
+    locally_cheapest.rollout_distance_m = 180.0;
+    CandidateEvaluation downstream_better;
+    downstream_better.kind = CandidateKind::AlternateRoute;
+    downstream_better.route = route({1, 2, 4});
+    downstream_better.score_seconds = 200.0; // locally unattractive
+    downstream_better.counterfactual_evaluated = true;
+    downstream_better.rollout_completed_objectives = 1U;
+    downstream_better.rollout_taxi_time = SimTime{120};
+    downstream_better.rollout_distance_m = 240.0;
+    observation.current_route.reset();
+    observation.candidates = {locally_cheapest, downstream_better};
+
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    ASSERT_EQ(decision.action, ActionType::PlanRoute);
+    ASSERT_TRUE(decision.route);
+    EXPECT_EQ(decision.route->nodes, downstream_better.route->nodes);
+}
+
+TEST(OperationalAgentPolicyTests, CounterfactualRejectsUnsafeAndUsesStableOrderForExactTies) {
+    CounterfactualPolicy policy;
+    auto observation = base_observation();
+    observation.candidates.resize(2U);
+    observation.candidates[0].kind = CandidateKind::AlternateRoute;
+    observation.candidates[0].route = route({1, 3, 4});
+    observation.candidates[0].counterfactual_evaluated = true;
+    observation.candidates[0].valid = false;
+    observation.candidates[1].kind = CandidateKind::ContinueCurrentRoute;
+    observation.candidates[1].route = observation.current_route;
+    observation.candidates[1].counterfactual_evaluated = true;
+    observation.candidates[1].rollout_completed_objectives = 1U;
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::FollowRoute);
+    EXPECT_EQ(decision.route, observation.current_route);
 }
 
 TEST(OperationalAgentPolicyTests, RollingHorizonPolicyPrefersAPathThatAvoidsForecastEdgeOverlap) {

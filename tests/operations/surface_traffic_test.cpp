@@ -383,6 +383,64 @@ TEST(SurfaceTrafficTest, RollingHorizonPolicyProducesDeterministicSafeForecastTr
     }));
 }
 
+TEST(SurfaceTrafficTest, CounterfactualRolloutsAreIsolatedAndReplayDeterministically) {
+    auto first_scenario = airside::load_scenario(scenario_file("goal37_coordinated_route_choice.yaml"));
+    auto second_scenario = airside::load_scenario(scenario_file("goal37_coordinated_route_choice.yaml"));
+    first_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Counterfactual;
+    second_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Counterfactual;
+    const auto first = airside::Simulation{std::move(first_scenario), 42}.run();
+    const auto second = airside::Simulation{std::move(second_scenario), 42}.run();
+    EXPECT_EQ(first.agent_decisions, second.agent_decisions);
+    EXPECT_EQ(first.events, second.events);
+    EXPECT_EQ(first.metrics.agent_objectives_failed, 0U);
+    EXPECT_EQ(first.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(first.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(first.metrics.surface_aircraft_ground_collisions, 0U);
+    ASSERT_FALSE(first.agent_decisions.empty());
+    EXPECT_TRUE(std::ranges::all_of(first.agent_decisions, [](const auto& event) {
+        return event.policy_id == "counterfactual-operational-planning-v1" &&
+            event.planning_horizon == airside::SimTime{600} &&
+            !event.state_identifier.empty() && !event.safety_constraints.empty();
+    }));
+    EXPECT_TRUE(std::ranges::any_of(first.agent_decisions, [](const auto& event) {
+        return std::ranges::any_of(event.candidates, [](const auto& candidate) {
+            return candidate.counterfactual_evaluated && candidate.rollout_events > 0U;
+        });
+    }));
+    EXPECT_TRUE(std::ranges::any_of(first.agent_decisions, [](const auto& event) {
+        if (!event.observation.reservation_blocked) return false;
+        const auto hold = std::ranges::find(event.candidates, airside::agents::CandidateKind::Wait,
+            &airside::agents::CandidateEvaluation::kind);
+        const auto current = std::ranges::find(event.candidates, airside::agents::CandidateKind::ContinueCurrentRoute,
+            &airside::agents::CandidateEvaluation::kind);
+        return hold != event.candidates.end() && current != event.candidates.end() &&
+            hold->counterfactual_evaluated && current->counterfactual_evaluated &&
+            hold->estimated_system_cost_seconds > 0.0 &&
+            hold->rollout_wait >= hold->expected_wait && current->rollout_wait >= hold->expected_wait;
+    }));
+}
+
+TEST(SurfaceTrafficTest, SyntheticBottleneckRolloutCanTradeTaxiDistanceForLessDownstreamWait) {
+    auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
+    scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Counterfactual;
+    const auto result = airside::Simulation{std::move(scenario), 42}.run();
+    const auto decision = std::ranges::find_if(result.agent_decisions, [](const auto& event) {
+        if (!event.differs_from_rolling_horizon || !event.observation.reservation_blocked ||
+            !event.selected_candidate || *event.selected_candidate >= event.candidates.size()) return false;
+        const auto& selected = event.candidates[*event.selected_candidate];
+        return selected.kind == airside::agents::CandidateKind::AlternateRoute && selected.counterfactual_evaluated;
+    });
+    ASSERT_NE(decision, result.agent_decisions.end());
+    const auto current = std::ranges::find(decision->candidates, airside::agents::CandidateKind::ContinueCurrentRoute,
+        &airside::agents::CandidateEvaluation::kind);
+    ASSERT_NE(current, decision->candidates.end());
+    const auto& selected = decision->candidates[*decision->selected_candidate];
+    EXPECT_LT(selected.rollout_wait, current->rollout_wait);
+    EXPECT_GT(selected.rollout_taxi_time, current->rollout_taxi_time);
+    EXPECT_GT(selected.rollout_distance_m, current->rollout_distance_m);
+    EXPECT_EQ(selected.rollout_completed_objectives, current->rollout_completed_objectives);
+}
+
 TEST(SurfaceTrafficTest, AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutcome) {
     auto adaptive_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));
     auto scripted_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));

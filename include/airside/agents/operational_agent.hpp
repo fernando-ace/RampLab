@@ -28,7 +28,7 @@ enum class ReasonCode {
     OperatorIntervention
 };
 enum class CandidateKind { ContinueCurrentRoute, AlternateRoute, Wait };
-enum class AutonomyMode { Scripted, Adaptive, CoordinatedAdaptive, RollingHorizonCoordinated };
+enum class AutonomyMode { Scripted, Adaptive, CoordinatedAdaptive, RollingHorizonCoordinated, Counterfactual };
 
 struct Objective {
     std::string id;
@@ -64,6 +64,14 @@ struct CandidateEvaluation {
         auto operator<=>(const ContentionPrediction&) const = default;
     };
     std::vector<ContentionPrediction> predicted_contention;
+    bool counterfactual_evaluated{};
+    std::size_t rollout_completed_objectives{};
+    std::size_t rollout_blocked_objectives{};
+    SimTime rollout_wait{};
+    SimTime rollout_taxi_time{};
+    SimTime rollout_completion_time{};
+    double rollout_distance_m{};
+    std::size_t rollout_events{};
     auto operator<=>(const CandidateEvaluation&) const = default;
 };
 
@@ -161,6 +169,10 @@ struct DecisionEvent {
     std::size_t affected_agents{};
     std::string safety_constraints;
     SimTime planning_horizon{};
+    std::size_t counterfactual_rollouts{};
+    std::size_t counterfactual_events{};
+    bool differs_from_rolling_horizon{};
+    std::string state_identifier;
     std::string replan_trigger;
     std::string tie_break_reason;
     auto operator<=>(const DecisionEvent&) const = default;
@@ -215,6 +227,13 @@ public:
 };
 
 class RollingHorizonCoordinatedPolicy final : public DecisionPolicy {
+public:
+    [[nodiscard]] std::string_view id() const noexcept override;
+    [[nodiscard]] Decision decide(const Observation& observation,
+        const Objective& objective, const PolicyMemory& memory) const override;
+};
+
+class CounterfactualPolicy final : public DecisionPolicy {
 public:
     [[nodiscard]] std::string_view id() const noexcept override;
     [[nodiscard]] Decision decide(const Observation& observation,

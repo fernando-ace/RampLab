@@ -1559,8 +1559,9 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
     }
     std::map<AircraftId, std::vector<EdgeId>> shared_intents;
     const bool coordinated_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive;
-    const bool rolling_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::RollingHorizonCoordinated;
-    const bool shared_policy = coordinated_policy || rolling_policy;
+    const bool counterfactual_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::Counterfactual;
+    const bool rolling_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::RollingHorizonCoordinated || counterfactual_policy;
+    const bool shared_policy = coordinated_policy || rolling_policy || counterfactual_policy;
     constexpr std::size_t max_shared_intent_edges = 32U;
     std::size_t shared_intent_edge_count = 0U;
     // Forecast both selected plans and ready pushbacks without plans. This lets
@@ -1773,8 +1774,7 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
             }
             candidate.score_seconds = static_cast<double>(wait.count() + candidate.predicted_taxi_time.count()) +
                 candidate.predicted_taxi_distance_m / 50.0;
-            if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive ||
-                scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::RollingHorizonCoordinated) {
+            if (coordinated_policy || rolling_policy) {
                 candidate.estimated_system_cost_seconds = candidate.score_seconds;
                 if (rolling_policy) {
                     const auto own_agent = surface_agents_.find(id);
@@ -1789,6 +1789,83 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
             }
             candidate.explanation = "wait estimate + remaining current-route taxi time + distance_m/50";
             observation.candidates.push_back(std::move(candidate));
+        }
+    }
+    if (counterfactual_policy) {
+        // Private event rollout: current safe route candidates × 600 simulated
+        // seconds, at most eight edges and 256 deterministic edge/conflict events
+        // per candidate. Only the observation's present reservations, published
+        // routes and already-revealed graph availability enter this snapshot.
+        constexpr std::int64_t rollout_horizon_seconds = 600;
+        constexpr std::size_t rollout_edge_limit = 8U;
+        constexpr std::size_t rollout_event_limit = 256U;
+        const auto rollout_graph = scenario_.graph; // isolated copy of current revealed graph state
+        const auto rollout_traffic = observation.shared_traffic; // current reservations and published/observed intents only
+        const auto rollout_now = now_;
+        const auto rollout_speed = observation.aircraft_speed_mps;
+        SimTime observed_hold{};
+        if (observation.reservation_blocked) {
+            const auto hold = std::ranges::find(observation.candidates, agents::CandidateKind::Wait,
+                &agents::CandidateEvaluation::kind);
+            if (hold != observation.candidates.end()) observed_hold = hold->expected_wait;
+        }
+        for (auto& candidate : observation.candidates) {
+            if (!candidate.valid || !candidate.route) continue;
+            auto& result = candidate;
+            result.counterfactual_evaluated = true;
+            const SimTime initial_wait = result.kind == agents::CandidateKind::Wait ? result.expected_wait :
+                result.kind == agents::CandidateKind::ContinueCurrentRoute ? observed_hold : SimTime::zero();
+            SimTime elapsed = initial_wait;
+            SimTime downstream_wait{};
+            SimTime taxi_time{};
+            std::size_t events = 0U;
+            std::size_t processed_edges = 0U;
+            downstream_wait = initial_wait;
+            bool reached = true;
+            const auto count = std::min(result.route->edges.size(), rollout_edge_limit);
+            if (result.route->edges.size() > count) reached = false;
+            for (std::size_t edge_index = 0; edge_index < count && events < rollout_event_limit &&
+                elapsed.count() < rollout_horizon_seconds; ++edge_index) {
+                const auto edge_id = result.route->edges[edge_index];
+                const auto& edge = rollout_graph.edge(edge_id);
+                const auto seconds = std::max<std::int64_t>(1, static_cast<std::int64_t>(std::ceil(
+                    edge.distance_m / std::max(0.1, rollout_speed))));
+                const SimTime travel{seconds};
+                const SimTime own_arrival = rollout_now + elapsed;
+                const SimTime own_release = own_arrival + travel + SimTime{10};
+                SimTime blocking_release = own_arrival;
+                SimTime other_wait{};
+                ++events; // private taxi edge-entry event
+                for (const auto& other : rollout_traffic) {
+                    if (events >= rollout_event_limit) break;
+                    if (other.edge != edge_id || other.estimated_arrival - now_ > SimTime{rollout_horizon_seconds}) continue;
+                    ++events; // private reservation/intent conflict event
+                    const SimTime other_release = other.estimated_arrival + other.estimated_occupancy + SimTime{10};
+                    if (own_arrival >= other_release || other.estimated_arrival >= own_release) continue;
+                    if (other.estimated_arrival <= own_arrival) {
+                        blocking_release = std::max(blocking_release, other_release);
+                    } else {
+                        const auto imposed = std::max(SimTime::zero(), own_release - other.estimated_arrival);
+                        other_wait += imposed;
+                    }
+                }
+                const auto own_wait = std::max(SimTime::zero(), blocking_release - own_arrival);
+                downstream_wait += own_wait + other_wait;
+                elapsed += own_wait;
+                elapsed += travel;
+                taxi_time += travel;
+                ++events; // private taxi edge-release event
+                ++processed_edges;
+            }
+            if (elapsed.count() > rollout_horizon_seconds || count < result.route->edges.size() || processed_edges < count) reached = false;
+            result.rollout_completed_objectives = reached ? 1U : 0U;
+            result.rollout_blocked_objectives = reached ? 0U : 1U;
+            result.rollout_wait = downstream_wait;
+            result.rollout_taxi_time = taxi_time;
+            result.rollout_completion_time = elapsed;
+            result.rollout_distance_m = result.route->distance_m;
+            result.rollout_events = events;
+            result.explanation = "isolated current-observation edge-event rollout; 600 s horizon, 8 edges, 256 events; future unrevealed disruptions excluded";
         }
     }
     observation.objective_satisfied = state.node == destination;
@@ -1861,6 +1938,24 @@ void Simulation::record_agent_decision(AircraftId id, const agents::Observation&
             trace.replan_trigger = "none; current route retained";
         }
         trace.safety_constraints = "closed-edge rejection; exclusive edge and node reservations; aircraft and ground-vehicle clearance checks; safe failure on no feasible route";
+    }
+    if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::Counterfactual) {
+        trace.planning_horizon = SimTime{600};
+        trace.coordination_rule = "lexicographic: completed objectives, blocked objectives, downstream wait, taxi time, taxi distance, stable candidate order";
+        trace.tie_break_reason = "candidate enumeration order is stable; first candidate is retained on a complete lexicographic tie";
+        trace.replan_trigger = observation.operator_triggered ? "operator intervention" :
+            observation.invalid_edge ? "route invalidation" : observation.reservation_blocked ? "reservation blocked" :
+            observation.current_route ? "eligible route comparison" : "new objective or missing route";
+        trace.counterfactual_rollouts = static_cast<std::size_t>(std::ranges::count_if(trace.candidates,
+            [](const auto& candidate) { return candidate.counterfactual_evaluated; }));
+        trace.counterfactual_events = 0U;
+        for (const auto& candidate : trace.candidates) trace.counterfactual_events += candidate.rollout_events;
+        const auto rolling = agents::RollingHorizonCoordinatedPolicy{}.decide(observation, agent.objective, agent.memory);
+        trace.differs_from_rolling_horizon = rolling.action != decision.action || rolling.route != decision.route;
+        trace.state_identifier = std::format("{}@{}:{}>{}:{}", observation.agent_id,
+            observation.time.count(), observation.current_node.value(), observation.destination.value(),
+            agents::route_string(observation.current_route));
+        trace.safety_constraints = "route candidates were prefiltered by live graph availability; authoritative edge and node reservations, clearance and collision checks still gate execution; no safety term is traded for score";
     }
     agent.status = decision.status;
     agent.current_action = decision.action;
