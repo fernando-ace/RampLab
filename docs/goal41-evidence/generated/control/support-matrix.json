@@ -1,0 +1,66 @@
+{
+  "aircraft_type_and_dimensions": {
+    "reason": "The existing simulator does not vary movement behavior by canonical model, dimensions, or category.",
+    "status": "metadata only"
+  },
+  "canonical_airport_and_dataset": {
+    "reason": "Airport metadata is preserved; synthetic geometry is resolved by the mapping document.",
+    "status": "metadata only"
+  },
+  "catering_vehicle": {
+    "reason": "Catering is a distinct finite vehicle capability and uses the existing routed fleet dispatcher.",
+    "status": "supported with transformation"
+  },
+  "delayed_service": {
+    "reason": "A requirement target maps to its generated aircraft task and uses existing task duration disruption behavior.",
+    "status": "supported with transformation"
+  },
+  "equipment_outage": {
+    "reason": "An indefinite outage on a targeted mapped vehicle uses the existing vehicle outage event; finite outage windows are unsupported because the simulator cannot restore the vehicle at an end time.",
+    "status": "supported with transformation"
+  },
+  "flight_arrival_and_departure": {
+    "reason": "Paired legs for one canonical aircraft become the existing RampLab arrival-turnaround operation; IDs remain in identity-map.json.",
+    "status": "supported with transformation"
+  },
+  "flight_delay": {
+    "reason": "Delay minutes adjust the targeted scheduled time before conversion to simulation seconds.",
+    "status": "supported with transformation"
+  },
+  "flight_schedule": {
+    "reason": "UTC timestamps are converted to integer simulator seconds from the earliest canonical operational event.",
+    "status": "supported with transformation"
+  },
+  "fuel_vehicle_and_baggage_vehicle": {
+    "reason": "Canonical fleet records map to distinct fueling and baggage capabilities; both use the existing finite routed fleet dispatcher.",
+    "status": "supported with transformation"
+  },
+  "gate_unavailability": {
+    "reason": "RampLab has no safe validated gate-resource outage behavior.",
+    "status": "unsupported"
+  },
+  "gates": {
+    "reason": "Canonical gate IDs resolve to explicit existing gate resources in the mapping.",
+    "status": "supported with transformation"
+  },
+  "lavatory_water_gpu_tug_stairs_air_start": {
+    "reason": "Each category maps to a distinct finite vehicle capability and uses existing routing, reservation, outage, and safety handling.",
+    "status": "supported with transformation when mapped"
+  },
+  "raw_source_provenance": {
+    "reason": "Goal 24A source filenames and hashes are copied by reference into the generated manifest.",
+    "status": "supported"
+  },
+  "route_closure": {
+    "reason": "Canonical route IDs must map to an existing edge and use the existing road event mechanism.",
+    "status": "supported with transformation"
+  },
+  "tug_service_cart_and_generic_vehicle": {
+    "reason": "Unmapped equipment remains metadata; a mapped tug or service cart uses only the capability explicitly selected by the airport mapping.",
+    "status": "metadata only unless explicitly mapped"
+  },
+  "turnaround_requirements": {
+    "reason": "Mapped mobile service types require a matching finite routed vehicle; mapped crew services use finite abstract capacity. Missing required capability mappings block generation.",
+    "status": "supported with transformation when mapped"
+  }
+}

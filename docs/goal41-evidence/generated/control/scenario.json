@@ -1,0 +1,1648 @@
+{
+  "aircraft": [
+    {
+      "arrival_exit": "twy_a_mid",
+      "gate": "GA-PARK-01",
+      "id": "KAUO-G31-GA-01",
+      "operation_type": "arrival_turnaround",
+      "scheduled_arrival_seconds": 0,
+      "scheduled_departure_seconds": 3600,
+      "service_tasks": [
+        {
+          "duration_seconds": 600,
+          "id": "G31-01-CATER",
+          "prerequisites": [
+            "G31-01-CHOCKS"
+          ],
+          "type": "catering"
+        },
+        {
+          "duration_seconds": 30,
+          "id": "G31-01-CHOCKS",
+          "type": "chocks"
+        },
+        {
+          "duration_seconds": 600,
+          "id": "G31-01-CLEAN",
+          "prerequisites": [
+            "G31-01-DEBOARD"
+          ],
+          "type": "cabin_cleaning"
+        },
+        {
+          "duration_seconds": 300,
+          "id": "G31-01-DEBOARD",
+          "prerequisites": [
+            "G31-01-CHOCKS"
+          ],
+          "type": "deboarding"
+        },
+        {
+          "duration_seconds": 720,
+          "id": "G31-01-FUEL",
+          "prerequisites": [
+            "G31-01-CHOCKS"
+          ],
+          "type": "fueling"
+        },
+        {
+          "duration_seconds": 60,
+          "id": "G31-01-GPU",
+          "prerequisites": [
+            "G31-01-CHOCKS"
+          ],
+          "type": "ground_power"
+        },
+        {
+          "duration_seconds": 240,
+          "id": "G31-01-LAV",
+          "prerequisites": [
+            "G31-01-DEBOARD"
+          ],
+          "type": "lavatory_service"
+        },
+        {
+          "duration_seconds": 600,
+          "id": "G31-01-LOAD",
+          "prerequisites": [
+            "G31-01-UNLOAD",
+            "G31-01-CLEAN"
+          ],
+          "type": "baggage_load"
+        },
+        {
+          "duration_seconds": 180,
+          "id": "G31-01-PUSH",
+          "prerequisites": [
+            "G31-01-LOAD",
+            "G31-01-FUEL"
+          ],
+          "type": "pushback"
+        },
+        {
+          "duration_seconds": 480,
+          "id": "G31-01-UNLOAD",
+          "prerequisites": [
+            "G31-01-DEBOARD"
+          ],
+          "type": "baggage"
+        },
+        {
+          "duration_seconds": 180,
+          "id": "G31-01-WATER",
+          "prerequisites": [
+            "G31-01-CHOCKS"
+          ],
+          "type": "potable_water"
+        }
+      ],
+      "target_off_block_seconds": 3600,
+      "turnaround_id": "KAUO-G31-GA-01"
+    },
+    {
+      "arrival_exit": "twy_a_mid",
+      "gate": "GA-PARK-02",
+      "id": "KAUO-G31-GA-02",
+      "operation_type": "arrival_turnaround",
+      "scheduled_arrival_seconds": 120,
+      "scheduled_departure_seconds": 3720,
+      "service_tasks": [
+        {
+          "duration_seconds": 600,
+          "id": "G31-02-CATER",
+          "prerequisites": [
+            "G31-02-CHOCKS"
+          ],
+          "type": "catering"
+        },
+        {
+          "duration_seconds": 30,
+          "id": "G31-02-CHOCKS",
+          "type": "chocks"
+        },
+        {
+          "duration_seconds": 600,
+          "id": "G31-02-CLEAN",
+          "prerequisites": [
+            "G31-02-DEBOARD"
+          ],
+          "type": "cabin_cleaning"
+        },
+        {
+          "duration_seconds": 300,
+          "id": "G31-02-DEBOARD",
+          "prerequisites": [
+            "G31-02-CHOCKS"
+          ],
+          "type": "deboarding"
+        },
+        {
+          "duration_seconds": 720,
+          "id": "G31-02-FUEL",
+          "prerequisites": [
+            "G31-02-CHOCKS"
+          ],
+          "type": "fueling"
+        },
+        {
+          "duration_seconds": 60,
+          "id": "G31-02-GPU",
+          "prerequisites": [
+            "G31-02-CHOCKS"
+          ],
+          "type": "ground_power"
+        },
+        {
+          "duration_seconds": 240,
+          "id": "G31-02-LAV",
+          "prerequisites": [
+            "G31-02-DEBOARD"
+          ],
+          "type": "lavatory_service"
+        },
+        {
+          "duration_seconds": 600,
+          "id": "G31-02-LOAD",
+          "prerequisites": [
+            "G31-02-UNLOAD",
+            "G31-02-CLEAN"
+          ],
+          "type": "baggage_load"
+        },
+        {
+          "duration_seconds": 180,
+          "id": "G31-02-PUSH",
+          "prerequisites": [
+            "G31-02-LOAD",
+            "G31-02-FUEL"
+          ],
+          "type": "pushback"
+        },
+        {
+          "duration_seconds": 480,
+          "id": "G31-02-UNLOAD",
+          "prerequisites": [
+            "G31-02-DEBOARD"
+          ],
+          "type": "baggage"
+        },
+        {
+          "duration_seconds": 180,
+          "id": "G31-02-WATER",
+          "prerequisites": [
+            "G31-02-CHOCKS"
+          ],
+          "type": "potable_water"
+        }
+      ],
+      "target_off_block_seconds": 3720,
+      "turnaround_id": "KAUO-G31-GA-02"
+    },
+    {
+      "arrival_exit": "twy_a_mid",
+      "gate": "GA-PARK-03",
+      "id": "KAUO-G31-GA-03",
+      "operation_type": "arrival_turnaround",
+      "scheduled_arrival_seconds": 240,
+      "scheduled_departure_seconds": 3840,
+      "service_tasks": [
+        {
+          "duration_seconds": 600,
+          "id": "G31-03-CATER",
+          "prerequisites": [
+            "G31-03-CHOCKS"
+          ],
+          "type": "catering"
+        },
+        {
+          "duration_seconds": 30,
+          "id": "G31-03-CHOCKS",
+          "type": "chocks"
+        },
+        {
+          "duration_seconds": 600,
+          "id": "G31-03-CLEAN",
+          "prerequisites": [
+            "G31-03-DEBOARD"
+          ],
+          "type": "cabin_cleaning"
+        },
+        {
+          "duration_seconds": 300,
+          "id": "G31-03-DEBOARD",
+          "prerequisites": [
+            "G31-03-CHOCKS"
+          ],
+          "type": "deboarding"
+        },
+        {
+          "duration_seconds": 720,
+          "id": "G31-03-FUEL",
+          "prerequisites": [
+            "G31-03-CHOCKS"
+          ],
+          "type": "fueling"
+        },
+        {
+          "duration_seconds": 60,
+          "id": "G31-03-GPU",
+          "prerequisites": [
+            "G31-03-CHOCKS"
+          ],
+          "type": "ground_power"
+        },
+        {
+          "duration_seconds": 240,
+          "id": "G31-03-LAV",
+          "prerequisites": [
+            "G31-03-DEBOARD"
+          ],
+          "type": "lavatory_service"
+        },
+        {
+          "duration_seconds": 600,
+          "id": "G31-03-LOAD",
+          "prerequisites": [
+            "G31-03-UNLOAD",
+            "G31-03-CLEAN"
+          ],
+          "type": "baggage_load"
+        },
+        {
+          "duration_seconds": 180,
+          "id": "G31-03-PUSH",
+          "prerequisites": [
+            "G31-03-LOAD",
+            "G31-03-FUEL"
+          ],
+          "type": "pushback"
+        },
+        {
+          "duration_seconds": 480,
+          "id": "G31-03-UNLOAD",
+          "prerequisites": [
+            "G31-03-DEBOARD"
+          ],
+          "type": "baggage"
+        },
+        {
+          "duration_seconds": 180,
+          "id": "G31-03-WATER",
+          "prerequisites": [
+            "G31-03-CHOCKS"
+          ],
+          "type": "potable_water"
+        }
+      ],
+      "target_off_block_seconds": 3840,
+      "turnaround_id": "KAUO-G31-GA-03"
+    }
+  ],
+  "airport": {
+    "calibration": {
+      "coordinate_reference_system": "WGS 84 geographic 3D (EPSG:4979); horizontal outputs use airport-local ENU meters",
+      "origin": {
+        "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+        "ellipsoid_height_m": 208.22,
+        "field_elevation_ft_msl": 776.8,
+        "latitude_degrees": 32.61511111,
+        "longitude_degrees": -85.434,
+        "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+        "source_record": {
+          "ARPT_ID": "AUO",
+          "ARPT_PSN_SOURCE": "3RD PARTY SURVEY",
+          "EFF_DATE": "2026/10/01",
+          "ICAO_ID": "KAUO",
+          "POSITION_SRC_DATE": "2006/05/22",
+          "file": "APT_BASE.csv"
+        }
+      },
+      "runway_thresholds": {
+        "11": {
+          "x": -314.53713,
+          "y": 495.730459
+        },
+        "18": {
+          "x": -191.058895,
+          "y": 564.510565
+        },
+        "29": {
+          "x": 849.420982,
+          "y": 132.956881
+        },
+        "36": {
+          "x": -220.183588,
+          "y": -1039.622948
+        }
+      },
+      "scenario_axis_convention": "+X east, +Y north, meters; these are airport-local ENU coordinates.",
+      "source_classification": "Runway-end coordinates AUTHORITATIVE; runway centers/headings and intersection DERIVED; taxiway/apron/parking features APPROXIMATE."
+    },
+    "edges": [
+      {
+        "distance_m": 436.447,
+        "from": "rwy36_hold",
+        "id": "runway36_hold_twy_a_south",
+        "to": "twy_a_south",
+        "traversal_time_seconds": 88
+      },
+      {
+        "distance_m": 497.948,
+        "from": "twy_a_south",
+        "id": "twy_a_south_mid",
+        "to": "twy_a_mid",
+        "traversal_time_seconds": 100
+      },
+      {
+        "distance_m": 568.384,
+        "from": "twy_a_mid",
+        "id": "twy_a_mid_north",
+        "to": "twy_a_north",
+        "traversal_time_seconds": 114
+      },
+      {
+        "distance_m": 298.826,
+        "from": "twy_a_mid",
+        "id": "twy_a_mid_fbo_primary",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 60
+      },
+      {
+        "distance_m": 231.262,
+        "from": "twy_a_north",
+        "id": "twy_a_north_fbo_detour",
+        "to": "fbo_apron_detour",
+        "traversal_time_seconds": 47
+      },
+      {
+        "distance_m": 512.934,
+        "from": "fbo_apron_detour",
+        "id": "twy_c_fbo_detour",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 103
+      },
+      {
+        "distance_m": 137.058,
+        "from": "fbo_apron_junction",
+        "id": "fbo_junction_parking",
+        "to": "ga_parking_stand",
+        "traversal_time_seconds": 28
+      },
+      {
+        "distance_m": 531.498,
+        "from": "fbo_apron_junction",
+        "id": "fbo_junction_fuel_farm",
+        "to": "self_serve_fuel_farm",
+        "traversal_time_seconds": 107
+      },
+      {
+        "classification": "APPROXIMATE connector to an illustrative parking position",
+        "distance_m": 199.74,
+        "from": "fbo_apron_junction",
+        "id": "fbo_apron_parking_02",
+        "to": "ga_parking_stand_02",
+        "traversal_time_seconds": 40
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION short service staging spur",
+        "distance_m": 263.413,
+        "from": "ga_parking_stand",
+        "id": "fbo_service_staging_fuel_link",
+        "to": "fbo_service_staging_fuel",
+        "traversal_time_seconds": 33
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION short service staging spur",
+        "distance_m": 279.256,
+        "from": "ga_parking_stand",
+        "id": "fbo_service_staging_west_link",
+        "to": "fbo_service_staging_west",
+        "traversal_time_seconds": 35
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION short service staging spur",
+        "distance_m": 313.392,
+        "from": "ga_parking_stand_02",
+        "id": "fbo_service_staging_east_link",
+        "to": "fbo_service_staging_east",
+        "traversal_time_seconds": 39
+      },
+      {
+        "classification": "APPROXIMATE connector to an illustrative parking position",
+        "distance_m": 303.808,
+        "from": "fbo_apron_junction",
+        "id": "fbo_apron_parking_03",
+        "to": "ga_parking_stand_03",
+        "traversal_time_seconds": 38
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_service_staging_fuel",
+        "id": "gse_spawn_1_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_1",
+        "to": "fbo_service_staging_fuel",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "gse_fuel_depot_02",
+        "id": "gse_spawn_2_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_2",
+        "to": "gse_fuel_depot_02",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_service_staging_west",
+        "id": "gse_spawn_3_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 23
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_3",
+        "to": "fbo_service_staging_west",
+        "traversal_time_seconds": 23
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_service_staging_east",
+        "id": "gse_spawn_4_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_4",
+        "to": "fbo_service_staging_east",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "gse_catering_depot",
+        "id": "gse_spawn_5_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_5",
+        "to": "gse_catering_depot",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "gse_lavatory_depot",
+        "id": "gse_spawn_6_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 23
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_6",
+        "to": "gse_lavatory_depot",
+        "traversal_time_seconds": 23
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "gse_water_depot",
+        "id": "gse_spawn_7_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_7",
+        "to": "gse_water_depot",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "gse_gpu_depot",
+        "id": "gse_spawn_8_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 23
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_8",
+        "to": "gse_gpu_depot",
+        "traversal_time_seconds": 23
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "gse_tug_depot",
+        "id": "gse_spawn_9_to_hub",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION GSE route",
+        "distance_m": 180.0,
+        "from": "fbo_apron_junction",
+        "id": "gse_hub_to_spawn_9",
+        "to": "gse_tug_depot",
+        "traversal_time_seconds": 22
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION shared stand approach route",
+        "distance_m": 151.058,
+        "from": "fbo_apron_junction",
+        "id": "fbo_apron_junction_to_kauo_g31_stand_1_service_approach",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 19
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION shared stand approach route",
+        "distance_m": 151.058,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_fbo_apron_junction",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 19
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_fuel_service_point_fuel",
+        "to": "ga_parking_stand_fuel_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_fuel_service_point",
+        "id": "ga_parking_stand_fuel_service_point_to_kauo_g31_stand_1_service_approach_fuel",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_baggage_service_point_baggage",
+        "to": "ga_parking_stand_baggage_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_baggage_service_point",
+        "id": "ga_parking_stand_baggage_service_point_to_kauo_g31_stand_1_service_approach_baggage",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_catering_service_point_catering",
+        "to": "ga_parking_stand_catering_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_catering_service_point",
+        "id": "ga_parking_stand_catering_service_point_to_kauo_g31_stand_1_service_approach_catering",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_lavatory_service_point_lavatory",
+        "to": "ga_parking_stand_lavatory_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_lavatory_service_point",
+        "id": "ga_parking_stand_lavatory_service_point_to_kauo_g31_stand_1_service_approach_lavatory",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_water_service_point_water",
+        "to": "ga_parking_stand_water_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_water_service_point",
+        "id": "ga_parking_stand_water_service_point_to_kauo_g31_stand_1_service_approach_water",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_gpu_service_point_gpu",
+        "to": "ga_parking_stand_gpu_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_gpu_service_point",
+        "id": "ga_parking_stand_gpu_service_point_to_kauo_g31_stand_1_service_approach_gpu",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_pushback_service_point_pushback",
+        "to": "ga_parking_stand_pushback_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_pushback_service_point",
+        "id": "ga_parking_stand_pushback_service_point_to_kauo_g31_stand_1_service_approach_pushback",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_stairs_service_point_stairs",
+        "to": "ga_parking_stand_stairs_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_stairs_service_point",
+        "id": "ga_parking_stand_stairs_service_point_to_kauo_g31_stand_1_service_approach_stairs",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_airstart_service_point_airstart",
+        "to": "ga_parking_stand_airstart_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_airstart_service_point",
+        "id": "ga_parking_stand_airstart_service_point_to_kauo_g31_stand_1_service_approach_airstart",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION shared stand approach route",
+        "distance_m": 213.74,
+        "from": "fbo_apron_junction",
+        "id": "fbo_apron_junction_to_kauo_g31_stand_2_service_approach",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 27
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION shared stand approach route",
+        "distance_m": 213.74,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_fbo_apron_junction",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 27
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_fuel_service_point_fuel",
+        "to": "ga_parking_stand_02_fuel_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_fuel_service_point",
+        "id": "ga_parking_stand_02_fuel_service_point_to_kauo_g31_stand_2_service_approach_fuel",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_baggage_service_point_baggage",
+        "to": "ga_parking_stand_02_baggage_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_baggage_service_point",
+        "id": "ga_parking_stand_02_baggage_service_point_to_kauo_g31_stand_2_service_approach_baggage",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_catering_service_point_catering",
+        "to": "ga_parking_stand_02_catering_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_catering_service_point",
+        "id": "ga_parking_stand_02_catering_service_point_to_kauo_g31_stand_2_service_approach_catering",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_lavatory_service_point_lavatory",
+        "to": "ga_parking_stand_02_lavatory_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_lavatory_service_point",
+        "id": "ga_parking_stand_02_lavatory_service_point_to_kauo_g31_stand_2_service_approach_lavatory",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_water_service_point_water",
+        "to": "ga_parking_stand_02_water_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_water_service_point",
+        "id": "ga_parking_stand_02_water_service_point_to_kauo_g31_stand_2_service_approach_water",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_gpu_service_point_gpu",
+        "to": "ga_parking_stand_02_gpu_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_gpu_service_point",
+        "id": "ga_parking_stand_02_gpu_service_point_to_kauo_g31_stand_2_service_approach_gpu",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_pushback_service_point_pushback",
+        "to": "ga_parking_stand_02_pushback_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_pushback_service_point",
+        "id": "ga_parking_stand_02_pushback_service_point_to_kauo_g31_stand_2_service_approach_pushback",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_stairs_service_point_stairs",
+        "to": "ga_parking_stand_02_stairs_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_stairs_service_point",
+        "id": "ga_parking_stand_02_stairs_service_point_to_kauo_g31_stand_2_service_approach_stairs",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_airstart_service_point_airstart",
+        "to": "ga_parking_stand_02_airstart_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_02_airstart_service_point",
+        "id": "ga_parking_stand_02_airstart_service_point_to_kauo_g31_stand_2_service_approach_airstart",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION shared stand approach route",
+        "distance_m": 317.808,
+        "from": "fbo_apron_junction",
+        "id": "fbo_apron_junction_to_kauo_g31_stand_3_service_approach",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 40
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION shared stand approach route",
+        "distance_m": 317.808,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_fbo_apron_junction",
+        "to": "fbo_apron_junction",
+        "traversal_time_seconds": 40
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_fuel_service_point_fuel",
+        "to": "ga_parking_stand_03_fuel_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_fuel_service_point",
+        "id": "ga_parking_stand_03_fuel_service_point_to_kauo_g31_stand_3_service_approach_fuel",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_baggage_service_point_baggage",
+        "to": "ga_parking_stand_03_baggage_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_baggage_service_point",
+        "id": "ga_parking_stand_03_baggage_service_point_to_kauo_g31_stand_3_service_approach_baggage",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_catering_service_point_catering",
+        "to": "ga_parking_stand_03_catering_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_catering_service_point",
+        "id": "ga_parking_stand_03_catering_service_point_to_kauo_g31_stand_3_service_approach_catering",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_lavatory_service_point_lavatory",
+        "to": "ga_parking_stand_03_lavatory_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_lavatory_service_point",
+        "id": "ga_parking_stand_03_lavatory_service_point_to_kauo_g31_stand_3_service_approach_lavatory",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_water_service_point_water",
+        "to": "ga_parking_stand_03_water_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_water_service_point",
+        "id": "ga_parking_stand_03_water_service_point_to_kauo_g31_stand_3_service_approach_water",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_gpu_service_point_gpu",
+        "to": "ga_parking_stand_03_gpu_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_gpu_service_point",
+        "id": "ga_parking_stand_03_gpu_service_point_to_kauo_g31_stand_3_service_approach_gpu",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_pushback_service_point_pushback",
+        "to": "ga_parking_stand_03_pushback_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_pushback_service_point",
+        "id": "ga_parking_stand_03_pushback_service_point_to_kauo_g31_stand_3_service_approach_pushback",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_stairs_service_point_stairs",
+        "to": "ga_parking_stand_03_stairs_service_point",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_stairs_service_point",
+        "id": "ga_parking_stand_03_stairs_service_point_to_kauo_g31_stand_3_service_approach_stairs",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 2
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_airstart_service_point_airstart",
+        "to": "ga_parking_stand_03_airstart_service_point",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+        "distance_m": 16.0,
+        "from": "ga_parking_stand_03_airstart_service_point",
+        "id": "ga_parking_stand_03_airstart_service_point_to_kauo_g31_stand_3_service_approach_airstart",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 3
+      },
+      {
+        "classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
+        "distance_m": 95.243,
+        "from": "kauo_g31_stand_1_service_approach",
+        "id": "kauo_g31_apron_transfer_1_approach_approach",
+        "to": "kauo_g31_stand_2_service_approach",
+        "traversal_time_seconds": 11
+      },
+      {
+        "classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
+        "distance_m": 122.222,
+        "from": "kauo_g31_stand_2_service_approach",
+        "id": "kauo_g31_apron_transfer_2_approach_approach",
+        "to": "kauo_g31_stand_3_service_approach",
+        "traversal_time_seconds": 15
+      },
+      {
+        "classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
+        "distance_m": 170.176,
+        "from": "kauo_g31_stand_3_service_approach",
+        "id": "kauo_g31_apron_transfer_3_approach_approach",
+        "to": "kauo_g31_stand_1_service_approach",
+        "traversal_time_seconds": 21
+      }
+    ],
+    "features": {
+      "apron_center_local_m": {
+        "x": 97.436698,
+        "y": -121.196537
+      },
+      "apron_classification": "APPROXIMATE chart-graticule reference; not surveyed",
+      "apron_size_m": {
+        "x": 150,
+        "y": 145
+      },
+      "buildings": [
+        {
+          "center_local_m": {
+            "x": 115.848014,
+            "y": -138.108766
+          },
+          "heading_degrees": 5.7,
+          "name": "KAUO terminal/FBO",
+          "size_m": {
+            "x": 82,
+            "y": 28
+          }
+        },
+        {
+          "center_local_m": {
+            "x": 295.920468,
+            "y": 558.450572
+          },
+          "heading_degrees": 5.7,
+          "name": "KAUO north hangar complex",
+          "size_m": {
+            "x": 170,
+            "y": 85
+          }
+        },
+        {
+          "center_local_m": {
+            "x": -607.760583,
+            "y": -581.432122
+          },
+          "heading_degrees": 5.7,
+          "name": "KAUO college aviation hangar area",
+          "size_m": {
+            "x": 160,
+            "y": 90
+          }
+        }
+      ],
+      "geometry_status": "FAA surveyed runway ends; centerlines and intersection derived from those ends; taxiway/apron/parking nodes remain approximate chart-digitized ENU references.",
+      "kauo_calibrated": true,
+      "runway_intersection_classification": "DERIVED from authoritative FAA NASR runway-end coordinates",
+      "runway_intersection_local_m": {
+        "x": -192.99544,
+        "y": 457.849273
+      },
+      "runways": [
+        {
+          "center_local_m": {
+            "x": -205.621241,
+            "y": -237.556191
+          },
+          "identifier": "18/36",
+          "length_m": 1604.397886,
+          "published_length_m": 1604.4672,
+          "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading",
+          "true_heading_degrees_from_first_threshold": 181.040149,
+          "width_m": 30.48
+        },
+        {
+          "center_local_m": {
+            "x": 267.441926,
+            "y": 314.34367
+          },
+          "identifier": "11/29",
+          "length_m": 1219.181346,
+          "published_length_m": 1219.2,
+          "source_classification": "AUTHORITATIVE endpoints / DERIVED centerline and heading",
+          "true_heading_degrees_from_first_threshold": 107.310813,
+          "width_m": 22.86
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "id": "rwy18_36_mid",
+        "name": "Runway 18/36 reference midpoint (approximate FAA-diagram anchor)",
+        "x_m": -205.621241,
+        "y_m": -237.556191
+      },
+      {
+        "id": "rwy36_hold",
+        "name": "Runway 36 end / departure queue reference (approximate FAA-diagram anchor)",
+        "x_m": -220.183588,
+        "y_m": -1039.622948
+      },
+      {
+        "id": "twy_a_south",
+        "name": "Taxiway A south connector (approximate chart anchor)",
+        "x_m": -329.939582,
+        "y_m": -617.202097
+      },
+      {
+        "id": "twy_a_mid",
+        "name": "Taxiway A arrival exit reference (approximate chart anchor)",
+        "x_m": -324.459431,
+        "y_m": -119.284465
+      },
+      {
+        "id": "twy_a_north",
+        "name": "Taxiway A north connector (approximate chart anchor)",
+        "x_m": -319.987342,
+        "y_m": 449.081614
+      },
+      {
+        "id": "fbo_apron_junction",
+        "name": "East-side terminal/FBO apron access via Taxiway C (approximate chart anchor)",
+        "x_m": -29.34007,
+        "y_m": -72.36365
+      },
+      {
+        "id": "fbo_apron_detour",
+        "name": "North Taxiway C apron-side detour (approximate chart anchor)",
+        "x_m": -89.036988,
+        "y_m": 437.084363
+      },
+      {
+        "id": "ga_parking_stand",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron",
+        "x_m": 93.160375,
+        "y_m": -133.834301
+      },
+      {
+        "id": "self_serve_fuel_farm",
+        "name": "Charted west-side self-serve fuel farm area (approximate chart anchor)",
+        "x_m": -544.048314,
+        "y_m": -204.898264
+      },
+      {
+        "classification": "APPROXIMATE / ASSUMED FOR SIMULATION; no surveyed stand position is available",
+        "id": "ga_parking_stand_02",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron",
+        "x_m": 170.0,
+        "y_m": -85.0
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "fbo_service_staging_west",
+        "name": "Baggage vehicle staging west",
+        "x_m": -48.936,
+        "y_m": 106.567
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "fbo_service_staging_east",
+        "name": "Baggage cart staging east",
+        "x_m": -83.468,
+        "y_m": 99.305
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "fbo_service_staging_fuel",
+        "name": "Fuel truck staging west",
+        "x_m": -13.652,
+        "y_m": 106.951
+      },
+      {
+        "id": "rwy18_threshold",
+        "name": "Runway 18 FAA NASR surveyed runway end",
+        "x_m": -191.058895,
+        "y_m": 564.510565
+      },
+      {
+        "id": "rwy11_threshold",
+        "name": "Runway 11 FAA NASR surveyed runway end",
+        "x_m": -314.53713,
+        "y_m": 495.730459
+      },
+      {
+        "id": "rwy29_threshold",
+        "name": "Runway 29 FAA NASR surveyed runway end",
+        "x_m": 849.420982,
+        "y_m": 132.956881
+      },
+      {
+        "id": "runway_intersection",
+        "name": "Derived runway centerline intersection",
+        "x_m": -192.99544,
+        "y_m": 457.849273
+      },
+      {
+        "classification": "APPROXIMATE / ASSUMED FOR SIMULATION",
+        "id": "ga_parking_stand_03",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron",
+        "x_m": 260.0,
+        "y_m": -165.0
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_fuel_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron Fuel Stand",
+        "x_m": 96.123,
+        "y_m": -152.95
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_baggage_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron Baggage Stand",
+        "x_m": 102.443,
+        "y_m": -155.784
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_catering_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron Catering Stand",
+        "x_m": 109.368,
+        "y_m": -155.68
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_lavatory_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron Lavatory Stand",
+        "x_m": 115.601,
+        "y_m": -152.66
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_water_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron Water Stand",
+        "x_m": 119.974,
+        "y_m": -147.289
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_gpu_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron GPU Stand",
+        "x_m": 121.666,
+        "y_m": -140.573
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_pushback_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron Pushback Stand",
+        "x_m": 120.362,
+        "y_m": -133.771
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_stairs_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron Stairs Stand",
+        "x_m": 116.306,
+        "y_m": -128.157
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_airstart_service_point",
+        "name": "Illustrative GA parking point on the east-side terminal/FBO apron Air Start Stand",
+        "x_m": 110.257,
+        "y_m": -124.784
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_fuel_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron Fuel Stand",
+        "x_m": 180.202,
+        "y_m": -101.436
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_baggage_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron Baggage Stand",
+        "x_m": 187.127,
+        "y_m": -101.572
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_catering_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron Catering Stand",
+        "x_m": 193.461,
+        "y_m": -98.769
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_lavatory_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron Lavatory Stand",
+        "x_m": 198.016,
+        "y_m": -93.552
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_water_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron Water Stand",
+        "x_m": 199.94,
+        "y_m": -86.898
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_gpu_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron GPU Stand",
+        "x_m": 198.872,
+        "y_m": -80.055
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_pushback_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron Pushback Stand",
+        "x_m": 195.011,
+        "y_m": -74.304
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_stairs_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron Stairs Stand",
+        "x_m": 189.083,
+        "y_m": -70.724
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_02_airstart_service_point",
+        "name": "Illustrative GA parking point 02 on approximate FBO apron Air Start Stand",
+        "x_m": 182.196,
+        "y_m": -69.985
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_fuel_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron Fuel Stand",
+        "x_m": 265.882,
+        "y_m": -183.428
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_baggage_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron Baggage Stand",
+        "x_m": 272.564,
+        "y_m": -185.251
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_catering_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron Catering Stand",
+        "x_m": 279.391,
+        "y_m": -184.078
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_lavatory_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron Lavatory Stand",
+        "x_m": 285.082,
+        "y_m": -180.13
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_water_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron Water Stand",
+        "x_m": 288.571,
+        "y_m": -174.148
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_gpu_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron GPU Stand",
+        "x_m": 289.205,
+        "y_m": -167.251
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_pushback_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron Pushback Stand",
+        "x_m": 286.865,
+        "y_m": -160.732
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_stairs_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron Stairs Stand",
+        "x_m": 281.989,
+        "y_m": -155.813
+      },
+      {
+        "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+        "id": "ga_parking_stand_03_airstart_service_point",
+        "name": "Illustrative GA parking point 03 on approximate FBO apron Air Start Stand",
+        "x_m": 275.492,
+        "y_m": -153.415
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "gse_fuel_depot_02",
+        "name": "Second fuel truck staging",
+        "x_m": -115.918,
+        "y_m": 85.447
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "gse_catering_depot",
+        "name": "Catering vehicle staging",
+        "x_m": -145.042,
+        "y_m": 65.524
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "gse_lavatory_depot",
+        "name": "Lavatory vehicle staging",
+        "x_m": -169.719,
+        "y_m": 40.303
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "gse_water_depot",
+        "name": "Potable water vehicle staging",
+        "x_m": -189.002,
+        "y_m": 10.751
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "gse_gpu_depot",
+        "name": "Mobile GPU staging",
+        "x_m": -202.149,
+        "y_m": -21.994
+      },
+      {
+        "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+        "id": "gse_tug_depot",
+        "name": "Pushback tug staging",
+        "x_m": -208.655,
+        "y_m": -56.676
+      },
+      {
+        "classification": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+        "id": "kauo_g31_stand_1_service_approach",
+        "name": "Illustrative stand 1 GSE service approach",
+        "x_m": 105.673,
+        "y_m": -140.113
+      },
+      {
+        "classification": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+        "id": "kauo_g31_stand_2_service_approach",
+        "name": "Illustrative stand 2 GSE service approach",
+        "x_m": 183.972,
+        "y_m": -85.886
+      },
+      {
+        "classification": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+        "id": "kauo_g31_stand_3_service_approach",
+        "name": "Illustrative stand 3 GSE service approach",
+        "x_m": 273.333,
+        "y_m": -169.269
+      }
+    ]
+  },
+  "default_seed": 42,
+  "fleet": {
+    "vehicles": [
+      {
+        "depot_node": "fbo_service_staging_west",
+        "id": "G31-BAG-01",
+        "name": "G31-BAG-01",
+        "speed_mps": 8.0,
+        "type": "baggage"
+      },
+      {
+        "depot_node": "gse_catering_depot",
+        "id": "G31-CATER-01",
+        "name": "G31-CATER-01",
+        "speed_mps": 8.0,
+        "type": "catering"
+      },
+      {
+        "depot_node": "fbo_service_staging_fuel",
+        "id": "G31-FUEL-01",
+        "name": "G31-FUEL-01",
+        "speed_mps": 8.0,
+        "type": "fueling"
+      },
+      {
+        "depot_node": "gse_fuel_depot_02",
+        "id": "G31-FUEL-02",
+        "name": "G31-FUEL-02",
+        "speed_mps": 8.0,
+        "type": "fueling"
+      },
+      {
+        "depot_node": "gse_gpu_depot",
+        "id": "G31-GPU-01",
+        "name": "G31-GPU-01",
+        "speed_mps": 8.0,
+        "type": "ground_power"
+      },
+      {
+        "depot_node": "gse_lavatory_depot",
+        "id": "G31-LAV-01",
+        "name": "G31-LAV-01",
+        "speed_mps": 8.0,
+        "type": "lavatory_service"
+      },
+      {
+        "depot_node": "fbo_service_staging_east",
+        "id": "G31-LOAD-01",
+        "name": "G31-LOAD-01",
+        "speed_mps": 8.0,
+        "type": "baggage_load"
+      },
+      {
+        "depot_node": "gse_tug_depot",
+        "id": "G31-TUG-01",
+        "name": "G31-TUG-01",
+        "speed_mps": 8.0,
+        "type": "pushback"
+      },
+      {
+        "depot_node": "gse_water_depot",
+        "id": "G31-WATER-01",
+        "name": "G31-WATER-01",
+        "speed_mps": 8.0,
+        "type": "potable_water"
+      }
+    ]
+  },
+  "gates": [
+    {
+      "id": "GA-PARK-01",
+      "node": "ga_parking_stand"
+    },
+    {
+      "id": "GA-PARK-02",
+      "node": "ga_parking_stand_02"
+    },
+    {
+      "id": "GA-PARK-03",
+      "node": "ga_parking_stand_03"
+    }
+  ],
+  "name": "airport_kauo",
+  "service_durations_seconds": {
+    "air_start": 120,
+    "baggage": 480,
+    "baggage_load": 600,
+    "cabin_cleaning": 600,
+    "catering": 600,
+    "chocks": 30,
+    "deboarding": 300,
+    "fueling": 720,
+    "ground_power": 120,
+    "lavatory_service": 300,
+    "maintenance_inspection": 300,
+    "passenger_stairs": 90,
+    "potable_water": 240,
+    "pushback": 180,
+    "pushback_preparation": 120
+  },
+  "surface_operations": {
+    "aircraft_routing_policy": "ADAPTIVE",
+    "aircraft_speed_mps": 5.0,
+    "arrival_exit": "twy_a_mid",
+    "arrival_rollout_seconds": 90,
+    "departure_handoff": "rwy36_hold",
+    "pushback_seconds": 20,
+    "return_service_vehicles_to_depot_after_task": true,
+    "runway_node": "rwy36_hold",
+    "runway_occupancy_seconds": 90
+  }
+}
