@@ -129,6 +129,7 @@ def _run_data(run: dict, folder: Path) -> dict:
 
     events = []
     aircraft = []
+    ground_units = []
     disruptions = []
     for path, parsed in results:
         if path.suffix.lower() == ".jsonl":
@@ -138,6 +139,8 @@ def _run_data(run: dict, folder: Path) -> dict:
             stem = path.stem.casefold()
             if "aircraft" in stem or "entity" in stem:
                 aircraft.extend(rows)
+            if "ground-units" in stem or "ground_units" in stem or "vehicle" in stem:
+                ground_units.extend(rows)
             for row in rows:
                 kind = str(row.get("event", row.get("type", ""))).casefold()
                 if any(token in kind for token in ("disrupt", "rerout", "reassign", "clos", "fail", "recover", "outage")):
@@ -186,7 +189,10 @@ def _run_data(run: dict, folder: Path) -> dict:
                                       "category": analyzer.METRICS[key].category}
                                  for key in metrics if key in analyzer.METRICS},
               "safety": safety, "summary": summary, "events": events, "event_history_available": event_history_available,
-              "aircraft": aircraft, "disruptions": disruptions, "files": file_reports,
+              "aircraft": aircraft, "ground_units": ground_units,
+              "decision_summaries": raw.get("operator_decision_summaries", []),
+              "operational_context": raw.get("operational_context", {}),
+              "disruptions": disruptions, "files": file_reports,
               "missing_optional": [extension.upper() for extension, found in optional_types.items() if not found],
               "primary_path": str(primary_path) if primary_path else None}
     event_pair = next(((path, parsed) for path, parsed in results if path.suffix.lower() == ".jsonl"), None)
@@ -384,13 +390,20 @@ class Handler(BaseHTTPRequestHandler):
                                      ("Disruption repeat · seed 42", "disruption-repeat")):
                     bundle = REAL_DEMO_DIR / folder
                     files = []
-                    for filename in ("experiment.json", "runs.csv", "aircraft.csv", "events.jsonl"):
+                    for filename in ("experiment.json", "runs.csv", "aircraft.csv", "events.jsonl",
+                                     "ground-units.csv", "agent-decisions.json"):
                         candidate = (bundle / filename).resolve()
-                        if REAL_DEMO_DIR not in candidate.parents or not candidate.is_file():
+                        if REAL_DEMO_DIR not in candidate.parents:
+                            raise ValueError(f"Invalid {folder}/{filename} path in configured run bundles.")
+                        if filename in {"ground-units.csv", "agent-decisions.json"} and not candidate.is_file():
+                            continue
+                        if not candidate.is_file():
                             raise FileNotFoundError(f"Missing {folder}/{filename} in configured run bundles.")
                         files.append({"name": filename, "content": candidate.read_text(encoding="utf-8")})
                     data.append({"id": f"real-{folder}", "label": _real_demo_label(bundle, name), "files": files})
-                return self._send(200, json.dumps({"runs": data}).encode("utf-8"), "application/json; charset=utf-8")
+                vertical_path = REAL_DEMO_DIR / "vertical.json"
+                vertical = json.loads(vertical_path.read_text(encoding="utf-8")) if vertical_path.is_file() else None
+                return self._send(200, json.dumps({"runs": data, "vertical": vertical}).encode("utf-8"), "application/json; charset=utf-8")
             except (OSError, ValueError) as exc:
                 return self._send(400, json.dumps({"error": str(exc)}).encode("utf-8"), "application/json; charset=utf-8")
         relative = "index.html" if path in {"/", "/index.html"} else path.lstrip("/")
@@ -520,7 +533,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not isinstance(body, dict):
                     raise LiveSessionError("Session command must be a JSON object.")
                 if self.path.endswith("/start"):
-                    state = LIVE_SESSION.start(body.get("aircraft_routing_policy", "SCRIPTED"))
+                    state = LIVE_SESSION.start(body.get("aircraft_routing_policy"))
                 elif self.path.endswith("/pause"):
                     state = LIVE_SESSION.pause()
                 elif self.path.endswith("/resume"):
@@ -599,12 +612,14 @@ def main() -> None:
     parser.add_argument("--real-demo-dir", type=Path,
                         help="Load generated control/ and disruption/ bundles from this local run directory.")
     parser.add_argument("--live-cli", type=Path, help="Path to Release airside_cli for live KAUO sessions.")
+    parser.add_argument("--live-scenario-file", type=Path,
+                        help="Use an existing generated scenario in the live operator view (for example Goal 41 disruption).")
     parser.add_argument("--live-root", type=Path, help="Directory for live KAUO run artifacts.")
     args = parser.parse_args()
     global REAL_DEMO_DIR
     REAL_DEMO_DIR = args.real_demo_dir.resolve() if args.real_demo_dir else None
     global LIVE_SESSION
-    LIVE_SESSION = LiveSession(cli=args.live_cli, root=args.live_root)
+    LIVE_SESSION = LiveSession(cli=args.live_cli, root=args.live_root, scenario_file=args.live_scenario_file)
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"RampLab Operator Experiment Dashboard: http://{args.host}:{args.port}", flush=True)
     try:
