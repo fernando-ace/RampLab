@@ -146,6 +146,27 @@ class LiveSessionTests(unittest.TestCase):
             finally:
                 session.close()
 
+class ConfiguredScenarioTests(unittest.TestCase):
+    def test_goal41_configured_scenario_exposes_policy_seed_and_closure_before_start(self):
+        with TemporaryDirectory(prefix="goal41-configured-live-") as directory:
+            root = Path(directory)
+            scenario_dir = root / "disruption"
+            scenario_dir.mkdir()
+            scenario = scenario_dir / "scenario.json"
+            scenario.write_text(json.dumps({
+                "default_seed": 42,
+                "surface_operations": {"aircraft_routing_policy": "COUNTERFACTUAL"},
+                "road_events": [{"time_seconds": 15, "edge": "twy_a_mid_fbo_primary", "enabled": False}],
+            }), encoding="utf-8")
+            session = LiveSession(root=root / "session", scenario_file=scenario)
+            try:
+                state = session.state()
+                self.assertEqual(state["seed"], 42)
+                self.assertEqual(state["aircraft_routing_policy"], "COUNTERFACTUAL")
+                self.assertEqual(state["planned_disruption"]["edge_id"], "twy_a_mid_fbo_primary")
+            finally:
+                session.close()
+
 
 if __name__ == "__main__":
     unittest.main()
