@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "policy_matrix": [
+    "SCRIPTED",
+    "ADAPTIVE",
+    "COORDINATED_ADAPTIVE",
+    "ROLLING_HORIZON_COORDINATED"
+  ],
+  "scenarios": {
+    "shared_bottleneck": {
+      "path": "scenarios/surface_traffic.yaml",
+      "purpose": "Moderate repeated contention for a shared taxiway and node.",
+      "sha256": "e00aa18b8c020bc64cd782aea6ff0b8528d964267a1c701dc15a28fa001f7d24",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/shared_bottleneck-scripted.yaml",
+          "sha256": "73bf6fdb6cae2c4cce26418428ac2fe6c4bd0facff67d7a2df3e5c75ea908071"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/shared_bottleneck-adaptive.yaml",
+          "sha256": "8f876cb4c6c548d9b1678c3dfd20a05416733b4831a671222353addf4fe2e372"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/shared_bottleneck-coordinated_adaptive.yaml",
+          "sha256": "846e46031c29475f29e932cd7ad1f945a7e9d2a8de07eb367f0c90b4f5fad938"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/shared_bottleneck-rolling_horizon_coordinated.yaml",
+          "sha256": "57b867ec5abec2853fa47be26213c8f815192ec121177cc3f021464a2d21f460"
+        }
+      }
+    },
+    "individual_route_choice": {
+      "path": "scenarios/goal35_route_choice_demo.yaml",
+      "purpose": "Goal 35 individual local route-choice case.",
+      "sha256": "bd88be99cbc19b32edd63458551f1a1e3e449a84755ca82da2a75aca89df839e",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/individual_route_choice-scripted.yaml",
+          "sha256": "ae79daf9f8cbfd0ea0f286063f38433a0a69eed8ccf1a0d6339cb86bef573cb8"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/individual_route_choice-adaptive.yaml",
+          "sha256": "ba3c7f47545f329c9b6f12c5523899a4b4a6b07b8268692925e6c8b7667db62f"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/individual_route_choice-coordinated_adaptive.yaml",
+          "sha256": "a6643e43dcc0efe913c955a049abc28a60a08984edc1a772c1f3971f57bbe3fe"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/individual_route_choice-rolling_horizon_coordinated.yaml",
+          "sha256": "b234896922392c73120d6f592ef85b806790d756a9408f9d6911013fbdb432cd"
+        }
+      }
+    },
+    "shared_route_choice": {
+      "path": "scenarios/goal37_coordinated_route_choice.yaml",
+      "purpose": "Goal 37 shared-edge route choice and coordination case.",
+      "sha256": "6bc6e6e0daa038950ce0140f4a6d171be934c7a4a618195ceb2515fd08917e07",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/shared_route_choice-scripted.yaml",
+          "sha256": "546cb5830213b262016e1d5dde9ee575173c335a960d1d718309f0a37d127d65"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/shared_route_choice-adaptive.yaml",
+          "sha256": "952c0ab2bd39503b9892873e244adb84b481639619f6c25950bd3529c3150ebe"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/shared_route_choice-coordinated_adaptive.yaml",
+          "sha256": "360bb4537e53e1660fab3e45d060a30bc9a65a18200d3176535128f907748fb0"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/shared_route_choice-rolling_horizon_coordinated.yaml",
+          "sha256": "ac669e1a09e684acdd2932e833b7af49b6b778f4c68cb2974bd0e972a1141c4e"
+        }
+      }
+    },
+    "staggered_runway_entry": {
+      "path": "scenarios/goal37_shared_runway_entry_queue.yaml",
+      "purpose": "Synthetic runway-entry bottleneck with staggered aircraft arrivals.",
+      "sha256": "94178a41927f84a61279d66206e7aff063639b631c89cedd337976010e9ed75a",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/staggered_runway_entry-scripted.yaml",
+          "sha256": "c1d8a80bfc92255a2d0ca03e231aff6305718373f432a690c7bae266ae378b17"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/staggered_runway_entry-adaptive.yaml",
+          "sha256": "28a8cc79f0accbf70ebf5c98b6b00e2159893e3591c18dae076d94f8805ba11b"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/staggered_runway_entry-coordinated_adaptive.yaml",
+          "sha256": "a8c2732e384547c836974c1fa9e0c796cac98e2b48f4f24bff2ee4e07f69ce36"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/staggered_runway_entry-rolling_horizon_coordinated.yaml",
+          "sha256": "4336fef41a6d345eb32c6be7fe7bf70222de45367ea4cfac3bfb80ca3587c9fa"
+        }
+      }
+    },
+    "long_corridor_congestion": {
+      "path": "scenarios/goal37_long_shared_corridor.yaml",
+      "purpose": "Synthetic congestion case with alternate corridor routes.",
+      "sha256": "8863a85a587fcb4a2b501a9952f0084c9c2947041d85038f60449ed9e9a20507",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/long_corridor_congestion-scripted.yaml",
+          "sha256": "323c5008cc89b167ce0f39f327bcb88fd7c1b6ea7c65e4576618dc7c0d20c14b"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/long_corridor_congestion-adaptive.yaml",
+          "sha256": "a749f7a2630d39709342dd49ccba4830528416ba1544c44afa4b1cbbc4ab57bf"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/long_corridor_congestion-coordinated_adaptive.yaml",
+          "sha256": "9e5e8ee79f1c61d5b771118ab09a9b52c605134495ae3dafc83d1ddbd8d0c47d"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/long_corridor_congestion-rolling_horizon_coordinated.yaml",
+          "sha256": "91b2088eab0d32646dbf31c2588b267d96229ad8622fef27906984c3c7783fa4"
+        }
+      }
+    },
+    "opposing_intersecting_traffic": {
+      "path": "scenarios/mixed_runway_operations.yaml",
+      "purpose": "Mixed arrival/departure traffic intersects shared surface access.",
+      "sha256": "28aa91615161db09694ee94449fa8fd3585f7b30aa9f93f4d3ef7ffed4f4e545",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/opposing_intersecting_traffic-scripted.yaml",
+          "sha256": "ea3f05464d0e877121f0cb4c42761f74f22ef619c0f7d8e0e688f16027a2206f"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/opposing_intersecting_traffic-adaptive.yaml",
+          "sha256": "26c5b04f9f3a6aff25b09adf5f153088d3266ea3681dcbfc08e31c6b75579ea1"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/opposing_intersecting_traffic-coordinated_adaptive.yaml",
+          "sha256": "dd7da721fa6d96f3425533f394fc48318645460eb10ab6445ab97db96856609e"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/opposing_intersecting_traffic-rolling_horizon_coordinated.yaml",
+          "sha256": "3c54767d46e75600ad97c2ef444aea6f582e9400002e7db40d666a56abdf0729"
+        }
+      }
+    },
+    "closure_during_execution": {
+      "path": "scenarios/surface_traffic_disrupted.yaml",
+      "purpose": "A deterministic route closure invalidates active routes during execution.",
+      "sha256": "4e718ed4650fea98d3269283c97d7ca15f675a652898e26374a57cda62313fb2",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/closure_during_execution-scripted.yaml",
+          "sha256": "ca6255cac7609ffdcd58168d55d7951127b85bda00829e6c418a8317ab5e63fc"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/closure_during_execution-adaptive.yaml",
+          "sha256": "0ecd1d26a109f6c607e396b66617292a3e40bda812c59dbbbef25b91909623f2"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/closure_during_execution-coordinated_adaptive.yaml",
+          "sha256": "c6598a603ecc96fcaf1f0379f505df7311174b34e2c1ea843d88a62231ebfdad"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/closure_during_execution-rolling_horizon_coordinated.yaml",
+          "sha256": "571305b8877b326c07e7eeb58b3ecea43e5d9de4e771b2b4dd2a83c85b183971"
+        }
+      }
+    },
+    "little_coordination_benefit": {
+      "path": "scenarios/turnaround_lifecycle.yaml",
+      "purpose": "Low-conflict baseline where coordination should add little benefit.",
+      "sha256": "c2c2242531c53b6f006324b3fc6ccff771515529989f950d69e0a73ac39eaeda",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/little_coordination_benefit-scripted.yaml",
+          "sha256": "9e6967800dd87c33db7c1df53c9152faca1c06e7906e3f45a77be48371cbb1e7"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/little_coordination_benefit-adaptive.yaml",
+          "sha256": "a3302206ca79a686340e962a5d57b6309e95aed19fc01a0329fac5b4588df696"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/little_coordination_benefit-coordinated_adaptive.yaml",
+          "sha256": "6bf90681622f8237c017c3ecf9d7b80de9249d85033c29331d398645a349d7ba"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/little_coordination_benefit-rolling_horizon_coordinated.yaml",
+          "sha256": "db9cd8cbac33ad8f0c9f9a2d33f506dbe45b30eab57f8fb13b20c2a6860110df"
+        }
+      }
+    },
+    "early_closure_merge": {
+      "path": "scenarios/goal37_early_closure_merge.yaml",
+      "purpose": "Synthetic early closure forces traffic to converge at a merge.",
+      "sha256": "7c6a3410d57c05b1b47851e5b9c3c1a385a3e28f278513571b78d3cabacba6c2",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/early_closure_merge-scripted.yaml",
+          "sha256": "a3d3d5d5d4671122135ef0a5a429ceaf421a77e7106875ece044c17e2abf785a"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/early_closure_merge-adaptive.yaml",
+          "sha256": "e3f4343698bd062745256d1f0c793fa678d6ce1ea1af8b1ee1f47aedab029df8"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/early_closure_merge-coordinated_adaptive.yaml",
+          "sha256": "01083d7d6365fe64d90086bf484f07b3452f3c89cca4cfbd80393a126d051c97"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/early_closure_merge-rolling_horizon_coordinated.yaml",
+          "sha256": "0771b069970783a26356601d90d808a5ce89278211e6d0449d61d0025a8ecc53"
+        }
+      }
+    },
+    "difficult_local_choice": {
+      "path": "scenarios/mixed_runway_disrupted.yaml",
+      "purpose": "A deliberately difficult intersecting-traffic case with a disruption during operations.",
+      "sha256": "282b5c0143c33491d9d56912f1c45527799c30941aa27de747df1e2a83a26d38",
+      "configured": {
+        "SCRIPTED": {
+          "path": "config/scenarios/difficult_local_choice-scripted.yaml",
+          "sha256": "014e703c305654c5f5003b0c77c481918fa822208d359c34ca660c7893380f98"
+        },
+        "ADAPTIVE": {
+          "path": "config/scenarios/difficult_local_choice-adaptive.yaml",
+          "sha256": "19a9f45208f5635f7408693e3837a3383485dc39d0c9585f758edba3f94eb52f"
+        },
+        "COORDINATED_ADAPTIVE": {
+          "path": "config/scenarios/difficult_local_choice-coordinated_adaptive.yaml",
+          "sha256": "5ec4702c913e812b115d5702b9dd822211e438cef276d7fff5d02937bd20c54d"
+        },
+        "ROLLING_HORIZON_COORDINATED": {
+          "path": "config/scenarios/difficult_local_choice-rolling_horizon_coordinated.yaml",
+          "sha256": "5475b79d9ef33931ab590c9ca5a963663f066793b119b6979e8c079255fa8de7"
+        }
+      }
+    }
+  },
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "serial_runs": 120,
+  "parallel_replay_runs": 120,
+  "workers": 4,
+  "configuration_delta": "surface_operations.aircraft_routing_policy only",
+  "planner_configuration": {
+    "horizon_seconds": 600,
+    "maximum_route_edges": 8,
+    "minimum_replan_improvement_seconds": 15,
+    "replan_cooldown_seconds": 10
+  }
+}

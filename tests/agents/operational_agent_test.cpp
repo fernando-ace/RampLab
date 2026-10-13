@@ -144,7 +144,42 @@ TEST(OperationalAgentPolicyTests, AutonomyModeParsingIsStableAndRejectsUnknownMo
     EXPECT_EQ(to_string(AutonomyMode::Adaptive), "ADAPTIVE");
     EXPECT_EQ(parse_autonomy_mode("COORDINATED_ADAPTIVE"), AutonomyMode::CoordinatedAdaptive);
     EXPECT_EQ(to_string(AutonomyMode::CoordinatedAdaptive), "COORDINATED_ADAPTIVE");
+    EXPECT_EQ(parse_autonomy_mode("ROLLING_HORIZON_COORDINATED"), AutonomyMode::RollingHorizonCoordinated);
+    EXPECT_EQ(to_string(AutonomyMode::RollingHorizonCoordinated), "ROLLING_HORIZON_COORDINATED");
     EXPECT_THROW((void)parse_autonomy_mode("RANDOM"), std::invalid_argument);
+}
+
+TEST(OperationalAgentPolicyTests, RollingHorizonPolicyPrefersAPathThatAvoidsForecastEdgeOverlap) {
+    RollingHorizonCoordinatedPolicy policy;
+    auto observation = base_observation();
+    observation.current_route.reset();
+    observation.time = SimTime{100};
+    observation.candidates = {
+        {CandidateKind::AlternateRoute, route({1, 2, 4}), 100.0, SimTime{80}, SimTime{0}, 82.0, true, "short"},
+        {CandidateKind::AlternateRoute, route({1, 3, 4}), 120.0, SimTime{100}, SimTime{0}, 102.0, true, "clear"}
+    };
+    observation.candidates[0].estimated_system_cost_seconds = 220.0;
+    observation.candidates[0].estimated_self_delay_seconds = 50.0;
+    observation.candidates[0].estimated_wait_imposed_seconds = 88.0;
+    observation.candidates[0].predicted_contention_points = {EdgeId{1}};
+    observation.candidates[1].estimated_system_cost_seconds = 102.0;
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, observation.candidates[1].route);
+    EXPECT_EQ(decision.reason, ReasonCode::ObjectiveCreated);
+}
+
+TEST(OperationalAgentPolicyTests, RollingHorizonImmediatelyReplansAfterClosureAndKeepsSafeFallback) {
+    RollingHorizonCoordinatedPolicy policy;
+    auto observation = base_observation();
+    observation.route_invalidated = true;
+    observation.invalid_edge = EdgeId{2};
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.reason, ReasonCode::RouteClosed);
+    ASSERT_TRUE(decision.route);
+    observation.available_route.reset();
+    EXPECT_EQ(policy.decide(observation, destination_objective(), {}).action, ActionType::FailObjective);
 }
 
 TEST(OperationalAgentPolicyTests, CoordinatedPolicyCanTradeLocalCostForLowerSystemCost) {

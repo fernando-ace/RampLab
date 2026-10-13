@@ -357,6 +357,32 @@ TEST(SurfaceTrafficTest, CoordinatedPolicyHandlesClosureWithoutBypassingSafetyOr
     }));
 }
 
+TEST(SurfaceTrafficTest, RollingHorizonPolicyProducesDeterministicSafeForecastTrace) {
+    auto first_scenario = airside::load_scenario(scenario_file("goal37_coordinated_route_choice.yaml"));
+    auto second_scenario = airside::load_scenario(scenario_file("goal37_coordinated_route_choice.yaml"));
+    first_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::RollingHorizonCoordinated;
+    second_scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::RollingHorizonCoordinated;
+    const auto first = airside::Simulation{std::move(first_scenario), 42}.run();
+    const auto second = airside::Simulation{std::move(second_scenario), 42}.run();
+    EXPECT_EQ(first.agent_decisions, second.agent_decisions);
+    EXPECT_EQ(first.events, second.events);
+    EXPECT_EQ(first.metrics.agent_objectives_failed, 0U);
+    EXPECT_EQ(first.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(first.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(first.metrics.surface_aircraft_ground_collisions, 0U);
+    ASSERT_FALSE(first.agent_decisions.empty());
+    EXPECT_TRUE(std::ranges::all_of(first.agent_decisions, [](const auto& event) {
+        return event.policy_id == "rolling-horizon-coordinated-v1" &&
+            event.planning_horizon == airside::SimTime{600} && !event.coordination_rule.empty() &&
+            !event.safety_constraints.empty() && !event.replan_trigger.empty();
+    }));
+    EXPECT_TRUE(std::ranges::any_of(first.agent_decisions, [](const auto& event) {
+        return std::ranges::any_of(event.candidates, [](const auto& candidate) {
+            return !candidate.predicted_contention.empty() && candidate.estimated_system_cost_seconds >= candidate.score_seconds;
+        });
+    }));
+}
+
 TEST(SurfaceTrafficTest, AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutcome) {
     auto adaptive_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));
     auto scripted_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));
