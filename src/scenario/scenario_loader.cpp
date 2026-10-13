@@ -228,8 +228,9 @@ ScenarioDocument parse_document(const YAML::Node& root) {
         if (config.aircraft_routing_policy != "SCRIPTED" && config.aircraft_routing_policy != "ADAPTIVE" &&
             config.aircraft_routing_policy != "COORDINATED_ADAPTIVE" &&
             config.aircraft_routing_policy != "ROLLING_HORIZON_COORDINATED" &&
-            config.aircraft_routing_policy != "COUNTERFACTUAL")
-            throw ScenarioLoadError("surface_operations.aircraft_routing_policy must be SCRIPTED, ADAPTIVE, COORDINATED_ADAPTIVE, ROLLING_HORIZON_COORDINATED, or COUNTERFACTUAL");
+            config.aircraft_routing_policy != "COUNTERFACTUAL" &&
+            config.aircraft_routing_policy != "COST_AWARE_COUNTERFACTUAL")
+            throw ScenarioLoadError("surface_operations.aircraft_routing_policy must be SCRIPTED, ADAPTIVE, COORDINATED_ADAPTIVE, ROLLING_HORIZON_COORDINATED, COUNTERFACTUAL, or COST_AWARE_COUNTERFACTUAL");
         document.surface_operations = std::move(config);
     }
     return document;

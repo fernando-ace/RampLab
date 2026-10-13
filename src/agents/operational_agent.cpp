@@ -1,6 +1,7 @@
 #include "airside/agents/operational_agent.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <ranges>
 #include <stdexcept>
 
@@ -141,12 +142,14 @@ const DecisionPolicy& policy_for(AutonomyMode mode) {
     static const CoordinatedAdaptiveRoutingPolicy coordinated;
     static const RollingHorizonCoordinatedPolicy rolling;
     static const CounterfactualPolicy counterfactual;
+    static const CostAwareCounterfactualPolicy cost_aware_counterfactual;
     switch (mode) {
     case AutonomyMode::Scripted: return scripted;
     case AutonomyMode::Adaptive: return adaptive;
     case AutonomyMode::CoordinatedAdaptive: return coordinated;
     case AutonomyMode::RollingHorizonCoordinated: return rolling;
     case AutonomyMode::Counterfactual: return counterfactual;
+    case AutonomyMode::CostAwareCounterfactual: return cost_aware_counterfactual;
     }
     throw std::invalid_argument("unknown autonomy mode");
 }
@@ -210,6 +213,165 @@ Decision CounterfactualPolicy::decide(const Observation& observation,
     return {ActionType::PlanRoute, AgentStatus::Replanning,
         best->rollout_wait > SimTime::zero() ? ReasonCode::Congestion : ReasonCode::ObjectiveCreated,
         best->route, "Selected a safe route by lexicographic comparison of bounded private simulation rollouts."};
+}
+
+CostAwareCounterfactualPolicy::CostAwareCounterfactualPolicy(OperationalCostConfig config) : config_(config) {
+    const auto positive = [](double value) { return std::isfinite(value) && value > 0.0; };
+    if (!positive(config_.maximum_wait_seconds) || !positive(config_.maximum_completion_seconds) ||
+        !positive(config_.maximum_distance_m) || !positive(config_.maximum_contention_seconds) ||
+        !std::isfinite(config_.material_improvement) || config_.material_improvement < 0.0 ||
+        !std::isfinite(config_.maximum_regret_ratio) || config_.maximum_regret_ratio < 0.0 || config_.maximum_regret_ratio > 1.0 ||
+        !std::isfinite(config_.wait_age_fairness_boost) || config_.wait_age_fairness_boost < 0.0 ||
+        !std::isfinite(config_.priority_fairness_boost) || config_.priority_fairness_boost < 0.0 ||
+        !positive(config_.fairness_wait_age_seconds) || config_.maximum_priority <= 0 ||
+        config_.replan_cooldown < SimTime::zero())
+        throw std::invalid_argument("cost-aware counterfactual configuration has invalid limits or thresholds");
+    const double total_weight = config_.wait_weight + config_.completion_time_weight + config_.distance_weight +
+        config_.contention_weight + config_.route_change_weight;
+    if (!std::isfinite(config_.wait_weight) || !std::isfinite(config_.completion_time_weight) ||
+        !std::isfinite(config_.distance_weight) || !std::isfinite(config_.contention_weight) ||
+        !std::isfinite(config_.route_change_weight) || config_.wait_weight < 0.0 ||
+        config_.completion_time_weight < 0.0 || config_.distance_weight < 0.0 ||
+        config_.contention_weight < 0.0 || config_.route_change_weight < 0.0 ||
+        std::abs(total_weight - 1.0) > 1e-9)
+        throw std::invalid_argument("cost-aware counterfactual weights must be finite, nonnegative, and sum to one");
+}
+
+void evaluate_operational_costs(Observation& observation, const Objective& objective,
+    const OperationalCostConfig& config) {
+    auto best = observation.candidates.end();
+    for (auto candidate = observation.candidates.begin(); candidate != observation.candidates.end(); ++candidate) {
+        if (!candidate->valid || !candidate->counterfactual_evaluated) continue;
+        candidate->objective_outcome_eligible = false;
+        if (best == observation.candidates.end() ||
+            candidate->rollout_completed_objectives > best->rollout_completed_objectives ||
+            (candidate->rollout_completed_objectives == best->rollout_completed_objectives &&
+             candidate->rollout_blocked_objectives < best->rollout_blocked_objectives))
+            best = candidate;
+    }
+    if (best == observation.candidates.end()) return;
+    const auto best_completed = best->rollout_completed_objectives;
+    const auto best_blocked = best->rollout_blocked_objectives;
+    for (auto& candidate : observation.candidates) {
+        candidate.objective_outcome_eligible = candidate.valid && candidate.counterfactual_evaluated &&
+            candidate.rollout_completed_objectives == best_completed && candidate.rollout_blocked_objectives == best_blocked;
+    }
+    auto baseline = observation.candidates.end();
+    if (observation.current_route) {
+        baseline = std::ranges::find_if(observation.candidates, [](const auto& candidate) {
+            return candidate.objective_outcome_eligible && candidate.kind == CandidateKind::ContinueCurrentRoute;
+        });
+    }
+    if (baseline == observation.candidates.end()) {
+        for (auto candidate = observation.candidates.begin(); candidate != observation.candidates.end(); ++candidate) {
+            if (!candidate->objective_outcome_eligible) continue;
+            if (baseline == observation.candidates.end() || candidate->score_seconds < baseline->score_seconds)
+                baseline = candidate;
+        }
+    }
+
+    const double age_fraction = std::clamp(static_cast<double>(std::max<std::int64_t>(0,
+        observation.accumulated_wait_age.count())) / config.fairness_wait_age_seconds, 0.0, 1.0);
+    const double priority_fraction = std::clamp(static_cast<double>(objective.priority) /
+        static_cast<double>(config.maximum_priority), 0.0, 1.0);
+    const double fairness_multiplier = 1.0 + config.wait_age_fairness_boost * age_fraction +
+        config.priority_fairness_boost * priority_fraction;
+    const auto normalized = [](double value, double limit) {
+        return std::clamp(value / limit, 0.0, 1.0);
+    };
+    const double baseline_wait_cost = config.wait_weight *
+        normalized(static_cast<double>(baseline->rollout_wait.count()), config.maximum_wait_seconds) * fairness_multiplier;
+    for (auto& candidate : observation.candidates) {
+        if (!candidate.valid || !candidate.counterfactual_evaluated) continue;
+        candidate.operational_cost_baseline = &candidate == &*baseline;
+        candidate.normalized_wait_cost = config.wait_weight *
+            normalized(static_cast<double>(candidate.rollout_wait.count()), config.maximum_wait_seconds) * fairness_multiplier;
+        candidate.normalized_completion_time_cost = config.completion_time_weight *
+            normalized(static_cast<double>(candidate.rollout_completion_time.count()), config.maximum_completion_seconds);
+        candidate.normalized_distance_cost = config.distance_weight *
+            normalized(candidate.rollout_distance_m, config.maximum_distance_m);
+        candidate.normalized_contention_cost = config.contention_weight *
+            normalized(candidate.rollout_contention_delay_seconds, config.maximum_contention_seconds);
+        candidate.route_change_cost = candidate.kind == CandidateKind::AlternateRoute && observation.current_route
+            ? config.route_change_weight : 0.0;
+        candidate.fairness_wait_multiplier = fairness_multiplier;
+        candidate.priority_fairness_contribution = candidate.normalized_wait_cost -
+            config.wait_weight * normalized(static_cast<double>(candidate.rollout_wait.count()), config.maximum_wait_seconds);
+        candidate.total_operational_cost = candidate.normalized_wait_cost + candidate.normalized_completion_time_cost +
+            candidate.normalized_distance_cost + candidate.normalized_contention_cost + candidate.route_change_cost;
+    }
+    baseline->operational_cost_baseline = true;
+    for (auto& candidate : observation.candidates) {
+        if (candidate.valid && candidate.counterfactual_evaluated)
+            candidate.improvement_vs_baseline = baseline->total_operational_cost - candidate.total_operational_cost;
+    }
+    baseline->improvement_vs_baseline = 0.0;
+    baseline->material_improvement_passed = true;
+    baseline->bounded_regret_passed = true;
+    for (auto& candidate : observation.candidates) {
+        if (!candidate.valid || !candidate.counterfactual_evaluated || &candidate == &*baseline) continue;
+        if (!candidate.objective_outcome_eligible) {
+            candidate.material_improvement_passed = false;
+            candidate.bounded_regret_passed = false;
+            continue;
+        }
+        candidate.material_improvement_passed = candidate.improvement_vs_baseline >= config.material_improvement;
+        const double waiting_benefit = std::max(0.0, baseline_wait_cost - candidate.normalized_wait_cost);
+        const double non_wait_regret = std::max(0.0,
+            candidate.total_operational_cost - candidate.normalized_wait_cost -
+            (baseline->total_operational_cost - baseline_wait_cost));
+        candidate.bounded_regret_passed = non_wait_regret <= waiting_benefit * config.maximum_regret_ratio;
+    }
+}
+
+std::string_view CostAwareCounterfactualPolicy::id() const noexcept {
+    return "cost-aware-counterfactual-operational-planning-v1";
+}
+
+Decision CostAwareCounterfactualPolicy::decide(const Observation& observation,
+    const Objective& objective, const PolicyMemory& memory) const {
+    if (observation.objective_satisfied)
+        return {ActionType::CompleteObjective, AgentStatus::Completed, ReasonCode::ObjectiveCompleted,
+            std::nullopt, "Objective reached."};
+    if (observation.route_invalidated || (memory.last_destination && *memory.last_destination != objective.destination)) {
+        const auto reason = observation.operator_triggered ? ReasonCode::OperatorIntervention :
+            observation.invalid_edge ? ReasonCode::RouteClosed :
+            memory.last_destination && *memory.last_destination != objective.destination
+                ? ReasonCode::DestinationChanged : ReasonCode::RouteInvalid;
+        return plan(observation, reason, "Invalidated route is replanned through authoritative feasible route candidates.");
+    }
+    if (observation.candidates.empty())
+        return observation.reservation_blocked
+            ? wait(ReasonCode::ReservationBlocked, "No feasible candidate exists; hold for authoritative reservations.")
+            : plan(observation, ReasonCode::ObjectiveCreated, "No feasible candidate exists; request the safe route fallback.");
+
+    const auto baseline = std::ranges::find_if(observation.candidates, [](const auto& candidate) {
+        return candidate.operational_cost_baseline;
+    });
+    auto selected = observation.candidates.end();
+    for (auto candidate = observation.candidates.begin(); candidate != observation.candidates.end(); ++candidate) {
+        if (!candidate->valid || !candidate->counterfactual_evaluated || !candidate->objective_outcome_eligible) continue;
+        const bool admissible = candidate->operational_cost_baseline ||
+            (candidate->material_improvement_passed && candidate->bounded_regret_passed);
+        if (!admissible) continue;
+        if (selected == observation.candidates.end() || candidate->total_operational_cost < selected->total_operational_cost)
+            selected = candidate; // equality retains stable enumeration order
+    }
+    if (selected == observation.candidates.end() || !selected->route)
+        return plan(observation, ReasonCode::NoSafeRoute, "No feasible, cost-admissible rollout candidate; request the live safe fallback.");
+    if (selected->kind == CandidateKind::AlternateRoute && observation.current_route) {
+        const bool cooldown_elapsed = !memory.last_replan_at || observation.time - *memory.last_replan_at >= config_.replan_cooldown;
+        if (!cooldown_elapsed && baseline != observation.candidates.end() && baseline->route)
+            selected = baseline;
+    }
+    if (selected->kind == CandidateKind::Wait)
+        return wait(ReasonCode::ReservationBlocked, "Cost-aware bounded rollout selected a temporary hold among feasible actions.");
+    if (selected->kind == CandidateKind::ContinueCurrentRoute)
+        return {ActionType::FollowRoute, AgentStatus::Executing, ReasonCode::RouteValid,
+            selected->route, "Retained the baseline route after normalized cost and bounded-regret comparison."};
+    return {ActionType::PlanRoute, AgentStatus::Replanning,
+        selected->rollout_wait > SimTime::zero() ? ReasonCode::Congestion : ReasonCode::ObjectiveCreated,
+        selected->route, "Selected a feasible route whose normalized operational-cost improvement passed materiality and bounded-regret checks."};
 }
 
 std::string_view RollingHorizonCoordinatedPolicy::id() const noexcept {
@@ -337,11 +499,12 @@ AutonomyMode parse_autonomy_mode(std::string_view value) {
     if (value == "COORDINATED_ADAPTIVE") return AutonomyMode::CoordinatedAdaptive;
     if (value == "ROLLING_HORIZON_COORDINATED") return AutonomyMode::RollingHorizonCoordinated;
     if (value == "COUNTERFACTUAL") return AutonomyMode::Counterfactual;
-    throw std::invalid_argument("routing policy must be SCRIPTED, ADAPTIVE, COORDINATED_ADAPTIVE, ROLLING_HORIZON_COORDINATED, or COUNTERFACTUAL");
+    if (value == "COST_AWARE_COUNTERFACTUAL") return AutonomyMode::CostAwareCounterfactual;
+    throw std::invalid_argument("routing policy must be SCRIPTED, ADAPTIVE, COORDINATED_ADAPTIVE, ROLLING_HORIZON_COORDINATED, COUNTERFACTUAL, or COST_AWARE_COUNTERFACTUAL");
 }
 
 std::string_view to_string(AutonomyMode value) noexcept {
-    switch (value) { case AutonomyMode::Scripted: return "SCRIPTED"; case AutonomyMode::Adaptive: return "ADAPTIVE"; case AutonomyMode::CoordinatedAdaptive: return "COORDINATED_ADAPTIVE"; case AutonomyMode::RollingHorizonCoordinated: return "ROLLING_HORIZON_COORDINATED"; case AutonomyMode::Counterfactual: return "COUNTERFACTUAL"; }
+    switch (value) { case AutonomyMode::Scripted: return "SCRIPTED"; case AutonomyMode::Adaptive: return "ADAPTIVE"; case AutonomyMode::CoordinatedAdaptive: return "COORDINATED_ADAPTIVE"; case AutonomyMode::RollingHorizonCoordinated: return "ROLLING_HORIZON_COORDINATED"; case AutonomyMode::Counterfactual: return "COUNTERFACTUAL"; case AutonomyMode::CostAwareCounterfactual: return "COST_AWARE_COUNTERFACTUAL"; }
     return "UNKNOWN";
 }
 std::string_view to_string(AgentType value) noexcept {

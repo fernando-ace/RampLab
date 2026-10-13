@@ -441,6 +441,89 @@ TEST(SurfaceTrafficTest, SyntheticBottleneckRolloutCanTradeTaxiDistanceForLessDo
     EXPECT_EQ(selected.rollout_completed_objectives, current->rollout_completed_objectives);
 }
 
+TEST(SurfaceTrafficTest, CostAwareFixturesRejectWastefulAcceptWorthwhileAndProtectAgedWaiter) {
+    using namespace airside;
+    const auto run_cost_aware = [](const char* name) {
+        auto scenario = load_scenario(scenario_file(name));
+        scenario.surface_operations->aircraft_routing_policy = agents::AutonomyMode::CostAwareCounterfactual;
+        return Simulation{std::move(scenario), 42}.run();
+    };
+    const auto decision_for = [](const auto& result, std::string_view aircraft, SimTime time) {
+        return std::ranges::find_if(result.agent_decisions, [&](const auto& event) {
+            return event.agent_id == aircraft && event.time == time && event.cost_aware_evaluated &&
+                event.selected_candidate && *event.selected_candidate < event.candidates.size();
+        });
+    };
+
+    // Fixture A: Goal 39 sees only the 33-second wait saving, while the route
+    // adds 96 seconds of taxi and 96 metres. The actual Goal 40 rollout rejects it.
+    const auto wasteful = run_cost_aware("surface_traffic_disrupted.yaml");
+    const auto wasteful_decision = decision_for(wasteful, "aircraft-2", SimTime{848});
+    ASSERT_NE(wasteful_decision, wasteful.agent_decisions.end());
+    const auto& wasteful_selected = wasteful_decision->candidates[*wasteful_decision->selected_candidate];
+    ASSERT_EQ(wasteful_selected.kind, agents::CandidateKind::ContinueCurrentRoute);
+    const auto wasteful_alt = std::ranges::find_if(wasteful_decision->candidates, [](const auto& candidate) {
+        return candidate.kind == agents::CandidateKind::AlternateRoute && candidate.counterfactual_evaluated &&
+            candidate.rollout_wait == SimTime::zero() && candidate.rollout_taxi_time == SimTime{256};
+    });
+    ASSERT_NE(wasteful_alt, wasteful_decision->candidates.end());
+    EXPECT_EQ(wasteful_selected.rollout_wait, SimTime{33});
+    EXPECT_FALSE(wasteful_alt->material_improvement_passed);
+    EXPECT_FALSE(wasteful_alt->bounded_regret_passed);
+
+    // Fixture B: a 122-second reduction in predicted blocking pays for the
+    // 80-second, 80-metre detour in a real simulator decision.
+    const auto worthwhile = run_cost_aware("goal35_route_choice_demo.yaml");
+    const auto worthwhile_decision = decision_for(worthwhile, "aircraft-3", SimTime{578});
+    ASSERT_NE(worthwhile_decision, worthwhile.agent_decisions.end());
+    const auto& worthwhile_selected = worthwhile_decision->candidates[*worthwhile_decision->selected_candidate];
+    ASSERT_EQ(worthwhile_selected.kind, agents::CandidateKind::AlternateRoute);
+    const auto worthwhile_base = std::ranges::find_if(worthwhile_decision->candidates, [](const auto& candidate) {
+        return candidate.kind == agents::CandidateKind::ContinueCurrentRoute && candidate.counterfactual_evaluated;
+    });
+    ASSERT_NE(worthwhile_base, worthwhile_decision->candidates.end());
+    EXPECT_EQ(worthwhile_base->rollout_wait - worthwhile_selected.rollout_wait, SimTime{122});
+    EXPECT_EQ(worthwhile_selected.rollout_taxi_time - worthwhile_base->rollout_taxi_time, SimTime{80});
+    EXPECT_EQ(worthwhile_selected.rollout_distance_m - worthwhile_base->rollout_distance_m, 80.0);
+    EXPECT_TRUE(worthwhile_selected.material_improvement_passed);
+    EXPECT_TRUE(worthwhile_selected.bounded_regret_passed);
+
+    // Fixture C reuses a genuine long-corridor rollout. The short-term model
+    // retains the route; age and priority make the same safe alternative
+    // admissible, exercising the policy's starvation protection.
+    const auto fairness = run_cost_aware("goal37_long_shared_corridor.yaml");
+    const auto fairness_decision = decision_for(fairness, "aircraft-1", SimTime{801});
+    ASSERT_NE(fairness_decision, fairness.agent_decisions.end());
+    agents::CostAwareCounterfactualPolicy policy;
+    const auto ordinary = policy.decide(fairness_decision->observation, fairness_decision->objective, {});
+    ASSERT_EQ(ordinary.action, agents::ActionType::FollowRoute);
+    auto aged_observation = fairness_decision->observation;
+    aged_observation.accumulated_wait_age = SimTime{120};
+    auto priority_objective = fairness_decision->objective;
+    priority_objective.priority = 10;
+    agents::evaluate_operational_costs(aged_observation, priority_objective);
+    const auto protected_decision = policy.decide(aged_observation, priority_objective, {});
+    ASSERT_EQ(protected_decision.action, agents::ActionType::PlanRoute);
+    EXPECT_NE(protected_decision.route, fairness_decision->observation.current_route);
+    const auto protected_alt = std::ranges::find_if(aged_observation.candidates, [](const auto& candidate) {
+        return candidate.kind == agents::CandidateKind::AlternateRoute && candidate.material_improvement_passed &&
+            candidate.bounded_regret_passed;
+    });
+    ASSERT_NE(protected_alt, aged_observation.candidates.end());
+    EXPECT_EQ(protected_alt->rollout_wait, SimTime::zero());
+    EXPECT_EQ(fairness_decision->observation.candidates[0].rollout_wait, SimTime{57});
+
+    for (const auto* result : {&wasteful, &worthwhile, &fairness}) {
+        EXPECT_EQ(result->metrics.agent_objectives_failed, 0U);
+        EXPECT_EQ(result->metrics.surface_safe_failures, 0U);
+        EXPECT_EQ(result->metrics.surface_aircraft_aircraft_collisions, 0U);
+        EXPECT_EQ(result->metrics.surface_aircraft_ground_collisions, 0U);
+        EXPECT_TRUE(std::ranges::all_of(result->agent_decisions, [](const auto& event) {
+            return !event.cost_aware_evaluated || !event.safety_constraints.empty();
+        }));
+    }
+}
+
 TEST(SurfaceTrafficTest, AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutcome) {
     auto adaptive_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));
     auto scripted_scenario = airside::load_scenario(scenario_file("goal35_route_choice_demo.yaml"));
