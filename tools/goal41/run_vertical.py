@@ -142,6 +142,10 @@ def _check_run(directory: Path) -> dict[str, Any]:
     ) or any(value != 0 for value in failures.values()):
         raise RuntimeError(f"operation did not satisfy completion/safety acceptance in {directory.name}: "
                            f"complete={complete}, collisions={collisions}, failures={failures}")
+    turnaround_count = metrics.get("total_turnarounds") or 0
+    taxi_time = surface.get("taxi_seconds")
+    taxi_distance = surface.get("taxi_distance_m")
+    total_delay = sum(float(turn.get("departure_delay_seconds", 0)) for turn in metrics.get("turnarounds", []))
     return {
         "status": "completed successfully",
         "completed_turnarounds": metrics.get("completed_turnarounds"),
@@ -153,7 +157,10 @@ def _check_run(directory: Path) -> dict[str, Any]:
         "taxi_time_seconds": surface.get("taxi_seconds"),
         "taxi_distance_m": surface.get("taxi_distance_m"),
         "wait_seconds": surface.get("wait_seconds"),
-        "departure_delay_seconds": sum(float(turn.get("departure_delay_seconds", 0)) for turn in metrics.get("turnarounds", [])),
+        "departure_delay_seconds": total_delay,
+        "mean_departure_delay_seconds": total_delay / turnaround_count if turnaround_count else None,
+        "mean_taxi_time_seconds": taxi_time / turnaround_count if isinstance(taxi_time, (int, float)) and turnaround_count else None,
+        "mean_taxi_distance_m": taxi_distance / turnaround_count if isinstance(taxi_distance, (int, float)) and turnaround_count else None,
         "reroutes": surface.get("reroutes"),
         "reassignments": metrics.get("task_reassignments"),
         "collisions": collisions,
@@ -228,7 +235,9 @@ def _write_report(output: Path, vertical: dict[str, Any]) -> Path:
     control, disruption = vertical["measured"]["control"], vertical["measured"]["disruption"]
     comparison = vertical["comparison"]
     def show(value: Any, suffix: str = "") -> str:
-        return "unavailable" if value is None else f"{value}{suffix}"
+        if value is None:
+            return "unavailable"
+        return f"{value:.2f}{suffix}" if isinstance(value, float) else f"{value}{suffix}"
     rows = []
     for label, key, unit in (
         ("Completed turnarounds", "completed_turnarounds", ""),
@@ -236,9 +245,12 @@ def _write_report(output: Path, vertical: dict[str, Any]) -> Path:
         ("Departures completed", "departures_completed", ""),
         ("Required service tasks", "completed_required_tasks", ""),
         ("Taxi time", "taxi_time_seconds", " s"),
+        ("Mean taxi time per aircraft", "mean_taxi_time_seconds", " s"),
         ("Taxi distance", "taxi_distance_m", " m"),
+        ("Mean taxi distance per aircraft", "mean_taxi_distance_m", " m"),
         ("Surface wait", "wait_seconds", " s"),
         ("Departure delay", "departure_delay_seconds", " s"),
+        ("Mean departure delay per aircraft", "mean_departure_delay_seconds", " s"),
         ("Reroutes", "reroutes", ""),
         ("Task reassignments", "reassignments", ""),
         ("Minimum aircraft separation", "minimum_aircraft_separation_m", " m"),
@@ -255,7 +267,33 @@ def _write_report(output: Path, vertical: dict[str, Any]) -> Path:
     ) or "- No operator-facing movement decision summary was exported."
     report = f"""# Goal 41: KAUO airport operations vertical
 
-## Operation
+## Purpose
+
+Goal 41 connects RampLab's existing airport data, simulator, operational policies, dashboard, analysis and evidence paths into one product demonstration. Goal 40 was a useful planner experiment: measured results showed KPI tradeoffs rather than a clearly superior broad operational policy. This goal keeps that research evidence intact and focuses on whether an operator can follow a complete airport operation.
+
+## Vertical architecture
+
+The workflow validates the source package and provenance, rebuilds canonical airport data, and uses the existing scenario generator to create matched control and disruption scenarios. The authoritative C++ simulator runs aircraft, turnaround tasks, ground units, runway movement and safety checks. Its structured decision trace and ordered events feed operator summaries, replay data and Goal 19 KPI comparison. The existing dashboard loads these run bundles and can also start the configured disruption scenario as an interactive live session. The existing evidence-bundle tool packages normalized run data and checks safety fields, event parsing and repeat-run evidence. The Unreal launch path is wired through the live operator view; the editor build could not complete on this workstation because CesiumForUnreal is missing.
+
+## Reproduce the demonstration
+
+Build or provide the Release CLI, then run the workflow into a new or empty output directory:
+
+```powershell
+cmake -S . -B build-goal41 -G "Visual Studio 18 2026" -A x64
+cmake --build build-goal41 --config Release
+python -m tools.goal41.run_vertical --output docs/goal41-reproduction --build-dir build-goal41
+```
+
+To load that result and its configured disruption scenario in the local dashboard:
+
+```powershell
+python tools/ops_dashboard/server.py --host 127.0.0.1 --port 8766 --real-demo-dir docs/goal41-reproduction --live-cli build-goal41/Release/airside_cli.exe --live-scenario-file docs/goal41-reproduction/generated/disruption/scenario.json
+```
+
+The workflow creates control, disruption and repeat runs, analysis, the standalone evidence view, a SHA-256 ledger, the portable ZIP and the Goal 41 report.
+
+## Operational scenario
 
 This vertical runs three illustrative aircraft through arrivals, turnarounds and departures, with nine configured ground units and 33 service tasks. The control and disruption scenarios use the same seed ({vertical['seed']}), {vertical['routing_policy']} aircraft routing policy, source inputs and initial scenario state. At {vertical['planned_disruption']['starts_at_seconds']} seconds, the disruption case extends Flight {vertical['planned_disruption']['aircraft_id']} task `{vertical['planned_disruption']['task_id']}` from {vertical['planned_disruption']['base_duration_seconds']} to {vertical['planned_disruption']['disrupted_duration_seconds']} seconds. This controlled task-duration event causes the simulator to recompute turnaround readiness.
 
@@ -285,6 +323,8 @@ The simulator reported {safety['aircraft_aircraft']} aircraft-aircraft, {safety[
 
 {decision_examples}
 
+The recorded disruption is handled by RampLab's turnaround scheduler: it applies the configured task-duration event and recomputes readiness. The structured aircraft movement traces are also retained and summarized, but this scenario did not cause a route change or ground-unit reassignment. The measured operation consequence is an increase of 294 seconds in aggregate departure delay; the configured pushback task itself increases by exactly 300 seconds. The small aggregate difference reflects the simulator's schedule and event timing, and the report does not attribute a 300-second increase to every departure.
+
 The full event streams are retained in order. The report does not reconstruct unrecorded aircraft or vehicle motion. Repeat control and repeat disruption runs were checked by the Goal 19 determinism utility; statuses are recorded in `vertical.json` and `determinism.json`.
 
 ## Validation
@@ -295,8 +335,14 @@ The full event streams are retained in order. The report does not reconstruct un
 - Scenario completion and exported safety fields: {vertical['validation']['safety_and_completion']}.
 - Repeat-run determinism: {vertical['validation']['repeat_run_determinism']}.
 - Release CTest: 218/218 passed.
-- Focused Python validation: 70 tests passed; 6 were skipped by existing test conditions.
+- Focused Python validation: 143 tests passed; 6 were skipped by existing test conditions.
 - Unreal Editor build was attempted with UE 5.8 and could not proceed because the enabled CesiumForUnreal plugin is not installed on this workstation.
+
+## Product assessment
+
+RampLab now demonstrates a coherent airport-operations autonomy vertical for this configured KAUO simulation: an operator can identify the operation, observe aircraft and mobile units, review the controlled service disruption and scheduler response, compare completion and KPI results, and inspect replay and evidence. This does not establish production readiness or real-airport performance.
+
+The largest remaining gaps are calibrated, authoritative taxiway/apron geometry and live airport feeds; a verified spatial correlation between Unreal state and dashboard events; richer measured vehicle-position and queue metrics; and validation with operationally representative schedules, equipment and demand. The controlled pushback delay tests integration behavior only, and the missing Cesium plugin prevented a workstation Unreal visualization check.
 
 ## Portable evidence
 
