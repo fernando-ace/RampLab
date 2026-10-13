@@ -147,6 +147,31 @@ class LiveSessionTests(unittest.TestCase):
                 session.close()
 
 class ConfiguredScenarioTests(unittest.TestCase):
+    def test_goal41_service_delay_is_exposed_as_a_planned_schedule_disruption(self):
+        with TemporaryDirectory(prefix="goal41-configured-live-") as directory:
+            root = Path(directory)
+            scenario_dir = root / "disruption"
+            scenario_dir.mkdir()
+            scenario = scenario_dir / "scenario.json"
+            scenario.write_text(json.dumps({
+                "default_seed": 42,
+                "surface_operations": {"aircraft_routing_policy": "ADAPTIVE"},
+                "aircraft": [{"id": "KAUO-G31-GA-03", "service_tasks": [
+                    {"id": "G31-03-PUSH", "type": "Pushback", "duration_seconds": 180}]}],
+                "turnaround_disruptions": [{"time_seconds": 241, "aircraft": "KAUO-G31-GA-03",
+                                             "task": "G31-03-PUSH", "duration_seconds": 480}],
+            }), encoding="utf-8")
+            session = LiveSession(root=root / "session", scenario_file=scenario)
+            try:
+                state = session.state()
+                self.assertEqual(state["planned_disruption"]["kind"], "service_delay")
+                self.assertEqual(state["planned_disruption"]["service_type"], "Pushback")
+                self.assertEqual(state["planned_disruption"]["base_duration_seconds"], 180)
+                self.assertEqual(state["planned_disruption"]["duration_seconds"], 480)
+                self.assertEqual(state["planned_disruption"]["added_duration_seconds"], 300)
+            finally:
+                session.close()
+
     def test_goal41_configured_scenario_exposes_policy_seed_and_closure_before_start(self):
         with TemporaryDirectory(prefix="goal41-configured-live-") as directory:
             root = Path(directory)
