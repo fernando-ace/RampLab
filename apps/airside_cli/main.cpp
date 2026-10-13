@@ -463,6 +463,33 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
             std::string rejection_reason;
             if (!selected) {
                 if (!candidate.valid) rejection_reason = candidate.explanation;
+                else if (event.policy_id == "counterfactual-operational-planning-v1" && event.selected_candidate) {
+                    const auto& chosen = event.candidates[*event.selected_candidate];
+                    bool candidate_better = false;
+                    if (candidate.rollout_completed_objectives != chosen.rollout_completed_objectives)
+                        candidate_better = candidate.rollout_completed_objectives > chosen.rollout_completed_objectives;
+                    else if (candidate.rollout_blocked_objectives != chosen.rollout_blocked_objectives)
+                        candidate_better = candidate.rollout_blocked_objectives < chosen.rollout_blocked_objectives;
+                    else if (candidate.rollout_wait != chosen.rollout_wait)
+                        candidate_better = candidate.rollout_wait < chosen.rollout_wait;
+                    else if (candidate.rollout_taxi_time != chosen.rollout_taxi_time)
+                        candidate_better = candidate.rollout_taxi_time < chosen.rollout_taxi_time;
+                    else if (candidate.rollout_distance_m != chosen.rollout_distance_m)
+                        candidate_better = candidate.rollout_distance_m < chosen.rollout_distance_m;
+                    if (candidate_better && chosen.kind == airside::agents::CandidateKind::ContinueCurrentRoute)
+                        rejection_reason = "better rollout deferred by current-route cooldown or improvement threshold";
+                    else if (candidate.rollout_completed_objectives < chosen.rollout_completed_objectives)
+                        rejection_reason = "fewer objectives completed in bounded rollout";
+                    else if (candidate.rollout_blocked_objectives > chosen.rollout_blocked_objectives)
+                        rejection_reason = "more objectives blocked in bounded rollout";
+                    else if (candidate.rollout_wait > chosen.rollout_wait)
+                        rejection_reason = "greater downstream wait in bounded rollout";
+                    else if (candidate.rollout_taxi_time > chosen.rollout_taxi_time)
+                        rejection_reason = "greater taxi time in bounded rollout";
+                    else if (candidate.rollout_distance_m > chosen.rollout_distance_m)
+                        rejection_reason = "greater taxi distance in bounded rollout";
+                    else rejection_reason = "complete rollout tie; stable candidate order or action rule retained the selected candidate";
+                }
                 else if (event.selected_candidate && candidate.estimated_system_cost_seconds >
                     event.candidates[*event.selected_candidate].estimated_system_cost_seconds)
                     rejection_reason = "higher estimated system cost than the selected candidate";
@@ -496,6 +523,17 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
                     << ",\"estimated_other_delay_seconds\":" << prediction.estimated_other_delay_seconds << '}';
             }
             output << ']'
+                << ",\"counterfactual_rollout\":";
+            if (candidate.counterfactual_evaluated) {
+                output << "{\"completed_objectives\":" << candidate.rollout_completed_objectives
+                    << ",\"blocked_objectives\":" << candidate.rollout_blocked_objectives
+                    << ",\"downstream_wait_seconds\":" << candidate.rollout_wait.count()
+                    << ",\"taxi_seconds\":" << candidate.rollout_taxi_time.count()
+                    << ",\"completion_time_seconds\":" << candidate.rollout_completion_time.count()
+                    << ",\"taxi_distance_m\":" << candidate.rollout_distance_m
+                    << ",\"simulated_events\":" << candidate.rollout_events << '}';
+            } else output << "null";
+            output
                 << ",\"selected\":" << (selected ? "true" : "false")
                 << ",\"rejection_reason\":\"" << json_escape(rejection_reason) << "\",\"conflicting_agent\":";
             if (candidate.conflicting_agent) output << '"' << json_escape(*candidate.conflicting_agent) << '"';
@@ -522,7 +560,17 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
             << airside::agents::to_string(event.action) << "\",\"reason\":\""
             << airside::agents::to_string(event.reason) << "\",\"result\":\"" << json_escape(event.result)
             << "\",\"explanation\":\"" << json_escape(event.explanation) << "\",\"selected_route\":";
-        route_json(event.selected_route); output << '}';
+        route_json(event.selected_route);
+        if (event.counterfactual_rollouts > 0U) {
+            output << ",\"counterfactual\":{\"state_identifier\":\"" << json_escape(event.state_identifier)
+                << "\",\"candidate_rollouts\":" << event.counterfactual_rollouts
+                << ",\"simulated_events\":" << event.counterfactual_events
+                << ",\"horizon_seconds\":" << event.planning_horizon.count()
+                << ",\"different_from_rolling_horizon\":" << (event.differs_from_rolling_horizon ? "true" : "false")
+                << ",\"decision_trigger\":\"" << json_escape(event.replan_trigger)
+                << "\",\"tie_break\":\"" << json_escape(event.tie_break_reason) << "\"}";
+        }
+        output << '}';
     }
     output << "]}\n";
 }
