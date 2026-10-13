@@ -156,6 +156,9 @@ def _run_data(run: dict, folder: Path) -> dict:
                                  "completed_tasks": sum(1 for task in turn.get("tasks", []) if task.get("state") == "Completed")})
     if not events and isinstance(raw.get("events"), list):
         events = [event for event in raw["events"] if isinstance(event, dict)]
+    for event in events:
+        if "disrupt" in str(event.get("type", "")).casefold():
+            disruptions.append(event)
 
     # RampLab records are ordered by simulation time; sort only when a numeric timestamp exists.
     def event_time(event):

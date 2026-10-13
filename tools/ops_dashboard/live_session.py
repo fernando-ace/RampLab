@@ -58,6 +58,20 @@ class LiveSession:
             if closure:
                 self.planned_disruption = {"edge_id": closure.get("edge"), "starts_at_seconds": closure.get("time_seconds"),
                                            "classification": "Scenario exercise; not a reported airport condition"}
+            delay = next(iter(configured.get("turnaround_disruptions", [])), None)
+            if delay:
+                aircraft = next((item for item in configured.get("aircraft", [])
+                                 if item.get("id") == delay.get("aircraft")), {})
+                task = next((item for item in aircraft.get("service_tasks", [])
+                             if item.get("id") == delay.get("task")), {})
+                base = task.get("duration_seconds")
+                duration = delay.get("duration_seconds")
+                self.planned_disruption = {
+                    "kind": "service_delay", "aircraft_id": delay.get("aircraft"), "task_id": delay.get("task"),
+                    "service_type": task.get("type", "service"), "starts_at_seconds": delay.get("time_seconds"),
+                    "duration_seconds": duration, "base_duration_seconds": base,
+                    "added_duration_seconds": duration - base if isinstance(duration, (int, float)) and isinstance(base, (int, float)) else None,
+                    "classification": "Assumed scenario exercise; not a reported airport condition"}
         self.edge_names: dict[int, str] = {}
         self.vehicle_names: dict[int, str] = {}
         self.output_dir: Path | None = None
