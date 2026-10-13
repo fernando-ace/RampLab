@@ -1,0 +1,45 @@
+{
+  "determinism": {
+    "control": {
+      "changed_fields": [],
+      "changed_records": [],
+      "message": "Structured metrics and ordered records match.",
+      "ordered_record_counts": {
+        "left": 313,
+        "right": 313
+      },
+      "status": "equivalent"
+    },
+    "control_events": {
+      "changed_fields": [],
+      "changed_records": [],
+      "message": "Input files are byte-for-byte identical.",
+      "ordered_record_counts": {
+        "left": 313,
+        "right": 313
+      },
+      "status": "byte_identical"
+    },
+    "disruption": {
+      "changed_fields": [],
+      "changed_records": [],
+      "message": "Structured metrics and ordered records match.",
+      "ordered_record_counts": {
+        "left": 314,
+        "right": 314
+      },
+      "status": "equivalent"
+    },
+    "disruption_events": {
+      "changed_fields": [],
+      "changed_records": [],
+      "message": "Input files are byte-for-byte identical.",
+      "ordered_record_counts": {
+        "left": 314,
+        "right": 314
+      },
+      "status": "byte_identical"
+    }
+  },
+  "schema_version": "1.0"
+}

@@ -1,0 +1,31 @@
+{
+  "airport": "KAUO",
+  "artifacts": [
+    "agent-decisions.json",
+    "aircraft.csv",
+    "events.jsonl",
+    "experiment.json",
+    "runs.csv",
+    "simulator-metrics.aircraft.csv",
+    "simulator-metrics.csv",
+    "simulator-metrics.json"
+  ],
+  "description": "Matched Goal 41 KAUO multi-aircraft operation; all schedule, equipment and task timings are declared simulation assumptions.",
+  "mode": "disruption",
+  "planned_disruption": {
+    "added_duration_seconds": 300,
+    "aircraft_id": "KAUO-G31-GA-03",
+    "base_duration_seconds": 180,
+    "classification": "ASSUMED FOR SIMULATION; not a reported airport service condition",
+    "description": "Extend Flight KAUO-G31-GA-03 pushback service from 180 to 480 seconds before the task starts.",
+    "disrupted_duration_seconds": 480,
+    "service_type": "Pushback",
+    "starts_at_seconds": 241,
+    "task_id": "G31-03-PUSH",
+    "type": "Pushback service delay"
+  },
+  "routing_policy": "ADAPTIVE",
+  "scenario": "airport_kauo",
+  "scenario_key": "goal41-kauo-operations",
+  "seed": 42
+}

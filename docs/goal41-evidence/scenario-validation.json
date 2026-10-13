@@ -1,0 +1,14 @@
+{
+  "control": {
+    "aircraft": 3,
+    "flights": 6,
+    "scenario": "airport_kauo",
+    "valid": true
+  },
+  "disruption": {
+    "aircraft": 3,
+    "flights": 6,
+    "scenario": "airport_kauo",
+    "valid": true
+  }
+}

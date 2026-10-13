@@ -1,0 +1,20 @@
+[
+  {
+    "aircraft_id": "KAUO-G31-GA-01",
+    "type": "representative_single_engine_general_aviation",
+    "category": "illustrative simulator archetype",
+    "classification": "ASSUMED FOR SIMULATION; not an observed aircraft or assignment"
+  },
+  {
+    "aircraft_id": "KAUO-G31-GA-02",
+    "type": "representative_single_engine_general_aviation",
+    "category": "illustrative simulator archetype",
+    "classification": "ASSUMED FOR SIMULATION; not an observed aircraft or assignment"
+  },
+  {
+    "aircraft_id": "KAUO-G31-GA-03",
+    "type": "representative_single_engine_general_aviation",
+    "category": "illustrative simulator archetype",
+    "classification": "ASSUMED FOR SIMULATION; not an observed aircraft or assignment"
+  }
+]

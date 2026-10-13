@@ -1,0 +1,7 @@
+{
+  "counterfactual_control_status": "timed_out_without_metrics",
+  "counterfactual_control_timeout_seconds": 1800,
+  "policy_claim": "No comparative performance advantage is claimed; ADAPTIVE was selected as the strongest practical policy for this integration run.",
+  "selected_policy": "ADAPTIVE",
+  "selection_basis": "ADAPTIVE completed this integrated 3-aircraft case; the COUNTERFACTUAL control did not finish within its 1800-second run timeout."
+}

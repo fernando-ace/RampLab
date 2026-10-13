@@ -1,0 +1,1231 @@
+{
+  "airport": "KAUO",
+  "airport_name": "Auburn University Regional Airport",
+  "assumptions": [
+    "The runway reference, dimensions and runway-end positions are FAA source-backed static facts.",
+    "The schedule, aircraft archetypes, parking positions, vehicle fleet, task requirements, service durations and planned pushback delay are illustrative simulation assumptions.",
+    "Taxiway/apron geometry is chart-informed and approximate; the service delay is a scenario exercise, not an airport status report."
+  ],
+  "canonical_input_sha256": "a5d0780f4b7f8fe431c251de10d7a33e3b5d5faba4a690bfccf9914f29e5b487",
+  "comparison": {
+    "baseline": {
+      "identity": {
+        "experiment_name": "airport_kauo_goal41",
+        "ordinal": 1,
+        "run_count": 1,
+        "schema_version": "1.0",
+        "seed": 42,
+        "source_scenario": "airport_kauo_goal41"
+      },
+      "name": "airport_kauo_goal41",
+      "source": "C:\\Users\\Ferna\\.codex\\worktrees\\goal41-production-airport-operations-vertical\\RampLab\\docs\\goal41-evidence-final\\control\\experiment.json"
+    },
+    "comparison": {
+      "identity": {
+        "experiment_name": "airport_kauo_goal41",
+        "ordinal": 1,
+        "run_count": 1,
+        "schema_version": "1.0",
+        "seed": 42,
+        "source_scenario": "airport_kauo_goal41"
+      },
+      "name": "airport_kauo_goal41",
+      "source": "C:\\Users\\Ferna\\.codex\\worktrees\\goal41-production-airport-operations-vertical\\RampLab\\docs\\goal41-evidence-final\\disruption\\experiment.json"
+    },
+    "compatibility": {
+      "comparable": true,
+      "mismatched_identity": []
+    },
+    "metrics": [
+      {
+        "baseline": 3.0,
+        "category": "throughput",
+        "comparison": 3.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "aircraft_count",
+        "label": "Aircraft count",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 1.0,
+        "category": "operations",
+        "comparison": 1.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "arrival_runway_wait_seconds",
+        "label": "Arrival runway wait",
+        "percent_difference": 0.0,
+        "unit": "s"
+      },
+      {
+        "baseline": 1537.084,
+        "category": "operations",
+        "comparison": 1537.084,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "arrival_taxi_distance_m",
+        "label": "Arrival taxi distance",
+        "percent_difference": 0.0,
+        "unit": "m"
+      },
+      {
+        "baseline": 309.0,
+        "category": "operations",
+        "comparison": 309.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "arrival_taxi_seconds",
+        "label": "Arrival taxi time",
+        "percent_difference": 0.0,
+        "unit": "s"
+      },
+      {
+        "baseline": 97.0,
+        "category": "operations",
+        "comparison": 97.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "average_runway_wait_seconds",
+        "label": "Average runway wait",
+        "percent_difference": 0.0,
+        "unit": "s"
+      },
+      {
+        "baseline": 3.5722222222222224,
+        "category": "operations",
+        "comparison": 5.205555555555555,
+        "difference": 1.6333333333333324,
+        "impact": "regression",
+        "key": "avg_departure_delay_minutes",
+        "label": "Mean departure delay",
+        "percent_difference": 45.723172628304795,
+        "unit": "min"
+      },
+      {
+        "baseline": 5.712121212121213,
+        "category": "operations",
+        "comparison": 5.712121212121213,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "avg_service_waiting_minutes",
+        "label": "Mean service waiting",
+        "percent_difference": 0.0,
+        "unit": "min"
+      },
+      {
+        "baseline": 49.75555555555556,
+        "category": "operations",
+        "comparison": 51.422222222222224,
+        "difference": 1.6666666666666643,
+        "impact": "regression",
+        "key": "avg_turnaround_minutes",
+        "label": "Mean turnaround",
+        "percent_difference": 3.3497096918267038,
+        "unit": "min"
+      },
+      {
+        "baseline": 3.0,
+        "category": "throughput",
+        "comparison": 3.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "completed_turnarounds",
+        "label": "Completed turnarounds",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 3.0,
+        "category": "operations",
+        "comparison": 3.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "delayed_aircraft",
+        "label": "Delayed aircraft",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 3.0,
+        "category": "operations",
+        "comparison": 3.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "delayed_turnarounds",
+        "label": "Delayed turnarounds",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 581.0,
+        "category": "operations",
+        "comparison": 581.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "departure_runway_wait_seconds",
+        "label": "Departure runway wait",
+        "percent_difference": 0.0,
+        "unit": "s"
+      },
+      {
+        "baseline": 4340.269,
+        "category": "operations",
+        "comparison": 4340.269,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "departure_taxi_distance_m",
+        "label": "Departure taxi distance",
+        "percent_difference": 0.0,
+        "unit": "m"
+      },
+      {
+        "baseline": 879.0,
+        "category": "operations",
+        "comparison": 873.0,
+        "difference": -6.0,
+        "impact": "improvement",
+        "key": "departure_taxi_seconds",
+        "label": "Departure taxi time",
+        "percent_difference": -0.6825938566552902,
+        "unit": "s"
+      },
+      {
+        "baseline": 0.0,
+        "category": "operations",
+        "comparison": 1.0,
+        "difference": 1.0,
+        "impact": "regression",
+        "key": "disruption_triggered_replans",
+        "label": "Disruption replans",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "failed_or_timed_out_turnarounds",
+        "label": "Failed or timed out turnarounds",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_collisions",
+        "label": "Fleet collisions",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 1.969527,
+        "category": "safety",
+        "comparison": 1.969527,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_minimum_separation_m",
+        "label": "Fleet minimum separation",
+        "percent_difference": 0.0,
+        "unit": "m"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_outstanding_reservations",
+        "label": "Outstanding reservations",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "operations",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_reassignments",
+        "label": "Fleet reassignments",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 48.0,
+        "category": "throughput",
+        "comparison": 48.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_requests_completed",
+        "label": "Fleet requests completed",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 48.0,
+        "category": "throughput",
+        "comparison": 48.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_requests_created",
+        "label": "Fleet requests created",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_requests_failed",
+        "label": "Fleet requests failed",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 67851.0,
+        "category": "operations",
+        "comparison": 67851.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_reservation_contentions",
+        "label": "Fleet reservation contentions",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "fleet_unfinished_requests",
+        "label": "Unfinished fleet requests",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 2.0,
+        "category": "throughput",
+        "comparison": 1.0,
+        "difference": -1.0,
+        "impact": "regression",
+        "key": "max_simultaneous_taxiing_aircraft",
+        "label": "Peak taxiing aircraft",
+        "percent_difference": -50.0,
+        "unit": "aircraft"
+      },
+      {
+        "baseline": 1.0,
+        "category": "operations",
+        "comparison": 1.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "maximum_runway_queue_depth",
+        "label": "Maximum runway queue",
+        "percent_difference": 0.0,
+        "unit": "aircraft"
+      },
+      {
+        "baseline": 1414.0,
+        "category": "operations",
+        "comparison": 1414.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "maximum_service_task_wait_seconds",
+        "label": "Maximum service task wait",
+        "percent_difference": 0.0,
+        "unit": "s"
+      },
+      {
+        "baseline": 13.565011,
+        "category": "safety",
+        "comparison": 31.549956,
+        "difference": 17.984945000000003,
+        "impact": "improvement",
+        "key": "minimum_aircraft_ground_separation_m",
+        "label": "Minimum aircraft-ground separation",
+        "percent_difference": 132.5833425420739,
+        "unit": "m"
+      },
+      {
+        "baseline": 151.030987,
+        "category": "safety",
+        "comparison": 948.133186,
+        "difference": 797.102199,
+        "impact": "improvement",
+        "key": "minimum_aircraft_separation_m",
+        "label": "Minimum aircraft separation",
+        "percent_difference": 527.7739454884182,
+        "unit": "m"
+      },
+      {
+        "baseline": 0.0,
+        "category": "disruptions",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "road_closure_events",
+        "label": "Road closure events",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 6.0,
+        "category": "throughput",
+        "comparison": 6.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "runway_operations_completed",
+        "label": "Runway operations completed",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 582.0,
+        "category": "operations",
+        "comparison": 582.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "runway_queue_seconds",
+        "label": "Runway queueing",
+        "percent_difference": 0.0,
+        "unit": "s"
+      },
+      {
+        "baseline": 0.131419,
+        "category": "operations",
+        "comparison": 0.122477,
+        "difference": -0.008942000000000005,
+        "impact": "regression",
+        "key": "runway_utilization",
+        "label": "Runway utilization",
+        "percent_difference": -6.804191174792081,
+        "unit": "ratio"
+      },
+      {
+        "baseline": 4109.0,
+        "category": "operations",
+        "comparison": 4409.0,
+        "difference": 300.0,
+        "impact": "regression",
+        "key": "simulated_duration_seconds",
+        "label": "Simulation duration",
+        "percent_difference": 7.3010464833292765,
+        "unit": "s"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "surface_aircraft_aircraft_collisions",
+        "label": "Aircraft collisions",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "surface_aircraft_ground_collisions",
+        "label": "Aircraft-ground collisions",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 3.0,
+        "category": "throughput",
+        "comparison": 3.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "surface_arrived_aircraft",
+        "label": "Completed arrivals",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 3.0,
+        "category": "throughput",
+        "comparison": 3.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "surface_departed_aircraft",
+        "label": "Completed departures",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "operations",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "surface_reroutes",
+        "label": "Surface reroutes",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "surface_safe_failures",
+        "label": "Surface safety failures",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 5877.353,
+        "category": "operations",
+        "comparison": 5877.353,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "surface_taxi_distance_m",
+        "label": "Total taxi distance",
+        "percent_difference": 0.0,
+        "unit": "m"
+      },
+      {
+        "baseline": 1188.0,
+        "category": "operations",
+        "comparison": 1182.0,
+        "difference": -6.0,
+        "impact": "improvement",
+        "key": "surface_taxi_seconds",
+        "label": "Total taxi time",
+        "percent_difference": -0.5050505050505051,
+        "unit": "s"
+      },
+      {
+        "baseline": 3.0,
+        "category": "throughput",
+        "comparison": 3.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "surface_total_aircraft",
+        "label": "Surface aircraft",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 1.0,
+        "category": "operations",
+        "comparison": 0.0,
+        "difference": -1.0,
+        "impact": "improvement",
+        "key": "surface_wait_events",
+        "label": "Surface wait events",
+        "percent_difference": -100.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 1129.0,
+        "category": "operations",
+        "comparison": 1123.0,
+        "difference": -6.0,
+        "impact": "improvement",
+        "key": "surface_wait_seconds",
+        "label": "Surface queueing",
+        "percent_difference": -0.5314437555358724,
+        "unit": "s"
+      },
+      {
+        "baseline": 0.0,
+        "category": "operations",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "task_reassignments",
+        "label": "Task reassignments",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 11310.0,
+        "category": "operations",
+        "comparison": 11310.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "total_service_task_wait_seconds",
+        "label": "Service task queueing",
+        "percent_difference": 0.0,
+        "unit": "s"
+      },
+      {
+        "baseline": 3.0,
+        "category": "throughput",
+        "comparison": 3.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "total_turnarounds",
+        "label": "Total turnarounds",
+        "percent_difference": 0.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 0.0,
+        "category": "safety",
+        "comparison": 0.0,
+        "difference": 0.0,
+        "impact": "unchanged",
+        "key": "unresolved_service_requests",
+        "label": "Unresolved service requests",
+        "percent_difference": null,
+        "unit": "count"
+      }
+    ],
+    "operational_impact": [
+      {
+        "baseline": 151.030987,
+        "category": "safety",
+        "comparison": 948.133186,
+        "difference": 797.102199,
+        "impact": "improvement",
+        "key": "minimum_aircraft_separation_m",
+        "label": "Minimum aircraft separation",
+        "percent_difference": 527.7739454884182,
+        "unit": "m"
+      },
+      {
+        "baseline": 13.565011,
+        "category": "safety",
+        "comparison": 31.549956,
+        "difference": 17.984945000000003,
+        "impact": "improvement",
+        "key": "minimum_aircraft_ground_separation_m",
+        "label": "Minimum aircraft-ground separation",
+        "percent_difference": 132.5833425420739,
+        "unit": "m"
+      },
+      {
+        "baseline": 0.0,
+        "category": "operations",
+        "comparison": 1.0,
+        "difference": 1.0,
+        "impact": "regression",
+        "key": "disruption_triggered_replans",
+        "label": "Disruption replans",
+        "percent_difference": null,
+        "unit": "count"
+      },
+      {
+        "baseline": 1.0,
+        "category": "operations",
+        "comparison": 0.0,
+        "difference": -1.0,
+        "impact": "improvement",
+        "key": "surface_wait_events",
+        "label": "Surface wait events",
+        "percent_difference": -100.0,
+        "unit": "count"
+      },
+      {
+        "baseline": 2.0,
+        "category": "throughput",
+        "comparison": 1.0,
+        "difference": -1.0,
+        "impact": "regression",
+        "key": "max_simultaneous_taxiing_aircraft",
+        "label": "Peak taxiing aircraft",
+        "percent_difference": -50.0,
+        "unit": "aircraft"
+      },
+      {
+        "baseline": 3.5722222222222224,
+        "category": "operations",
+        "comparison": 5.205555555555555,
+        "difference": 1.6333333333333324,
+        "impact": "regression",
+        "key": "avg_departure_delay_minutes",
+        "label": "Mean departure delay",
+        "percent_difference": 45.723172628304795,
+        "unit": "min"
+      },
+      {
+        "baseline": 4109.0,
+        "category": "operations",
+        "comparison": 4409.0,
+        "difference": 300.0,
+        "impact": "regression",
+        "key": "simulated_duration_seconds",
+        "label": "Simulation duration",
+        "percent_difference": 7.3010464833292765,
+        "unit": "s"
+      },
+      {
+        "baseline": 49.75555555555556,
+        "category": "operations",
+        "comparison": 51.422222222222224,
+        "difference": 1.6666666666666643,
+        "impact": "regression",
+        "key": "avg_turnaround_minutes",
+        "label": "Mean turnaround",
+        "percent_difference": 3.3497096918267038,
+        "unit": "min"
+      },
+      {
+        "baseline": 0.131419,
+        "category": "operations",
+        "comparison": 0.122477,
+        "difference": -0.008942000000000005,
+        "impact": "regression",
+        "key": "runway_utilization",
+        "label": "Runway utilization",
+        "percent_difference": -6.804191174792081,
+        "unit": "ratio"
+      },
+      {
+        "baseline": 879.0,
+        "category": "operations",
+        "comparison": 873.0,
+        "difference": -6.0,
+        "impact": "improvement",
+        "key": "departure_taxi_seconds",
+        "label": "Departure taxi time",
+        "percent_difference": -0.6825938566552902,
+        "unit": "s"
+      }
+    ],
+    "safety": {
+      "available_metrics": [
+        "unresolved_service_requests",
+        "fleet_collisions",
+        "fleet_minimum_separation_m",
+        "fleet_outstanding_reservations",
+        "fleet_unfinished_requests",
+        "fleet_requests_failed",
+        "surface_safe_failures",
+        "surface_aircraft_aircraft_collisions",
+        "surface_aircraft_ground_collisions",
+        "minimum_aircraft_separation_m",
+        "minimum_aircraft_ground_separation_m",
+        "failed_or_timed_out_turnarounds"
+      ],
+      "findings": [
+        {
+          "finding": "Zero collisions recorded in both runs.",
+          "status": "no_regression"
+        }
+      ],
+      "status": "no_regression"
+    },
+    "schema_version": 1,
+    "shared_metric_count": 50
+  },
+  "dataset_id": "kauo-goal31-turnaround-gse-demo",
+  "determinism": {
+    "determinism": {
+      "control": {
+        "changed_fields": [],
+        "changed_records": [],
+        "message": "Structured metrics and ordered records match.",
+        "ordered_record_counts": {
+          "left": 313,
+          "right": 313
+        },
+        "status": "equivalent"
+      },
+      "control_events": {
+        "changed_fields": [],
+        "changed_records": [],
+        "message": "Input files are byte-for-byte identical.",
+        "ordered_record_counts": {
+          "left": 313,
+          "right": 313
+        },
+        "status": "byte_identical"
+      },
+      "disruption": {
+        "changed_fields": [],
+        "changed_records": [],
+        "message": "Structured metrics and ordered records match.",
+        "ordered_record_counts": {
+          "left": 314,
+          "right": 314
+        },
+        "status": "equivalent"
+      },
+      "disruption_events": {
+        "changed_fields": [],
+        "changed_records": [],
+        "message": "Input files are byte-for-byte identical.",
+        "ordered_record_counts": {
+          "left": 314,
+          "right": 314
+        },
+        "status": "byte_identical"
+      }
+    },
+    "schema_version": "1.0"
+  },
+  "generated": {
+    "control": {
+      "airport": {
+        "airport_id": "KAUO",
+        "field_elevation_ft": 776.8,
+        "field_elevation_m": 236.785,
+        "iata": "AUO",
+        "icao": "KAUO",
+        "local_timezone": "America/Chicago",
+        "name": "Auburn University Regional Airport",
+        "operational_areas": [
+          {
+            "classification": "APPROXIMATE chart-informed operational area; boundary is not surveyed",
+            "id": "primary_fbo_apron",
+            "label": "Terminal/FBO apron"
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; stand positions are not published FAA stands",
+            "id": "ga_parking_area",
+            "label": "Illustrative general aviation parking positions"
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; not verified vehicle locations",
+            "id": "service_staging_area",
+            "label": "Illustrative apron service staging"
+          }
+        ],
+        "reference_latitude": 32.61511111,
+        "reference_longitude": -85.434,
+        "runways": [
+          {
+            "classification": "FAA published",
+            "identifier": "18/36",
+            "length_ft": 5264,
+            "surface": "asphalt, grooved",
+            "width_ft": 100
+          },
+          {
+            "classification": "FAA published",
+            "identifier": "11/29",
+            "length_ft": 4000,
+            "surface": "asphalt",
+            "width_ft": 75
+          }
+        ],
+        "timezone": "UTC"
+      },
+      "entities": {
+        "aircraft": 3,
+        "flights": 6,
+        "gates": 3,
+        "ground_vehicles": 9,
+        "turnaround_tasks": 33
+      },
+      "generated_disruptions": {
+        "delayed_services": 0,
+        "equipment_outages": 0,
+        "flight_delays": 0,
+        "route_closures": 0
+      },
+      "generated_scenario_id": "airport-2e9adb6628106abb",
+      "generator_schema_version": "1.0.0",
+      "geometry_configuration_sha256": "658178db89ec11fe87c6f1728770dc87c7e60d55d50f672d933043efc9d5e440",
+      "identity_map_file": "identity-map.json",
+      "mapping_configuration_sha256": "0c182861f329050706a906e28debebc33e3d1b919d001ca2253938e50dc8d3f1",
+      "output_file_sha256": {
+        "identity-map.json": "f531c4d630f7d58da3a452e236212273557130509e4a662c1e318d92cb42d034",
+        "scenario.json": "efc3f6bb934285197f30db3047c1d6d0b20fb455262e6fee4c7dd0fd2aff063a",
+        "support-matrix.json": "d942878e4c15789578055733f2b510d18b3fb1661d5224b0d13802721f1771b4"
+      },
+      "scenario_epoch_utc": "2026-10-09T14:00:00Z",
+      "scenario_name": "airport_kauo",
+      "seed": 42,
+      "source_canonical_schema_version": "1.0",
+      "source_canonical_sha256": "c892bc655197993cc3afeb0e20883d10bdc26157678b8edb417aa80fbed26c38",
+      "source_dataset_id": "kauo-goal31-turnaround-gse-demo",
+      "source_provenance": [
+        {
+          "accepted_record_count": 3,
+          "filename": "aircraft.json",
+          "record_count": 3,
+          "rejected_record_count": 0,
+          "sha256": "c67641f9c6360246bdc84bd42ba79f913c09627ae6cbfa45e91129c28b0816a6",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 1,
+          "filename": "disruptions.json",
+          "record_count": 1,
+          "rejected_record_count": 0,
+          "sha256": "4278f43138830d2101cb3e2cbd935cd317ac85ac57ecaa39c26701173953de3c",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 9,
+          "filename": "equipment.json",
+          "record_count": 9,
+          "rejected_record_count": 0,
+          "sha256": "70c851d789b63e5ad3b1d1f560da21508d57295b88bc323d498fe5724ef0b304",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 6,
+          "filename": "flights.json",
+          "record_count": 6,
+          "rejected_record_count": 0,
+          "sha256": "45f04716202671e43fb6a93d01b4e193c91719721f0f81c038a5ad2334526b9f",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 3,
+          "filename": "gates.json",
+          "record_count": 3,
+          "rejected_record_count": 0,
+          "sha256": "362542d08d29291aea21c6fd05447b0656375a55aaba44cf97d800bd0c0251c4",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 33,
+          "filename": "turnaround.json",
+          "record_count": 33,
+          "rejected_record_count": 0,
+          "sha256": "b597546b59f55492c6065c1ede533a2e90a04f7701e1504618a0c56ca5be93d2",
+          "type": "json"
+        }
+      ],
+      "unsupported_metadata": {
+        "aircraft": [
+          "KAUO-G31-GA-01",
+          "KAUO-G31-GA-02",
+          "KAUO-G31-GA-03"
+        ],
+        "equipment_without_simulator_vehicle": []
+      },
+      "warnings": [
+        "AIRCRAFT_METADATA_ONLY: KAUO-G31-GA-01.category preserved in manifest; movement behavior is unchanged",
+        "AIRCRAFT_METADATA_ONLY: KAUO-G31-GA-02.category preserved in manifest; movement behavior is unchanged",
+        "AIRCRAFT_METADATA_ONLY: KAUO-G31-GA-03.category preserved in manifest; movement behavior is unchanged"
+      ]
+    },
+    "disruption": {
+      "airport": {
+        "airport_id": "KAUO",
+        "field_elevation_ft": 776.8,
+        "field_elevation_m": 236.785,
+        "iata": "AUO",
+        "icao": "KAUO",
+        "local_timezone": "America/Chicago",
+        "name": "Auburn University Regional Airport",
+        "operational_areas": [
+          {
+            "classification": "APPROXIMATE chart-informed operational area; boundary is not surveyed",
+            "id": "primary_fbo_apron",
+            "label": "Terminal/FBO apron"
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; stand positions are not published FAA stands",
+            "id": "ga_parking_area",
+            "label": "Illustrative general aviation parking positions"
+          },
+          {
+            "classification": "ASSUMED FOR SIMULATION; not verified vehicle locations",
+            "id": "service_staging_area",
+            "label": "Illustrative apron service staging"
+          }
+        ],
+        "reference_latitude": 32.61511111,
+        "reference_longitude": -85.434,
+        "runways": [
+          {
+            "classification": "FAA published",
+            "identifier": "18/36",
+            "length_ft": 5264,
+            "surface": "asphalt, grooved",
+            "width_ft": 100
+          },
+          {
+            "classification": "FAA published",
+            "identifier": "11/29",
+            "length_ft": 4000,
+            "surface": "asphalt",
+            "width_ft": 75
+          }
+        ],
+        "timezone": "UTC"
+      },
+      "entities": {
+        "aircraft": 3,
+        "flights": 6,
+        "gates": 3,
+        "ground_vehicles": 9,
+        "turnaround_tasks": 33
+      },
+      "generated_disruptions": {
+        "delayed_services": 1,
+        "equipment_outages": 0,
+        "flight_delays": 0,
+        "route_closures": 0
+      },
+      "generated_scenario_id": "airport-2e9adb6628106abb",
+      "generator_schema_version": "1.0.0",
+      "geometry_configuration_sha256": "658178db89ec11fe87c6f1728770dc87c7e60d55d50f672d933043efc9d5e440",
+      "identity_map_file": "identity-map.json",
+      "mapping_configuration_sha256": "0c182861f329050706a906e28debebc33e3d1b919d001ca2253938e50dc8d3f1",
+      "output_file_sha256": {
+        "identity-map.json": "f531c4d630f7d58da3a452e236212273557130509e4a662c1e318d92cb42d034",
+        "scenario.json": "aa89068e18191b2399533ffceb8a5378d1da33e8856b3bcce13cb6cba73bf0ef",
+        "support-matrix.json": "d942878e4c15789578055733f2b510d18b3fb1661d5224b0d13802721f1771b4"
+      },
+      "scenario_epoch_utc": "2026-10-09T14:00:00Z",
+      "scenario_name": "airport_kauo",
+      "seed": 42,
+      "source_canonical_schema_version": "1.0",
+      "source_canonical_sha256": "c892bc655197993cc3afeb0e20883d10bdc26157678b8edb417aa80fbed26c38",
+      "source_dataset_id": "kauo-goal31-turnaround-gse-demo",
+      "source_provenance": [
+        {
+          "accepted_record_count": 3,
+          "filename": "aircraft.json",
+          "record_count": 3,
+          "rejected_record_count": 0,
+          "sha256": "c67641f9c6360246bdc84bd42ba79f913c09627ae6cbfa45e91129c28b0816a6",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 1,
+          "filename": "disruptions.json",
+          "record_count": 1,
+          "rejected_record_count": 0,
+          "sha256": "4278f43138830d2101cb3e2cbd935cd317ac85ac57ecaa39c26701173953de3c",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 9,
+          "filename": "equipment.json",
+          "record_count": 9,
+          "rejected_record_count": 0,
+          "sha256": "70c851d789b63e5ad3b1d1f560da21508d57295b88bc323d498fe5724ef0b304",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 6,
+          "filename": "flights.json",
+          "record_count": 6,
+          "rejected_record_count": 0,
+          "sha256": "45f04716202671e43fb6a93d01b4e193c91719721f0f81c038a5ad2334526b9f",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 3,
+          "filename": "gates.json",
+          "record_count": 3,
+          "rejected_record_count": 0,
+          "sha256": "362542d08d29291aea21c6fd05447b0656375a55aaba44cf97d800bd0c0251c4",
+          "type": "json"
+        },
+        {
+          "accepted_record_count": 33,
+          "filename": "turnaround.json",
+          "record_count": 33,
+          "rejected_record_count": 0,
+          "sha256": "b597546b59f55492c6065c1ede533a2e90a04f7701e1504618a0c56ca5be93d2",
+          "type": "json"
+        }
+      ],
+      "unsupported_metadata": {
+        "aircraft": [
+          "KAUO-G31-GA-01",
+          "KAUO-G31-GA-02",
+          "KAUO-G31-GA-03"
+        ],
+        "equipment_without_simulator_vehicle": []
+      },
+      "warnings": [
+        "AIRCRAFT_METADATA_ONLY: KAUO-G31-GA-01.category preserved in manifest; movement behavior is unchanged",
+        "AIRCRAFT_METADATA_ONLY: KAUO-G31-GA-02.category preserved in manifest; movement behavior is unchanged",
+        "AIRCRAFT_METADATA_ONLY: KAUO-G31-GA-03.category preserved in manifest; movement behavior is unchanged"
+      ]
+    }
+  },
+  "goal": 41,
+  "measured": {
+    "control": {
+      "arrivals_completed": 3,
+      "collisions": {
+        "aircraft_aircraft": 0,
+        "aircraft_ground": 0,
+        "ground_fleet": 0
+      },
+      "completed_required_tasks": 33,
+      "completed_turnarounds": 3,
+      "departure_delay_seconds": 643.0,
+      "departures_completed": 3,
+      "minimum_aircraft_ground_separation_m": 13.565011,
+      "minimum_aircraft_separation_m": 151.030987,
+      "minimum_ground_vehicle_separation_m": 1.969527,
+      "reassignments": 0,
+      "reroutes": 0,
+      "safety_failures": {
+        "agent_objectives_failed": 0,
+        "failed_or_timed_out_turnarounds": 0,
+        "fleet_requests_failed": 0,
+        "surface_safe_failures": 0,
+        "unresolved_service_requests": 0
+      },
+      "status": "completed successfully",
+      "taxi_distance_m": 5877.353,
+      "taxi_time_seconds": 1188,
+      "total_required_tasks": 33,
+      "total_turnarounds": 3,
+      "wait_seconds": 1129
+    },
+    "disruption": {
+      "arrivals_completed": 3,
+      "collisions": {
+        "aircraft_aircraft": 0,
+        "aircraft_ground": 0,
+        "ground_fleet": 0
+      },
+      "completed_required_tasks": 33,
+      "completed_turnarounds": 3,
+      "departure_delay_seconds": 937.0,
+      "departures_completed": 3,
+      "minimum_aircraft_ground_separation_m": 31.549956,
+      "minimum_aircraft_separation_m": 948.133186,
+      "minimum_ground_vehicle_separation_m": 1.969527,
+      "reassignments": 0,
+      "reroutes": 0,
+      "safety_failures": {
+        "agent_objectives_failed": 0,
+        "failed_or_timed_out_turnarounds": 0,
+        "fleet_requests_failed": 0,
+        "surface_safe_failures": 0,
+        "unresolved_service_requests": 0
+      },
+      "status": "completed successfully",
+      "taxi_distance_m": 5877.353,
+      "taxi_time_seconds": 1182,
+      "total_required_tasks": 33,
+      "total_turnarounds": 3,
+      "wait_seconds": 1123
+    }
+  },
+  "operation_canonical_sha256": "c892bc655197993cc3afeb0e20883d10bdc26157678b8edb417aa80fbed26c38",
+  "operation_name": "Multi-aircraft arrival, turnaround and departure",
+  "operator_decision_summaries": {
+    "control": [],
+    "disruption": [
+      {
+        "action": "TurnaroundScheduleAdjusted",
+        "aircraft_id": "KAUO-G31-GA-03",
+        "event_id": 55,
+        "options_considered": 1,
+        "reason_code": "TURNAROUND_DISRUPTION_DETECTED",
+        "replan_trigger": "SERVICE_DURATION_DISRUPTION",
+        "result": "TURNAROUND_ESTIMATE_RECOMPUTED",
+        "safety_constraints": "Aircraft movement and collision checks remain authoritative in the simulator.",
+        "selected_estimated_system_cost_seconds": null,
+        "selected_option": "480 second task duration",
+        "selected_route_distance_m": null,
+        "selected_route_time_seconds": null,
+        "time_seconds": 241,
+        "what_changed": "KAUO-G31-GA-03 pushback service was extended by 300 seconds.",
+        "why": "A controlled service-delay event changed the planned pushback task from 180 to 480 seconds. The simulator recomputed turnaround readiness."
+      }
+    ]
+  },
+  "planned_disruption": {
+    "added_duration_seconds": 300,
+    "aircraft_id": "KAUO-G31-GA-03",
+    "base_duration_seconds": 180,
+    "classification": "ASSUMED FOR SIMULATION; not a reported airport service condition",
+    "description": "Extend Flight KAUO-G31-GA-03 pushback service from 180 to 480 seconds before the task starts.",
+    "disrupted_duration_seconds": 480,
+    "service_type": "Pushback",
+    "starts_at_seconds": 241,
+    "task_id": "G31-03-PUSH",
+    "type": "Pushback service delay"
+  },
+  "replay": {
+    "control": {
+      "event_count": 313
+    },
+    "disruption": {
+      "event_count": 314
+    }
+  },
+  "routing_policy": "ADAPTIVE",
+  "same_initial_state": true,
+  "seed": 42,
+  "source_provenance": {
+    "airport": {
+      "airport_id": "KAUO",
+      "field_elevation_ft": 776.8,
+      "field_elevation_m": 236.785,
+      "iata": "AUO",
+      "icao": "KAUO",
+      "local_timezone": "America/Chicago",
+      "name": "Auburn University Regional Airport",
+      "operational_areas": [
+        {
+          "classification": "APPROXIMATE chart-informed operational area; boundary is not surveyed",
+          "id": "primary_fbo_apron",
+          "label": "Terminal/FBO apron"
+        },
+        {
+          "classification": "ASSUMED FOR SIMULATION; stand positions are not published FAA stands",
+          "id": "ga_parking_area",
+          "label": "Illustrative general aviation parking positions"
+        },
+        {
+          "classification": "ASSUMED FOR SIMULATION; not verified vehicle locations",
+          "id": "service_staging_area",
+          "label": "Illustrative apron service staging"
+        }
+      ],
+      "reference_latitude": 32.61511111,
+      "reference_longitude": -85.434,
+      "runways": [
+        {
+          "classification": "FAA published",
+          "identifier": "18/36",
+          "length_ft": 5264,
+          "surface": "asphalt, grooved",
+          "width_ft": 100
+        },
+        {
+          "classification": "FAA published",
+          "identifier": "11/29",
+          "length_ft": 4000,
+          "surface": "asphalt",
+          "width_ft": 75
+        }
+      ],
+      "timezone": "UTC"
+    },
+    "dataset_id": "kauo-goal31-turnaround-gse-demo",
+    "description": "Illustrative Goal 31 multi-aircraft KAUO turnaround resource demonstration; schedules, fleet inventory, service positions and durations are simulation assumptions.",
+    "files": {
+      "aircraft": "aircraft.json",
+      "disruptions": "disruptions.json",
+      "equipment": "equipment.json",
+      "flights": "flights.json",
+      "gates": "gates.json",
+      "turnaround_requirements": "turnaround.json"
+    },
+    "schema_version": "1.0"
+  },
+  "title": "KAUO airport operations",
+  "validation": {
+    "data_ingestion": "PASS",
+    "repeat_run_determinism": "PASS",
+    "safety_and_completion": "PASS",
+    "same_initial_state": "PASS",
+    "scenario_generation": "PASS"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "geometry_file": "kauo_goal31.geometry.json",
+  "gate_ids": {
+    "GA-PARK-ILLUSTRATIVE-01": "GA-PARK-01",
+    "GA-PARK-ILLUSTRATIVE-02": "GA-PARK-02",
+    "GA-PARK-ILLUSTRATIVE-03": "GA-PARK-03"
+  },
+  "route_ids": {
+    "KAUO-TWY-A-RAMP-CONNECTOR": "twy_a_mid_fbo_primary"
+  },
+  "equipment_types": {
+    "fuel_vehicle": {
+      "type": "fueling",
+      "initial_node": "fbo_service_staging_fuel"
+    },
+    "baggage_vehicle": {
+      "type": "baggage",
+      "initial_node": "fbo_service_staging_west"
+    },
+    "service_cart": {
+      "type": "baggage_load",
+      "initial_node": "fbo_service_staging_east"
+    },
+    "fuel_vehicle_secondary": {
+      "type": "fueling",
+      "initial_node": "gse_fuel_depot_02"
+    },
+    "catering_vehicle": {
+      "type": "catering",
+      "initial_node": "gse_catering_depot"
+    },
+    "lavatory_vehicle": {
+      "type": "lavatory_service",
+      "initial_node": "gse_lavatory_depot"
+    },
+    "potable_water_vehicle": {
+      "type": "potable_water",
+      "initial_node": "gse_water_depot"
+    },
+    "ground_power_unit": {
+      "type": "ground_power",
+      "initial_node": "gse_gpu_depot"
+    },
+    "tug": {
+      "type": "pushback",
+      "initial_node": "gse_tug_depot"
+    }
+  },
+  "service_types": {
+    "fueling": "fueling",
+    "baggage": "baggage",
+    "baggage_load": "baggage_load",
+    "pushback_preparation": "pushback_preparation",
+    "deboarding": "deboarding",
+    "catering": "catering",
+    "cabin_cleaning": "cabin_cleaning",
+    "lavatory_service": "lavatory_service",
+    "potable_water": "potable_water",
+    "ground_power": "ground_power",
+    "pushback": "pushback",
+    "chocks": "chocks"
+  },
+  "arrival_exit_node": "twy_a_mid",
+  "departure_handoff_node": "rwy36_hold",
+  "runway_node": "rwy36_hold",
+  "seed": 42
+}
