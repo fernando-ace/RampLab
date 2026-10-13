@@ -463,6 +463,18 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
             std::string rejection_reason;
             if (!selected) {
                 if (!candidate.valid) rejection_reason = candidate.explanation;
+                else if (event.policy_id == "cost-aware-counterfactual-operational-planning-v1" &&
+                    !candidate.objective_outcome_eligible)
+                    rejection_reason = "inferior bounded-rollout objective completion outcome";
+                else if (event.policy_id == "cost-aware-counterfactual-operational-planning-v1" &&
+                    !candidate.operational_cost_baseline && !candidate.material_improvement_passed)
+                    rejection_reason = "normalized improvement below material-improvement threshold";
+                else if (event.policy_id == "cost-aware-counterfactual-operational-planning-v1" &&
+                    !candidate.operational_cost_baseline && !candidate.bounded_regret_passed)
+                    rejection_reason = "additional non-wait cost exceeds bounded-regret allowance";
+                else if (event.policy_id == "cost-aware-counterfactual-operational-planning-v1" && event.selected_candidate &&
+                    candidate.total_operational_cost > event.candidates[*event.selected_candidate].total_operational_cost)
+                    rejection_reason = "higher normalized operational cost than selected candidate";
                 else if (event.policy_id == "counterfactual-operational-planning-v1" && event.selected_candidate) {
                     const auto& chosen = event.candidates[*event.selected_candidate];
                     bool candidate_better = false;
@@ -533,6 +545,23 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
                     << ",\"taxi_distance_m\":" << candidate.rollout_distance_m
                     << ",\"simulated_events\":" << candidate.rollout_events << '}';
             } else output << "null";
+            if (event.cost_aware_evaluated) {
+                output << ",\"operational_cost\":{\"baseline\":" << (candidate.operational_cost_baseline ? "true" : "false")
+                    << ",\"objective_outcome_eligible\":" << (candidate.objective_outcome_eligible ? "true" : "false")
+                    << ",\"normalized_wait\":" << candidate.normalized_wait_cost
+                    << ",\"normalized_completion_time\":" << candidate.normalized_completion_time_cost
+                    << ",\"normalized_distance\":" << candidate.normalized_distance_cost
+                    << ",\"normalized_contention\":" << candidate.normalized_contention_cost
+                    << ",\"route_change_penalty\":" << candidate.route_change_cost
+                    << ",\"fairness_wait_multiplier\":" << candidate.fairness_wait_multiplier
+                    << ",\"priority_fairness_contribution\":" << candidate.priority_fairness_contribution
+                    << ",\"total\":" << candidate.total_operational_cost
+                    << ",\"improvement_vs_baseline\":" << candidate.improvement_vs_baseline
+                    << ",\"material_improvement_passed\":" << (candidate.material_improvement_passed ? "true" : "false")
+                    << ",\"bounded_regret_passed\":" << (candidate.bounded_regret_passed ? "true" : "false")
+                    << ",\"contention_count\":" << candidate.rollout_contention_count
+                    << ",\"contention_delay_seconds\":" << candidate.rollout_contention_delay_seconds << '}';
+            }
             output
                 << ",\"selected\":" << (selected ? "true" : "false")
                 << ",\"rejection_reason\":\"" << json_escape(rejection_reason) << "\",\"conflicting_agent\":";
@@ -569,6 +598,27 @@ void write_agent_decisions(const std::filesystem::path& path, const airside::Sim
                 << ",\"different_from_rolling_horizon\":" << (event.differs_from_rolling_horizon ? "true" : "false")
                 << ",\"decision_trigger\":\"" << json_escape(event.replan_trigger)
                 << "\",\"tie_break\":\"" << json_escape(event.tie_break_reason) << "\"}";
+        }
+        if (event.cost_aware_evaluated) {
+            const auto& config = event.operational_cost_config;
+            output << ",\"cost_aware_model\":{\"objective_priority\":" << event.objective_priority
+                << ",\"wait_age_seconds\":" << event.wait_age.count()
+                << ",\"weights\":{\"wait\":" << config.wait_weight
+                << ",\"completion_time\":" << config.completion_time_weight
+                << ",\"distance\":" << config.distance_weight
+                << ",\"contention\":" << config.contention_weight
+                << ",\"route_change\":" << config.route_change_weight << "}"
+                << ",\"normalization_limits\":{\"wait_seconds\":" << config.maximum_wait_seconds
+                << ",\"completion_seconds\":" << config.maximum_completion_seconds
+                << ",\"distance_m\":" << config.maximum_distance_m
+                << ",\"contention_seconds\":" << config.maximum_contention_seconds << "}"
+                << ",\"material_improvement_threshold\":" << config.material_improvement
+                << ",\"maximum_regret_ratio\":" << config.maximum_regret_ratio
+                << ",\"wait_age_fairness_boost\":" << config.wait_age_fairness_boost
+                << ",\"priority_fairness_boost\":" << config.priority_fairness_boost
+                << ",\"fairness_wait_age_seconds\":" << config.fairness_wait_age_seconds
+                << ",\"maximum_priority\":" << config.maximum_priority
+                << ",\"replan_cooldown_seconds\":" << config.replan_cooldown.count() << '}';
         }
         output << '}';
     }

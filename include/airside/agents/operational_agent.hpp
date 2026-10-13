@@ -28,7 +28,29 @@ enum class ReasonCode {
     OperatorIntervention
 };
 enum class CandidateKind { ContinueCurrentRoute, AlternateRoute, Wait };
-enum class AutonomyMode { Scripted, Adaptive, CoordinatedAdaptive, RollingHorizonCoordinated, Counterfactual };
+enum class AutonomyMode { Scripted, Adaptive, CoordinatedAdaptive, RollingHorizonCoordinated, Counterfactual, CostAwareCounterfactual };
+
+// All terms are clipped to [0, 1] before weighting. Limits are the scales at
+// which a metric reaches its full normalized value; weights are dimensionless.
+struct OperationalCostConfig {
+    double wait_weight{0.40};
+    double completion_time_weight{0.30};
+    double distance_weight{0.18};
+    double contention_weight{0.08};
+    double route_change_weight{0.04};
+    double maximum_wait_seconds{600.0};
+    double maximum_completion_seconds{600.0};
+    double maximum_distance_m{2000.0};
+    double maximum_contention_seconds{600.0};
+    double material_improvement{0.01};
+    double maximum_regret_ratio{0.85};
+    double wait_age_fairness_boost{0.50};
+    double priority_fairness_boost{0.25};
+    double fairness_wait_age_seconds{120.0};
+    std::int64_t maximum_priority{10};
+    SimTime replan_cooldown{10};
+    auto operator<=>(const OperationalCostConfig&) const = default;
+};
 
 struct Objective {
     std::string id;
@@ -72,6 +94,21 @@ struct CandidateEvaluation {
     SimTime rollout_completion_time{};
     double rollout_distance_m{};
     std::size_t rollout_events{};
+    std::size_t rollout_contention_count{};
+    double rollout_contention_delay_seconds{};
+    double normalized_wait_cost{};
+    double normalized_completion_time_cost{};
+    double normalized_distance_cost{};
+    double normalized_contention_cost{};
+    double route_change_cost{};
+    double fairness_wait_multiplier{1.0};
+    double priority_fairness_contribution{};
+    double total_operational_cost{};
+    double improvement_vs_baseline{};
+    bool operational_cost_baseline{};
+    bool objective_outcome_eligible{};
+    bool material_improvement_passed{};
+    bool bounded_regret_passed{};
     auto operator<=>(const CandidateEvaluation&) const = default;
 };
 
@@ -171,6 +208,10 @@ struct DecisionEvent {
     SimTime planning_horizon{};
     std::size_t counterfactual_rollouts{};
     std::size_t counterfactual_events{};
+    std::int64_t objective_priority{};
+    SimTime wait_age{};
+    bool cost_aware_evaluated{};
+    OperationalCostConfig operational_cost_config{};
     bool differs_from_rolling_horizon{};
     std::string state_identifier;
     std::string replan_trigger;
@@ -239,6 +280,21 @@ public:
     [[nodiscard]] Decision decide(const Observation& observation,
         const Objective& objective, const PolicyMemory& memory) const override;
 };
+
+class CostAwareCounterfactualPolicy final : public DecisionPolicy {
+public:
+    explicit CostAwareCounterfactualPolicy(OperationalCostConfig config = {});
+    [[nodiscard]] std::string_view id() const noexcept override;
+    [[nodiscard]] Decision decide(const Observation& observation,
+        const Objective& objective, const PolicyMemory& memory) const override;
+private:
+    OperationalCostConfig config_;
+};
+
+// Scores every evaluated rollout and records the Goal 40 baseline and
+// bounded-regret checks directly on the candidate evidence.
+void evaluate_operational_costs(Observation& observation, const Objective& objective,
+    const OperationalCostConfig& config = {});
 
 [[nodiscard]] const DecisionPolicy& policy_for(AutonomyMode mode);
 [[nodiscard]] AutonomyMode parse_autonomy_mode(std::string_view value);

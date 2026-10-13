@@ -1559,7 +1559,8 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
     }
     std::map<AircraftId, std::vector<EdgeId>> shared_intents;
     const bool coordinated_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive;
-    const bool counterfactual_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::Counterfactual;
+    const bool cost_aware_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CostAwareCounterfactual;
+    const bool counterfactual_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::Counterfactual || cost_aware_policy;
     const bool rolling_policy = scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::RollingHorizonCoordinated || counterfactual_policy;
     const bool shared_policy = coordinated_policy || rolling_policy || counterfactual_policy;
     constexpr std::size_t max_shared_intent_edges = 32U;
@@ -1820,6 +1821,8 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
             SimTime taxi_time{};
             std::size_t events = 0U;
             std::size_t processed_edges = 0U;
+            std::size_t contention_count = 0U;
+            double contention_delay = 0.0;
             downstream_wait = initial_wait;
             bool reached = true;
             const auto count = std::min(result.route->edges.size(), rollout_edge_limit);
@@ -1842,6 +1845,10 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
                     ++events; // private reservation/intent conflict event
                     const SimTime other_release = other.estimated_arrival + other.estimated_occupancy + SimTime{10};
                     if (own_arrival >= other_release || other.estimated_arrival >= own_release) continue;
+                    ++contention_count;
+                    const SimTime overlap = std::max(SimTime::zero(), std::min(own_release, other_release) -
+                        std::max(own_arrival, other.estimated_arrival));
+                    contention_delay += static_cast<double>(overlap.count());
                     if (other.estimated_arrival <= own_arrival) {
                         blocking_release = std::max(blocking_release, other_release);
                     } else {
@@ -1865,7 +1872,15 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
             result.rollout_completion_time = elapsed;
             result.rollout_distance_m = result.route->distance_m;
             result.rollout_events = events;
+            result.rollout_contention_count = contention_count;
+            result.rollout_contention_delay_seconds = contention_delay;
             result.explanation = "isolated current-observation edge-event rollout; 600 s horizon, 8 edges, 256 events; future unrevealed disruptions excluded";
+        }
+        if (cost_aware_policy) {
+            const auto own_agent = surface_agents_.find(id);
+            const agents::Objective objective = own_agent != surface_agents_.end()
+                ? own_agent->second.objective : agents::Objective{"", agents::ObjectiveType::ReachDestination, destination, 0};
+            agents::evaluate_operational_costs(observation, objective);
         }
     }
     observation.objective_satisfied = state.node == destination;
@@ -1875,6 +1890,8 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
 void Simulation::record_agent_decision(AircraftId id, const agents::Observation& observation,
     const agents::Decision& decision, std::string result) {
     auto& agent = surface_agents_.at(id);
+    const bool cost_aware_policy = scenario_.surface_operations->aircraft_routing_policy ==
+        agents::AutonomyMode::CostAwareCounterfactual;
     agents::DecisionEvent trace;
     trace.event_id = std::format("agent-decision-{}", agent_decisions_.size());
     trace.time = now_;
@@ -1939,10 +1956,15 @@ void Simulation::record_agent_decision(AircraftId id, const agents::Observation&
         }
         trace.safety_constraints = "closed-edge rejection; exclusive edge and node reservations; aircraft and ground-vehicle clearance checks; safe failure on no feasible route";
     }
-    if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::Counterfactual) {
+    if (scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::Counterfactual ||
+        scenario_.surface_operations->aircraft_routing_policy == agents::AutonomyMode::CostAwareCounterfactual) {
         trace.planning_horizon = SimTime{600};
-        trace.coordination_rule = "lexicographic: completed objectives, blocked objectives, downstream wait, taxi time, taxi distance, stable candidate order";
-        trace.tie_break_reason = "candidate enumeration order is stable; first candidate is retained on a complete lexicographic tie";
+        trace.coordination_rule = cost_aware_policy
+            ? "Goal 40 first preserves best bounded-rollout objective completion; then normalized cost weights: wait .40, completion time .30, distance .18, contention .08, route change .04; material improvement >= .01 and non-wait regret <= 0.85 of waiting benefit; wait-age and priority raise wait weight"
+            : "lexicographic: completed objectives, blocked objectives, downstream wait, taxi time, taxi distance, stable candidate order";
+        trace.tie_break_reason = cost_aware_policy
+            ? "lower normalized total operational cost wins; exact cost ties retain stable candidate enumeration order; baseline retained when thresholds fail"
+            : "candidate enumeration order is stable; first candidate is retained on a complete lexicographic tie";
         trace.replan_trigger = observation.operator_triggered ? "operator intervention" :
             observation.invalid_edge ? "route invalidation" : observation.reservation_blocked ? "reservation blocked" :
             observation.current_route ? "eligible route comparison" : "new objective or missing route";
@@ -1952,6 +1974,10 @@ void Simulation::record_agent_decision(AircraftId id, const agents::Observation&
         for (const auto& candidate : trace.candidates) trace.counterfactual_events += candidate.rollout_events;
         const auto rolling = agents::RollingHorizonCoordinatedPolicy{}.decide(observation, agent.objective, agent.memory);
         trace.differs_from_rolling_horizon = rolling.action != decision.action || rolling.route != decision.route;
+        trace.objective_priority = agent.objective.priority;
+        trace.wait_age = observation.accumulated_wait_age;
+        trace.cost_aware_evaluated = cost_aware_policy;
+        trace.operational_cost_config = agents::OperationalCostConfig{};
         trace.state_identifier = std::format("{}@{}:{}>{}:{}", observation.agent_id,
             observation.time.count(), observation.current_node.value(), observation.destination.value(),
             agents::route_string(observation.current_route));
@@ -2245,7 +2271,8 @@ void Simulation::handle_surface_tick() {
         movement_order.push_back(id);
     }
     if (config.aircraft_routing_policy == agents::AutonomyMode::CoordinatedAdaptive ||
-        config.aircraft_routing_policy == agents::AutonomyMode::RollingHorizonCoordinated) {
+        config.aircraft_routing_policy == agents::AutonomyMode::RollingHorizonCoordinated ||
+        config.aircraft_routing_policy == agents::AutonomyMode::CostAwareCounterfactual) {
         std::ranges::stable_sort(movement_order, [&](AircraftId left, AircraftId right) {
             const auto& lhs = surface_aircraft_.at(left);
             const auto& rhs = surface_aircraft_.at(right);

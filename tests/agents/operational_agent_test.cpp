@@ -148,7 +148,179 @@ TEST(OperationalAgentPolicyTests, AutonomyModeParsingIsStableAndRejectsUnknownMo
     EXPECT_EQ(to_string(AutonomyMode::RollingHorizonCoordinated), "ROLLING_HORIZON_COORDINATED");
     EXPECT_EQ(parse_autonomy_mode("COUNTERFACTUAL"), AutonomyMode::Counterfactual);
     EXPECT_EQ(to_string(AutonomyMode::Counterfactual), "COUNTERFACTUAL");
+    EXPECT_EQ(parse_autonomy_mode("COST_AWARE_COUNTERFACTUAL"), AutonomyMode::CostAwareCounterfactual);
+    EXPECT_EQ(to_string(AutonomyMode::CostAwareCounterfactual), "COST_AWARE_COUNTERFACTUAL");
     EXPECT_THROW((void)parse_autonomy_mode("RANDOM"), std::invalid_argument);
+}
+
+TEST(OperationalAgentPolicyTests, CostAwareCounterfactualRejectsWastefulDetourAndAcceptsWorthwhileOne) {
+    CostAwareCounterfactualPolicy policy;
+    auto objective = destination_objective();
+    auto make_observation = [&] {
+        auto observation = base_observation();
+        observation.current_route = route({1, 2, 4});
+        CandidateEvaluation baseline;
+        baseline.kind = CandidateKind::ContinueCurrentRoute;
+        baseline.route = observation.current_route;
+        baseline.counterfactual_evaluated = true;
+        baseline.rollout_completed_objectives = 1U;
+        baseline.rollout_wait = SimTime{2};
+        baseline.rollout_taxi_time = SimTime{100};
+        baseline.rollout_completion_time = SimTime{102};
+        baseline.rollout_distance_m = 500.0;
+        CandidateEvaluation alternative;
+        alternative.kind = CandidateKind::AlternateRoute;
+        alternative.route = route({1, 3, 4});
+        alternative.counterfactual_evaluated = true;
+        alternative.rollout_completed_objectives = 1U;
+        observation.candidates = {baseline, alternative};
+        return observation;
+    };
+
+    auto wasteful = make_observation();
+    wasteful.candidates[1].rollout_wait = SimTime{0};
+    wasteful.candidates[1].rollout_taxi_time = SimTime{190};
+    wasteful.candidates[1].rollout_completion_time = SimTime{190};
+    wasteful.candidates[1].rollout_distance_m = 900.0;
+    evaluate_operational_costs(wasteful, objective);
+    EXPECT_FALSE(wasteful.candidates[1].material_improvement_passed);
+    EXPECT_FALSE(wasteful.candidates[1].bounded_regret_passed);
+    auto decision = policy.decide(wasteful, objective, {});
+    ASSERT_EQ(decision.action, ActionType::FollowRoute);
+    EXPECT_EQ(decision.route, wasteful.current_route);
+
+    auto worthwhile = make_observation();
+    worthwhile.candidates[0].rollout_wait = SimTime{90};
+    worthwhile.candidates[0].rollout_completion_time = SimTime{190};
+    worthwhile.candidates[1].rollout_wait = SimTime{0};
+    worthwhile.candidates[1].rollout_taxi_time = SimTime{108};
+    worthwhile.candidates[1].rollout_completion_time = SimTime{108};
+    worthwhile.candidates[1].rollout_distance_m = 540.0;
+    evaluate_operational_costs(worthwhile, objective);
+    EXPECT_TRUE(worthwhile.candidates[1].material_improvement_passed);
+    EXPECT_TRUE(worthwhile.candidates[1].bounded_regret_passed);
+    decision = policy.decide(worthwhile, objective, {});
+    ASSERT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, worthwhile.candidates[1].route);
+}
+
+TEST(OperationalAgentPolicyTests, CostAwareWaitAgeAndPriorityCanProtectAnOlderAircraft) {
+    OperationalCostConfig config;
+    config.distance_weight = 0.16;
+    config.route_change_weight = 0.06;
+    CostAwareCounterfactualPolicy policy{config};
+    auto objective = destination_objective();
+    auto observation = base_observation();
+    observation.current_route = route({1, 2, 4});
+    CandidateEvaluation baseline;
+    baseline.kind = CandidateKind::ContinueCurrentRoute;
+    baseline.route = observation.current_route;
+    baseline.counterfactual_evaluated = true;
+    baseline.rollout_wait = SimTime{180};
+    baseline.rollout_taxi_time = SimTime{100};
+    baseline.rollout_completion_time = SimTime{280};
+    baseline.rollout_distance_m = 500.0;
+    CandidateEvaluation alternative;
+    alternative.kind = CandidateKind::AlternateRoute;
+    alternative.route = route({1, 3, 4});
+    alternative.counterfactual_evaluated = true;
+    alternative.rollout_wait = SimTime{90};
+    alternative.rollout_taxi_time = SimTime{120};
+    alternative.rollout_completion_time = SimTime{300};
+    alternative.rollout_distance_m = 550.0;
+    observation.candidates = {baseline, alternative};
+
+    evaluate_operational_costs(observation, objective, config);
+    EXPECT_FALSE(observation.candidates[1].bounded_regret_passed);
+    EXPECT_EQ(policy.decide(observation, objective, {}).route, observation.current_route);
+
+    observation.accumulated_wait_age = SimTime{120};
+    objective.priority = 10;
+    evaluate_operational_costs(observation, objective, config);
+    EXPECT_GT(observation.candidates[1].fairness_wait_multiplier, 1.0);
+    EXPECT_TRUE(observation.candidates[1].bounded_regret_passed);
+    const auto decision = policy.decide(observation, objective, {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, observation.candidates[1].route);
+}
+
+TEST(OperationalAgentPolicyTests, CostAwareCandidateCostCannotMakeAnInfeasibleRouteWin) {
+    CostAwareCounterfactualPolicy policy;
+    auto observation = base_observation();
+    CandidateEvaluation unsafe;
+    unsafe.kind = CandidateKind::AlternateRoute;
+    unsafe.route = route({1, 3, 4});
+    unsafe.valid = false;
+    unsafe.counterfactual_evaluated = true;
+    unsafe.rollout_wait = SimTime::zero();
+    unsafe.rollout_taxi_time = SimTime{1};
+    unsafe.rollout_completion_time = SimTime{1};
+    unsafe.rollout_distance_m = 1.0;
+    CandidateEvaluation safe;
+    safe.kind = CandidateKind::ContinueCurrentRoute;
+    safe.route = observation.current_route;
+    safe.counterfactual_evaluated = true;
+    safe.rollout_completed_objectives = 1U;
+    safe.rollout_taxi_time = SimTime{100};
+    safe.rollout_completion_time = SimTime{100};
+    safe.rollout_distance_m = 500.0;
+    observation.candidates = {unsafe, safe};
+    evaluate_operational_costs(observation, destination_objective());
+    EXPECT_FALSE(observation.candidates[0].operational_cost_baseline);
+    EXPECT_FALSE(observation.candidates[0].material_improvement_passed);
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::FollowRoute);
+    EXPECT_EQ(decision.route, observation.current_route);
+}
+
+TEST(OperationalAgentPolicyTests, CostAwareCostCannotTradeAwayBoundedObjectiveCompletion) {
+    CostAwareCounterfactualPolicy policy;
+    auto observation = base_observation();
+    CandidateEvaluation incomplete;
+    incomplete.kind = CandidateKind::ContinueCurrentRoute;
+    incomplete.route = observation.current_route;
+    incomplete.counterfactual_evaluated = true;
+    incomplete.rollout_blocked_objectives = 1U;
+    incomplete.rollout_taxi_time = SimTime{1};
+    incomplete.rollout_completion_time = SimTime{1};
+    incomplete.rollout_distance_m = 1.0;
+    CandidateEvaluation complete;
+    complete.kind = CandidateKind::AlternateRoute;
+    complete.route = route({1, 3, 4});
+    complete.counterfactual_evaluated = true;
+    complete.rollout_completed_objectives = 1U;
+    complete.rollout_taxi_time = SimTime{500};
+    complete.rollout_completion_time = SimTime{500};
+    complete.rollout_distance_m = 1200.0;
+    observation.candidates = {incomplete, complete};
+    evaluate_operational_costs(observation, destination_objective());
+    EXPECT_FALSE(observation.candidates[0].objective_outcome_eligible);
+    EXPECT_TRUE(observation.candidates[1].objective_outcome_eligible);
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, complete.route);
+}
+
+TEST(OperationalAgentPolicyTests, CostAwareCompleteCostTiesKeepCandidateEnumerationOrder) {
+    CostAwareCounterfactualPolicy policy;
+    auto observation = base_observation();
+    observation.current_route.reset();
+    CandidateEvaluation first;
+    first.kind = CandidateKind::AlternateRoute;
+    first.route = route({1, 2, 4});
+    first.counterfactual_evaluated = true;
+    first.rollout_completed_objectives = 1U;
+    first.rollout_taxi_time = SimTime{100};
+    first.rollout_completion_time = SimTime{100};
+    first.rollout_distance_m = 500.0;
+    first.score_seconds = 1.0;
+    CandidateEvaluation second = first;
+    second.route = route({1, 3, 4});
+    observation.candidates = {first, second};
+    evaluate_operational_costs(observation, destination_objective());
+    const auto decision = policy.decide(observation, destination_objective(), {});
+    EXPECT_EQ(decision.action, ActionType::PlanRoute);
+    EXPECT_EQ(decision.route, first.route);
 }
 
 TEST(OperationalAgentPolicyTests, SyntheticDownstreamOutcomeCanOverrideLocallyCheapestRoute) {
