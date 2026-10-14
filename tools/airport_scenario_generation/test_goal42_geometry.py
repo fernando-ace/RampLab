@@ -75,7 +75,7 @@ class Goal42GeometryTests(unittest.TestCase):
         self.assertEqual(len(payload["geometry"]["surface_areas"]), 37)
         self.assertIn("ALDOT pavement inventory", payload["catalog"]["available_bases"][-2]["provenance"])
         self.assertEqual(payload["geometry"]["geometry_provenance"]["route_graph"]["classification"],
-                         "DERIVED_WITH_APPROXIMATE_CENTERLINES")
+                         "SOURCE_BACKED_DERIVED_WITH_MANUALLY_RECONCILED_APPROXIMATIONS")
 
     def test_duplicate_source_ids_are_rejected(self):
         source = json.loads(SOURCE.read_text(encoding="utf-8-sig"))
@@ -86,12 +86,19 @@ class Goal42GeometryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "duplicate"):
                 normalize_source(path)
 
-    def test_graph_alignment_audit_measures_and_flags_unaligned_edges(self):
-        geometry = build_geometry()
-        audit = graph_alignment_audit(geometry["airport"], geometry["airport"]["surface_areas"])
-        self.assertEqual(audit["edge_count"], len(geometry["airport"]["edges"]))
-        self.assertTrue(any(row["status"] == "OUTSIDE_OR_LOW_OVERLAP" for row in audit["edges"]))
-        self.assertIn("diagnostic overlap only", audit["interpretation"])
+    def test_goal42_routes_are_derived_inside_pavement_and_classed_by_movement(self):
+        airport = build_geometry()["airport"]
+        audit = graph_alignment_audit(airport, airport["surface_areas"])
+        self.assertEqual(audit["edge_count"], len(airport["edges"]))
+        self.assertEqual({row["surface_polygon_coverage_ratio"] for row in audit["edges"]}, {1.0})
+        model = airport["surface_routing_model"]
+        self.assertEqual(model["route_counts"], {"aircraft": 94, "ground_vehicle": 89, "unavailable_for_both": 0})
+        self.assertTrue(all(edge["surface_centerline"] and edge["surface_route_distance_m"] > 0
+                            for edge in airport["edges"]))
+        self.assertTrue(all(edge["aircraft_allowed"] for edge in airport["edges"]))
+        self.assertTrue(any(not edge["ground_vehicle_allowed"] for edge in airport["edges"]))
+        self.assertTrue(all(node["surface_attachment"]["source_feature_id"]
+                            for node in airport["nodes"]))
 
 
 if __name__ == "__main__":

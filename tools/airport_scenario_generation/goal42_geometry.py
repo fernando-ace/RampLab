@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from .geospatial import GeographicCoordinate, geographic_to_enu
+from .surface_routes import derive_surface_routes
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "tools" / "airport_scenario_generation" / "sources" / "aldot_auo_pavement_sections.geojson"
@@ -134,26 +135,36 @@ def _inside(point: tuple[float, float], ring: list[dict[str, float]]) -> bool:
 
 
 def graph_alignment_audit(airport: dict[str, Any], surface_areas: list[dict[str, Any]], samples_per_edge: int = 101) -> dict[str, Any]:
-    """Measure route centerline samples inside ALDOT taxiway/apron inventory polygons."""
+    """Measure route centerline samples inside classified ALDOT pavement polygons."""
     nodes = {node["id"]: node for node in airport.get("nodes", [])}
-    areas = [area for area in surface_areas if area["use"] in {"TAXIWAY", "APRON"}]
+    areas = [area for area in surface_areas if area["use"] in {"RUNWAY", "TAXIWAY", "APRON"}]
     results = []
     for edge in airport.get("edges", []):
-        start, end = nodes[edge["from"]], nodes[edge["to"]]
+        line = edge.get("surface_centerline") or [nodes[edge["from"]], nodes[edge["to"]]]
+        segment_lengths = [((right["x_m"] - left["x_m"]) ** 2 + (right["y_m"] - left["y_m"]) ** 2) ** 0.5
+                           for left, right in zip(line, line[1:])]
+        total = sum(segment_lengths)
         covered = 0
         for index in range(samples_per_edge):
-            fraction = index / (samples_per_edge - 1)
-            point = (start["x_m"] + (end["x_m"] - start["x_m"]) * fraction,
-                     start["y_m"] + (end["y_m"] - start["y_m"]) * fraction)
-            if any(_inside(point, ring) for area in areas for polygon in area["polygons"] for ring in polygon[:1]):
+            remaining = total * index / (samples_per_edge - 1)
+            segment_index = 0
+            while segment_index < len(segment_lengths) - 1 and remaining > segment_lengths[segment_index]:
+                remaining -= segment_lengths[segment_index]
+                segment_index += 1
+            left, right = line[segment_index], line[segment_index + 1]
+            fraction = 0.0 if segment_lengths[segment_index] == 0 else remaining / segment_lengths[segment_index]
+            point = (left["x_m"] + (right["x_m"] - left["x_m"]) * fraction,
+                     left["y_m"] + (right["y_m"] - left["y_m"]) * fraction)
+            if any(_inside(point, polygon[0]) and not any(_inside(point, hole) for hole in polygon[1:])
+                   for area in areas for polygon in area["polygons"]):
                 covered += 1
         coverage = covered / samples_per_edge
         results.append({"edge_id": edge["id"], "from": edge["from"], "to": edge["to"],
                         "surface_polygon_coverage_ratio": round(coverage, 6),
                         "status": "MOSTLY_WITHIN_INVENTORY" if coverage >= 0.9 else
                                   "PARTIAL_OVERLAP" if coverage >= 0.5 else "OUTSIDE_OR_LOW_OVERLAP"})
-    return {"method": f"{samples_per_edge} evenly spaced points per straight graph edge tested against ALDOT taxiway/apron outer rings",
-            "interpretation": "diagnostic overlap only; pavement extents do not establish legal centerline routing",
+    return {"method": f"{samples_per_edge} evenly spaced points on each generated centerline tested against ALDOT runway/taxiway/apron outer rings",
+            "interpretation": "derived raster paths are constrained to classified pavement inventory interiors; inventory extents do not establish approved centerlines or legal routing",
             "edge_count": len(results), "mostly_within_count": sum(row["status"] == "MOSTLY_WITHIN_INVENTORY" for row in results),
             "edges": results}
 
@@ -165,6 +176,7 @@ def build_geometry(base_path: Path = BASE, source_path: Path = SOURCE) -> dict[s
     if not isinstance(airport, dict):
         raise ValueError("base geometry has no airport object")
     airport["surface_areas"] = normalized["surface_areas"]
+    airport["surface_routing_model"] = derive_surface_routes(airport)
     airport["graph_alignment_audit"] = graph_alignment_audit(airport, normalized["surface_areas"])
     airport["geometry_provenance"] = {
         "runway_reference_points": {
@@ -188,9 +200,9 @@ def build_geometry(base_path: Path = BASE, source_path: Path = SOURCE) -> dict[s
             }
         },
         "route_graph": {
-            "source": "FAA airport diagram topology, aligned by review to ALDOT pavement surfaces",
-            "classification": "DERIVED_WITH_APPROXIMATE_CENTERLINES",
-            "limitations": ["Graph nodes and centerline edges remain simulation routing abstractions; ALDOT inventory polygons do not define taxiway centerlines or legal routing."]
+            "source": "Deterministic 2 m raster A* through FAA/ALDOT-aligned operating-pavement inventory areas",
+            "classification": "SOURCE_BACKED_DERIVED_WITH_MANUALLY_RECONCILED_APPROXIMATIONS",
+            "limitations": ["ALDOT inventory polygons do not define approved taxiway centerlines or legal routing; approximate node attachment displacements are retained per node."]
         },
         "stands_and_gates": {
             "source": "Illustrative simulator mapping; no surveyed stand coordinates obtained",
