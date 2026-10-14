@@ -120,6 +120,88 @@ TEST(SurfaceTrafficTest, MovementEventsCarryAuthoritativePoseAndStableEntityIden
     EXPECT_TRUE(std::isfinite(*movement->heading_rad));
 }
 
+TEST(SurfaceTrafficTest, RoutesAroundStationaryGroundVehicleBeforeEnteringEdge) {
+    const auto make_scenario = [] {
+        airside::Scenario scenario;
+        scenario.name = "stationary_gse_route_blocker";
+        scenario.turnaround_orchestration = true;
+        const airside::NodeId runway{1}, exit{2}, gate_node{3}, handoff{4}, depot{5}, detour{6};
+        scenario.graph.add_node({runway, "runway", {0.0, -500.0}});
+        scenario.graph.add_node({exit, "exit", {0.0, 0.0}});
+        scenario.graph.add_node({gate_node, "gate", {100.0, 0.0}});
+        scenario.graph.add_node({handoff, "handoff", {200.0, 0.0}});
+        scenario.graph.add_node({depot, "depot", {50.0, 20.0}});
+        scenario.graph.add_node({detour, "detour", {0.0, 150.0}});
+        airside::RoadEdge direct{airside::EdgeId{1}, exit, gate_node, 100.0,
+            airside::SimTime{20}, true, false};
+        direct.centerline = {{0.0, 0.0}, {50.0, 0.0}, {100.0, 0.0}};
+        scenario.graph.add_edge(std::move(direct));
+        scenario.graph.add_edge({airside::EdgeId{2}, exit, detour, 150.0, airside::SimTime{30}, true, false});
+        scenario.graph.add_edge({airside::EdgeId{3}, detour, gate_node, 180.0, airside::SimTime{36}, true, false});
+        scenario.gates.emplace_back(airside::GateId{1}, "A1", gate_node);
+        scenario.vehicles.emplace_back(airside::VehicleId{1}, "Parked-GSE",
+            airside::ServiceType::Fueling, depot);
+        scenario.aircraft.emplace_back(airside::AircraftId{1}, "INBOUND001", airside::SimTime{0},
+            airside::SimTime{1000}, airside::GateId{1}, gate_node, std::vector<airside::ServiceTask>{},
+            "", std::nullopt, airside::AircraftOperationType::ArrivalOnly, exit);
+        scenario.surface_operations = airside::SurfaceOperationsConfig{
+            handoff, runway, exit, airside::SimTime{1}, airside::SimTime{2}, airside::SimTime{1}, 5.0, 30.0};
+        scenario.surface_operations->aircraft_routing_policy = airside::agents::AutonomyMode::Adaptive;
+        return scenario;
+    };
+
+    airside::Simulation simulation{make_scenario(), 42};
+    std::size_t steps = 0;
+    constexpr std::size_t max_steps = 500;
+    while (!simulation.finished() && steps < max_steps) {
+        (void)simulation.advance();
+        ++steps;
+    }
+    if (!simulation.finished()) {
+        const auto pending = simulation.snapshot();
+        for (const auto& item : pending.aircraft) {
+            std::cerr << "blocked aircraft " << item.flight_number << " state=" << item.surface_state
+                      << " node=" << (item.surface_node ? std::to_string(item.surface_node->value()) : "none")
+                      << " reason=" << item.surface_wait_reason
+                      << " wait_s=" << item.surface_wait_duration.count()
+                      << " pos=" << (item.surface_position_m ? std::to_string(item.surface_position_m->x_m) + "," +
+                          std::to_string(item.surface_position_m->y_m) : "none") << " route=";
+            for (const auto node : item.surface_route) std::cerr << node.value() << ',';
+            std::cerr << '\n';
+        }
+        for (const auto& event : simulation.event_history()) {
+            if (event.type == airside::SimulationEventType::SurfaceWaitingForTraffic ||
+                event.type == airside::SimulationEventType::SurfaceReservationAcquired ||
+                event.type == airside::SimulationEventType::SurfaceReservationReleased) {
+                std::cerr << "diagnostic event t=" << event.timestamp.count() << " type="
+                          << airside::to_string(event.type) << " aircraft="
+                          << (event.aircraft ? std::to_string(event.aircraft->value()) : "none") << " edge="
+                          << (event.edge ? std::to_string(event.edge->value()) : "none") << " vehicle="
+                          << (event.vehicle ? std::to_string(event.vehicle->value()) : "none")
+                          << " detail=" << event.detail << '\n';
+            }
+        }
+    }
+    ASSERT_TRUE(simulation.finished()) << "stationary ground vehicle left aircraft indefinitely blocked after "
+        << steps << " events at simulated second " << simulation.current_time().count();
+
+    const auto result = simulation.result();
+    for (int repeat = 0; repeat < 2; ++repeat) {
+        const auto repeated = airside::Simulation{make_scenario(), 42}.run();
+        EXPECT_EQ(repeated.events, result.events) << "serial replay " << (repeat + 2) << " diverged";
+        EXPECT_EQ(repeated.metrics.surface_aircraft_ground_collisions,
+            result.metrics.surface_aircraft_ground_collisions);
+    }
+    EXPECT_EQ(result.metrics.surface_arrived_aircraft, 1U);
+    const auto route = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfaceTaxiRouteAssigned && event.route.has_value();
+    });
+    ASSERT_NE(route, result.events.end());
+    EXPECT_EQ(route->route->nodes,
+        (std::vector<airside::NodeId>{airside::NodeId{2}, airside::NodeId{6}, airside::NodeId{3}}));
+    EXPECT_EQ(result.metrics.surface_aircraft_ground_collisions, 0U);
+}
+
 TEST(SurfaceTrafficTest, ArrivalTurnaroundContinuesThroughPushbackAndDeparture) {
     airside::Scenario scenario;
     scenario.name = "arrival_turnaround_regression";

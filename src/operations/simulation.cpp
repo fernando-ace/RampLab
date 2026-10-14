@@ -8,6 +8,7 @@
 #include <cmath>
 #include <format>
 #include <functional>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <tuple>
@@ -60,6 +61,27 @@ bool uses_mobile_fleet(ServiceType type) {
     case ServiceType::AirStart: return true;
     default: return false;
     }
+}
+
+double point_to_segment_distance_m(const Vec2& point, const Vec2& start, const Vec2& end) {
+    const double dx = end.x_m - start.x_m;
+    const double dy = end.y_m - start.y_m;
+    const double length_squared = dx * dx + dy * dy;
+    const double fraction = length_squared == 0.0 ? 0.0 : std::clamp(
+        ((point.x_m - start.x_m) * dx + (point.y_m - start.y_m) * dy) / length_squared,
+        0.0, 1.0);
+    return std::hypot(point.x_m - (start.x_m + fraction * dx),
+        point.y_m - (start.y_m + fraction * dy));
+}
+
+double point_to_edge_distance_m(const AirportGraph& graph, const RoadEdge& edge, const Vec2& point) {
+    const auto& line = edge.centerline;
+    if (line.size() < 2U)
+        return point_to_segment_distance_m(point, graph.node(edge.from).position, graph.node(edge.to).position);
+    double minimum = std::numeric_limits<double>::infinity();
+    for (std::size_t index = 1; index < line.size(); ++index)
+        minimum = std::min(minimum, point_to_segment_distance_m(point, line[index - 1], line[index]));
+    return minimum;
 }
 
 std::string fleet_capability(ServiceType type) {
@@ -698,6 +720,25 @@ void Simulation::schedule_vehicle_outage(VehicleId id) {
     if (found == scenario_.vehicles.end()) throw std::invalid_argument("operator outage references unknown vehicle");
     (void)events_.schedule(now_, EventType::OperatorVehicleOutage,
         {EntityKind::Vehicle, id.value()});
+}
+
+std::map<EdgeId, VehicleId> Simulation::stationary_ground_vehicle_blockers() const {
+    std::map<EdgeId, VehicleId> blockers;
+    if (!autonomy_fleet_) return blockers;
+    const auto observed = snapshot();
+    for (const auto& vehicle_snapshot : observed.vehicles) {
+        if (vehicle_snapshot.state != VehicleState::Idle || vehicle_snapshot.fleet_status != "Idle" ||
+            !vehicle_snapshot.observed_position_m) continue;
+        for (const auto& edge : scenario_.graph.edges()) {
+            if (!edge.available || !edge.aircraft_allowed ||
+                point_to_edge_distance_m(scenario_.graph, edge, *vehicle_snapshot.observed_position_m) >=
+                    surface_safety::aircraft_ground_clearance_m) continue;
+            const auto found = blockers.find(edge.id);
+            if (found == blockers.end() || vehicle_snapshot.id < found->second)
+                blockers[edge.id] = vehicle_snapshot.id;
+        }
+    }
+    return blockers;
 }
 
 void Simulation::process(const Event& event) {
@@ -1512,6 +1553,12 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
     bool route_invalidated, std::optional<EdgeId> invalid_edge, bool reservation_blocked,
     bool operator_triggered) const {
     const auto& state = surface_aircraft_.at(id);
+    const auto ground_blockers = stationary_ground_vehicle_blockers();
+    auto routing_graph = scenario_.graph;
+    for (const auto& [edge, vehicle] : ground_blockers) {
+        (void)vehicle;
+        routing_graph.set_edge_available(edge, false);
+    }
     agents::Observation observation;
     observation.agent_id = std::format("aircraft-{}", id.value());
     observation.agent_type = agents::AgentType::AircraftSurface;
@@ -1545,7 +1592,7 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
         if (owner != id) expected_wait.emplace(edge, SimTime{30});
     }
     const bool adaptive_policy = scenario_.surface_operations->aircraft_routing_policy != agents::AutonomyMode::Scripted;
-    observation.available_route = find_route(scenario_.graph, state.node, destination,
+    observation.available_route = find_route(routing_graph, state.node, destination,
         adaptive_policy
             ? expected_wait : std::unordered_map<EdgeId, SimTime>{}, MovementClass::Aircraft);
     if (observation.available_route) observation.available_route_cost = observation.available_route->travel_time;
@@ -1650,6 +1697,14 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
         candidate.score_seconds = static_cast<double>(candidate.predicted_taxi_time.count() +
             candidate.expected_wait.count()) + candidate.predicted_taxi_distance_m / 50.0;
         candidate.estimated_system_cost_seconds = candidate.score_seconds;
+        const auto blocked_edge = std::ranges::find_if(route.edges, [&](EdgeId edge) {
+            return ground_blockers.contains(edge);
+        });
+        if (blocked_edge != route.edges.end()) {
+            candidate.valid = false;
+            candidate.explanation = std::format("rejected: idle ground vehicle {} occupies the aircraft clearance area of edge {}",
+                ground_blockers.at(*blocked_edge).value(), blocked_edge->value());
+        }
         if (coordinated_policy) {
             std::map<AircraftId, std::pair<EdgeId, std::int64_t>> conflicting_agents;
             for (const auto& [other_id, intent_edges] : shared_intents) {
@@ -1743,7 +1798,7 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
         return candidate;
     };
     if (!observation.objective_satisfied) {
-        const auto alternatives = find_route_candidates(scenario_.graph, state.node, destination, 6U, route_waits, MovementClass::Aircraft);
+        const auto alternatives = find_route_candidates(routing_graph, state.node, destination, 6U, route_waits, MovementClass::Aircraft);
         if (observation.current_route) {
             auto candidate = make_candidate(agents::CandidateKind::ContinueCurrentRoute,
                 *observation.current_route);
@@ -2239,6 +2294,7 @@ void Simulation::handle_surface_tick() {
         }
     }
 
+    const auto ground_blockers = stationary_ground_vehicle_blockers();
     std::vector<AircraftId> movement_order;
     movement_order.reserve(surface_aircraft_.size());
     for (const auto& [id, state] : surface_aircraft_) {
@@ -2282,6 +2338,8 @@ void Simulation::handle_surface_tick() {
                 continue;
             }
             const auto edge_id = state.route_edges.front();
+            const auto ground_blocker = ground_blockers.find(edge_id);
+            const bool blocked_by_stationary_ground_vehicle = ground_blocker != ground_blockers.end();
             if (!scenario_.graph.edge(edge_id).available) {
                 event_for(SimulationEventType::SurfaceRouteInvalidated, id, edge_id);
                 const auto destination = state.arrival_operation ? aircraft(id).gate_node() : config.departure_handoff;
@@ -2304,26 +2362,44 @@ void Simulation::handle_surface_tick() {
             const auto selected_node = state.route_nodes[1];
             const auto edge_owner = surface_edge_reservations_.find(selected_edge);
             const auto node_owner = surface_node_reservations_.find(selected_node);
-            if (edge_owner != surface_edge_reservations_.end() || node_owner != surface_node_reservations_.end()) {
+            if (edge_owner != surface_edge_reservations_.end() || node_owner != surface_node_reservations_.end() ||
+                blocked_by_stationary_ground_vehicle) {
                 if (!state.pushback_wait_reported) {
                     state.pushback_wait_reported = true;
                     ++surface_wait_events_;
-                    event_for(SimulationEventType::SurfaceWaitingForPushback, id);
+                    auto waiting = aircraft_event(SimulationEventType::SurfaceWaitingForPushback, aircraft(id));
+                    if (blocked_by_stationary_ground_vehicle) {
+                        waiting.vehicle = ground_blocker->second;
+                        waiting.edge = edge_id;
+                        waiting.detail = "idle ground vehicle occupies the aircraft clearance area of the pushback edge";
+                    }
+                    emit(std::move(waiting));
                 }
                 const auto agent = surface_agents_.find(id);
-                if (config.aircraft_routing_policy != agents::AutonomyMode::Scripted && state.wait_started &&
-                    (agent == surface_agents_.end() || !agent->second.memory.last_blockage_decision_at ||
+                if ((blocked_by_stationary_ground_vehicle ||
+                     config.aircraft_routing_policy != agents::AutonomyMode::Scripted) && state.wait_started &&
+                    (blocked_by_stationary_ground_vehicle || agent == surface_agents_.end() || !agent->second.memory.last_blockage_decision_at ||
                      now_ - *agent->second.memory.last_blockage_decision_at >= SimTime{30}) &&
-                    now_ - *state.wait_started >= SimTime{30}) {
+                    (blocked_by_stationary_ground_vehicle || now_ - *state.wait_started >= SimTime{30})) {
                     surface_agents_.at(id).memory.last_blockage_decision_at = now_;
                     const auto decision = decide_surface_agent(id, config.departure_handoff,
-                        agents::ObjectiveType::DepartAirport, false, std::nullopt, true);
+                        agents::ObjectiveType::DepartAirport, blocked_by_stationary_ground_vehicle,
+                        std::nullopt, !blocked_by_stationary_ground_vehicle);
                     if (decision.action == agents::ActionType::PlanRoute && decision.route) {
                         apply_surface_agent_route(id, config.departure_handoff, decision);
                         ++state.reroutes;
                         auto rerouted = aircraft_event(SimulationEventType::SurfaceRerouted, aircraft(id));
                         rerouted.route = *decision.route;
                         emit(std::move(rerouted));
+                        continue;
+                    }
+                    if (decision.action == agents::ActionType::FailObjective) {
+                        apply_surface_agent_route(id, config.departure_handoff, decision);
+                        auto failure = aircraft_event(SimulationEventType::SurfaceSafeFailure, aircraft(id));
+                        failure.edge = edge_id;
+                        if (blocked_by_stationary_ground_vehicle) failure.vehicle = ground_blocker->second;
+                        failure.detail = decision.explanation;
+                        emit(std::move(failure));
                         continue;
                     }
                 }
@@ -2393,24 +2469,35 @@ void Simulation::handle_surface_tick() {
         const auto next_node = scenario_.graph.other_endpoint(edge, state.node);
         const auto occupied = surface_node_reservations_.find(next_node);
         const auto edge_owner = surface_edge_reservations_.find(edge_id);
-        if (!edge.available || (edge.crosses_runway && runway_crossing_available_at_ > now_) ||
+        const auto ground_blocker = ground_blockers.find(edge_id);
+        const bool blocked_by_stationary_ground_vehicle = ground_blocker != ground_blockers.end();
+        if (!edge.available || blocked_by_stationary_ground_vehicle ||
+            (edge.crosses_runway && runway_crossing_available_at_ > now_) ||
             (occupied != surface_node_reservations_.end() && occupied->second != id) ||
             (edge_owner != surface_edge_reservations_.end() && edge_owner->second != id)) {
             if (state.phase != Phase::WaitingForTraffic) {
                 state.phase = Phase::WaitingForTraffic;
                 state.wait_started = now_;
                 ++surface_wait_events_;
-                event_for(SimulationEventType::SurfaceWaitingForTraffic, id, edge_id);
+                auto waiting = aircraft_event(SimulationEventType::SurfaceWaitingForTraffic, aircraft(id));
+                waiting.edge = edge_id;
+                if (blocked_by_stationary_ground_vehicle) {
+                    waiting.vehicle = ground_blocker->second;
+                    waiting.detail = "idle ground vehicle occupies the aircraft clearance area of the next edge";
+                }
+                emit(std::move(waiting));
             }
             const auto agent = surface_agents_.find(id);
-            if (config.aircraft_routing_policy != agents::AutonomyMode::Scripted && state.wait_started &&
-                (agent == surface_agents_.end() || !agent->second.memory.last_blockage_decision_at ||
+            if ((blocked_by_stationary_ground_vehicle ||
+                 config.aircraft_routing_policy != agents::AutonomyMode::Scripted) && state.wait_started &&
+                (blocked_by_stationary_ground_vehicle || agent == surface_agents_.end() || !agent->second.memory.last_blockage_decision_at ||
                  now_ - *agent->second.memory.last_blockage_decision_at >= SimTime{30}) &&
-                now_ - *state.wait_started >= SimTime{30}) {
+                (blocked_by_stationary_ground_vehicle || now_ - *state.wait_started >= SimTime{30})) {
                 surface_agents_.at(id).memory.last_blockage_decision_at = now_;
                 const auto destination = state.arrival_operation ? aircraft(id).gate_node() : config.departure_handoff;
                 const auto objective = state.arrival_operation ? agents::ObjectiveType::ReachAssignedStand : agents::ObjectiveType::DepartAirport;
-                const auto decision = decide_surface_agent(id, destination, objective, false, std::nullopt, true);
+                const auto decision = decide_surface_agent(id, destination, objective,
+                    blocked_by_stationary_ground_vehicle, std::nullopt, !blocked_by_stationary_ground_vehicle);
                 if (decision.action == agents::ActionType::PlanRoute && decision.route) {
                     apply_surface_agent_route(id, destination, decision);
                     ++state.reroutes;
@@ -2420,6 +2507,15 @@ void Simulation::handle_surface_tick() {
                     auto route_event = aircraft_event(SimulationEventType::SurfaceTaxiRouteAssigned, aircraft(id));
                     route_event.route = *decision.route;
                     emit(std::move(route_event));
+                    continue;
+                }
+                if (decision.action == agents::ActionType::FailObjective) {
+                    apply_surface_agent_route(id, destination, decision);
+                    auto failure = aircraft_event(SimulationEventType::SurfaceSafeFailure, aircraft(id));
+                    failure.edge = edge_id;
+                    if (blocked_by_stationary_ground_vehicle) failure.vehicle = ground_blocker->second;
+                    failure.detail = decision.explanation;
+                    emit(std::move(failure));
                     continue;
                 }
             }

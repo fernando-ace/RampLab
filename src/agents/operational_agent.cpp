@@ -81,7 +81,10 @@ Decision AdaptiveRoutingPolicy::decide(const Observation& observation,
             : "The objective changed; selecting a safe route to its new destination.");
     }
     if (!observation.candidates.empty()) {
-        const auto best = std::ranges::min_element(observation.candidates, {}, &CandidateEvaluation::score_seconds);
+        const auto best = std::ranges::min_element(observation.candidates, [](const auto& left, const auto& right) {
+            if (left.valid != right.valid) return left.valid;
+            return left.score_seconds < right.score_seconds;
+        });
         const auto current = std::ranges::find(observation.candidates, CandidateKind::ContinueCurrentRoute,
             &CandidateEvaluation::kind);
         if (best != observation.candidates.end() && best->valid) {
@@ -116,6 +119,9 @@ Decision AdaptiveRoutingPolicy::decide(const Observation& observation,
                         : "Selected the lowest-scoring currently valid route candidate."};
             }
         }
+        if (best != observation.candidates.end() && !best->valid && !observation.available_route)
+            return {ActionType::FailObjective, AgentStatus::Failed, ReasonCode::NoSafeRoute, std::nullopt,
+                "No clearance-safe route remains around stationary ground vehicles; fail safely at the current node."};
     }
     if (!observation.current_route)
         return plan(observation, ReasonCode::ObjectiveCreated,
