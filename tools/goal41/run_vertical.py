@@ -265,6 +265,16 @@ def _write_report(output: Path, vertical: dict[str, Any]) -> Path:
         f"- At {show(item.get('time_seconds'), ' s')}, {item.get('what_changed', 'an autonomous decision was recorded')} {item.get('why', '')}"
         for item in decision_rows[:5]
     ) or "- No operator-facing movement decision summary was exported."
+    ui_validation_path = output / "ui-validation.json"
+    if ui_validation_path.is_file():
+        ui_validation = _json(ui_validation_path)
+        dashboard_validation = (f"{ui_validation['dashboard']['status']}: four batch runs loaded; live Goal 41 completed "
+                                "and its artifacts loaded into analysis and replay.")
+        studio_validation = (f"{ui_validation['scenario_studio']['status']}: the Goal 31 KAUO demonstration showed "
+                             "three aircraft, nine vehicles, three stands and approximate-geometry provenance.")
+    else:
+        dashboard_validation = "No rendered browser review is recorded for this output directory."
+        studio_validation = "No rendered Scenario Studio review is recorded for this output directory."
     report = f"""# Goal 41: KAUO airport operations vertical
 
 ## Purpose
@@ -297,7 +307,7 @@ The workflow creates control, disruption and repeat runs, analysis, the standalo
 
 This vertical runs three illustrative aircraft through arrivals, turnarounds and departures, with nine configured ground units and 33 service tasks. The control and disruption scenarios use the same seed ({vertical['seed']}), {vertical['routing_policy']} aircraft routing policy, source inputs and initial scenario state. At {vertical['planned_disruption']['starts_at_seconds']} seconds, the disruption case extends Flight {vertical['planned_disruption']['aircraft_id']} task `{vertical['planned_disruption']['task_id']}` from {vertical['planned_disruption']['base_duration_seconds']} to {vertical['planned_disruption']['disrupted_duration_seconds']} seconds. This controlled task-duration event causes the simulator to recompute turnaround readiness.
 
-The C++ RampLab simulator remains authoritative for aircraft, fleet, task, runway and safety outcomes. Agent decisions are exported from its structured decision trace and summarized for operators. Evidence retains native metrics, aircraft rows, fleet assignments, events, full decision traces, repeat runs and the static comparison bundle.
+The C++ RampLab simulator remains authoritative for aircraft, fleet, task, runway and safety outcomes. Agent decisions are exported from its structured decision trace and summarized for operators. Evidence retains native metrics, aircraft rows, fleet assignments, events, full decision traces, batch repeat runs, the static comparison bundle and the completed Dashboard live-session artifacts.
 
 The COUNTERFACTUAL control run exceeded its 1800-second timeout without producing metrics. ADAPTIVE was selected as the strongest practical policy for this integrated run. This is a runtime-based selection; no comparative performance advantage is claimed. The timeout and selection rationale are recorded in `policy-selection.json`.
 
@@ -335,7 +345,9 @@ The full event streams are retained in order. The report does not reconstruct un
 - Scenario completion and exported safety fields: {vertical['validation']['safety_and_completion']}.
 - Repeat-run determinism: {vertical['validation']['repeat_run_determinism']}.
 - Release CTest: 218/218 passed.
-- Focused Python validation: 143 tests passed; 6 were skipped by existing test conditions.
+- Focused Python validation: 144 tests passed; 6 were skipped by existing test conditions.
+- Dashboard browser review: {dashboard_validation}
+- Scenario Studio browser review: {studio_validation}
 - Unreal Editor build was attempted with UE 5.8 and could not proceed because the enabled CesiumForUnreal plugin is not installed on this workstation.
 
 ## Product assessment
@@ -346,7 +358,7 @@ The largest remaining gaps are calibrated, authoritative taxiway/apron geometry 
 
 ## Portable evidence
 
-`goal41-portable-evidence.zip` contains the raw source package and provenance, canonical and generated scenarios, control/disruption/repeat outputs, native simulator metrics and ordered events, full autonomous traces, entity exports, Goal 19 comparison bundle, policy-selection rationale, validation records, this report, and `SHA256SUMS.txt`. The archive has a separate `.sha256` sidecar. Use the included hashes to verify extracted files.
+`goal41-portable-evidence.zip` contains the raw source package and provenance, canonical and generated scenarios, control/disruption/repeat outputs, the interactive completed live session, native simulator metrics and ordered events, full autonomous traces, entity exports, Goal 19 comparison bundle, policy-selection rationale, `ui-validation.json`, validation records, this report, and `SHA256SUMS.txt`. The archive has a separate `.sha256` sidecar. Use the included hashes to verify extracted files.
 
 See `vertical.json`, `summary.json`, `analysis.md`, `determinism.json`, and `bundle/index.html` for machine-readable results and the standalone evidence view.
 """

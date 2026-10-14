@@ -1,0 +1,14 @@
+{
+  "artifacts_loaded_into_dashboard_analysis_and_replay": true,
+  "completed_aircraft": 3,
+  "completed_required_tasks": 33,
+  "completed_turnarounds": 3,
+  "disruption_event": "TurnaroundDisruptionDetected",
+  "disruption_time_seconds": 241,
+  "routing_policy": "ADAPTIVE",
+  "scenario": "Goal 41 KAUO disruption",
+  "scenario_file": "generated/disruption/scenario.json",
+  "seed": 42,
+  "unreal_visualization": "not included; CesiumForUnreal dependency unavailable",
+  "workflow": "Dashboard Live Operator"
+}

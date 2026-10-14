@@ -1,0 +1,39 @@
+{
+  "browser": "Chrome through Browser Harness",
+  "dashboard": {
+    "disruption_summary": "PASS",
+    "event_replay_records": 314,
+    "live_session": {
+      "artifacts_loaded_into_analysis_and_replay": true,
+      "completed_aircraft": 3,
+      "completed_service_tasks": 33,
+      "configured_aircraft": 3,
+      "configured_ground_units": 9,
+      "configured_scenario": "Goal 41 KAUO disrupted operation",
+      "finish_action_available_after_natural_completion": true,
+      "routing_policy": "ADAPTIVE",
+      "seed": 42,
+      "status": "PASS",
+      "turnaround_disruption_event_time_seconds": 241
+    },
+    "loaded_simulator_runs": 4,
+    "readable_disruption_events": 1,
+    "status": "PASS"
+  },
+  "scenario_studio": {
+    "aircraft": 3,
+    "approximate_geometry_and_illustrative_provenance_visible": true,
+    "dataset_id": "kauo-goal31-turnaround-gse-demo",
+    "stands": 3,
+    "status": "PASS",
+    "vehicles": 9
+  },
+  "unreal_editor": {
+    "dependency": "CesiumForUnreal",
+    "status": "BLOCKED_BY_MISSING_EXTERNAL_DEPENDENCY"
+  },
+  "viewport_px": {
+    "height": 735,
+    "width": 1536
+  }
+}
