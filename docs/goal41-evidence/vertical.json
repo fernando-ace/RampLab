@@ -18,7 +18,7 @@
         "source_scenario": "airport_kauo_goal41"
       },
       "name": "airport_kauo_goal41",
-      "source": "C:\\Users\\Ferna\\.codex\\worktrees\\goal41-production-airport-operations-vertical\\RampLab\\build-goal41\\goal41-evidence-rebuild\\control\\experiment.json"
+      "source": "C:\\Users\\Ferna\\.codex\\worktrees\\goal41-production-airport-operations-vertical\\RampLab\\build-goal41\\goal41-evidence-final\\control\\experiment.json"
     },
     "comparison": {
       "identity": {
@@ -30,7 +30,7 @@
         "source_scenario": "airport_kauo_goal41"
       },
       "name": "airport_kauo_goal41",
-      "source": "C:\\Users\\Ferna\\.codex\\worktrees\\goal41-production-airport-operations-vertical\\RampLab\\build-goal41\\goal41-evidence-rebuild\\disruption\\experiment.json"
+      "source": "C:\\Users\\Ferna\\.codex\\worktrees\\goal41-production-airport-operations-vertical\\RampLab\\build-goal41\\goal41-evidence-final\\disruption\\experiment.json"
     },
     "compatibility": {
       "comparable": true,

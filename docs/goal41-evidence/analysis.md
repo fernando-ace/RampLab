@@ -2,11 +2,11 @@
 
 ## Experiment overview
 
-- Source: `C:\Users\Ferna\.codex\worktrees\goal41-production-airport-operations-vertical\RampLab\build-goal41\goal41-evidence-rebuild\control\experiment.json`
+- Source: `C:\Users\Ferna\.codex\worktrees\goal41-production-airport-operations-vertical\RampLab\build-goal41\goal41-evidence-final\control\experiment.json`
 - Identity: `{"experiment_name": "airport_kauo_goal41", "ordinal": 1, "run_count": 1, "schema_version": "1.0", "seed": 42, "source_scenario": "airport_kauo_goal41"}`
 - Metrics available: 50
 
-- Comparison: `airport_kauo_goal41` (`C:\Users\Ferna\.codex\worktrees\goal41-production-airport-operations-vertical\RampLab\build-goal41\goal41-evidence-rebuild\disruption\experiment.json`)
+- Comparison: `airport_kauo_goal41` (`C:\Users\Ferna\.codex\worktrees\goal41-production-airport-operations-vertical\RampLab\build-goal41\goal41-evidence-final\disruption\experiment.json`)
 
 ## KPI comparison
 

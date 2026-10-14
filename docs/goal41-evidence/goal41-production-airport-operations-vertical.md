@@ -84,8 +84,8 @@ The full event streams are retained in order. The report does not reconstruct un
 - Repeat-run determinism: PASS.
 - Release CTest: 218/218 passed.
 - Focused Python validation: 144 tests passed; 6 were skipped by existing test conditions.
-- Dashboard browser review: No rendered browser review is recorded for this output directory.
-- Scenario Studio browser review: No rendered Scenario Studio review is recorded for this output directory.
+- Dashboard browser review: PASS: four batch runs loaded; live Goal 41 completed and its artifacts loaded into analysis and replay.
+- Scenario Studio browser review: PASS: the Goal 31 KAUO demonstration showed three aircraft, nine vehicles, three stands and approximate-geometry provenance.
 - Unreal Editor build was attempted with UE 5.8 and could not proceed because the enabled CesiumForUnreal plugin is not installed on this workstation.
 
 ## Product assessment
