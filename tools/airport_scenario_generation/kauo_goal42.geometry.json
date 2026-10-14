@@ -145,11 +145,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": true,
         "surface_route_distance_m": 529.255,
         "surface_route_source_features": [
           "aldot_auo_241",
           "aldot_auo_242",
           "aldot_auo_246"
+        ],
+        "surface_route_uses": [
+          "RUNWAY",
+          "TAXIWAY"
         ],
         "to": "twy_a_south",
         "traversal_time_seconds": 107
@@ -199,11 +204,15 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 502.142,
         "surface_route_source_features": [
           "aldot_auo_242",
           "aldot_auo_246",
           "aldot_auo_267"
+        ],
+        "surface_route_uses": [
+          "TAXIWAY"
         ],
         "to": "twy_a_mid",
         "traversal_time_seconds": 101
@@ -233,9 +242,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 571.657,
         "surface_route_source_features": [
           "aldot_auo_267"
+        ],
+        "surface_route_uses": [
+          "TAXIWAY"
         ],
         "to": "twy_a_north",
         "traversal_time_seconds": 115
@@ -597,6 +610,7 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": true,
         "surface_route_distance_m": 731.872,
         "surface_route_source_features": [
           "aldot_auo_241",
@@ -606,6 +620,11 @@
           "aldot_auo_251",
           "aldot_auo_263",
           "aldot_auo_267"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "RUNWAY",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 147
@@ -847,6 +866,7 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": true,
         "surface_route_distance_m": 377.563,
         "surface_route_source_features": [
           "aldot_auo_241",
@@ -854,6 +874,10 @@
           "aldot_auo_258",
           "aldot_auo_259",
           "aldot_auo_267"
+        ],
+        "surface_route_uses": [
+          "RUNWAY",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_detour",
         "traversal_time_seconds": 77
@@ -1515,6 +1539,7 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": true,
         "surface_route_distance_m": 850.264,
         "surface_route_source_features": [
           "aldot_auo_248",
@@ -1524,6 +1549,11 @@
           "aldot_auo_259",
           "aldot_auo_271",
           "aldot_auo_272"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "RUNWAY",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 171
@@ -1561,9 +1591,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 125.681,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand",
         "traversal_time_seconds": 26
@@ -1825,6 +1859,7 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": true,
         "surface_route_distance_m": 964.808,
         "surface_route_source_features": [
           "aldot_auo_241",
@@ -1837,6 +1872,11 @@
           "aldot_auo_263",
           "aldot_auo_265",
           "aldot_auo_267"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "RUNWAY",
+          "TAXIWAY"
         ],
         "to": "self_serve_fuel_farm",
         "traversal_time_seconds": 195
@@ -1923,9 +1963,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 139.397,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02",
         "traversal_time_seconds": 28
@@ -2012,11 +2056,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 267.421,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_service_staging_fuel",
         "traversal_time_seconds": 34
@@ -2087,11 +2136,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 254.392,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_service_staging_west",
         "traversal_time_seconds": 32
@@ -2186,11 +2240,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 187.966,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_service_staging_east",
         "traversal_time_seconds": 24
@@ -2285,9 +2344,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 145.054,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03",
         "traversal_time_seconds": 19
@@ -2474,11 +2537,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 250.392,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 31
@@ -2565,11 +2633,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 250.392,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_service_staging_fuel",
         "traversal_time_seconds": 31
@@ -2744,11 +2817,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 270.534,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 34
@@ -2851,11 +2929,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 270.534,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "gse_fuel_depot_02",
         "traversal_time_seconds": 34
@@ -3034,11 +3117,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 237.362,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 31
@@ -3113,11 +3201,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 237.362,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_service_staging_west",
         "traversal_time_seconds": 31
@@ -3332,11 +3425,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 243.563,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 30
@@ -3443,11 +3541,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 243.563,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_service_staging_east",
         "traversal_time_seconds": 30
@@ -3554,11 +3657,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 299.304,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 37
@@ -3649,11 +3757,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 299.304,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "gse_catering_depot",
         "traversal_time_seconds": 37
@@ -3880,11 +3993,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 324.617,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 42
@@ -4027,11 +4145,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 324.617,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "gse_lavatory_depot",
         "traversal_time_seconds": 42
@@ -4306,11 +4429,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 395.446,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 49
@@ -4513,11 +4641,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 395.446,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "gse_water_depot",
         "traversal_time_seconds": 49
@@ -4792,11 +4925,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 395.446,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 51
@@ -4999,11 +5137,16 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 395.446,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "gse_gpu_depot",
         "traversal_time_seconds": 51
@@ -5318,12 +5461,17 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 566.902,
         "surface_route_source_features": [
           "aldot_auo_247",
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 70
@@ -5514,12 +5662,17 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 566.902,
         "surface_route_source_features": [
           "aldot_auo_247",
           "aldot_auo_248",
           "aldot_auo_250",
           "aldot_auo_251"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "gse_tug_depot",
         "traversal_time_seconds": 70
@@ -5566,9 +5719,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 130.995,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 17
@@ -5615,9 +5772,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 130.995,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 17
@@ -5640,9 +5801,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 10.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_fuel_service_point",
         "traversal_time_seconds": 2
@@ -5665,9 +5830,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 10.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 2
@@ -5690,9 +5859,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 14.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_baggage_service_point",
         "traversal_time_seconds": 3
@@ -5715,9 +5888,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 14.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 3
@@ -5740,9 +5917,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 12.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_catering_service_point",
         "traversal_time_seconds": 2
@@ -5765,9 +5946,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 12.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 2
@@ -5790,9 +5975,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 8.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_lavatory_service_point",
         "traversal_time_seconds": 1
@@ -5815,9 +6004,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 8.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 1
@@ -5840,9 +6033,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 6.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_water_service_point",
         "traversal_time_seconds": 2
@@ -5865,9 +6062,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 6.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 2
@@ -5890,9 +6091,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 2.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_gpu_service_point",
         "traversal_time_seconds": 1
@@ -5915,9 +6120,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 2.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 1
@@ -5940,9 +6149,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 8.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_pushback_service_point",
         "traversal_time_seconds": 1
@@ -5965,9 +6178,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 8.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 1
@@ -5990,9 +6207,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 14.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_stairs_service_point",
         "traversal_time_seconds": 3
@@ -6015,9 +6236,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 14.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 3
@@ -6040,9 +6265,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 18.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_airstart_service_point",
         "traversal_time_seconds": 3
@@ -6065,9 +6294,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 18.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 3
@@ -6162,9 +6395,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 147.882,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 19
@@ -6335,10 +6572,15 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 147.882,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 19
@@ -6377,9 +6619,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 17.314,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_fuel_service_point",
         "traversal_time_seconds": 4
@@ -6418,9 +6664,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 17.314,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 4
@@ -6451,9 +6701,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 9.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_baggage_service_point",
         "traversal_time_seconds": 2
@@ -6484,9 +6738,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 9.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 2
@@ -6513,9 +6771,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 4.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_catering_service_point",
         "traversal_time_seconds": 1
@@ -6542,9 +6804,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 4.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 1
@@ -6571,9 +6837,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 4.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_lavatory_service_point",
         "traversal_time_seconds": 1
@@ -6600,9 +6870,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 4.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 1
@@ -6633,9 +6907,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_water_service_point",
         "traversal_time_seconds": 8
@@ -6666,9 +6944,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 8
@@ -6699,9 +6981,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_gpu_service_point",
         "traversal_time_seconds": 8
@@ -6732,9 +7018,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 8
@@ -6765,9 +7055,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_pushback_service_point",
         "traversal_time_seconds": 8
@@ -6798,9 +7092,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 8
@@ -6831,9 +7129,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_stairs_service_point",
         "traversal_time_seconds": 8
@@ -6864,9 +7166,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 8
@@ -6897,9 +7203,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_02_airstart_service_point",
         "traversal_time_seconds": 5
@@ -6930,9 +7240,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 38.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 5
@@ -7027,9 +7341,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 150.711,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 19
@@ -7224,10 +7542,15 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 150.711,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250"
+        ],
+        "surface_route_uses": [
+          "APRON",
+          "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
         "traversal_time_seconds": 19
@@ -7258,9 +7581,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 12.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_fuel_service_point",
         "traversal_time_seconds": 2
@@ -7291,9 +7618,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 12.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 2
@@ -7324,9 +7655,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 12.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_baggage_service_point",
         "traversal_time_seconds": 3
@@ -7357,9 +7692,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 12.485,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 3
@@ -7390,9 +7729,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 6.828,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_catering_service_point",
         "traversal_time_seconds": 2
@@ -7423,9 +7766,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 6.828,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 2
@@ -7452,9 +7799,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 4.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_lavatory_service_point",
         "traversal_time_seconds": 1
@@ -7481,9 +7832,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 4.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 1
@@ -7514,9 +7869,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_water_service_point",
         "traversal_time_seconds": 7
@@ -7547,9 +7906,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 7
@@ -7580,9 +7943,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_gpu_service_point",
         "traversal_time_seconds": 5
@@ -7613,9 +7980,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 5
@@ -7646,9 +8017,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_pushback_service_point",
         "traversal_time_seconds": 5
@@ -7679,9 +8054,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 5
@@ -7712,9 +8091,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_stairs_service_point",
         "traversal_time_seconds": 5
@@ -7745,9 +8128,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 5
@@ -7778,9 +8165,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "ga_parking_stand_03_airstart_service_point",
         "traversal_time_seconds": 7
@@ -7811,9 +8202,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 35.657,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 7
@@ -7860,9 +8255,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 131.113,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
         "traversal_time_seconds": 16
@@ -7889,9 +8288,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 4.0,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
         "traversal_time_seconds": 1
@@ -7938,9 +8341,13 @@
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
+        "surface_route_crosses_runway": false,
         "surface_route_distance_m": 133.941,
         "surface_route_source_features": [
           "aldot_auo_248"
+        ],
+        "surface_route_uses": [
+          "APRON"
         ],
         "to": "kauo_g31_stand_1_service_approach",
         "traversal_time_seconds": 17

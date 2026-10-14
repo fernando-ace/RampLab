@@ -44,7 +44,7 @@ std::vector<std::string> route_resources(const AutonomyScenario& scenario,const 
         if(node.name==mission.goal_node)goal=node.id;
     }
     if(!start||!goal)throw std::invalid_argument("fleet mission references an unknown road node");
-    const auto route=airside::find_route(scenario.airport.graph,*start,*goal);
+    const auto route=airside::find_route(scenario.airport.graph,*start,*goal, airside::MovementClass::GroundVehicle);
     if(!route)throw std::invalid_argument("fleet mission has no route through the airport road graph");
     std::vector<std::string> keys;
     keys.reserve(route->edges.size()+route->nodes.size());
@@ -63,7 +63,7 @@ std::vector<DirectedRouteEdge> directed_route_edges(
         if (node.name == mission.goal_node) goal = node.id;
     }
     if (!start || !goal) throw std::invalid_argument("fleet mission references an unknown road node");
-    const auto route = airside::find_route(scenario.airport.graph, *start, *goal);
+    const auto route = airside::find_route(scenario.airport.graph, *start, *goal, airside::MovementClass::GroundVehicle);
     if (!route) throw std::invalid_argument("fleet mission has no route through the airport road graph");
     std::vector<DirectedRouteEdge> traversals;
     traversals.reserve(route->edges.size());
@@ -558,8 +558,8 @@ struct FleetSimulation::Impl {
         const auto origin = find_node(task.request.origin);
         const auto destination = find_node(task.request.destination);
         if (!from || !origin || !destination) throw std::invalid_argument("dispatch request references an unknown road node");
-        const auto approach = airside::find_route(graph, *from, *origin);
-        const auto service_route = airside::find_route(graph, *origin, *destination);
+        const auto approach = airside::find_route(graph, *from, *origin, airside::MovementClass::GroundVehicle);
+        const auto service_route = airside::find_route(graph, *origin, *destination, airside::MovementClass::GroundVehicle);
         if (!approach || !service_route) throw std::logic_error("dispatcher assigned a request without an available route");
 
         auto scenario = member.simulation.scenario();
@@ -580,12 +580,18 @@ struct FleetSimulation::Impl {
             member.simulation.scenario().perception_timeout_s, member.simulation.scenario().localization_timeout_s);
 
         std::vector<Vec2> waypoints{member.simulation.state().position};
-        const auto append_node = [&](NodeId id) {
-            const auto position = graph.node(id).position;
-            if (separation(waypoints.back(), position) > 0.05) waypoints.push_back(position);
+        const auto append_route_geometry = [&](const Route& route) {
+            for (std::size_t i = 0; i < route.edges.size(); ++i) {
+                const auto& edge = graph.edge(route.edges[i]);
+                auto line = edge.centerline;
+                if (line.size() < 2) line = {graph.node(edge.from).position, graph.node(edge.to).position};
+                if (route.nodes[i] == edge.to) std::ranges::reverse(line);
+                for (const auto& point : line)
+                    if (separation(waypoints.back(), point) > 0.05) waypoints.push_back(point);
+            }
         };
-        for (const auto id : approach->nodes) append_node(id);
-        for (std::size_t i = 1; i < service_route->nodes.size(); ++i) append_node(service_route->nodes[i]);
+        append_route_geometry(*approach);
+        append_route_geometry(*service_route);
         const auto destination_position = graph.node(*destination).position;
         if (waypoints.back() != destination_position) waypoints.push_back(destination_position);
         member.simulation.set_route(std::move(waypoints));
@@ -693,7 +699,7 @@ struct FleetSimulation::Impl {
             const double da = separation(position, a.position), db = separation(position, b.position);
             return da == db ? a.id < b.id : da < db;
         });
-        const auto route = airside::find_route(graph, nearest->id, *refuge);
+        const auto route = airside::find_route(graph, nearest->id, *refuge, airside::MovementClass::GroundVehicle);
         if (!route) return false;
         auto scenario = member.simulation.scenario();
         scenario.name += "_outage_evacuation";
@@ -862,7 +868,7 @@ struct FleetSimulation::Impl {
                 route_start = direction->from;
             }
         }
-        const auto route = airside::find_route(graph, route_start, *goal);
+        const auto route = airside::find_route(graph, route_start, *goal, airside::MovementClass::GroundVehicle);
         if (!route) return false;
         std::vector<Vec2> waypoints{member.simulation.state().position};
         for (const auto node : route->nodes) {
@@ -884,7 +890,7 @@ struct FleetSimulation::Impl {
         member.last_progress_s = now;
         member.last_progress_position = member.simulation.state().position;
         member.last_progress_distance_m = member.simulation.state().distance_m;
-        const auto replacement = airside::find_route(graph, route_start, *goal);
+        const auto replacement = airside::find_route(graph, route_start, *goal, airside::MovementClass::GroundVehicle);
         member.route_resources.clear();
         member.route_edges.clear();
         if (replacement) {

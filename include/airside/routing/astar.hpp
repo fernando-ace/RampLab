@@ -20,7 +20,8 @@ struct Route {
 [[nodiscard]] std::optional<Route> find_route(
     const AirportGraph& graph,
     NodeId origin,
-    NodeId destination);
+    NodeId destination,
+    MovementClass movement = MovementClass::Any);
 
 // Non-negative per-edge expected waiting costs let adaptive policies evaluate
 // congestion without changing graph availability or bypassing movement safety.
@@ -28,7 +29,8 @@ struct Route {
     const AirportGraph& graph,
     NodeId origin,
     NodeId destination,
-    const std::unordered_map<EdgeId, SimTime>& expected_wait);
+    const std::unordered_map<EdgeId, SimTime>& expected_wait,
+    MovementClass movement = MovementClass::Any);
 
 // Enumerate a bounded set of simple, currently available routes in deterministic
 // score order. This is for policy comparison only; movement still validates every
@@ -36,6 +38,7 @@ struct Route {
 [[nodiscard]] std::vector<Route> find_route_candidates(
     const AirportGraph& graph, NodeId origin, NodeId destination,
     std::size_t maximum_candidates,
-    const std::unordered_map<EdgeId, SimTime>& expected_wait = {});
+    const std::unordered_map<EdgeId, SimTime>& expected_wait = {},
+    MovementClass movement = MovementClass::Any);
 
 }  // namespace airside

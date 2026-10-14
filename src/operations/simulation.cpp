@@ -266,14 +266,15 @@ SimulationSnapshot Simulation::snapshot() const {
             }
             if (state.phase_end && state.phase_started && state.phase == SurfaceAircraftState::Phase::Taxiing &&
                 state.edge_index < state.route_edges.size()) {
-                const auto from = scenario_.graph.node(state.route_nodes[state.edge_index]).position;
-                const auto to = scenario_.graph.node(state.route_nodes[state.edge_index + 1]).position;
                 const auto duration = (*state.phase_end - *state.phase_started).count();
                 const auto elapsed = std::clamp((now_ - *state.phase_started).count(), std::int64_t{0}, duration);
                 const double fraction = duration > 0 ? static_cast<double>(elapsed) / static_cast<double>(duration) : 1.0;
-                item.surface_position_m = Vec2{from.x_m + (to.x_m - from.x_m) * fraction,
-                    from.y_m + (to.y_m - from.y_m) * fraction};
-                item.surface_heading_rad = std::atan2(to.y_m - from.y_m, to.x_m - from.x_m);
+                const auto& movement_edge = scenario_.graph.edge(state.route_edges[state.edge_index]);
+                const auto from_node = state.route_nodes[state.edge_index];
+                item.surface_position_m = scenario_.graph.edge_position(movement_edge, from_node, fraction);
+                const auto ahead = scenario_.graph.edge_position(movement_edge, from_node, std::min(1.0, fraction + 0.01));
+                item.surface_heading_rad = std::atan2(ahead.y_m - item.surface_position_m->y_m,
+                    ahead.x_m - item.surface_position_m->x_m);
                 item.surface_next_waypoint = scenario_.graph.node(state.route_nodes[state.edge_index + 1]).name;
             }
         } else if (scenario_.surface_operations) {
@@ -801,7 +802,7 @@ void Simulation::request_service(Aircraft& flight, ServiceType type) {
 void Simulation::dispatch(VehicleId vehicle_id, AircraftId aircraft_id) {
     auto& service_vehicle = vehicle(vehicle_id);
     auto& flight = aircraft(aircraft_id);
-    auto route = find_route(scenario_.graph, service_vehicle.current_node(), flight.gate_node());
+    auto route = find_route(scenario_.graph, service_vehicle.current_node(), flight.gate_node(), MovementClass::GroundVehicle);
     if (!route) throw std::runtime_error("no available route for assigned service vehicle");
     flight.assign_task(service_vehicle.capability());
     auto& assigned_task = flight.mutable_task(flight.task(service_vehicle.capability()).id);
@@ -894,7 +895,7 @@ void Simulation::handle_service_completed(VehicleId id) {
     }
 
     auto return_route = find_route(
-        scenario_.graph, flight.gate_node(), service_vehicle.depot_node());
+        scenario_.graph, flight.gate_node(), service_vehicle.depot_node(), MovementClass::GroundVehicle);
     if (!return_route) throw std::runtime_error("no available route back to vehicle depot");
     const auto route = *return_route;
     const auto previous_vehicle = service_vehicle.state();
@@ -1546,7 +1547,7 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
     const bool adaptive_policy = scenario_.surface_operations->aircraft_routing_policy != agents::AutonomyMode::Scripted;
     observation.available_route = find_route(scenario_.graph, state.node, destination,
         adaptive_policy
-            ? expected_wait : std::unordered_map<EdgeId, SimTime>{});
+            ? expected_wait : std::unordered_map<EdgeId, SimTime>{}, MovementClass::Aircraft);
     if (observation.available_route) observation.available_route_cost = observation.available_route->travel_time;
     std::unordered_map<EdgeId, SimTime> route_waits;
     for (const auto& [edge, owner] : surface_edge_reservations_) {
@@ -1582,7 +1583,7 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
                 other_agent->second.plan->edges.end());
         } else if (shared_policy &&
             other_state.phase == SurfaceAircraftState::Phase::WaitingForPushback) {
-            const auto likely_route = find_route(scenario_.graph, other_state.node, intent_destination);
+            const auto likely_route = find_route(scenario_.graph, other_state.node, intent_destination, MovementClass::Aircraft);
             if (likely_route) intent_edges = likely_route->edges;
         }
         const auto shared_edge_capacity = max_shared_intent_edges - shared_intent_edge_count;
@@ -1742,7 +1743,7 @@ agents::Observation Simulation::observe_surface_agent(AircraftId id, NodeId dest
         return candidate;
     };
     if (!observation.objective_satisfied) {
-        const auto alternatives = find_route_candidates(scenario_.graph, state.node, destination, 6U, route_waits);
+        const auto alternatives = find_route_candidates(scenario_.graph, state.node, destination, 6U, route_waits, MovementClass::Aircraft);
         if (observation.current_route) {
             auto candidate = make_candidate(agents::CandidateKind::ContinueCurrentRoute,
                 *observation.current_route);
@@ -2392,7 +2393,8 @@ void Simulation::handle_surface_tick() {
         const auto next_node = scenario_.graph.other_endpoint(edge, state.node);
         const auto occupied = surface_node_reservations_.find(next_node);
         const auto edge_owner = surface_edge_reservations_.find(edge_id);
-        if (!edge.available || (occupied != surface_node_reservations_.end() && occupied->second != id) ||
+        if (!edge.available || (edge.crosses_runway && runway_crossing_available_at_ > now_) ||
+            (occupied != surface_node_reservations_.end() && occupied->second != id) ||
             (edge_owner != surface_edge_reservations_.end() && edge_owner->second != id)) {
             if (state.phase != Phase::WaitingForTraffic) {
                 state.phase = Phase::WaitingForTraffic;
@@ -2433,6 +2435,7 @@ void Simulation::handle_surface_tick() {
         state.phase_started = now_;
         const auto travel_seconds = static_cast<std::int64_t>(std::ceil(edge.distance_m / config.aircraft_speed_mps));
         state.phase_end = now_ + std::max(SimTime{1}, SimTime{travel_seconds});
+        if (edge.crosses_runway) runway_crossing_available_at_ = *state.phase_end;
         state.taxi_distance_m += edge.distance_m;
         if (state.arrival_operation) state.arrival_taxi_distance_m += edge.distance_m;
         else state.departure_taxi_distance_m += edge.distance_m;
@@ -2536,7 +2539,7 @@ void Simulation::handle_surface_tick() {
 
     // Shared runway policy: FIFO simulated request timestamp, then stable aircraft ID.
     // This work-conserving aging policy prevents starvation for finite arrivals/departures.
-    if (runway_available_at_ <= now_) {
+    if (runway_available_at_ <= now_ && runway_crossing_available_at_ <= now_) {
         std::vector<AircraftId> queued;
         for (const auto& [id, state] : surface_aircraft_)
             if ((state.phase == Phase::WaitingForRunway || state.phase == Phase::ArrivalQueue) &&
@@ -2592,7 +2595,7 @@ void Simulation::handle_surface_tick() {
             std::optional<SimTime> next_departure;
             for (const auto& [id, state] : surface_aircraft_) {
                 if (state.phase != Phase::WaitingForRunway) continue;
-                const auto eligible = std::max(aircraft(id).scheduled_departure(), runway_available_at_);
+                const auto eligible = std::max({aircraft(id).scheduled_departure(), runway_available_at_, runway_crossing_available_at_});
                 if (eligible > now_ && (!next_departure || eligible < *next_departure)) next_departure = eligible;
             }
             if (const auto queued_event = next_event_time(); queued_event && *queued_event > now_ &&

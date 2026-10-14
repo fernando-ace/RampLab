@@ -32,7 +32,14 @@ struct RoadEdge {
     SimTime traversal_cost{};
     bool available{true};
     bool one_way{false};
+    std::vector<Point2d> centerline;
+    bool aircraft_allowed{true};
+    bool ground_vehicle_allowed{true};
+    bool crosses_runway{false};
+    double centerline_length_m{0.0};
 };
+
+enum class MovementClass { Any, Aircraft, GroundVehicle };
 
 class AirportGraph {
 public:
@@ -44,6 +51,7 @@ public:
     [[nodiscard]] std::span<const EdgeId> adjacent_edges(NodeId id) const;
     [[nodiscard]] NodeId other_endpoint(const RoadEdge& edge, NodeId endpoint) const;
     [[nodiscard]] bool has_node(NodeId id) const noexcept;
+    [[nodiscard]] Point2d edge_position(const RoadEdge& edge, NodeId from, double fraction) const;
 
     void set_edge_available(EdgeId id, bool available);
 

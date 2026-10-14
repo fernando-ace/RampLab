@@ -246,13 +246,16 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         edge["aircraft_allowed"] = route_options[0][2] is not None
         edge["ground_vehicle_allowed"] = route_options[1][2] is not None
         edge["surface_route_classification"] = "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR"
-        sample_step = max(1, len(path) // 64)
         feature_ids = set()
-        for pixel in path[::sample_step] + [path[-1]]:
+        for pixel in path:
             feature_distance, feature_id = _nearest_area(grid.pixel_to_world(pixel), areas, grid.uses)
             if feature_id is not None and feature_distance <= GRID_M:
                 feature_ids.add(feature_id)
         edge["surface_route_source_features"] = sorted(feature_ids)
+        use_by_id = {area["id"]: area["use"] for area in areas}
+        route_uses = sorted({use_by_id[feature_id] for feature_id in feature_ids if feature_id in use_by_id})
+        edge["surface_route_uses"] = route_uses
+        edge["surface_route_crosses_runway"] = "RUNWAY" in route_uses
         original_speed = float(edge["distance_m"]) / max(1, int(edge["traversal_time_seconds"]))
         edge["distance_m"] = round(distance, 3)
         edge["traversal_time_seconds"] = max(1, math.ceil(distance / original_speed))

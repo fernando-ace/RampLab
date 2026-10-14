@@ -97,6 +97,11 @@ class Goal42GeometryTests(unittest.TestCase):
                             for edge in airport["edges"]))
         self.assertTrue(all(edge["aircraft_allowed"] for edge in airport["edges"]))
         self.assertTrue(any(not edge["ground_vehicle_allowed"] for edge in airport["edges"]))
+        self.assertEqual({edge["id"] for edge in airport["edges"] if edge["surface_route_crosses_runway"]},
+                         {"runway36_hold_twy_a_south", "twy_a_mid_fbo_primary", "twy_a_north_fbo_detour",
+                          "twy_c_fbo_detour", "fbo_junction_fuel_farm"})
+        self.assertTrue(all(not edge["ground_vehicle_allowed"] for edge in airport["edges"]
+                            if edge["surface_route_crosses_runway"]))
         self.assertTrue(all(node["surface_attachment"]["source_feature_id"]
                             for node in airport["nodes"]))
 

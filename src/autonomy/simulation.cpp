@@ -113,7 +113,7 @@ struct AutonomySimulation::Impl {
         lidar_clock.emplace("lidar",timing_with_rate(sensor.lidar_timing,sensor.lidar_hz),seed^0x6a09e667ULL);
         camera_clock.emplace("camera_rgb",timing_with_rate(sensor.camera_timing,sensor.camera_hz),seed^0xbb67ae8584caa73bULL);
         const auto start=find_node(scenario.airport.graph,scenario.start_node), goal=find_node(scenario.airport.graph,scenario.goal_node);
-        const auto route=find_route(scenario.airport.graph,start,goal);
+        const auto route=find_route(scenario.airport.graph,start,goal,MovementClass::GroundVehicle);
         if (!route) throw std::invalid_argument("no airport road route exists for autonomy mission");
         for (const auto node:route->nodes) mission.waypoints.push_back(scenario.airport.graph.node(node).position);
         mission.goal=mission.waypoints.back(); mission.limits=scenario.limits;

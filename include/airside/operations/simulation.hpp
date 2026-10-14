@@ -242,6 +242,7 @@ private:
     std::map<NodeId, AircraftId> surface_node_reservations_;
     std::map<GateId, AircraftId> gate_arrival_reservations_;
     SimTime runway_available_at_{};
+    SimTime runway_crossing_available_at_{};
     bool surface_tick_scheduled_{false};
     std::size_t maximum_simultaneous_taxiing_{};
     std::size_t surface_wait_events_{};
