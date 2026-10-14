@@ -29,6 +29,8 @@ The original control replay reached all three assigned gates and started all thr
 
 The retained scheduled-closure replay from before the routing-graph reset is unsafe and incomplete: **0/3 aircraft departed, 0/3 turnarounds completed, three safe surface failures, three aircraft-to-aircraft collisions, one aircraft-to-ground collision, and 499 fleet collisions**. The fleet minimum separation was 0.063 m; the aircraft-to-ground minimum separation was 3.434 m. It is negative evidence, not a passing result. A post-reset disruption replay has not yet produced replacement final metrics.
 
+The retained fleet diagnostics localize the unresolved wait cycle at simulated second 2,928.24. Vehicle 2 (catering) waits for vehicle 7 at `intersection/6`; vehicle 7 (baggage load) waits for vehicle 2 at `edge/52`. In the loaded one-based graph, node 6 is `fbo_apron_junction` and edge 52 is the ground-only connection from that junction to the assumed stand-2 service approach. Recovery attempted vehicle 2 on both contested resources and emitted `retreat_failed`; the fleet then ended as `DEADLOCK_UNRESOLVED`. The evidence confirms a shared-apron dispatch cycle in this replay. It does not establish that this is the cause of the recorded collision count, and no recovery or geometry fix is claimed yet. See [the fleet deadlock diagnostic](goal44-evidence/fleet-deadlock-diagnostic.json).
+
 The exact final conservative run files are in `docs/goal44-evidence/runs/`. Earlier exploratory runs that temporarily enabled ground access across unverified runway surfaces were not accepted as evidence and did not change the final geometry policy.
 
 ## Validation
