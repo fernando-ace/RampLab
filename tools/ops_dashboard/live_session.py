@@ -92,6 +92,8 @@ class LiveSession:
                     "aircraft_routing_policy": self.aircraft_routing_policy,
                     "seed": self.seed, "operation_name": self.operation_name,
                     "planned_disruption": self.planned_disruption,
+                    "artifacts_ready": bool(self.process is None and self.output_dir and
+                                             (self.output_dir / "experiment.json").is_file()),
                     "output_directory": str(self.output_dir) if self.output_dir else None,
                     "live_state_file": str(self.root / "live-state.json")}
 
@@ -340,8 +342,12 @@ class LiveSession:
                     from tools.goal41.decisions import summarize_decisions
                     experiment_path = self.output_dir / "experiment.json"
                     experiment = json.loads(experiment_path.read_text(encoding="utf-8"))
+                    events_path = self.output_dir / "events.jsonl"
+                    event_rows = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()
+                                  if line.strip()] if events_path.is_file() else []
                     experiment["operator_decision_summaries"] = summarize_decisions(
-                        json.loads(trace_path.read_text(encoding="utf-8")))
+                        json.loads(trace_path.read_text(encoding="utf-8")), event_rows,
+                        json.loads(self.scenario_file.read_text(encoding="utf-8")))
                     experiment["operational_context"] = {
                         "airport": "KAUO", "operation_name": self.operation_name,
                         "routing_policy": self.aircraft_routing_policy, "seed": self.seed,

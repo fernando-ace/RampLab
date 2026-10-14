@@ -14,6 +14,8 @@ from tools.ops_dashboard.live_session import LiveSession, LiveSessionError
 ROOT = Path(__file__).resolve().parents[2]
 CLI = ROOT / "build-goal34/Release/airside_cli.exe"
 AGENT_CLI = CLI
+GOAL41_CLI = ROOT / "build-goal41/Release/airside_cli.exe"
+GOAL41_SCENARIO = ROOT / "docs/goal41-evidence/generated/disruption/scenario.json"
 
 
 @unittest.skipUnless(CLI.is_file(), "Build Release airside_cli before live-session integration tests.")
@@ -147,6 +149,36 @@ class LiveSessionTests(unittest.TestCase):
                 session.close()
 
 class ConfiguredScenarioTests(unittest.TestCase):
+    @unittest.skipUnless(GOAL41_CLI.is_file() and GOAL41_SCENARIO.is_file(),
+                         "Build Goal 41 Release airside_cli and generate its evidence scenario.")
+    def test_goal41_live_run_finishes_and_exports_the_configured_operation(self):
+        with TemporaryDirectory(prefix="goal41-live-completion-") as directory:
+            session = LiveSession(GOAL41_CLI, Path(directory) / "session", GOAL41_SCENARIO)
+            try:
+                state = session.start()
+                self.assertEqual(state["session_state"], "paused")
+                self.assertEqual(state["aircraft_routing_policy"], "ADAPTIVE")
+                self.assertEqual(len(state["aircraft"]), 3)
+                self.assertEqual(len(state["vehicles"]), 9)
+                self.assertEqual(len(state["tasks"]), 33)
+                while not state.get("finished"):
+                    state = session.advance()
+                self.assertFalse(session.state()["artifacts_ready"])
+                state = session.finish()
+                self.assertEqual(state["session_state"], "completed")
+                self.assertTrue(state["artifacts_ready"])
+                run = session.artifacts()["run"]
+                files = {item["name"]: item["content"] for item in run["files"]}
+                self.assertIn("experiment.json", files)
+                self.assertIn("events.jsonl", files)
+                experiment = json.loads(files["experiment.json"])
+                self.assertIn("TurnaroundScheduleAdjusted", {
+                    item.get("action") for item in experiment["operator_decision_summaries"]})
+                self.assertTrue(any(json.loads(line).get("type") == "TurnaroundDisruptionDetected"
+                                     for line in files["events.jsonl"].splitlines() if line.strip()))
+            finally:
+                session.close()
+
     def test_goal41_service_delay_is_exposed_as_a_planned_schedule_disruption(self):
         with TemporaryDirectory(prefix="goal41-configured-live-") as directory:
             root = Path(directory)
