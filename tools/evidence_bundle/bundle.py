@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools" / "experiment_analysis"))
 import analyze as goal19
 FORMAT_VERSION = "1.0"
-ARTIFACTS = ("experiment.json", "summary.json", "metrics.json", "runs.csv", "summary.csv", "aircraft.csv", "events.jsonl", "interventions.json", "unreal-live.png", "unreal-live.log")
+ARTIFACTS = ("experiment.json", "summary.json", "metrics.json", "runs.csv", "summary.csv", "aircraft.csv", "ground-units.csv", "agent-decisions.json", "events.jsonl", "interventions.json", "unreal-live.png", "unreal-live.log")
 COLLISION_KEYS = ("fleet_collisions", "surface_aircraft_aircraft_collisions", "surface_aircraft_ground_collisions")
 SEPARATION_KEYS = ("fleet_minimum_separation_m", "minimum_aircraft_separation_m", "minimum_aircraft_ground_separation_m")
 FAILURE_KEYS = ("surface_safe_failures", "failed_or_timed_out_turnarounds", "fleet_requests_failed", "unresolved_service_requests")

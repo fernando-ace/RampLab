@@ -1,0 +1,719 @@
+{
+  "baseline": {
+    "identity": {
+      "experiment_name": "airport_kauo_goal41",
+      "ordinal": 1,
+      "run_count": 1,
+      "schema_version": "1.0",
+      "seed": 42,
+      "source_scenario": "airport_kauo_goal41"
+    },
+    "name": "airport_kauo_goal41",
+    "source": "C:\\Users\\Ferna\\.codex\\worktrees\\goal41-production-airport-operations-vertical\\RampLab\\build-goal41\\goal41-evidence-final\\control\\experiment.json"
+  },
+  "comparison": {
+    "identity": {
+      "experiment_name": "airport_kauo_goal41",
+      "ordinal": 1,
+      "run_count": 1,
+      "schema_version": "1.0",
+      "seed": 42,
+      "source_scenario": "airport_kauo_goal41"
+    },
+    "name": "airport_kauo_goal41",
+    "source": "C:\\Users\\Ferna\\.codex\\worktrees\\goal41-production-airport-operations-vertical\\RampLab\\build-goal41\\goal41-evidence-final\\disruption\\experiment.json"
+  },
+  "compatibility": {
+    "comparable": true,
+    "mismatched_identity": []
+  },
+  "metrics": [
+    {
+      "baseline": 3.0,
+      "category": "throughput",
+      "comparison": 3.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "aircraft_count",
+      "label": "Aircraft count",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 1.0,
+      "category": "operations",
+      "comparison": 1.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "arrival_runway_wait_seconds",
+      "label": "Arrival runway wait",
+      "percent_difference": 0.0,
+      "unit": "s"
+    },
+    {
+      "baseline": 1537.084,
+      "category": "operations",
+      "comparison": 1537.084,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "arrival_taxi_distance_m",
+      "label": "Arrival taxi distance",
+      "percent_difference": 0.0,
+      "unit": "m"
+    },
+    {
+      "baseline": 309.0,
+      "category": "operations",
+      "comparison": 309.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "arrival_taxi_seconds",
+      "label": "Arrival taxi time",
+      "percent_difference": 0.0,
+      "unit": "s"
+    },
+    {
+      "baseline": 97.0,
+      "category": "operations",
+      "comparison": 97.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "average_runway_wait_seconds",
+      "label": "Average runway wait",
+      "percent_difference": 0.0,
+      "unit": "s"
+    },
+    {
+      "baseline": 3.5722222222222224,
+      "category": "operations",
+      "comparison": 5.205555555555555,
+      "difference": 1.6333333333333324,
+      "impact": "regression",
+      "key": "avg_departure_delay_minutes",
+      "label": "Mean departure delay",
+      "percent_difference": 45.723172628304795,
+      "unit": "min"
+    },
+    {
+      "baseline": 5.712121212121213,
+      "category": "operations",
+      "comparison": 5.712121212121213,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "avg_service_waiting_minutes",
+      "label": "Mean service waiting",
+      "percent_difference": 0.0,
+      "unit": "min"
+    },
+    {
+      "baseline": 49.75555555555556,
+      "category": "operations",
+      "comparison": 51.422222222222224,
+      "difference": 1.6666666666666643,
+      "impact": "regression",
+      "key": "avg_turnaround_minutes",
+      "label": "Mean turnaround",
+      "percent_difference": 3.3497096918267038,
+      "unit": "min"
+    },
+    {
+      "baseline": 3.0,
+      "category": "throughput",
+      "comparison": 3.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "completed_turnarounds",
+      "label": "Completed turnarounds",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 3.0,
+      "category": "operations",
+      "comparison": 3.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "delayed_aircraft",
+      "label": "Delayed aircraft",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 3.0,
+      "category": "operations",
+      "comparison": 3.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "delayed_turnarounds",
+      "label": "Delayed turnarounds",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 581.0,
+      "category": "operations",
+      "comparison": 581.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "departure_runway_wait_seconds",
+      "label": "Departure runway wait",
+      "percent_difference": 0.0,
+      "unit": "s"
+    },
+    {
+      "baseline": 4340.269,
+      "category": "operations",
+      "comparison": 4340.269,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "departure_taxi_distance_m",
+      "label": "Departure taxi distance",
+      "percent_difference": 0.0,
+      "unit": "m"
+    },
+    {
+      "baseline": 879.0,
+      "category": "operations",
+      "comparison": 873.0,
+      "difference": -6.0,
+      "impact": "improvement",
+      "key": "departure_taxi_seconds",
+      "label": "Departure taxi time",
+      "percent_difference": -0.6825938566552902,
+      "unit": "s"
+    },
+    {
+      "baseline": 0.0,
+      "category": "operations",
+      "comparison": 1.0,
+      "difference": 1.0,
+      "impact": "regression",
+      "key": "disruption_triggered_replans",
+      "label": "Disruption replans",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "failed_or_timed_out_turnarounds",
+      "label": "Failed or timed out turnarounds",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_collisions",
+      "label": "Fleet collisions",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 1.969527,
+      "category": "safety",
+      "comparison": 1.969527,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_minimum_separation_m",
+      "label": "Fleet minimum separation",
+      "percent_difference": 0.0,
+      "unit": "m"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_outstanding_reservations",
+      "label": "Outstanding reservations",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "operations",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_reassignments",
+      "label": "Fleet reassignments",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 48.0,
+      "category": "throughput",
+      "comparison": 48.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_requests_completed",
+      "label": "Fleet requests completed",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 48.0,
+      "category": "throughput",
+      "comparison": 48.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_requests_created",
+      "label": "Fleet requests created",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_requests_failed",
+      "label": "Fleet requests failed",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 67851.0,
+      "category": "operations",
+      "comparison": 67851.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_reservation_contentions",
+      "label": "Fleet reservation contentions",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "fleet_unfinished_requests",
+      "label": "Unfinished fleet requests",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 2.0,
+      "category": "throughput",
+      "comparison": 1.0,
+      "difference": -1.0,
+      "impact": "regression",
+      "key": "max_simultaneous_taxiing_aircraft",
+      "label": "Peak taxiing aircraft",
+      "percent_difference": -50.0,
+      "unit": "aircraft"
+    },
+    {
+      "baseline": 1.0,
+      "category": "operations",
+      "comparison": 1.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "maximum_runway_queue_depth",
+      "label": "Maximum runway queue",
+      "percent_difference": 0.0,
+      "unit": "aircraft"
+    },
+    {
+      "baseline": 1414.0,
+      "category": "operations",
+      "comparison": 1414.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "maximum_service_task_wait_seconds",
+      "label": "Maximum service task wait",
+      "percent_difference": 0.0,
+      "unit": "s"
+    },
+    {
+      "baseline": 13.565011,
+      "category": "safety",
+      "comparison": 31.549956,
+      "difference": 17.984945000000003,
+      "impact": "improvement",
+      "key": "minimum_aircraft_ground_separation_m",
+      "label": "Minimum aircraft-ground separation",
+      "percent_difference": 132.5833425420739,
+      "unit": "m"
+    },
+    {
+      "baseline": 151.030987,
+      "category": "safety",
+      "comparison": 948.133186,
+      "difference": 797.102199,
+      "impact": "improvement",
+      "key": "minimum_aircraft_separation_m",
+      "label": "Minimum aircraft separation",
+      "percent_difference": 527.7739454884182,
+      "unit": "m"
+    },
+    {
+      "baseline": 0.0,
+      "category": "disruptions",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "road_closure_events",
+      "label": "Road closure events",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 6.0,
+      "category": "throughput",
+      "comparison": 6.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "runway_operations_completed",
+      "label": "Runway operations completed",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 582.0,
+      "category": "operations",
+      "comparison": 582.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "runway_queue_seconds",
+      "label": "Runway queueing",
+      "percent_difference": 0.0,
+      "unit": "s"
+    },
+    {
+      "baseline": 0.131419,
+      "category": "operations",
+      "comparison": 0.122477,
+      "difference": -0.008942000000000005,
+      "impact": "regression",
+      "key": "runway_utilization",
+      "label": "Runway utilization",
+      "percent_difference": -6.804191174792081,
+      "unit": "ratio"
+    },
+    {
+      "baseline": 4109.0,
+      "category": "operations",
+      "comparison": 4409.0,
+      "difference": 300.0,
+      "impact": "regression",
+      "key": "simulated_duration_seconds",
+      "label": "Simulation duration",
+      "percent_difference": 7.3010464833292765,
+      "unit": "s"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "surface_aircraft_aircraft_collisions",
+      "label": "Aircraft collisions",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "surface_aircraft_ground_collisions",
+      "label": "Aircraft-ground collisions",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 3.0,
+      "category": "throughput",
+      "comparison": 3.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "surface_arrived_aircraft",
+      "label": "Completed arrivals",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 3.0,
+      "category": "throughput",
+      "comparison": 3.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "surface_departed_aircraft",
+      "label": "Completed departures",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "operations",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "surface_reroutes",
+      "label": "Surface reroutes",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "surface_safe_failures",
+      "label": "Surface safety failures",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 5877.353,
+      "category": "operations",
+      "comparison": 5877.353,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "surface_taxi_distance_m",
+      "label": "Total taxi distance",
+      "percent_difference": 0.0,
+      "unit": "m"
+    },
+    {
+      "baseline": 1188.0,
+      "category": "operations",
+      "comparison": 1182.0,
+      "difference": -6.0,
+      "impact": "improvement",
+      "key": "surface_taxi_seconds",
+      "label": "Total taxi time",
+      "percent_difference": -0.5050505050505051,
+      "unit": "s"
+    },
+    {
+      "baseline": 3.0,
+      "category": "throughput",
+      "comparison": 3.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "surface_total_aircraft",
+      "label": "Surface aircraft",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 1.0,
+      "category": "operations",
+      "comparison": 0.0,
+      "difference": -1.0,
+      "impact": "improvement",
+      "key": "surface_wait_events",
+      "label": "Surface wait events",
+      "percent_difference": -100.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 1129.0,
+      "category": "operations",
+      "comparison": 1123.0,
+      "difference": -6.0,
+      "impact": "improvement",
+      "key": "surface_wait_seconds",
+      "label": "Surface queueing",
+      "percent_difference": -0.5314437555358724,
+      "unit": "s"
+    },
+    {
+      "baseline": 0.0,
+      "category": "operations",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "task_reassignments",
+      "label": "Task reassignments",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 11310.0,
+      "category": "operations",
+      "comparison": 11310.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "total_service_task_wait_seconds",
+      "label": "Service task queueing",
+      "percent_difference": 0.0,
+      "unit": "s"
+    },
+    {
+      "baseline": 3.0,
+      "category": "throughput",
+      "comparison": 3.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "total_turnarounds",
+      "label": "Total turnarounds",
+      "percent_difference": 0.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 0.0,
+      "category": "safety",
+      "comparison": 0.0,
+      "difference": 0.0,
+      "impact": "unchanged",
+      "key": "unresolved_service_requests",
+      "label": "Unresolved service requests",
+      "percent_difference": null,
+      "unit": "count"
+    }
+  ],
+  "operational_impact": [
+    {
+      "baseline": 151.030987,
+      "category": "safety",
+      "comparison": 948.133186,
+      "difference": 797.102199,
+      "impact": "improvement",
+      "key": "minimum_aircraft_separation_m",
+      "label": "Minimum aircraft separation",
+      "percent_difference": 527.7739454884182,
+      "unit": "m"
+    },
+    {
+      "baseline": 13.565011,
+      "category": "safety",
+      "comparison": 31.549956,
+      "difference": 17.984945000000003,
+      "impact": "improvement",
+      "key": "minimum_aircraft_ground_separation_m",
+      "label": "Minimum aircraft-ground separation",
+      "percent_difference": 132.5833425420739,
+      "unit": "m"
+    },
+    {
+      "baseline": 0.0,
+      "category": "operations",
+      "comparison": 1.0,
+      "difference": 1.0,
+      "impact": "regression",
+      "key": "disruption_triggered_replans",
+      "label": "Disruption replans",
+      "percent_difference": null,
+      "unit": "count"
+    },
+    {
+      "baseline": 1.0,
+      "category": "operations",
+      "comparison": 0.0,
+      "difference": -1.0,
+      "impact": "improvement",
+      "key": "surface_wait_events",
+      "label": "Surface wait events",
+      "percent_difference": -100.0,
+      "unit": "count"
+    },
+    {
+      "baseline": 2.0,
+      "category": "throughput",
+      "comparison": 1.0,
+      "difference": -1.0,
+      "impact": "regression",
+      "key": "max_simultaneous_taxiing_aircraft",
+      "label": "Peak taxiing aircraft",
+      "percent_difference": -50.0,
+      "unit": "aircraft"
+    },
+    {
+      "baseline": 3.5722222222222224,
+      "category": "operations",
+      "comparison": 5.205555555555555,
+      "difference": 1.6333333333333324,
+      "impact": "regression",
+      "key": "avg_departure_delay_minutes",
+      "label": "Mean departure delay",
+      "percent_difference": 45.723172628304795,
+      "unit": "min"
+    },
+    {
+      "baseline": 4109.0,
+      "category": "operations",
+      "comparison": 4409.0,
+      "difference": 300.0,
+      "impact": "regression",
+      "key": "simulated_duration_seconds",
+      "label": "Simulation duration",
+      "percent_difference": 7.3010464833292765,
+      "unit": "s"
+    },
+    {
+      "baseline": 49.75555555555556,
+      "category": "operations",
+      "comparison": 51.422222222222224,
+      "difference": 1.6666666666666643,
+      "impact": "regression",
+      "key": "avg_turnaround_minutes",
+      "label": "Mean turnaround",
+      "percent_difference": 3.3497096918267038,
+      "unit": "min"
+    },
+    {
+      "baseline": 0.131419,
+      "category": "operations",
+      "comparison": 0.122477,
+      "difference": -0.008942000000000005,
+      "impact": "regression",
+      "key": "runway_utilization",
+      "label": "Runway utilization",
+      "percent_difference": -6.804191174792081,
+      "unit": "ratio"
+    },
+    {
+      "baseline": 879.0,
+      "category": "operations",
+      "comparison": 873.0,
+      "difference": -6.0,
+      "impact": "improvement",
+      "key": "departure_taxi_seconds",
+      "label": "Departure taxi time",
+      "percent_difference": -0.6825938566552902,
+      "unit": "s"
+    }
+  ],
+  "safety": {
+    "available_metrics": [
+      "unresolved_service_requests",
+      "fleet_collisions",
+      "fleet_minimum_separation_m",
+      "fleet_outstanding_reservations",
+      "fleet_unfinished_requests",
+      "fleet_requests_failed",
+      "surface_safe_failures",
+      "surface_aircraft_aircraft_collisions",
+      "surface_aircraft_ground_collisions",
+      "minimum_aircraft_separation_m",
+      "minimum_aircraft_ground_separation_m",
+      "failed_or_timed_out_turnarounds"
+    ],
+    "findings": [
+      {
+        "finding": "Zero collisions recorded in both runs.",
+        "status": "no_regression"
+      }
+    ],
+    "status": "no_regression"
+  },
+  "schema_version": 1,
+  "shared_metric_count": 50
+}

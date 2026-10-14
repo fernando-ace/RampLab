@@ -30,7 +30,8 @@ class LiveSessionError(ValueError):
 class LiveSession:
     SPEEDS = {"1x": 1.0, "2x": 2.0, "5x": 5.0, "max": None}
 
-    def __init__(self, cli: Path | None = None, root: Path | None = None):
+    def __init__(self, cli: Path | None = None, root: Path | None = None,
+                 scenario_file: Path | None = None):
         candidates = [cli] if cli else [REPO / "build-goal28/Release/airside_cli.exe",
                                         REPO / "build/Release/airside_cli.exe",
                                         REPO / "build/airside_cli.exe"]
@@ -38,14 +39,45 @@ class LiveSession:
         self.root = Path(root) if root else Path(tempfile.mkdtemp(prefix="ramplab-goal28-"))
         self.lock = threading.RLock()
         self.process: subprocess.Popen[str] | None = None
+        self.configured_scenario_file = Path(scenario_file).resolve() if scenario_file else None
         self.scenario_file: Path | None = None
+        self.seed = 42
+        self.aircraft_routing_policy = "SCRIPTED"
+        self.operation_name = "KAUO generated control operation"
+        self.planned_disruption: dict[str, Any] | None = None
+        if self.configured_scenario_file:
+            if not self.configured_scenario_file.is_file():
+                raise LiveSessionError(f"Configured KAUO scenario is unavailable: {self.configured_scenario_file}")
+            configured = json.loads(self.configured_scenario_file.read_text(encoding="utf-8"))
+            self.seed = int(configured.get("default_seed", self.seed))
+            self.aircraft_routing_policy = configured.get("surface_operations", {}).get(
+                "aircraft_routing_policy", self.aircraft_routing_policy)
+            self.operation_name = "Goal 41 KAUO disrupted operation" if self.configured_scenario_file.parent.name == "disruption" else "Goal 41 KAUO operation"
+            road_events = configured.get("road_events", [])
+            closure = next((event for event in road_events if event.get("enabled") is False), None)
+            if closure:
+                self.planned_disruption = {"edge_id": closure.get("edge"), "starts_at_seconds": closure.get("time_seconds"),
+                                           "classification": "Scenario exercise; not a reported airport condition"}
+            delay = next(iter(configured.get("turnaround_disruptions", [])), None)
+            if delay:
+                aircraft = next((item for item in configured.get("aircraft", [])
+                                 if item.get("id") == delay.get("aircraft")), {})
+                task = next((item for item in aircraft.get("service_tasks", [])
+                             if item.get("id") == delay.get("task")), {})
+                base = task.get("duration_seconds")
+                duration = delay.get("duration_seconds")
+                self.planned_disruption = {
+                    "kind": "service_delay", "aircraft_id": delay.get("aircraft"), "task_id": delay.get("task"),
+                    "service_type": task.get("type", "service"), "starts_at_seconds": delay.get("time_seconds"),
+                    "duration_seconds": duration, "base_duration_seconds": base,
+                    "added_duration_seconds": duration - base if isinstance(duration, (int, float)) and isinstance(base, (int, float)) else None,
+                    "classification": "Assumed scenario exercise; not a reported airport condition"}
         self.edge_names: dict[int, str] = {}
         self.vehicle_names: dict[int, str] = {}
         self.output_dir: Path | None = None
         self.worker: threading.Thread | None = None
         self.running = False
         self.speed = "max"
-        self.aircraft_routing_policy = "SCRIPTED"
         self.snapshot: dict[str, Any] = {"session_state": "idle", "simulated_time_seconds": 0,
                                          "interventions": [], "aircraft": [], "vehicles": [], "roads": [],
                                          "tasks": [], "events": []}
@@ -58,6 +90,10 @@ class LiveSession:
             return {**self.snapshot, "session_state": self.snapshot.get("session_state", "idle"),
                     "speed": self.speed, "interventions": list(self.interventions),
                     "aircraft_routing_policy": self.aircraft_routing_policy,
+                    "seed": self.seed, "operation_name": self.operation_name,
+                    "planned_disruption": self.planned_disruption,
+                    "artifacts_ready": bool(self.process is None and self.output_dir and
+                                             (self.output_dir / "experiment.json").is_file()),
                     "output_directory": str(self.output_dir) if self.output_dir else None,
                     "live_state_file": str(self.root / "live-state.json")}
 
@@ -108,28 +144,40 @@ class LiveSession:
             raise LiveSessionError("KAUO scenario generation has not completed.")
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.process = subprocess.Popen(
-            [str(self.cli), "--scenario", str(self.scenario_file), "--seed", "42", "--live-control",
+            [str(self.cli), "--scenario", str(self.scenario_file), "--seed", str(self.seed), "--live-control",
              "--record-events", str(self.output_dir / "events.jsonl"),
              "--metrics-json", str(self.output_dir / "simulator-metrics.json"),
-             "--metrics-csv", str(self.output_dir / "simulator-metrics.csv")],
+             "--metrics-csv", str(self.output_dir / "simulator-metrics.csv"),
+             "--agent-decisions", str(self.output_dir / "agent-decisions.json")],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             text=True, encoding="utf-8", bufsize=1)
         self.snapshot = self._read()
         self.snapshot["session_state"] = "paused"
 
-    def start(self, aircraft_routing_policy: str = "SCRIPTED") -> dict[str, Any]:
-        if aircraft_routing_policy not in {"SCRIPTED", "ADAPTIVE"}:
-            raise LiveSessionError("Aircraft routing policy must be SCRIPTED or ADAPTIVE.")
+    def start(self, aircraft_routing_policy: str | None = None) -> dict[str, Any]:
+        if aircraft_routing_policy not in {None, "SCRIPTED", "ADAPTIVE", "COUNTERFACTUAL"}:
+            raise LiveSessionError("Aircraft routing policy must be SCRIPTED, ADAPTIVE, or COUNTERFACTUAL.")
         with self.lock:
-            self.aircraft_routing_policy = aircraft_routing_policy
             self._stop_process()
             self.root.mkdir(parents=True, exist_ok=True)
-            generated = self.root / "generated" / "control"
-            self.generation = generate(PACKAGE, MAPPING, generated, seed=42, without_disruptions=True)
-            self.scenario_file = generated / "scenario.json"
-            document = json.loads(self.scenario_file.read_text(encoding="utf-8"))
-            document.setdefault("surface_operations", {})["aircraft_routing_policy"] = aircraft_routing_policy
-            self.scenario_file.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            if self.configured_scenario_file:
+                self.scenario_file = self.configured_scenario_file
+                document = json.loads(self.scenario_file.read_text(encoding="utf-8"))
+                self.seed = int(document.get("default_seed", self.seed))
+                self.aircraft_routing_policy = document.get("surface_operations", {}).get("aircraft_routing_policy", "SCRIPTED")
+                if aircraft_routing_policy and aircraft_routing_policy != self.aircraft_routing_policy:
+                    raise LiveSessionError("The selected Goal 41 operation fixes its routing policy in the generated scenario.")
+                self.generation = None
+            else:
+                self.aircraft_routing_policy = aircraft_routing_policy or "SCRIPTED"
+                if self.aircraft_routing_policy == "COUNTERFACTUAL":
+                    raise LiveSessionError("COUNTERFACTUAL is available only when a configured scenario supports it.")
+                generated = self.root / "generated" / "control"
+                self.generation = generate(PACKAGE, MAPPING, generated, seed=42, without_disruptions=True)
+                self.scenario_file = generated / "scenario.json"
+                document = json.loads(self.scenario_file.read_text(encoding="utf-8"))
+                document.setdefault("surface_operations", {})["aircraft_routing_policy"] = self.aircraft_routing_policy
+                self.scenario_file.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             self.edge_names = {index + 1: str(edge["id"]) for index, edge in enumerate(document["airport"]["edges"])}
             self.vehicle_names = {index + 1: str(vehicle["name"]) for index, vehicle in enumerate(document["fleet"]["vehicles"])}
             self.output_dir = self.root / "run-001"
@@ -285,7 +333,27 @@ class LiveSession:
                 self.process = None
             if self.output_dir and self.scenario_file:
                 write_goal19_artifacts(self.output_dir, self.output_dir / "simulator-metrics.json",
-                                       "airport_kauo_goal28", self.scenario_file)
+                                       "airport_kauo_goal41" if self.configured_scenario_file else "airport_kauo_goal28",
+                                       self.scenario_file)
+                from tools.goal41.run_vertical import _write_ground_units
+                _write_ground_units(self.output_dir, self.scenario_file, self.output_dir / "simulator-metrics.json")
+                trace_path = self.output_dir / "agent-decisions.json"
+                if trace_path.is_file():
+                    from tools.goal41.decisions import summarize_decisions
+                    experiment_path = self.output_dir / "experiment.json"
+                    experiment = json.loads(experiment_path.read_text(encoding="utf-8"))
+                    events_path = self.output_dir / "events.jsonl"
+                    event_rows = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()
+                                  if line.strip()] if events_path.is_file() else []
+                    experiment["operator_decision_summaries"] = summarize_decisions(
+                        json.loads(trace_path.read_text(encoding="utf-8")), event_rows,
+                        json.loads(self.scenario_file.read_text(encoding="utf-8")))
+                    experiment["operational_context"] = {
+                        "airport": "KAUO", "operation_name": self.operation_name,
+                        "routing_policy": self.aircraft_routing_policy, "seed": self.seed,
+                        "planned_disruption": self.planned_disruption,
+                    }
+                    experiment_path.write_text(json.dumps(experiment, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             return self.state()
 
     def replay(self, actions: list[dict[str, Any]]) -> dict[str, Any]:
@@ -315,12 +383,13 @@ class LiveSession:
         with self.lock:
             if not self.output_dir or not (self.output_dir / "simulator-metrics.json").is_file():
                 raise LiveSessionError("Finish the live run before loading its analysis artifacts.")
-            names = ("experiment.json", "runs.csv", "aircraft.csv", "events.jsonl",
-                     "simulator-metrics.json", "simulator-metrics.csv", "interventions.json")
+            names = ("experiment.json", "runs.csv", "aircraft.csv", "ground-units.csv", "events.jsonl",
+                     "simulator-metrics.json", "simulator-metrics.csv", "interventions.json", "agent-decisions.json")
             files = [{"name": name, "content": (self.output_dir / name).read_text(encoding="utf-8")}
                      for name in names if (self.output_dir / name).is_file()]
-            return {"run": {"id": f"goal28-{self.output_dir.name}",
-                             "label": f"Interactive KAUO · seed 42 · {self.output_dir.name}", "files": files}}
+            goal = "goal41" if self.configured_scenario_file else "goal28"
+            return {"run": {"id": f"{goal}-{self.output_dir.name}",
+                             "label": f"Interactive KAUO · seed {self.seed} · {self.output_dir.name}", "files": files}}
 
     def launch_unreal(self) -> dict[str, Any]:
         with self.lock:

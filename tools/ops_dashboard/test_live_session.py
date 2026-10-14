@@ -14,6 +14,8 @@ from tools.ops_dashboard.live_session import LiveSession, LiveSessionError
 ROOT = Path(__file__).resolve().parents[2]
 CLI = ROOT / "build-goal34/Release/airside_cli.exe"
 AGENT_CLI = CLI
+GOAL41_CLI = ROOT / "build-goal41/Release/airside_cli.exe"
+GOAL41_SCENARIO = ROOT / "docs/goal41-evidence/generated/disruption/scenario.json"
 
 
 @unittest.skipUnless(CLI.is_file(), "Build Release airside_cli before live-session integration tests.")
@@ -143,6 +145,82 @@ class LiveSessionTests(unittest.TestCase):
                     session.intervene("surface_closure", 999999)
                 with self.assertRaises(LiveSessionError):
                     session.intervene("equipment_outage", 999999)
+            finally:
+                session.close()
+
+class ConfiguredScenarioTests(unittest.TestCase):
+    @unittest.skipUnless(GOAL41_CLI.is_file() and GOAL41_SCENARIO.is_file(),
+                         "Build Goal 41 Release airside_cli and generate its evidence scenario.")
+    def test_goal41_live_run_finishes_and_exports_the_configured_operation(self):
+        with TemporaryDirectory(prefix="goal41-live-completion-") as directory:
+            session = LiveSession(GOAL41_CLI, Path(directory) / "session", GOAL41_SCENARIO)
+            try:
+                state = session.start()
+                self.assertEqual(state["session_state"], "paused")
+                self.assertEqual(state["aircraft_routing_policy"], "ADAPTIVE")
+                self.assertEqual(len(state["aircraft"]), 3)
+                self.assertEqual(len(state["vehicles"]), 9)
+                self.assertEqual(len(state["tasks"]), 33)
+                while not state.get("finished"):
+                    state = session.advance()
+                self.assertFalse(session.state()["artifacts_ready"])
+                state = session.finish()
+                self.assertEqual(state["session_state"], "completed")
+                self.assertTrue(state["artifacts_ready"])
+                run = session.artifacts()["run"]
+                files = {item["name"]: item["content"] for item in run["files"]}
+                self.assertIn("experiment.json", files)
+                self.assertIn("events.jsonl", files)
+                experiment = json.loads(files["experiment.json"])
+                self.assertIn("TurnaroundScheduleAdjusted", {
+                    item.get("action") for item in experiment["operator_decision_summaries"]})
+                self.assertTrue(any(json.loads(line).get("type") == "TurnaroundDisruptionDetected"
+                                     for line in files["events.jsonl"].splitlines() if line.strip()))
+            finally:
+                session.close()
+
+    def test_goal41_service_delay_is_exposed_as_a_planned_schedule_disruption(self):
+        with TemporaryDirectory(prefix="goal41-configured-live-") as directory:
+            root = Path(directory)
+            scenario_dir = root / "disruption"
+            scenario_dir.mkdir()
+            scenario = scenario_dir / "scenario.json"
+            scenario.write_text(json.dumps({
+                "default_seed": 42,
+                "surface_operations": {"aircraft_routing_policy": "ADAPTIVE"},
+                "aircraft": [{"id": "KAUO-G31-GA-03", "service_tasks": [
+                    {"id": "G31-03-PUSH", "type": "Pushback", "duration_seconds": 180}]}],
+                "turnaround_disruptions": [{"time_seconds": 241, "aircraft": "KAUO-G31-GA-03",
+                                             "task": "G31-03-PUSH", "duration_seconds": 480}],
+            }), encoding="utf-8")
+            session = LiveSession(root=root / "session", scenario_file=scenario)
+            try:
+                state = session.state()
+                self.assertEqual(state["planned_disruption"]["kind"], "service_delay")
+                self.assertEqual(state["planned_disruption"]["service_type"], "Pushback")
+                self.assertEqual(state["planned_disruption"]["base_duration_seconds"], 180)
+                self.assertEqual(state["planned_disruption"]["duration_seconds"], 480)
+                self.assertEqual(state["planned_disruption"]["added_duration_seconds"], 300)
+            finally:
+                session.close()
+
+    def test_goal41_configured_scenario_exposes_policy_seed_and_closure_before_start(self):
+        with TemporaryDirectory(prefix="goal41-configured-live-") as directory:
+            root = Path(directory)
+            scenario_dir = root / "disruption"
+            scenario_dir.mkdir()
+            scenario = scenario_dir / "scenario.json"
+            scenario.write_text(json.dumps({
+                "default_seed": 42,
+                "surface_operations": {"aircraft_routing_policy": "COUNTERFACTUAL"},
+                "road_events": [{"time_seconds": 15, "edge": "twy_a_mid_fbo_primary", "enabled": False}],
+            }), encoding="utf-8")
+            session = LiveSession(root=root / "session", scenario_file=scenario)
+            try:
+                state = session.state()
+                self.assertEqual(state["seed"], 42)
+                self.assertEqual(state["aircraft_routing_policy"], "COUNTERFACTUAL")
+                self.assertEqual(state["planned_disruption"]["edge_id"], "twy_a_mid_fbo_primary")
             finally:
                 session.close()
 

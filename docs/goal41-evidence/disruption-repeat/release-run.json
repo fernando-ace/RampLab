@@ -1,0 +1,20 @@
+{
+  "airport": "KAUO",
+  "artifacts": [
+    "agent-decisions.json",
+    "aircraft.csv",
+    "events.jsonl",
+    "experiment.json",
+    "runs.csv",
+    "simulator-metrics.aircraft.csv",
+    "simulator-metrics.csv",
+    "simulator-metrics.json"
+  ],
+  "description": "Matched Goal 41 KAUO multi-aircraft operation; all schedule, equipment and task timings are declared simulation assumptions.",
+  "mode": "disruption-repeat",
+  "planned_disruption": null,
+  "routing_policy": "ADAPTIVE",
+  "scenario": "airport_kauo",
+  "scenario_key": "goal41-kauo-operations",
+  "seed": 42
+}
