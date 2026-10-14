@@ -2606,6 +2606,36 @@ void Simulation::handle_surface_tick() {
 void Simulation::emit(SimulationEventRecord event) {
     event.sequence = next_event_record_sequence_++;
     event.timestamp = now_;
+    if (event.aircraft || event.vehicle) {
+        const auto state = snapshot();
+        if (event.aircraft) {
+            const auto item = std::ranges::find(state.aircraft, *event.aircraft, &AircraftSnapshot::id);
+            if (item != state.aircraft.end()) {
+                if (item->surface_position_m) {
+                    event.position_m = item->surface_position_m;
+                    event.heading_rad = item->surface_heading_rad;
+                }
+                event.aircraft_state = item->state;
+            }
+            if (event.vehicle) {
+                const auto related = std::ranges::find(state.vehicles, *event.vehicle, &ServiceVehicleSnapshot::id);
+                if (related != state.vehicles.end()) {
+                    event.vehicle_state = related->state;
+                    event.related_position_m = related->observed_position_m;
+                    event.related_heading_rad = related->observed_heading_rad;
+                }
+            }
+        } else if (event.vehicle) {
+            const auto item = std::ranges::find(state.vehicles, *event.vehicle, &ServiceVehicleSnapshot::id);
+            if (item != state.vehicles.end()) {
+                if (item->observed_position_m) {
+                    event.position_m = item->observed_position_m;
+                    event.heading_rad = item->observed_heading_rad;
+                }
+                event.vehicle_state = item->state;
+            }
+        }
+    }
     if (history_policy_ == SimulationHistoryPolicy::Retain) {
         event_history_.push_back(std::move(event));
         log_.push_back(std::format("{}  {}", format_sim_time(now_), format_event(event_history_.back())));

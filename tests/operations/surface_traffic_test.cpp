@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <optional>
@@ -103,6 +104,20 @@ TEST(SurfaceTrafficTest, ControlCoordinatesPushbackTaxiContentionAndRunwayQueue)
     EXPECT_TRUE(std::ranges::all_of(snapshot.aircraft, [](const auto& item) {
         return item.surface_state == "Departed" && item.taxi_distance_m > 0.0 && item.actual_surface_departure;
     }));
+}
+
+TEST(SurfaceTrafficTest, MovementEventsCarryAuthoritativePoseAndStableEntityIdentity) {
+    airside::Simulation simulation(airside::load_scenario(scenario_file("surface_traffic.yaml")), 42);
+    const auto result = simulation.run();
+    const auto movement = std::ranges::find_if(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfaceReservationAcquired && event.aircraft;
+    });
+    ASSERT_NE(movement, result.events.end());
+    ASSERT_TRUE(movement->position_m.has_value());
+    ASSERT_TRUE(movement->heading_rad.has_value());
+    EXPECT_TRUE(std::isfinite(movement->position_m->x_m));
+    EXPECT_TRUE(std::isfinite(movement->position_m->y_m));
+    EXPECT_TRUE(std::isfinite(*movement->heading_rad));
 }
 
 TEST(SurfaceTrafficTest, ArrivalTurnaroundContinuesThroughPushbackAndDeparture) {
