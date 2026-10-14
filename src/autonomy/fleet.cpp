@@ -546,10 +546,27 @@ struct FleetSimulation::Impl {
         return vehicles;
     }
 
+    AirportGraph current_routing_graph() const {
+        auto graph = base_scenario.airport.graph;
+        for (const auto& change : road_events) {
+            if (static_cast<double>(change.time.count()) > now + 1e-9) break;
+            graph.set_edge_available(change.edge, change.available);
+        }
+        return graph;
+    }
+
     void start_request(Member& member, const ServiceTaskSnapshot& task) {
         member.idle_time_s += std::max(0.0, now - member.dispatch_state_since_s);
         member.dispatch_state_since_s = now;
-        const auto graph = member.simulation.graph();
+        // Start each dispatch from the immutable fleet topology. Per-mission
+        // replanning may temporarily disable edges to route around conflicts;
+        // carrying those transient exclusions into the next request can make
+        // an otherwise connected service route appear permanently unavailable.
+        // Replay only scheduled road changes already applied by the fleet so
+        // legitimate closures remain authoritative for the new mission.
+        auto scenario = base_scenario;
+        scenario.airport.graph = current_routing_graph();
+        const auto graph = scenario.airport.graph;
         const auto find_node = [&](const std::string& name) -> std::optional<NodeId> {
             for (const auto& node : graph.nodes()) if (node.name == name) return node.id;
             return std::nullopt;
@@ -562,7 +579,6 @@ struct FleetSimulation::Impl {
         const auto service_route = airside::find_route(graph, *origin, *destination, airside::MovementClass::GroundVehicle);
         if (!approach || !service_route) throw std::logic_error("dispatcher assigned a request without an available route");
 
-        auto scenario = member.simulation.scenario();
         scenario.name += "_" + task.request.id.value;
         scenario.start_node = member.current_node;
         scenario.goal_node = task.request.destination;
@@ -637,7 +653,7 @@ struct FleetSimulation::Impl {
     void dispatch_ready_requests() {
         if (!dispatch_mode) return;
         dispatcher->release_due(now);
-        const auto graph = members.front().simulation.graph();
+        const auto graph = current_routing_graph();
         auto vehicles = dispatch_vehicle_states();
         const auto assignments = dispatcher->dispatch(now, vehicles, graph);
         const auto tasks = dispatcher->snapshot();
