@@ -51,6 +51,9 @@ async function loadAirport(key = "kauo") {
     $("#airport-name").textContent = boot.airport.name;
     $("#map-title").textContent = `${boot.airport.id} operational map`;
     $("#dataset-tag").textContent = boot.catalog.available_bases.find(item => item.key === key)?.provenance || "Source classification available";
+    $("#geometry-provenance-note").textContent = key === "kauo-goal42"
+      ? "ALDOT pavement inventory; route centerlines and stands remain derived or approximate"
+      : "Approximate taxiway and stand positions";
     $("#scenario-name").value = state.scenario.name;
     render();
   } catch (error) { toast(error.message, true); }
@@ -102,6 +105,9 @@ function projectMap() {
     coordinates.push([x + Math.sin(theta) * half, y + Math.cos(theta) * half]);
     coordinates.push([x - Math.sin(theta) * half, y - Math.cos(theta) * half]);
   }
+  for (const area of geometry.surface_areas || []) for (const polygon of area.polygons || []) for (const ring of polygon || []) {
+    for (const point of ring || []) coordinates.push([Number(point.x_m), Number(point.y_m)]);
+  }
   let minX = Math.min(...coordinates.map(p => p[0])), maxX = Math.max(...coordinates.map(p => p[0]));
   let minY = Math.min(...coordinates.map(p => p[1])), maxY = Math.max(...coordinates.map(p => p[1]));
   const padX = (maxX - minX) * .065, padY = (maxY - minY) * .08;
@@ -124,7 +130,21 @@ function drawMap(targetSelector = "#airport-map") {
   const oldRoutePairs = new Set(oldRouteNodes.slice(1).map((node, index) => [String(oldRouteNodes[index]), String(node)].sort().join("|")));
   const closed = new Set(activeDisruptions().filter(item => item.type === "route_closure").map(item => state.boot.capabilities.mapped_routes[item.resource_id]).filter(Boolean));
   const nodeLabels={rwy36_hold:"RWY 36",twy_a_south:"Taxiway A · S",twy_a_mid:"Taxiway A · Mid",twy_a_north:"Taxiway A · N",fbo_apron_detour:"Taxiway C"};
-  const runwayShapes = (geometry.features.runways || []).map(runway => {
+  const sourceAreas = geometry.surface_areas || [];
+  const sourceSurfaceShapes = sourceAreas.filter(area => area.use !== "UNCLASSIFIED_OTHER").flatMap(area =>
+    (area.polygons || []).map(polygon => {
+      const outer = polygon?.[0] || [];
+      const points = outer.map(point => p.point(point.x_m, point.y_m).join(",")).join(" ");
+      const fill = area.use === "RUNWAY" ? "#65737a" : area.use === "APRON" ? "#c6d6ca" : "#b6c5c7";
+      const stroke = area.use === "RUNWAY" ? "#526068" : area.use === "APRON" ? "#9db3a5" : "#8fa4a7";
+      return `<polygon points="${points}" fill="${fill}" stroke="${stroke}" stroke-width="1"><title>${esc(area.name || area.use)} · ${esc(area.classification)}</title></polygon>`;
+    })
+  ).join("");
+  const runwayLabels = (geometry.features.runways || []).map(runway => {
+    const c = p.point(runway.center_local_m.x, runway.center_local_m.y);
+    return `<text x="${c[0]}" y="${c[1]+3}" text-anchor="middle" class="runway-label">${esc(runway.identifier)}</text>`;
+  }).join("");
+  const runwayShapes = sourceAreas.some(area => area.use === "RUNWAY") ? "" : (geometry.features.runways || []).map(runway => {
     const theta = Number(runway.true_heading_degrees_from_first_threshold || 0) * Math.PI / 180;
     const half = Number(runway.length_m || 0) / 2, width = Number(runway.width_m || 25) / 2;
     const ux = Math.sin(theta), uy = Math.cos(theta), px = Math.cos(theta), py = -Math.sin(theta);
@@ -134,7 +154,7 @@ function drawMap(targetSelector = "#airport-map") {
   }).join("");
   const features = geometry.features || {};
   let apron = "";
-  if (features.apron_center_local_m && features.apron_size_m) {
+  if (!sourceAreas.some(area => area.use === "APRON") && features.apron_center_local_m && features.apron_size_m) {
     const a = p.point(features.apron_center_local_m.x, features.apron_center_local_m.y), w = features.apron_size_m.x*p.scale, h=features.apron_size_m.y*p.scale;
     apron = `<rect x="${a[0]-w/2}" y="${a[1]-h/2}" width="${w}" height="${h}" fill="#cbd8ce" stroke="#b9c9bf" stroke-width="1" rx="6"/>`;
   }
@@ -153,7 +173,7 @@ function drawMap(targetSelector = "#airport-map") {
   const gates = geometry.gates.map((g,index)=>{const n=nodes.get(g.node);if(!n)return "";const [x,y]=p.point(n.x_m,n.y_m);return `<g class="gate-tag" aria-label="Stand ${esc(g.id)}"><rect x="${x-10}" y="${y-22}" width="20" height="15" rx="3"/><text x="${x}" y="${y-11}" text-anchor="middle">S${index+1}</text><title>${esc(g.id)}</title></g>`;}).join("");
   const vehicles=all("equipment").filter(item=>state.boot.capabilities.vehicle_types[item.type]&&item.initial_location).map(item=>{const node=nodes.get(item.initial_location);if(!node)return "";const [x,y]=p.point(node.x_m,node.y_m),out=closedEquipment().has(item.equipment_id),selected=state.selectedVehicle===item.equipment_id;return `<g class="vehicle-marker ${out?"unavailable":""} ${selected?"selected":""}" data-vehicle="${esc(item.equipment_id)}" role="button" tabindex="0" aria-label="${out?"Unavailable":"Available"} ${esc(item.type.replaceAll("_"," "))} vehicle ${esc(item.equipment_id)}"><circle cx="${x}" cy="${y}" r="${selected?11:9}"/><text x="${x}" y="${y+3}" text-anchor="middle">${out?"!":"V"}</text><title>${esc(item.equipment_id)} · ${esc(item.type)} · ${out?"unavailable":"available"}</title></g>`;}).join("");
   const north = `<g transform="translate(48 48)"><text x="0" y="0" class="north-mark">N</text><path d="M0 8 L-7 29 L0 25 L7 29 Z" fill="#536873"/></g>`;
-   mapRoot.innerHTML = `<svg viewBox="0 0 ${p.width} ${p.height}" aria-label="Operational airport diagram"><defs><pattern id="map-grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#dde5e1" stroke-width=".8"/></pattern></defs><rect width="1000" height="640" fill="#eef2ed"/><rect width="1000" height="640" fill="url(#map-grid)"/>${north}${apron}${buildings}${edges}${runwayShapes}${nodeMarkers}${gates}${vehicles}<g transform="translate(38 590)"><path d="M0 0H150M0 -5V5M75 -4V4M150 -5V5" stroke="#596c74" stroke-width="2"/><text x="0" y="19" class="scale-label">0</text><text x="65" y="19" class="scale-label">500 m</text><text x="139" y="19" class="scale-label">1 km</text></g></svg>`;
+   mapRoot.innerHTML = `<svg viewBox="0 0 ${p.width} ${p.height}" aria-label="Operational airport diagram"><defs><pattern id="map-grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#dde5e1" stroke-width=".8"/></pattern></defs><rect width="1000" height="640" fill="#eef2ed"/><rect width="1000" height="640" fill="url(#map-grid)"/>${north}${sourceSurfaceShapes}${apron}${buildings}${edges}${runwayShapes}${runwayLabels}${nodeMarkers}${gates}${vehicles}<g transform="translate(38 590)"><path d="M0 0H150M0 -5V5M75 -4V4M150 -5V5" stroke="#596c74" stroke-width="2"/><text x="0" y="19" class="scale-label">0</text><text x="65" y="19" class="scale-label">500 m</text><text x="139" y="19" class="scale-label">1 km</text></g></svg>`;
   if (targetSelector !== "#airport-map") return;
   $$(".edge-hit", mapRoot).forEach(el=>{
     el.addEventListener("click",()=>selectEdge(el.dataset.edge));

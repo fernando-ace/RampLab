@@ -50,7 +50,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _copy_source_package(destination: Path) -> None:
+def _copy_source_package(destination: Path, mapping_path: Path = MAPPING) -> None:
     for source in sorted(SOURCE.iterdir()):
         # canonical.json in this directory is an older Goal 27 export; Goal 31's
         # current canonical form is rebuilt from the manifest and raw files.
@@ -58,9 +58,9 @@ def _copy_source_package(destination: Path) -> None:
             shutil.copy2(source, destination / source.name)
     mapping_dir = destination / "scenario-generation"
     mapping_dir.mkdir()
-    shutil.copy2(MAPPING, mapping_dir / MAPPING.name)
-    mapping = _json(MAPPING)
-    geometry_path = MAPPING.parent / mapping["geometry_file"]
+    shutil.copy2(mapping_path, mapping_dir / mapping_path.name)
+    mapping = _json(mapping_path)
+    geometry_path = mapping_path.parent / mapping["geometry_file"]
     shutil.copy2(geometry_path, mapping_dir / geometry_path.name)
     shutil.copy2(MAPPING.parent / "support_matrix.json", mapping_dir / "support_matrix.json")
 
@@ -231,7 +231,7 @@ def _zip_evidence(root: Path) -> tuple[Path, int]:
     return archive, len(files)
 
 
-def _write_report(output: Path, vertical: dict[str, Any]) -> Path:
+def _write_report(output: Path, vertical: dict[str, Any], update_repository_report: bool = True) -> Path:
     control, disruption = vertical["measured"]["control"], vertical["measured"]["disruption"]
     comparison = vertical["comparison"]
     def show(value: Any, suffix: str = "") -> str:
@@ -364,19 +364,21 @@ See `vertical.json`, `summary.json`, `analysis.md`, `determinism.json`, and `bun
 """
     output_report = output / "goal41-production-airport-operations-vertical.md"
     output_report.write_text(report, encoding="utf-8")
-    repository_report = ROOT / "docs" / output_report.name
-    repository_report.write_text(report, encoding="utf-8")
+    if update_repository_report:
+        repository_report = ROOT / "docs" / output_report.name
+        repository_report.write_text(report, encoding="utf-8")
     return output_report
 
 
-def run(output: Path, cli: Path, seed: int) -> dict[str, Any]:
+def run(output: Path, cli: Path, seed: int, mapping_path: Path = MAPPING) -> dict[str, Any]:
     output = output.expanduser().resolve()
     if output.exists() and any(output.iterdir()):
         raise ValueError(f"Goal 41 output directory must be new or empty: {output}")
     output.mkdir(parents=True, exist_ok=True)
     source_data = output / "source-data"
     source_data.mkdir()
-    _copy_source_package(source_data)
+    mapping_path = mapping_path.resolve()
+    _copy_source_package(source_data, mapping_path)
 
     from tools.airport_data_ingestion.core import canonical_bytes, load_dataset
     from tools.airport_scenario_generation.generator import generate, validate_generated
@@ -410,7 +412,7 @@ def run(output: Path, cli: Path, seed: int) -> dict[str, Any]:
     generated = output / "generated"
     generation_validation = {}
     for mode in ("control", "disruption"):
-        generate(canonical_path, MAPPING, generated / mode, seed=seed, without_disruptions=True)
+        generate(canonical_path, mapping_path, generated / mode, seed=seed, without_disruptions=True)
         scenario_file = generated / mode / "scenario.json"
         scenario = _json(scenario_file)
         scenario.setdefault("surface_operations", {})["aircraft_routing_policy"] = POLICY
@@ -506,7 +508,7 @@ def run(output: Path, cli: Path, seed: int) -> dict[str, Any]:
         "kpi_changes": analysis.get("operational_impact", []),
         "determinism": {key: value["status"] for key, value in determinism["determinism"].items()},
     })
-    report_path = _write_report(output, vertical)
+    report_path = _write_report(output, vertical, update_repository_report=(mapping_path == MAPPING.resolve()))
     archive, hashed_files = _zip_evidence(output)
     return {"output": str(output), "archive": str(archive), "archive_sha256": _sha256(archive),
             "hashed_files": hashed_files, "control": control_metrics, "disruption": disruption_metrics,
@@ -521,6 +523,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--build-dir", type=Path, default=ROOT / "build-goal41")
     parser.add_argument("--cli", type=Path, help="Existing Release airside_cli executable; built automatically if omitted or missing.")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--mapping", type=Path, default=MAPPING, help="Airport scenario mapping; defaults to the Goal 41 mapping.")
     args = parser.parse_args(argv)
     try:
         cli = args.cli.resolve() if args.cli else args.build_dir.resolve() / "Release" / "airside_cli.exe"
@@ -528,7 +531,7 @@ def main(argv: list[str] | None = None) -> int:
             from tools.release.ramplab import prepare, resolve_cli
             cli = prepare(args.build_dir.resolve(), run_tests=False)
             cli = resolve_cli(args.build_dir.resolve())
-        result = run(args.output, cli, args.seed)
+        result = run(args.output, cli, args.seed, args.mapping)
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
         print(f"Goal 41 workflow failed: {exc}", file=sys.stderr)
         return 1
