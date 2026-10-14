@@ -2112,6 +2112,7 @@ void Simulation::start_arrival_taxi_in(AircraftId id) {
     apply_surface_agent_route(id, flight.gate_node(), decision);
     if (decision.action != agents::ActionType::PlanRoute || !decision.route) {
         gate_arrival_reservations_.erase(flight.gate());
+        surface_node_reservations_.erase(state.node);
         flight.fail_turnaround("no available taxi route from runway exit to assigned arrival gate");
         auto failure = aircraft_event(SimulationEventType::SurfaceSafeFailure, flight);
         failure.detail = flight.failure_reason();

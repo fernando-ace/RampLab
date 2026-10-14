@@ -949,18 +949,42 @@ TEST(SurfaceTrafficTest, ArrivalWithNoReachableTaxiRouteFailsSafelyWithReason) {
         }
     }
     ASSERT_GT(disabled_edges, 0U);
+    const auto first_arrival = std::ranges::find(scenario.aircraft, airside::AircraftId{4}, &airside::Aircraft::id);
+    ASSERT_NE(first_arrival, scenario.aircraft.end());
+    scenario.aircraft.emplace_back(airside::AircraftId{99}, "SECOND-ARRIVAL",
+        first_arrival->scheduled_arrival() + airside::SimTime{120},
+        airside::SimTime{10000}, first_arrival->gate(), first_arrival->gate_node(),
+        std::vector<airside::ServiceTask>{}, "", std::nullopt,
+        airside::AircraftOperationType::ArrivalOnly, exit->id);
     airside::Simulation simulation(std::move(scenario), 42);
-    const auto result = simulation.run();
-    EXPECT_EQ(result.metrics.surface_safe_failures, 1U);
-    EXPECT_EQ(result.metrics.surface_arrived_aircraft, 1U);
-    const auto failure = std::ranges::find_if(result.events, [](const auto& event) {
+    std::size_t steps = 0;
+    constexpr std::size_t maximum_steps = 10000;
+    const auto second_failure_recorded = [&] {
+        return std::ranges::any_of(simulation.event_history(), [](const auto& event) {
+            return event.type == airside::SimulationEventType::SurfaceSafeFailure &&
+                event.aircraft == airside::AircraftId{99};
+        });
+    };
+    while (!simulation.finished() && !second_failure_recorded() && steps < maximum_steps) {
+        (void)simulation.advance();
+        ++steps;
+    }
+    const auto& events = simulation.event_history();
+    EXPECT_EQ(std::ranges::count_if(events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfaceSafeFailure && event.aircraft &&
+            (*event.aircraft == airside::AircraftId{4} || *event.aircraft == airside::AircraftId{99});
+    }), 2);
+    const auto failure = std::ranges::find_if(events, [](const auto& event) {
         return event.type == airside::SimulationEventType::SurfaceSafeFailure &&
             event.aircraft == airside::AircraftId{4};
     });
-    ASSERT_NE(failure, result.events.end());
+    ASSERT_NE(failure, events.end());
     EXPECT_EQ(failure->detail, "no available taxi route from runway exit to assigned arrival gate");
     EXPECT_NE(airside::format_event(*failure).find("no available taxi route from runway exit to assigned arrival gate"),
         std::string::npos);
+    EXPECT_TRUE(second_failure_recorded())
+        << "second arrival remained blocked by the failed aircraft's stale runway-exit reservation after "
+        << steps << " events at simulated second " << simulation.current_time().count();
 }
 
 TEST(SurfaceTrafficTest, CollisionDetectorsPreserveHoldAndCollisionThresholds) {
