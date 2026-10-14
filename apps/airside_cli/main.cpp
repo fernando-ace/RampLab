@@ -964,6 +964,7 @@ int main(int argc, char* argv[]) {
                         if (options.metrics_json || options.metrics_csv)
                             write_metrics(options.metrics_json.value_or(std::filesystem::path{}),
                                 options.metrics_csv.value_or(std::filesystem::path{}), result, simulation.snapshot());
+                        if (options.agent_decisions) write_agent_decisions(*options.agent_decisions, result);
                     }
                     write_live_state(simulation, scenario_name, seed, event_offset, finished);
                     if (finished && action == "finish") return 0;
