@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SCENARIO = ROOT / "results/goal44/generated/disruption/scenario.json"
+DEFAULT_SCENARIO = ROOT / "docs/goal44-evidence/generated/control/scenario.json"
 DEFAULT_OUTPUT = ROOT / "results/goal44/topology-diagnostic.json"
 CLEARANCE_M = 30.0
 
@@ -34,6 +34,8 @@ def _shortest_path(edges: list[dict[str, Any]], start: str, finish: str,
     for edge in edges:
         if not edge.get("aircraft_allowed") or edge["id"] in excluded_edges:
             continue
+        # AirportGraph::find_route treats every RoadEdge as bidirectional through
+        # other_endpoint(); preserve that runtime contract here.
         adjacency.setdefault(edge["from"], []).append((edge["to"], edge))
         adjacency.setdefault(edge["to"], []).append((edge["from"], edge))
     queue: list[tuple[float, str, tuple[str, ...]]] = [(0.0, start, ())]
@@ -52,28 +54,66 @@ def _shortest_path(edges: list[dict[str, Any]], start: str, finish: str,
     return None
 
 
+def _reachable_nodes(edges: list[dict[str, Any]], start: str,
+                     excluded_edges: set[str] | None = None) -> list[str]:
+    excluded_edges = excluded_edges or set()
+    adjacency: dict[str, list[str]] = {}
+    for edge in edges:
+        if edge.get("aircraft_allowed") and edge["id"] not in excluded_edges:
+            adjacency.setdefault(edge["from"], []).append(edge["to"])
+            adjacency.setdefault(edge["to"], []).append(edge["from"])
+    reached = {start}
+    pending = [start]
+    while pending:
+        node = pending.pop()
+        for neighbor in adjacency.get(node, []):
+            if neighbor not in reached:
+                reached.add(neighbor)
+                pending.append(neighbor)
+    return sorted(reached)
+
+
+def _annotate_path(route: dict[str, Any] | None, clearance_by_edge: dict[str, float]) -> dict[str, Any] | None:
+    if route is None:
+        return None
+    route["minimum_clearance_to_idle_fleet_m"] = round(min(
+        (clearance_by_edge.get(edge_id, math.inf) for edge_id in route["edge_ids"]), default=math.inf), 3)
+    return route
+
+
 def audit(scenario_path: Path = DEFAULT_SCENARIO) -> dict[str, Any]:
     scenario = json.loads(scenario_path.read_text(encoding="utf-8-sig"))
     airport = scenario["airport"]
     nodes = {node["id"]: node for node in airport["nodes"]}
     edges = airport["edges"]
-    depots = [(node["id"], (float(node["x_m"]), float(node["y_m"])))
-              for node in nodes.values()
-              if str(node.get("classification", "")).startswith("APPROXIMATE GSE depot")]
+    fleet_vehicles = scenario.get("fleet", {}).get("vehicles", [])
+    depots = [(vehicle["id"], (float(nodes[vehicle["depot_node"]]["x_m"]),
+                                 float(nodes[vehicle["depot_node"]]["y_m"])))
+              for vehicle in fleet_vehicles]
+    if not depots:
+        depots = [(node["id"], (float(node["x_m"]), float(node["y_m"])))
+                  for node in nodes.values()
+                  if str(node.get("classification", "")).startswith("APPROXIMATE GSE depot")]
     attachments = [node["surface_attachment"] | {"node_id": node["id"]}
                    for node in nodes.values() if isinstance(node.get("surface_attachment"), dict)]
     attachment_displacements = [float(item["attachment_displacement_m"]) for item in attachments]
     unverified_endpoints = [item for item in attachments
                             if item.get("classification") == "UNVERIFIED_APPROXIMATE_NODE_SNAP"]
     clearance_rows = []
+    clearance_by_edge: dict[str, float] = {}
+    nearest_vehicle_by_edge: dict[str, str | None] = {}
     for edge in edges:
         if not edge.get("aircraft_allowed"):
             continue
-        closest = min((( _line_distance(point, edge["surface_centerline"]), node_id)
-                       for node_id, point in depots), default=(math.inf, None))
+        closest = min(((_line_distance(point, edge["surface_centerline"]), vehicle_id)
+                       for vehicle_id, point in depots), default=(math.inf, None))
+        clearance_by_edge[edge["id"]] = closest[0]
+        nearest_vehicle_by_edge[edge["id"]] = closest[1]
         clearance_rows.append({"edge_id": edge["id"], "minimum_clearance_m": round(closest[0], 3),
-                               "nearest_depot_node": closest[1],
+                               "nearest_idle_vehicle": closest[1],
                                "passes_30m_clearance": closest[0] >= CLEARANCE_M})
+    clearance_blocked_edges = {edge_id for edge_id, clearance in clearance_by_edge.items()
+                               if clearance < CLEARANCE_M}
     gates = {gate["id"]: gate["node"] for gate in scenario["gates"]}
     disruption = scenario.get("road_events", [])
     closed_edges = {event["edge"] for event in disruption if event.get("enabled") is False}
@@ -81,12 +121,32 @@ def audit(scenario_path: Path = DEFAULT_SCENARIO) -> dict[str, Any]:
     flights = []
     for aircraft in scenario["aircraft"]:
         gate_node = gates[aircraft["gate"]]
+        arrival_before_filter = _shortest_path(edges, aircraft["arrival_exit"], gate_node)
+        arrival_safe = _shortest_path(edges, aircraft["arrival_exit"], gate_node,
+                                      clearance_blocked_edges)
+        departure_before_filter = _shortest_path(edges, gate_node, "rwy36_hold")
+        departure_safe = _shortest_path(edges, gate_node, "rwy36_hold",
+                                        clearance_blocked_edges)
+        arrival_before_filter = _annotate_path(arrival_before_filter, clearance_by_edge)
+        arrival_safe = _annotate_path(arrival_safe, clearance_by_edge)
+        departure_before_filter = _annotate_path(departure_before_filter, clearance_by_edge)
+        departure_safe = _annotate_path(departure_safe, clearance_by_edge)
         flights.append({"aircraft_id": aircraft["id"], "arrival_exit": aircraft["arrival_exit"],
                         "gate_id": aircraft["gate"], "gate_node": gate_node,
-                        "arrival_to_gate": _shortest_path(edges, aircraft["arrival_exit"], gate_node),
-                        "gate_to_departure_handoff": _shortest_path(edges, gate_node, "rwy36_hold"),
+                        "arrival_to_gate_before_clearance_filter": arrival_before_filter,
+                        "arrival_to_gate": arrival_safe,
+                        "arrival_reachable_nodes_before_clearance_filter": _reachable_nodes(
+                            edges, aircraft["arrival_exit"]),
+                        "arrival_reachable_nodes_after_clearance_filter": _reachable_nodes(
+                            edges, aircraft["arrival_exit"], clearance_blocked_edges),
+                        "gate_to_departure_handoff_before_clearance_filter": departure_before_filter,
+                        "gate_to_departure_handoff": departure_safe,
+                        "departure_reachable_nodes_before_clearance_filter": _reachable_nodes(edges, gate_node),
+                        "departure_reachable_nodes_after_clearance_filter": _reachable_nodes(
+                            edges, gate_node, clearance_blocked_edges),
                         "arrival_to_gate_while_scheduled_edges_closed": _shortest_path(
-                            edges, aircraft["arrival_exit"], gate_node, closed_edges)})
+                            edges, aircraft["arrival_exit"], gate_node,
+                            clearance_blocked_edges | closed_edges)})
         closure_path = flights[-1]["arrival_to_gate_while_scheduled_edges_closed"]
         if closure_path:
             closure_path["crosses_runway_inventory"] = any(
@@ -101,6 +161,7 @@ def audit(scenario_path: Path = DEFAULT_SCENARIO) -> dict[str, Any]:
         "clearance_requirement_m": CLEARANCE_M,
         "aircraft_allowed_edge_count": len(clearance_rows),
         "ground_only_edge_count": sum(not edge.get("aircraft_allowed", False) for edge in edges),
+        "fleet_start_position_count": len(depots),
         "node_attachment_summary": {
             "node_count": len(attachments),
             "unverified_approximate_node_snap_count": len(unverified_endpoints),
@@ -115,6 +176,7 @@ def audit(scenario_path: Path = DEFAULT_SCENARIO) -> dict[str, Any]:
         "minimum_aircraft_edge_clearance_m": round(min((row["minimum_clearance_m"] for row in clearance_rows), default=math.inf), 3),
         "clearance_pass": all(row["passes_30m_clearance"] for row in clearance_rows),
         "edge_clearance": clearance_rows,
+        "clearance_rejected_edges": [row for row in clearance_rows if not row["passes_30m_clearance"]],
         "flight_routes": flights,
         "all_arrivals_and_departures_reachable": all(
             row["arrival_to_gate"] and row["gate_to_departure_handoff"] for row in flights),
@@ -124,6 +186,7 @@ def audit(scenario_path: Path = DEFAULT_SCENARIO) -> dict[str, Any]:
         "limitations": [
             "Route geometry derives from ALDOT pavement inventory polygons, not approved taxiway centerlines.",
             "Stand and GSE depot positions remain explicitly approximate simulation assumptions.",
+            "Static clearance uses all configured fleet starting positions; it does not model later dynamic vehicle poses or reservations.",
             "Large node snaps are unverified endpoint approximations; a pavement attachment does not establish the real location of an assumed stand or service point.",
             "Graph reachability does not establish legal runway crossing, approved airport movement, or live operational suitability.",
         ],
