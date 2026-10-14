@@ -105,6 +105,21 @@ class Goal42GeometryTests(unittest.TestCase):
         self.assertTrue(all(node["surface_attachment"]["source_feature_id"]
                             for node in airport["nodes"]))
 
+    def test_gse_depots_have_distinct_surface_attachments(self):
+        airport = build_geometry()["airport"]
+        depots = [node for node in airport["nodes"]
+                  if node["id"].startswith("gse_") and node["id"].endswith("_depot")]
+        self.assertGreaterEqual(len(depots), 2)
+        for index, left in enumerate(depots):
+            for right in depots[index + 1:]:
+                distance = ((left["x_m"] - right["x_m"]) ** 2 +
+                            (left["y_m"] - right["y_m"]) ** 2) ** 0.5
+                self.assertGreaterEqual(distance, 8.0,
+                                        f"{left['id']} and {right['id']} share a depot attachment")
+            self.assertTrue(left["surface_attachment"]["source_feature_id"])
+            self.assertIn(left["surface_attachment"]["classification"],
+                          {"SOURCE_BACKED_DERIVED", "MANUALLY_RECONCILED_APPROXIMATION"})
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -15,6 +15,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 GRID_M = 2.0
 EDGE_INSET_CELLS = 1
+GSE_DEPOT_MIN_SEPARATION_M = 8.0
 AIRCRAFT_USES = {"RUNWAY", "TAXIWAY", "APRON"}
 GROUND_USES = {"TAXIWAY", "APRON"}
 RUNWAY_NODE_IDS = {
@@ -179,6 +180,7 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
     node_cells: dict[str, dict[str, tuple[int, int] | None]] = {key: {} for key in nodes}
     attachments = []
     claimed_cells: dict[str, set[tuple[int, int]]] = {"aircraft": set(), "ground_vehicle": set()}
+    attached_gse_depots: list[tuple[float, float]] = []
     for node_id, node in nodes.items():
         original = (float(node["x_m"]), float(node["y_m"]))
         movement = "aircraft" if node_id in RUNWAY_NODE_IDS else "ground_vehicle"
@@ -186,19 +188,38 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         cell = grid.nearest(original, maximum_attachment_distance_m)
         if cell is None:
             raise ValueError(f"node {node_id!r} cannot attach to an eligible operating surface within {maximum_attachment_distance_m:g} m")
-        if cell in claimed_cells[movement] and math.dist(original, grid.pixel_to_world(cell)) > GRID_M / 2:
-            origin_cell = grid.world_to_pixel(original)
+        is_gse_depot = node_id.startswith("gse_") and node_id.endswith("_depot")
+        attached_candidate = grid.pixel_to_world(cell)
+        depot_conflict = is_gse_depot and any(
+            math.dist(attached_candidate, previous) < GSE_DEPOT_MIN_SEPARATION_M
+            for previous in attached_gse_depots)
+        if (cell in claimed_cells[movement] and math.dist(original, attached_candidate) > GRID_M / 2) or depot_conflict:
+            # The nearest pavement cell can be far from its inherited approximate
+            # node. Search around that actual attachment, not the off-pavement
+            # source point, so a collision cannot silently preserve a duplicate.
+            anchor_cell = cell
             candidates = []
             for radius in range(1, 11):
                 for dx in range(-radius, radius + 1):
                     for dy in range(-radius, radius + 1):
-                        candidate = origin_cell[0] + dx, origin_cell[1] + dy
-                        if candidate not in claimed_cells[movement] and grid.open(candidate):
-                            candidates.append(candidate)
+                        if max(abs(dx), abs(dy)) != radius:
+                            continue
+                        candidate = anchor_cell[0] + dx, anchor_cell[1] + dy
+                        if candidate in claimed_cells[movement] or not grid.open(candidate):
+                            continue
+                        position = grid.pixel_to_world(candidate)
+                        if is_gse_depot and any(math.dist(position, previous) < GSE_DEPOT_MIN_SEPARATION_M
+                                                for previous in attached_gse_depots):
+                            continue
+                        candidates.append(candidate)
                 if candidates:
                     cell = min(candidates, key=lambda item: (
                         math.dist(original, grid.pixel_to_world(item)), item[1], item[0]))
                     break
+            else:
+                if is_gse_depot:
+                    raise ValueError(f"GSE depot node {node_id!r} cannot be attached at least "
+                                     f"{GSE_DEPOT_MIN_SEPARATION_M:g} m from other depots on eligible pavement")
         claimed_cells[movement].add(cell)
         attached = grid.pixel_to_world(cell)
         nearest_distance, feature_id = _nearest_area(attached, areas, grid.uses)
@@ -206,6 +227,8 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
             raise ValueError(f"node {node_id!r} attachment is not supported by a classified pavement feature")
         displacement = math.dist(original, attached)
         node["x_m"], node["y_m"] = round(attached[0], 3), round(attached[1], 3)
+        if is_gse_depot:
+            attached_gse_depots.append(attached)
         node_cells[node_id]["aircraft"] = cell if aircraft_grid.open(cell) else aircraft_grid.nearest(attached, GRID_M)
         node_cells[node_id]["ground_vehicle"] = cell if ground_grid.open(cell) else ground_grid.nearest(attached, GRID_M)
         node["surface_attachment"] = {

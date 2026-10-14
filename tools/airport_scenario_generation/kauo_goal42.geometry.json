@@ -4658,30 +4658,26 @@
       {
         "aircraft_allowed": true,
         "classification": "ASSUMED FOR SIMULATION GSE route",
-        "distance_m": 395.446,
+        "distance_m": 385.789,
         "from": "gse_gpu_depot",
         "ground_vehicle_allowed": true,
         "id": "gse_spawn_8_to_hub",
         "surface_centerline": [
           {
-            "x_m": -88.0,
-            "y_m": -90.0
+            "x_m": -82.0,
+            "y_m": -84.0
           },
           {
-            "x_m": -86.0,
-            "y_m": -90.0
+            "x_m": -80.0,
+            "y_m": -82.0
           },
           {
-            "x_m": -84.0,
-            "y_m": -88.0
-          },
-          {
-            "x_m": -84.0,
-            "y_m": -28.0
+            "x_m": -80.0,
+            "y_m": -20.0
           },
           {
             "x_m": -74.0,
-            "y_m": -18.0
+            "y_m": -14.0
           },
           {
             "x_m": -74.0,
@@ -4926,7 +4922,7 @@
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 395.446,
+        "surface_route_distance_m": 385.789,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
@@ -4937,12 +4933,12 @@
           "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
-        "traversal_time_seconds": 51
+        "traversal_time_seconds": 50
       },
       {
         "aircraft_allowed": true,
         "classification": "ASSUMED FOR SIMULATION GSE route",
-        "distance_m": 395.446,
+        "distance_m": 385.789,
         "from": "fbo_apron_junction",
         "ground_vehicle_allowed": true,
         "id": "gse_hub_to_spawn_8",
@@ -5089,56 +5085,32 @@
           },
           {
             "x_m": -76.0,
-            "y_m": -64.0
-          },
-          {
-            "x_m": -78.0,
-            "y_m": -66.0
-          },
-          {
-            "x_m": -78.0,
-            "y_m": -70.0
-          },
-          {
-            "x_m": -80.0,
             "y_m": -72.0
           },
           {
-            "x_m": -80.0,
+            "x_m": -78.0,
             "y_m": -74.0
           },
           {
-            "x_m": -82.0,
+            "x_m": -78.0,
             "y_m": -76.0
           },
           {
-            "x_m": -82.0,
+            "x_m": -80.0,
             "y_m": -78.0
           },
           {
-            "x_m": -84.0,
-            "y_m": -80.0
-          },
-          {
-            "x_m": -84.0,
+            "x_m": -80.0,
             "y_m": -82.0
           },
           {
-            "x_m": -86.0,
+            "x_m": -82.0,
             "y_m": -84.0
-          },
-          {
-            "x_m": -86.0,
-            "y_m": -90.0
-          },
-          {
-            "x_m": -88.0,
-            "y_m": -90.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 395.446,
+        "surface_route_distance_m": 385.789,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250",
@@ -5149,7 +5121,7 @@
           "TAXIWAY"
         ],
         "to": "gse_gpu_depot",
-        "traversal_time_seconds": 51
+        "traversal_time_seconds": 50
       },
       {
         "aircraft_allowed": true,
@@ -6308,7 +6280,7 @@
       {
         "aircraft_allowed": true,
         "classification": "ASSUMED FOR SIMULATION shared stand approach route",
-        "distance_m": 147.882,
+        "distance_m": 148.711,
         "from": "fbo_apron_junction",
         "ground_vehicle_allowed": true,
         "id": "fbo_apron_junction_to_kauo_g31_stand_2_service_approach",
@@ -6318,11 +6290,11 @@
             "y_m": -72.0
           },
           {
-            "x_m": 18.0,
+            "x_m": 14.0,
             "y_m": -72.0
           },
           {
-            "x_m": 20.0,
+            "x_m": 16.0,
             "y_m": -70.0
           },
           {
@@ -6330,60 +6302,48 @@
             "y_m": -70.0
           },
           {
-            "x_m": 90.0,
-            "y_m": -38.0
-          },
-          {
-            "x_m": 92.0,
-            "y_m": -38.0
-          },
-          {
             "x_m": 94.0,
-            "y_m": -36.0
+            "y_m": -34.0
           },
           {
             "x_m": 96.0,
-            "y_m": -36.0
+            "y_m": -34.0
           },
           {
             "x_m": 98.0,
-            "y_m": -34.0
+            "y_m": -32.0
           },
           {
             "x_m": 102.0,
-            "y_m": -34.0
+            "y_m": -32.0
           },
           {
             "x_m": 104.0,
-            "y_m": -32.0
+            "y_m": -30.0
           },
           {
             "x_m": 106.0,
-            "y_m": -32.0
+            "y_m": -30.0
           },
           {
             "x_m": 108.0,
-            "y_m": -30.0
+            "y_m": -28.0
           },
           {
             "x_m": 110.0,
-            "y_m": -30.0
+            "y_m": -28.0
           },
           {
             "x_m": 112.0,
-            "y_m": -28.0
+            "y_m": -26.0
           },
           {
             "x_m": 114.0,
-            "y_m": -28.0
+            "y_m": -26.0
           },
           {
             "x_m": 116.0,
-            "y_m": -26.0
-          },
-          {
-            "x_m": 118.0,
-            "y_m": -26.0
+            "y_m": -24.0
           },
           {
             "x_m": 120.0,
@@ -6391,12 +6351,12 @@
           },
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 147.882,
+        "surface_route_distance_m": 148.711,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6409,22 +6369,26 @@
       {
         "aircraft_allowed": true,
         "classification": "ASSUMED FOR SIMULATION shared stand approach route",
-        "distance_m": 147.882,
+        "distance_m": 148.711,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_fbo_apron_junction",
         "surface_centerline": [
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           },
           {
             "x_m": 110.0,
-            "y_m": -24.0
+            "y_m": -22.0
           },
           {
             "x_m": 106.0,
-            "y_m": -28.0
+            "y_m": -26.0
+          },
+          {
+            "x_m": 94.0,
+            "y_m": -26.0
           },
           {
             "x_m": 92.0,
@@ -6432,6 +6396,10 @@
           },
           {
             "x_m": 90.0,
+            "y_m": -28.0
+          },
+          {
+            "x_m": 88.0,
             "y_m": -30.0
           },
           {
@@ -6459,8 +6427,24 @@
             "y_m": -36.0
           },
           {
-            "x_m": 62.0,
+            "x_m": 66.0,
             "y_m": -36.0
+          },
+          {
+            "x_m": 60.0,
+            "y_m": -42.0
+          },
+          {
+            "x_m": 58.0,
+            "y_m": -42.0
+          },
+          {
+            "x_m": 56.0,
+            "y_m": -44.0
+          },
+          {
+            "x_m": 54.0,
+            "y_m": -44.0
           },
           {
             "x_m": 52.0,
@@ -6573,7 +6557,7 @@
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 147.882,
+        "surface_route_distance_m": 148.711,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250"
@@ -6588,26 +6572,22 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 17.314,
+        "distance_m": 18.142,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_fuel_service_point_fuel",
         "surface_centerline": [
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           },
           {
             "x_m": 120.0,
             "y_m": -24.0
           },
           {
-            "x_m": 114.0,
-            "y_m": -30.0
-          },
-          {
-            "x_m": 112.0,
-            "y_m": -30.0
+            "x_m": 118.0,
+            "y_m": -24.0
           },
           {
             "x_m": 110.0,
@@ -6620,7 +6600,7 @@
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 17.314,
+        "surface_route_distance_m": 18.142,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6633,7 +6613,7 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 17.314,
+        "distance_m": 18.142,
         "from": "ga_parking_stand_02_fuel_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_fuel_service_point_to_kauo_g31_stand_2_service_approach_fuel",
@@ -6647,12 +6627,8 @@
             "y_m": -32.0
           },
           {
-            "x_m": 116.0,
-            "y_m": -26.0
-          },
-          {
             "x_m": 118.0,
-            "y_m": -26.0
+            "y_m": -24.0
           },
           {
             "x_m": 120.0,
@@ -6660,12 +6636,12 @@
           },
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 17.314,
+        "surface_route_distance_m": 18.142,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6678,31 +6654,27 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 9.657,
+        "distance_m": 7.657,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_baggage_service_point_baggage",
         "surface_centerline": [
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           },
           {
-            "x_m": 120.0,
-            "y_m": -24.0
+            "x_m": 118.0,
+            "y_m": -26.0
           },
           {
-            "x_m": 116.0,
+            "x_m": 118.0,
             "y_m": -28.0
-          },
-          {
-            "x_m": 116.0,
-            "y_m": -30.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 9.657,
+        "surface_route_distance_m": 7.657,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6715,31 +6687,27 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 9.657,
+        "distance_m": 7.657,
         "from": "ga_parking_stand_02_baggage_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_baggage_service_point_to_kauo_g31_stand_2_service_approach_baggage",
         "surface_centerline": [
           {
-            "x_m": 116.0,
-            "y_m": -30.0
-          },
-          {
-            "x_m": 116.0,
+            "x_m": 118.0,
             "y_m": -28.0
           },
           {
-            "x_m": 120.0,
-            "y_m": -24.0
+            "x_m": 118.0,
+            "y_m": -26.0
           },
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 9.657,
+        "surface_route_distance_m": 7.657,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6752,27 +6720,23 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 4.0,
+        "distance_m": 2.0,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_catering_service_point_catering",
         "surface_centerline": [
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           },
           {
-            "x_m": 120.0,
+            "x_m": 122.0,
             "y_m": -24.0
-          },
-          {
-            "x_m": 120.0,
-            "y_m": -26.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 4.0,
+        "surface_route_distance_m": 2.0,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6785,27 +6749,23 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 4.0,
+        "distance_m": 2.0,
         "from": "ga_parking_stand_02_catering_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_catering_service_point_to_kauo_g31_stand_2_service_approach_catering",
         "surface_centerline": [
           {
-            "x_m": 120.0,
-            "y_m": -26.0
-          },
-          {
-            "x_m": 120.0,
+            "x_m": 122.0,
             "y_m": -24.0
           },
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 4.0,
+        "surface_route_distance_m": 2.0,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6818,15 +6778,11 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 4.0,
+        "distance_m": 2.0,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_lavatory_service_point_lavatory",
         "surface_centerline": [
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
-          },
           {
             "x_m": 122.0,
             "y_m": -22.0
@@ -6838,7 +6794,7 @@
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 4.0,
+        "surface_route_distance_m": 2.0,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6851,7 +6807,7 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 4.0,
+        "distance_m": 2.0,
         "from": "ga_parking_stand_02_lavatory_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_lavatory_service_point_to_kauo_g31_stand_2_service_approach_lavatory",
@@ -6863,15 +6819,11 @@
           {
             "x_m": 122.0,
             "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 4.0,
+        "surface_route_distance_m": 2.0,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6884,15 +6836,11 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 36.485,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_water_service_point_water",
         "surface_centerline": [
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
-          },
           {
             "x_m": 122.0,
             "y_m": -22.0
@@ -6908,7 +6856,7 @@
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 36.485,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6916,12 +6864,12 @@
           "APRON"
         ],
         "to": "ga_parking_stand_02_water_service_point",
-        "traversal_time_seconds": 8
+        "traversal_time_seconds": 7
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 36.485,
         "from": "ga_parking_stand_02_water_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_water_service_point_to_kauo_g31_stand_2_service_approach_water",
@@ -6937,15 +6885,11 @@
           {
             "x_m": 122.0,
             "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 36.485,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6953,20 +6897,16 @@
           "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
-        "traversal_time_seconds": 8
+        "traversal_time_seconds": 7
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 34.485,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_gpu_service_point_gpu",
         "surface_centerline": [
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
-          },
           {
             "x_m": 122.0,
             "y_m": -22.0
@@ -6976,13 +6916,13 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 154.0,
             "y_m": -16.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 34.485,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -6990,18 +6930,18 @@
           "APRON"
         ],
         "to": "ga_parking_stand_02_gpu_service_point",
-        "traversal_time_seconds": 8
+        "traversal_time_seconds": 7
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 34.485,
         "from": "ga_parking_stand_02_gpu_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_gpu_service_point_to_kauo_g31_stand_2_service_approach_gpu",
         "surface_centerline": [
           {
-            "x_m": 156.0,
+            "x_m": 154.0,
             "y_m": -16.0
           },
           {
@@ -7011,15 +6951,11 @@
           {
             "x_m": 122.0,
             "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 34.485,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7027,20 +6963,16 @@
           "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
-        "traversal_time_seconds": 8
+        "traversal_time_seconds": 7
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 37.314,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_pushback_service_point_pushback",
         "surface_centerline": [
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
-          },
           {
             "x_m": 122.0,
             "y_m": -22.0
@@ -7050,13 +6982,17 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 154.0,
             "y_m": -16.0
+          },
+          {
+            "x_m": 156.0,
+            "y_m": -14.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 37.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7064,18 +7000,26 @@
           "APRON"
         ],
         "to": "ga_parking_stand_02_pushback_service_point",
-        "traversal_time_seconds": 8
+        "traversal_time_seconds": 7
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 37.314,
         "from": "ga_parking_stand_02_pushback_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_pushback_service_point_to_kauo_g31_stand_2_service_approach_pushback",
         "surface_centerline": [
           {
             "x_m": 156.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 138.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 136.0,
             "y_m": -16.0
           },
           {
@@ -7085,15 +7029,11 @@
           {
             "x_m": 122.0,
             "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 37.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7101,20 +7041,16 @@
           "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
-        "traversal_time_seconds": 8
+        "traversal_time_seconds": 7
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 35.314,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_stairs_service_point_stairs",
         "surface_centerline": [
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
-          },
           {
             "x_m": 122.0,
             "y_m": -22.0
@@ -7124,13 +7060,17 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 152.0,
             "y_m": -16.0
+          },
+          {
+            "x_m": 154.0,
+            "y_m": -14.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 35.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7138,18 +7078,26 @@
           "APRON"
         ],
         "to": "ga_parking_stand_02_stairs_service_point",
-        "traversal_time_seconds": 8
+        "traversal_time_seconds": 7
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 35.314,
         "from": "ga_parking_stand_02_stairs_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_stairs_service_point_to_kauo_g31_stand_2_service_approach_stairs",
         "surface_centerline": [
           {
-            "x_m": 156.0,
+            "x_m": 154.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 138.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 136.0,
             "y_m": -16.0
           },
           {
@@ -7159,15 +7107,11 @@
           {
             "x_m": 122.0,
             "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 35.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7175,20 +7119,16 @@
           "APRON"
         ],
         "to": "kauo_g31_stand_2_service_approach",
-        "traversal_time_seconds": 8
+        "traversal_time_seconds": 7
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 32.485,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_airstart_service_point_airstart",
         "surface_centerline": [
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
-          },
           {
             "x_m": 122.0,
             "y_m": -22.0
@@ -7198,13 +7138,13 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 152.0,
             "y_m": -16.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 32.485,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7217,13 +7157,13 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 38.485,
+        "distance_m": 32.485,
         "from": "ga_parking_stand_02_airstart_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_02_airstart_service_point_to_kauo_g31_stand_2_service_approach_airstart",
         "surface_centerline": [
           {
-            "x_m": 156.0,
+            "x_m": 152.0,
             "y_m": -16.0
           },
           {
@@ -7233,15 +7173,11 @@
           {
             "x_m": 122.0,
             "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -24.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 38.485,
+        "surface_route_distance_m": 32.485,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7254,7 +7190,7 @@
       {
         "aircraft_allowed": true,
         "classification": "ASSUMED FOR SIMULATION shared stand approach route",
-        "distance_m": 150.711,
+        "distance_m": 151.539,
         "from": "fbo_apron_junction",
         "ground_vehicle_allowed": true,
         "id": "fbo_apron_junction_to_kauo_g31_stand_3_service_approach",
@@ -7264,11 +7200,11 @@
             "y_m": -72.0
           },
           {
-            "x_m": 16.0,
+            "x_m": 10.0,
             "y_m": -72.0
           },
           {
-            "x_m": 18.0,
+            "x_m": 12.0,
             "y_m": -70.0
           },
           {
@@ -7276,60 +7212,48 @@
             "y_m": -70.0
           },
           {
-            "x_m": 92.0,
-            "y_m": -36.0
-          },
-          {
-            "x_m": 94.0,
-            "y_m": -36.0
-          },
-          {
             "x_m": 96.0,
-            "y_m": -34.0
+            "y_m": -32.0
           },
           {
             "x_m": 98.0,
-            "y_m": -34.0
+            "y_m": -32.0
           },
           {
             "x_m": 100.0,
-            "y_m": -32.0
+            "y_m": -30.0
           },
           {
             "x_m": 104.0,
-            "y_m": -32.0
+            "y_m": -30.0
           },
           {
             "x_m": 106.0,
-            "y_m": -30.0
+            "y_m": -28.0
           },
           {
             "x_m": 108.0,
-            "y_m": -30.0
+            "y_m": -28.0
           },
           {
             "x_m": 110.0,
-            "y_m": -28.0
+            "y_m": -26.0
           },
           {
             "x_m": 112.0,
-            "y_m": -28.0
+            "y_m": -26.0
           },
           {
             "x_m": 114.0,
-            "y_m": -26.0
+            "y_m": -24.0
           },
           {
             "x_m": 116.0,
-            "y_m": -26.0
+            "y_m": -24.0
           },
           {
             "x_m": 118.0,
-            "y_m": -24.0
-          },
-          {
-            "x_m": 120.0,
-            "y_m": -24.0
+            "y_m": -22.0
           },
           {
             "x_m": 122.0,
@@ -7337,12 +7261,12 @@
           },
           {
             "x_m": 124.0,
-            "y_m": -22.0
+            "y_m": -20.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 150.711,
+        "surface_route_distance_m": 151.539,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7350,26 +7274,26 @@
           "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
-        "traversal_time_seconds": 19
+        "traversal_time_seconds": 20
       },
       {
         "aircraft_allowed": true,
         "classification": "ASSUMED FOR SIMULATION shared stand approach route",
-        "distance_m": 150.711,
+        "distance_m": 151.539,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_fbo_apron_junction",
         "surface_centerline": [
           {
             "x_m": 124.0,
-            "y_m": -22.0
+            "y_m": -20.0
+          },
+          {
+            "x_m": 118.0,
+            "y_m": -20.0
           },
           {
             "x_m": 112.0,
-            "y_m": -22.0
-          },
-          {
-            "x_m": 108.0,
             "y_m": -26.0
           },
           {
@@ -7413,8 +7337,24 @@
             "y_m": -36.0
           },
           {
-            "x_m": 68.0,
+            "x_m": 72.0,
             "y_m": -36.0
+          },
+          {
+            "x_m": 70.0,
+            "y_m": -38.0
+          },
+          {
+            "x_m": 68.0,
+            "y_m": -38.0
+          },
+          {
+            "x_m": 66.0,
+            "y_m": -40.0
+          },
+          {
+            "x_m": 64.0,
+            "y_m": -40.0
           },
           {
             "x_m": 62.0,
@@ -7501,11 +7441,11 @@
             "y_m": -62.0
           },
           {
-            "x_m": 16.0,
+            "x_m": 14.0,
             "y_m": -62.0
           },
           {
-            "x_m": 14.0,
+            "x_m": 12.0,
             "y_m": -64.0
           },
           {
@@ -7543,7 +7483,7 @@
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 150.711,
+        "surface_route_distance_m": 151.539,
         "surface_route_source_features": [
           "aldot_auo_248",
           "aldot_auo_250"
@@ -7553,36 +7493,28 @@
           "TAXIWAY"
         ],
         "to": "fbo_apron_junction",
-        "traversal_time_seconds": 19
+        "traversal_time_seconds": 20
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 12.485,
+        "distance_m": 14.142,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_fuel_service_point_fuel",
         "surface_centerline": [
           {
             "x_m": 124.0,
-            "y_m": -22.0
+            "y_m": -20.0
           },
           {
-            "x_m": 122.0,
-            "y_m": -22.0
-          },
-          {
-            "x_m": 116.0,
-            "y_m": -28.0
-          },
-          {
-            "x_m": 116.0,
+            "x_m": 114.0,
             "y_m": -30.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 12.485,
+        "surface_route_distance_m": 14.142,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7595,31 +7527,23 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 12.485,
+        "distance_m": 14.142,
         "from": "ga_parking_stand_03_fuel_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_fuel_service_point_to_kauo_g31_stand_3_service_approach_fuel",
         "surface_centerline": [
           {
-            "x_m": 116.0,
+            "x_m": 114.0,
             "y_m": -30.0
           },
           {
-            "x_m": 116.0,
-            "y_m": -28.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -22.0
-          },
-          {
             "x_m": 124.0,
-            "y_m": -22.0
+            "y_m": -20.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 12.485,
+        "surface_route_distance_m": 14.142,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7632,31 +7556,23 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 12.485,
+        "distance_m": 11.314,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_baggage_service_point_baggage",
         "surface_centerline": [
           {
             "x_m": 124.0,
-            "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -22.0
+            "y_m": -20.0
           },
           {
             "x_m": 116.0,
             "y_m": -28.0
-          },
-          {
-            "x_m": 116.0,
-            "y_m": -30.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 12.485,
+        "surface_route_distance_m": 11.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7669,31 +7585,23 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 12.485,
+        "distance_m": 11.314,
         "from": "ga_parking_stand_03_baggage_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_baggage_service_point_to_kauo_g31_stand_3_service_approach_baggage",
         "surface_centerline": [
           {
             "x_m": 116.0,
-            "y_m": -30.0
-          },
-          {
-            "x_m": 116.0,
             "y_m": -28.0
           },
           {
-            "x_m": 122.0,
-            "y_m": -22.0
-          },
-          {
             "x_m": 124.0,
-            "y_m": -22.0
+            "y_m": -20.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 12.485,
+        "surface_route_distance_m": 11.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7706,31 +7614,23 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 6.828,
+        "distance_m": 5.657,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_catering_service_point_catering",
         "surface_centerline": [
           {
             "x_m": 124.0,
-            "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -22.0
+            "y_m": -20.0
           },
           {
             "x_m": 120.0,
             "y_m": -24.0
-          },
-          {
-            "x_m": 120.0,
-            "y_m": -26.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 6.828,
+        "surface_route_distance_m": 5.657,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7743,31 +7643,23 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 6.828,
+        "distance_m": 5.657,
         "from": "ga_parking_stand_03_catering_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_catering_service_point_to_kauo_g31_stand_3_service_approach_catering",
         "surface_centerline": [
           {
             "x_m": 120.0,
-            "y_m": -26.0
-          },
-          {
-            "x_m": 120.0,
             "y_m": -24.0
           },
           {
-            "x_m": 122.0,
-            "y_m": -22.0
-          },
-          {
             "x_m": 124.0,
-            "y_m": -22.0
+            "y_m": -20.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 6.828,
+        "surface_route_distance_m": 5.657,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7780,15 +7672,11 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 4.0,
+        "distance_m": 2.0,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_lavatory_service_point_lavatory",
         "surface_centerline": [
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
-          },
           {
             "x_m": 124.0,
             "y_m": -20.0
@@ -7800,7 +7688,7 @@
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 4.0,
+        "surface_route_distance_m": 2.0,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7813,7 +7701,7 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 4.0,
+        "distance_m": 2.0,
         "from": "ga_parking_stand_03_lavatory_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_lavatory_service_point_to_kauo_g31_stand_3_service_approach_lavatory",
@@ -7825,15 +7713,11 @@
           {
             "x_m": 124.0,
             "y_m": -20.0
-          },
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 4.0,
+        "surface_route_distance_m": 2.0,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7846,15 +7730,11 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 35.314,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_water_service_point_water",
         "surface_centerline": [
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
-          },
           {
             "x_m": 124.0,
             "y_m": -20.0
@@ -7864,13 +7744,25 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 134.0,
             "y_m": -16.0
+          },
+          {
+            "x_m": 136.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 154.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 156.0,
+            "y_m": -12.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 35.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7883,13 +7775,21 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 35.314,
         "from": "ga_parking_stand_03_water_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_water_service_point_to_kauo_g31_stand_3_service_approach_water",
         "surface_centerline": [
           {
             "x_m": 156.0,
+            "y_m": -12.0
+          },
+          {
+            "x_m": 144.0,
+            "y_m": -12.0
+          },
+          {
+            "x_m": 140.0,
             "y_m": -16.0
           },
           {
@@ -7899,15 +7799,11 @@
           {
             "x_m": 124.0,
             "y_m": -20.0
-          },
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 35.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7920,15 +7816,11 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 30.485,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_gpu_service_point_gpu",
         "surface_centerline": [
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
-          },
           {
             "x_m": 124.0,
             "y_m": -20.0
@@ -7938,13 +7830,21 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 134.0,
             "y_m": -16.0
+          },
+          {
+            "x_m": 136.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 152.0,
+            "y_m": -14.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 30.485,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7952,18 +7852,26 @@
           "APRON"
         ],
         "to": "ga_parking_stand_03_gpu_service_point",
-        "traversal_time_seconds": 5
+        "traversal_time_seconds": 4
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 30.485,
         "from": "ga_parking_stand_03_gpu_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_gpu_service_point_to_kauo_g31_stand_3_service_approach_gpu",
         "surface_centerline": [
           {
-            "x_m": 156.0,
+            "x_m": 152.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 136.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 134.0,
             "y_m": -16.0
           },
           {
@@ -7973,15 +7881,11 @@
           {
             "x_m": 124.0,
             "y_m": -20.0
-          },
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 30.485,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -7989,20 +7893,16 @@
           "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
-        "traversal_time_seconds": 5
+        "traversal_time_seconds": 4
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 33.314,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_pushback_service_point_pushback",
         "surface_centerline": [
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
-          },
           {
             "x_m": 124.0,
             "y_m": -20.0
@@ -8012,13 +7912,25 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 134.0,
             "y_m": -16.0
+          },
+          {
+            "x_m": 136.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 152.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 154.0,
+            "y_m": -12.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 33.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -8031,13 +7943,21 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 33.314,
         "from": "ga_parking_stand_03_pushback_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_pushback_service_point_to_kauo_g31_stand_3_service_approach_pushback",
         "surface_centerline": [
           {
-            "x_m": 156.0,
+            "x_m": 154.0,
+            "y_m": -12.0
+          },
+          {
+            "x_m": 142.0,
+            "y_m": -12.0
+          },
+          {
+            "x_m": 138.0,
             "y_m": -16.0
           },
           {
@@ -8047,15 +7967,11 @@
           {
             "x_m": 124.0,
             "y_m": -20.0
-          },
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 33.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -8068,15 +7984,11 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 31.314,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_stairs_service_point_stairs",
         "surface_centerline": [
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
-          },
           {
             "x_m": 124.0,
             "y_m": -20.0
@@ -8086,13 +7998,25 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 134.0,
             "y_m": -16.0
+          },
+          {
+            "x_m": 136.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 150.0,
+            "y_m": -14.0
+          },
+          {
+            "x_m": 152.0,
+            "y_m": -12.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 31.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -8100,18 +8024,26 @@
           "APRON"
         ],
         "to": "ga_parking_stand_03_stairs_service_point",
-        "traversal_time_seconds": 5
+        "traversal_time_seconds": 4
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 31.314,
         "from": "ga_parking_stand_03_stairs_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_stairs_service_point_to_kauo_g31_stand_3_service_approach_stairs",
         "surface_centerline": [
           {
-            "x_m": 156.0,
+            "x_m": 152.0,
+            "y_m": -12.0
+          },
+          {
+            "x_m": 140.0,
+            "y_m": -12.0
+          },
+          {
+            "x_m": 136.0,
             "y_m": -16.0
           },
           {
@@ -8121,15 +8053,11 @@
           {
             "x_m": 124.0,
             "y_m": -20.0
-          },
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 31.314,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -8137,20 +8065,16 @@
           "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
-        "traversal_time_seconds": 5
+        "traversal_time_seconds": 4
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 27.657,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_airstart_service_point_airstart",
         "surface_centerline": [
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
-          },
           {
             "x_m": 124.0,
             "y_m": -20.0
@@ -8160,13 +8084,13 @@
             "y_m": -16.0
           },
           {
-            "x_m": 156.0,
+            "x_m": 150.0,
             "y_m": -16.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 27.657,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -8174,18 +8098,18 @@
           "APRON"
         ],
         "to": "ga_parking_stand_03_airstart_service_point",
-        "traversal_time_seconds": 7
+        "traversal_time_seconds": 6
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
-        "distance_m": 35.657,
+        "distance_m": 27.657,
         "from": "ga_parking_stand_03_airstart_service_point",
         "ground_vehicle_allowed": true,
         "id": "ga_parking_stand_03_airstart_service_point_to_kauo_g31_stand_3_service_approach_airstart",
         "surface_centerline": [
           {
-            "x_m": 156.0,
+            "x_m": 150.0,
             "y_m": -16.0
           },
           {
@@ -8195,15 +8119,11 @@
           {
             "x_m": 124.0,
             "y_m": -20.0
-          },
-          {
-            "x_m": 124.0,
-            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 35.657,
+        "surface_route_distance_m": 27.657,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -8211,12 +8131,12 @@
           "APRON"
         ],
         "to": "kauo_g31_stand_3_service_approach",
-        "traversal_time_seconds": 7
+        "traversal_time_seconds": 6
       },
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
-        "distance_m": 131.113,
+        "distance_m": 131.941,
         "from": "kauo_g31_stand_1_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_apron_transfer_1_approach_approach",
@@ -8227,23 +8147,19 @@
           },
           {
             "x_m": 96.0,
-            "y_m": -80.0
+            "y_m": -78.0
           },
           {
             "x_m": 98.0,
-            "y_m": -78.0
+            "y_m": -76.0
           },
           {
             "x_m": 98.0,
             "y_m": -44.0
           },
           {
-            "x_m": 116.0,
-            "y_m": -26.0
-          },
-          {
             "x_m": 118.0,
-            "y_m": -26.0
+            "y_m": -24.0
           },
           {
             "x_m": 120.0,
@@ -8251,12 +8167,12 @@
           },
           {
             "x_m": 122.0,
-            "y_m": -24.0
+            "y_m": -22.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 131.113,
+        "surface_route_distance_m": 131.941,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -8269,27 +8185,23 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
-        "distance_m": 4.0,
+        "distance_m": 2.828,
         "from": "kauo_g31_stand_2_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_apron_transfer_2_approach_approach",
         "surface_centerline": [
           {
             "x_m": 122.0,
-            "y_m": -24.0
-          },
-          {
-            "x_m": 122.0,
             "y_m": -22.0
           },
           {
             "x_m": 124.0,
-            "y_m": -22.0
+            "y_m": -20.0
           }
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 4.0,
+        "surface_route_distance_m": 2.828,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -8302,18 +8214,14 @@
       {
         "aircraft_allowed": true,
         "classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
-        "distance_m": 133.941,
+        "distance_m": 134.77,
         "from": "kauo_g31_stand_3_service_approach",
         "ground_vehicle_allowed": true,
         "id": "kauo_g31_apron_transfer_3_approach_approach",
         "surface_centerline": [
           {
             "x_m": 124.0,
-            "y_m": -22.0
-          },
-          {
-            "x_m": 122.0,
-            "y_m": -22.0
+            "y_m": -20.0
           },
           {
             "x_m": 114.0,
@@ -8342,7 +8250,7 @@
         ],
         "surface_route_classification": "DERIVED_FROM_ALDOT_PAVEMENT_INTERIOR",
         "surface_route_crosses_runway": false,
-        "surface_route_distance_m": 133.941,
+        "surface_route_distance_m": 134.77,
         "surface_route_source_features": [
           "aldot_auo_248"
         ],
@@ -9664,7 +9572,7 @@
         "id": "ga_parking_stand_02_baggage_service_point",
         "name": "Illustrative GA parking point 02 on approximate FBO apron Baggage Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 100.904,
+          "attachment_displacement_m": 100.952,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9674,15 +9582,15 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 116.0,
-        "y_m": -30.0
+        "x_m": 118.0,
+        "y_m": -28.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
         "id": "ga_parking_stand_02_catering_service_point",
         "name": "Illustrative GA parking point 02 on approximate FBO apron Catering Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 103.401,
+          "attachment_displacement_m": 103.427,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9692,8 +9600,8 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 120.0,
-        "y_m": -26.0
+        "x_m": 122.0,
+        "y_m": -24.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
@@ -9736,7 +9644,7 @@
         "id": "ga_parking_stand_02_gpu_service_point",
         "name": "Illustrative GA parking point 02 on approximate FBO apron GPU Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 77.078,
+          "attachment_displacement_m": 78.208,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9746,7 +9654,7 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 156.0,
+        "x_m": 154.0,
         "y_m": -16.0
       },
       {
@@ -9754,7 +9662,7 @@
         "id": "ga_parking_stand_02_pushback_service_point",
         "name": "Illustrative GA parking point 02 on approximate FBO apron Pushback Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 70.151,
+          "attachment_displacement_m": 71.822,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9765,14 +9673,14 @@
           "source_feature_id": "aldot_auo_248"
         },
         "x_m": 156.0,
-        "y_m": -16.0
+        "y_m": -14.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
         "id": "ga_parking_stand_02_stairs_service_point",
         "name": "Illustrative GA parking point 02 on approximate FBO apron Stairs Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 63.947,
+          "attachment_displacement_m": 66.697,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9782,15 +9690,15 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 156.0,
-        "y_m": -16.0
+        "x_m": 154.0,
+        "y_m": -14.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
         "id": "ga_parking_stand_02_airstart_service_point",
         "name": "Illustrative GA parking point 02 on approximate FBO apron Air Start Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 60.005,
+          "attachment_displacement_m": 61.856,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9800,7 +9708,7 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 156.0,
+        "x_m": 152.0,
         "y_m": -16.0
       },
       {
@@ -9808,7 +9716,7 @@
         "id": "ga_parking_stand_03_fuel_service_point",
         "name": "Illustrative GA parking point 03 on approximate FBO apron Fuel Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 214.487,
+          "attachment_displacement_m": 215.89,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9818,7 +9726,7 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 116.0,
+        "x_m": 114.0,
         "y_m": -30.0
       },
       {
@@ -9826,7 +9734,7 @@
         "id": "ga_parking_stand_03_baggage_service_point",
         "name": "Illustrative GA parking point 03 on approximate FBO apron Baggage Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 220.488,
+          "attachment_displacement_m": 221.901,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9837,14 +9745,14 @@
           "source_feature_id": "aldot_auo_248"
         },
         "x_m": 116.0,
-        "y_m": -30.0
+        "y_m": -28.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
         "id": "ga_parking_stand_03_catering_service_point",
         "name": "Illustrative GA parking point 03 on approximate FBO apron Catering Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 224.486,
+          "attachment_displacement_m": 225.899,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9855,7 +9763,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         "x_m": 120.0,
-        "y_m": -26.0
+        "y_m": -24.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
@@ -9880,7 +9788,7 @@
         "id": "ga_parking_stand_03_water_service_point",
         "name": "Illustrative GA parking point 03 on approximate FBO apron Water Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 206.363,
+          "attachment_displacement_m": 209.445,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9891,14 +9799,14 @@
           "source_feature_id": "aldot_auo_248"
         },
         "x_m": 156.0,
-        "y_m": -16.0
+        "y_m": -12.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
         "id": "ga_parking_stand_03_gpu_service_point",
         "name": "Illustrative GA parking point 03 on approximate FBO apron GPU Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 201.545,
+          "attachment_displacement_m": 205.697,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9908,15 +9816,15 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 156.0,
-        "y_m": -16.0
+        "x_m": 152.0,
+        "y_m": -14.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
         "id": "ga_parking_stand_03_pushback_service_point",
         "name": "Illustrative GA parking point 03 on approximate FBO apron Pushback Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 195.123,
+          "attachment_displacement_m": 199.435,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9926,15 +9834,15 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 156.0,
-        "y_m": -16.0
+        "x_m": 154.0,
+        "y_m": -12.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
         "id": "ga_parking_stand_03_stairs_service_point",
         "name": "Illustrative GA parking point 03 on approximate FBO apron Stairs Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 188.204,
+          "attachment_displacement_m": 193.854,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9944,15 +9852,15 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 156.0,
-        "y_m": -16.0
+        "x_m": 152.0,
+        "y_m": -12.0
       },
       {
         "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
         "id": "ga_parking_stand_03_airstart_service_point",
         "name": "Illustrative GA parking point 03 on approximate FBO apron Air Start Stand",
         "surface_attachment": {
-          "attachment_displacement_m": 182.102,
+          "attachment_displacement_m": 186.094,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -9962,7 +9870,7 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_248"
         },
-        "x_m": 156.0,
+        "x_m": 150.0,
         "y_m": -16.0
       },
       {
@@ -10042,7 +9950,7 @@
         "id": "gse_gpu_depot",
         "name": "Mobile GPU staging",
         "surface_attachment": {
-          "attachment_displacement_m": 132.871,
+          "attachment_displacement_m": 135.205,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -10052,8 +9960,8 @@
           "source": "ALDOT_AUO_PAVEMENT_GIS",
           "source_feature_id": "aldot_auo_251"
         },
-        "x_m": -88.0,
-        "y_m": -90.0
+        "x_m": -82.0,
+        "y_m": -84.0
       },
       {
         "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
@@ -10096,7 +10004,7 @@
         "id": "kauo_g31_stand_2_service_approach",
         "name": "Illustrative stand 2 GSE service approach",
         "surface_attachment": {
-          "attachment_displacement_m": 87.581,
+          "attachment_displacement_m": 89.005,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -10107,14 +10015,14 @@
           "source_feature_id": "aldot_auo_248"
         },
         "x_m": 122.0,
-        "y_m": -24.0
+        "y_m": -22.0
       },
       {
         "classification": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
         "id": "kauo_g31_stand_3_service_approach",
         "name": "Illustrative stand 3 GSE service approach",
         "surface_attachment": {
-          "attachment_displacement_m": 209.734,
+          "attachment_displacement_m": 211.144,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "original_position_local_m": {
@@ -10125,7 +10033,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         "x_m": 124.0,
-        "y_m": -22.0
+        "y_m": -20.0
       }
     ],
     "surface_areas": [
@@ -18798,7 +18706,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 100.904,
+          "attachment_displacement_m": 100.952,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_baggage_service_point",
@@ -18810,7 +18718,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 103.401,
+          "attachment_displacement_m": 103.427,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_catering_service_point",
@@ -18846,7 +18754,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 77.078,
+          "attachment_displacement_m": 78.208,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_gpu_service_point",
@@ -18858,7 +18766,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 70.151,
+          "attachment_displacement_m": 71.822,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_pushback_service_point",
@@ -18870,7 +18778,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 63.947,
+          "attachment_displacement_m": 66.697,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_stairs_service_point",
@@ -18882,7 +18790,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 60.005,
+          "attachment_displacement_m": 61.856,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_airstart_service_point",
@@ -18894,7 +18802,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 214.487,
+          "attachment_displacement_m": 215.89,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_fuel_service_point",
@@ -18906,7 +18814,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 220.488,
+          "attachment_displacement_m": 221.901,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_baggage_service_point",
@@ -18918,7 +18826,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 224.486,
+          "attachment_displacement_m": 225.899,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_catering_service_point",
@@ -18942,7 +18850,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 206.363,
+          "attachment_displacement_m": 209.445,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_water_service_point",
@@ -18954,7 +18862,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 201.545,
+          "attachment_displacement_m": 205.697,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_gpu_service_point",
@@ -18966,7 +18874,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 195.123,
+          "attachment_displacement_m": 199.435,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_pushback_service_point",
@@ -18978,7 +18886,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 188.204,
+          "attachment_displacement_m": 193.854,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_stairs_service_point",
@@ -18990,7 +18898,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 182.102,
+          "attachment_displacement_m": 186.094,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_airstart_service_point",
@@ -19050,7 +18958,7 @@
           "source_feature_id": "aldot_auo_251"
         },
         {
-          "attachment_displacement_m": 132.871,
+          "attachment_displacement_m": 135.205,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "gse_gpu_depot",
@@ -19086,7 +18994,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 87.581,
+          "attachment_displacement_m": 89.005,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "kauo_g31_stand_2_service_approach",
@@ -19098,7 +19006,7 @@
           "source_feature_id": "aldot_auo_248"
         },
         {
-          "attachment_displacement_m": 209.734,
+          "attachment_displacement_m": 211.144,
           "classification": "MANUALLY_RECONCILED_APPROXIMATION",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "kauo_g31_stand_3_service_approach",

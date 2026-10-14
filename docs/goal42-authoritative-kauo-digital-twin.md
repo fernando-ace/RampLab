@@ -81,6 +81,12 @@ Seed 42, 3 illustrative aircraft, 9 mobile ground units, 33 required turnaround 
 
 Both matched runs and their repeats passed the Goal 41 workflow's safety, completion, evidence-bundle, and determinism checks. Repeated control and disruption event streams were byte-identical. The geometry profile retains the same 94-edge approximate routing graph, so Goal 42 does not claim geometry-caused routing changes or compare these metrics as a geometry improvement.
 
+### Fresh surface-attachment regression (2026-10-14)
+
+The depot attachment algorithm was corrected after inspection found the water and GPU depots snapping to the same 2 m raster cell. When a claimed cell or collocated depot is detected, candidate cells are now searched around the actual pavement attachment, with an 8 m minimum separation between GSE depot anchors. Geometry generation and the focused 8-test Goal 42 geometry suite pass, and both matched scenarios were regenerated and validated against this profile.
+
+A fresh Release build succeeded, but the new control run did not complete. At simulation time 295,258 s, aircraft 2 remained at node 4 on route `[4,6,10]`, repeatedly emitted `FOLLOW_ROUTE` with `blocked=true`, and did not make progress. The run was stopped at 9,863 events (about 8.3 MB). This shows the depot correction does not resolve the simulator deadlock; it is a failed regression attempt, not a safety pass. The earlier completed control/disruption numbers above describe the prior checked-in run artifacts and do not establish safe operation with this regenerated route geometry.
+
 ## Replay correlation
 
 The simulator JSONL event schema now provides point-in-time poses for aircraft and mobile-fleet events where the simulator snapshot has a pose. The Dashboard's selected event panel shows stable entity ID, simulation time, ENU position, and heading. Goal 42's `goal42_replay.py` converts the same source event samples into Unreal coordinate rows with event, entity, edge and task identity intact. Adapter tests cover known ENU-to-Unreal values, missing poses, and non-monotonic timestamps.
