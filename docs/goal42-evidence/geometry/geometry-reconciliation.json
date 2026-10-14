@@ -1,0 +1,2923 @@
+{
+  "all_graph_edge_max_distance_distribution_m": {
+    "edges_with_max_distance_at_most_10m": 6,
+    "edges_with_max_distance_at_most_1m": 2,
+    "edges_with_max_distance_at_most_25m": 25,
+    "maximum": 190.664,
+    "mean": 80.388,
+    "median": 70.087,
+    "minimum": 0.0,
+    "p95": 188.209
+  },
+  "counts": {
+    "production_route_assignment_count": 18,
+    "production_route_edges_used": 6,
+    "route_edges": 94,
+    "route_nodes": 54,
+    "valid_operating_surface_features": 31,
+    "valid_operating_surface_polygon_parts": 33
+  },
+  "edges": [
+    {
+      "edge_classification": "UNCLASSIFIED",
+      "edge_id": "runway36_hold_twy_a_south",
+      "from": "rwy36_hold",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 50.608,
+        "maximum_distance_sample_index": 58,
+        "mean": 21.659,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_242",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 47.704,
+        "samples_within_10m": 31,
+        "samples_within_1m": 18,
+        "samples_within_5m": 23
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 82.994,
+        "minimum": 0.0,
+        "p95": 78.635,
+        "samples_within_10m": 16
+      },
+      "production_route_assignments": 3,
+      "sample_count": 101,
+      "to": "twy_a_south"
+    },
+    {
+      "edge_classification": "UNCLASSIFIED",
+      "edge_id": "twy_a_south_mid",
+      "from": "twy_a_south",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 0.084,
+        "maximum_distance_sample_index": 11,
+        "mean": 0.001,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_242",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 0.0,
+        "samples_within_10m": 101,
+        "samples_within_1m": 101,
+        "samples_within_5m": 101
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 0.084,
+        "minimum": 0.0,
+        "p95": 0.0,
+        "samples_within_10m": 101
+      },
+      "production_route_assignments": 3,
+      "sample_count": 101,
+      "to": "twy_a_mid"
+    },
+    {
+      "edge_classification": "UNCLASSIFIED",
+      "edge_id": "twy_a_mid_north",
+      "from": "twy_a_mid",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 0.0,
+        "maximum_distance_sample_index": 0,
+        "mean": 0.0,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_267",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 0.0,
+        "samples_within_10m": 101,
+        "samples_within_1m": 101,
+        "samples_within_5m": 101
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 0.0,
+        "minimum": 0.0,
+        "p95": 0.0,
+        "samples_within_10m": 101
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "twy_a_north"
+    },
+    {
+      "edge_classification": "UNCLASSIFIED",
+      "edge_id": "twy_a_mid_fbo_primary",
+      "from": "twy_a_mid",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 48.776,
+        "maximum_distance_sample_index": 63,
+        "mean": 19.471,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 45.728,
+        "samples_within_10m": 35,
+        "samples_within_1m": 20,
+        "samples_within_5m": 27
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 66.427,
+        "minimum": 0.0,
+        "p95": 60.544,
+        "samples_within_10m": 18
+      },
+      "production_route_assignments": 6,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "UNCLASSIFIED",
+      "edge_id": "twy_a_north_fbo_detour",
+      "from": "twy_a_north",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 24.367,
+        "maximum_distance_sample_index": 17,
+        "mean": 5.951,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_253",
+        "nearest_feature_use_at_maximum": "RUNWAY",
+        "p95": 22.071,
+        "samples_within_10m": 69,
+        "samples_within_1m": 60,
+        "samples_within_5m": 64
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 109.626,
+        "minimum": 0.0,
+        "p95": 107.735,
+        "samples_within_10m": 11
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_detour"
+    },
+    {
+      "edge_classification": "UNCLASSIFIED",
+      "edge_id": "twy_c_fbo_detour",
+      "from": "fbo_apron_detour",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 118.954,
+        "maximum_distance_sample_index": 42,
+        "mean": 54.256,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_241",
+        "nearest_feature_use_at_maximum": "RUNWAY",
+        "p95": 116.375,
+        "samples_within_10m": 16,
+        "samples_within_1m": 11,
+        "samples_within_5m": 13
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 159.413,
+        "minimum": 0.0,
+        "p95": 157.942,
+        "samples_within_10m": 9
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "UNCLASSIFIED",
+      "edge_id": "fbo_junction_parking",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 21.259,
+        "maximum_distance_sample_index": 0,
+        "mean": 1.918,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 15.083,
+        "samples_within_10m": 91,
+        "samples_within_1m": 84,
+        "samples_within_5m": 87
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 21.259,
+        "minimum": 0.0,
+        "p95": 15.083,
+        "samples_within_10m": 91
+      },
+      "production_route_assignments": 2,
+      "sample_count": 101,
+      "to": "ga_parking_stand"
+    },
+    {
+      "edge_classification": "UNCLASSIFIED",
+      "edge_id": "fbo_junction_fuel_farm",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 47.474,
+        "maximum_distance_sample_index": 21,
+        "mean": 12.125,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 36.228,
+        "samples_within_10m": 53,
+        "samples_within_1m": 37,
+        "samples_within_5m": 46
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 57.716,
+        "minimum": 0.0,
+        "p95": 47.754,
+        "samples_within_10m": 44
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "self_serve_fuel_farm"
+    },
+    {
+      "edge_classification": "APPROXIMATE connector to an illustrative parking position",
+      "edge_id": "fbo_apron_parking_02",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 67.885,
+        "maximum_distance_sample_index": 100,
+        "mean": 13.714,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 60.044,
+        "samples_within_10m": 64,
+        "samples_within_1m": 55,
+        "samples_within_5m": 59
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 67.885,
+        "minimum": 0.0,
+        "p95": 60.044,
+        "samples_within_10m": 64
+      },
+      "production_route_assignments": 2,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION short service staging spur",
+      "edge_id": "fbo_service_staging_fuel_link",
+      "from": "ga_parking_stand",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 15.172,
+        "maximum_distance_sample_index": 100,
+        "mean": 2.262,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 10.751,
+        "samples_within_10m": 94,
+        "samples_within_1m": 67,
+        "samples_within_5m": 80
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 15.172,
+        "minimum": 0.0,
+        "p95": 10.751,
+        "samples_within_10m": 94
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_service_staging_fuel"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION short service staging spur",
+      "edge_id": "fbo_service_staging_west_link",
+      "from": "ga_parking_stand",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 41.447,
+        "maximum_distance_sample_index": 100,
+        "mean": 6.973,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 28.18,
+        "samples_within_10m": 71,
+        "samples_within_1m": 54,
+        "samples_within_5m": 61
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 41.447,
+        "minimum": 0.0,
+        "p95": 28.18,
+        "samples_within_10m": 71
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_service_staging_west"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION short service staging spur",
+      "edge_id": "fbo_service_staging_east_link",
+      "from": "ga_parking_stand_02",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 67.885,
+        "maximum_distance_sample_index": 0,
+        "mean": 15.67,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 59.535,
+        "samples_within_10m": 62,
+        "samples_within_1m": 56,
+        "samples_within_5m": 59
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 67.885,
+        "minimum": 0.0,
+        "p95": 59.535,
+        "samples_within_10m": 62
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_service_staging_east"
+    },
+    {
+      "edge_classification": "APPROXIMATE connector to an illustrative parking position",
+      "edge_id": "fbo_apron_parking_03",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 161.424,
+        "maximum_distance_sample_index": 100,
+        "mean": 46.019,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 146.877,
+        "samples_within_10m": 44,
+        "samples_within_1m": 38,
+        "samples_within_5m": 41
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 161.424,
+        "minimum": 0.0,
+        "p95": 146.877,
+        "samples_within_10m": 44
+      },
+      "production_route_assignments": 2,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_1_to_hub",
+      "from": "fbo_service_staging_fuel",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 33.458,
+        "maximum_distance_sample_index": 61,
+        "mean": 14.58,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 30.511,
+        "samples_within_10m": 36,
+        "samples_within_1m": 22,
+        "samples_within_5m": 28
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 33.458,
+        "minimum": 0.0,
+        "p95": 30.511,
+        "samples_within_10m": 36
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_1",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 33.458,
+        "maximum_distance_sample_index": 39,
+        "mean": 14.58,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 30.511,
+        "samples_within_10m": 36,
+        "samples_within_1m": 22,
+        "samples_within_5m": 28
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 33.458,
+        "minimum": 0.0,
+        "p95": 30.511,
+        "samples_within_10m": 36
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_service_staging_fuel"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_2_to_hub",
+      "from": "gse_fuel_depot_02",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.289,
+        "maximum_distance_sample_index": 3,
+        "mean": 27.161,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_241",
+        "nearest_feature_use_at_maximum": "RUNWAY",
+        "p95": 69.425,
+        "samples_within_10m": 23,
+        "samples_within_1m": 11,
+        "samples_within_5m": 16
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 77.882,
+        "minimum": 0.0,
+        "p95": 69.425,
+        "samples_within_10m": 23
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_2",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.289,
+        "maximum_distance_sample_index": 97,
+        "mean": 27.161,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_241",
+        "nearest_feature_use_at_maximum": "RUNWAY",
+        "p95": 69.425,
+        "samples_within_10m": 23,
+        "samples_within_1m": 11,
+        "samples_within_5m": 16
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 77.882,
+        "minimum": 0.0,
+        "p95": 69.425,
+        "samples_within_10m": 23
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "gse_fuel_depot_02"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_3_to_hub",
+      "from": "fbo_service_staging_west",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 41.447,
+        "maximum_distance_sample_index": 0,
+        "mean": 18.934,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 34.811,
+        "samples_within_10m": 27,
+        "samples_within_1m": 13,
+        "samples_within_5m": 19
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 41.447,
+        "minimum": 0.0,
+        "p95": 34.811,
+        "samples_within_10m": 27
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_3",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 41.447,
+        "maximum_distance_sample_index": 100,
+        "mean": 18.934,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 34.811,
+        "samples_within_10m": 27,
+        "samples_within_1m": 13,
+        "samples_within_5m": 19
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 41.447,
+        "minimum": 0.0,
+        "p95": 34.811,
+        "samples_within_10m": 27
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_service_staging_west"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_4_to_hub",
+      "from": "fbo_service_staging_east",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 62.622,
+        "maximum_distance_sample_index": 0,
+        "mean": 24.083,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 54.927,
+        "samples_within_10m": 23,
+        "samples_within_1m": 11,
+        "samples_within_5m": 16
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 62.622,
+        "minimum": 0.0,
+        "p95": 54.927,
+        "samples_within_10m": 23
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_4",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 62.622,
+        "maximum_distance_sample_index": 100,
+        "mean": 24.083,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 54.927,
+        "samples_within_10m": 23,
+        "samples_within_1m": 11,
+        "samples_within_5m": 16
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 62.622,
+        "minimum": 0.0,
+        "p95": 54.927,
+        "samples_within_10m": 23
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_service_staging_east"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_5_to_hub",
+      "from": "gse_catering_depot",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 59.646,
+        "maximum_distance_sample_index": 16,
+        "mean": 25.96,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 56.211,
+        "samples_within_10m": 25,
+        "samples_within_1m": 12,
+        "samples_within_5m": 18
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 87.326,
+        "minimum": 0.0,
+        "p95": 78.605,
+        "samples_within_10m": 25
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_5",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 59.646,
+        "maximum_distance_sample_index": 84,
+        "mean": 25.96,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 56.211,
+        "samples_within_10m": 25,
+        "samples_within_1m": 12,
+        "samples_within_5m": 18
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 87.326,
+        "minimum": 0.0,
+        "p95": 78.605,
+        "samples_within_10m": 25
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "gse_catering_depot"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_6_to_hub",
+      "from": "gse_lavatory_depot",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 52.28,
+        "maximum_distance_sample_index": 25,
+        "mean": 23.182,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_241",
+        "nearest_feature_use_at_maximum": "RUNWAY",
+        "p95": 48.006,
+        "samples_within_10m": 24,
+        "samples_within_1m": 12,
+        "samples_within_5m": 18
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 96.063,
+        "minimum": 0.0,
+        "p95": 87.373,
+        "samples_within_10m": 24
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_6",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 52.28,
+        "maximum_distance_sample_index": 75,
+        "mean": 23.182,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_241",
+        "nearest_feature_use_at_maximum": "RUNWAY",
+        "p95": 48.006,
+        "samples_within_10m": 24,
+        "samples_within_1m": 12,
+        "samples_within_5m": 18
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 96.063,
+        "minimum": 0.0,
+        "p95": 87.373,
+        "samples_within_10m": 24
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "gse_lavatory_depot"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_7_to_hub",
+      "from": "gse_water_depot",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 49.522,
+        "maximum_distance_sample_index": 32,
+        "mean": 20.521,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_241",
+        "nearest_feature_use_at_maximum": "RUNWAY",
+        "p95": 45.037,
+        "samples_within_10m": 30,
+        "samples_within_1m": 12,
+        "samples_within_5m": 21
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 104.952,
+        "minimum": 0.0,
+        "p95": 96.247,
+        "samples_within_10m": 22
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_7",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 49.522,
+        "maximum_distance_sample_index": 68,
+        "mean": 20.521,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_241",
+        "nearest_feature_use_at_maximum": "RUNWAY",
+        "p95": 45.037,
+        "samples_within_10m": 30,
+        "samples_within_1m": 12,
+        "samples_within_5m": 21
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 104.952,
+        "minimum": 0.0,
+        "p95": 96.247,
+        "samples_within_10m": 22
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "gse_water_depot"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_8_to_hub",
+      "from": "gse_gpu_depot",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 49.377,
+        "maximum_distance_sample_index": 37,
+        "mean": 19.025,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 44.477,
+        "samples_within_10m": 35,
+        "samples_within_1m": 19,
+        "samples_within_5m": 27
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 113.738,
+        "minimum": 0.0,
+        "p95": 104.988,
+        "samples_within_10m": 20
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_8",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 49.377,
+        "maximum_distance_sample_index": 63,
+        "mean": 19.025,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 44.477,
+        "samples_within_10m": 35,
+        "samples_within_1m": 19,
+        "samples_within_5m": 27
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 113.738,
+        "minimum": 0.0,
+        "p95": 104.988,
+        "samples_within_10m": 20
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "gse_gpu_depot"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_spawn_9_to_hub",
+      "from": "gse_tug_depot",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 49.472,
+        "maximum_distance_sample_index": 39,
+        "mean": 18.407,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 44.207,
+        "samples_within_10m": 37,
+        "samples_within_1m": 22,
+        "samples_within_5m": 29
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 95.862,
+        "minimum": 0.0,
+        "p95": 93.746,
+        "samples_within_10m": 20
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION GSE route",
+      "edge_id": "gse_hub_to_spawn_9",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 49.472,
+        "maximum_distance_sample_index": 61,
+        "mean": 18.407,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_251",
+        "nearest_feature_use_at_maximum": "TAXIWAY",
+        "p95": 44.207,
+        "samples_within_10m": 37,
+        "samples_within_1m": 22,
+        "samples_within_5m": 29
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 95.862,
+        "minimum": 0.0,
+        "p95": 93.746,
+        "samples_within_10m": 20
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "gse_tug_depot"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION shared stand approach route",
+      "edge_id": "fbo_apron_junction_to_kauo_g31_stand_1_service_approach",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 21.259,
+        "maximum_distance_sample_index": 0,
+        "mean": 1.946,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 14.452,
+        "samples_within_10m": 92,
+        "samples_within_1m": 81,
+        "samples_within_5m": 87
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 21.259,
+        "minimum": 0.0,
+        "p95": 14.452,
+        "samples_within_10m": 92
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION shared stand approach route",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_fbo_apron_junction",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 21.259,
+        "maximum_distance_sample_index": 100,
+        "mean": 1.946,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 14.452,
+        "samples_within_10m": 92,
+        "samples_within_1m": 81,
+        "samples_within_5m": 87
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 21.259,
+        "minimum": 0.0,
+        "p95": 14.452,
+        "samples_within_10m": 92
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_fuel_service_point_fuel",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 6.68,
+        "maximum_distance_sample_index": 0,
+        "mean": 2.403,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 6.214,
+        "samples_within_10m": 101,
+        "samples_within_1m": 40,
+        "samples_within_5m": 82
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 6.68,
+        "minimum": 0.0,
+        "p95": 6.214,
+        "samples_within_10m": 101
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_fuel_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_fuel_service_point_to_kauo_g31_stand_1_service_approach_fuel",
+      "from": "ga_parking_stand_fuel_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 6.68,
+        "maximum_distance_sample_index": 100,
+        "mean": 2.403,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 6.214,
+        "samples_within_10m": 101,
+        "samples_within_1m": 40,
+        "samples_within_5m": 82
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 6.68,
+        "minimum": 0.0,
+        "p95": 6.214,
+        "samples_within_10m": 101
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_baggage_service_point_baggage",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 6.68,
+        "maximum_distance_sample_index": 0,
+        "mean": 5.204,
+        "minimum": 3.728,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 6.533,
+        "samples_within_10m": 101,
+        "samples_within_1m": 0,
+        "samples_within_5m": 44
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 6.68,
+        "minimum": 3.728,
+        "p95": 6.533,
+        "samples_within_10m": 101
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_baggage_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_baggage_service_point_to_kauo_g31_stand_1_service_approach_baggage",
+      "from": "ga_parking_stand_baggage_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 6.68,
+        "maximum_distance_sample_index": 100,
+        "mean": 5.204,
+        "minimum": 3.728,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 6.533,
+        "samples_within_10m": 101,
+        "samples_within_1m": 0,
+        "samples_within_5m": 44
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 6.68,
+        "minimum": 3.728,
+        "p95": 6.533,
+        "samples_within_10m": 101
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_catering_service_point_catering",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 10.651,
+        "maximum_distance_sample_index": 100,
+        "mean": 8.665,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 10.452,
+        "samples_within_10m": 84,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 10.651,
+        "minimum": 6.68,
+        "p95": 10.452,
+        "samples_within_10m": 84
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_catering_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_catering_service_point_to_kauo_g31_stand_1_service_approach_catering",
+      "from": "ga_parking_stand_catering_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 10.651,
+        "maximum_distance_sample_index": 0,
+        "mean": 8.665,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 10.452,
+        "samples_within_10m": 84,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 10.651,
+        "minimum": 6.68,
+        "p95": 10.452,
+        "samples_within_10m": 84
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_lavatory_service_point_lavatory",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 16.829,
+        "maximum_distance_sample_index": 100,
+        "mean": 11.755,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 16.322,
+        "samples_within_10m": 33,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 16.829,
+        "minimum": 6.68,
+        "p95": 16.322,
+        "samples_within_10m": 33
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_lavatory_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_lavatory_service_point_to_kauo_g31_stand_1_service_approach_lavatory",
+      "from": "ga_parking_stand_lavatory_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 16.829,
+        "maximum_distance_sample_index": 0,
+        "mean": 11.755,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 16.322,
+        "samples_within_10m": 33,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 16.829,
+        "minimum": 6.68,
+        "p95": 16.322,
+        "samples_within_10m": 33
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_water_service_point_water",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 21.106,
+        "maximum_distance_sample_index": 100,
+        "mean": 13.893,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 20.385,
+        "samples_within_10m": 24,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 21.106,
+        "minimum": 6.68,
+        "p95": 20.385,
+        "samples_within_10m": 24
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_water_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_water_service_point_to_kauo_g31_stand_1_service_approach_water",
+      "from": "ga_parking_stand_water_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 21.106,
+        "maximum_distance_sample_index": 0,
+        "mean": 13.893,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 20.385,
+        "samples_within_10m": 24,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 21.106,
+        "minimum": 6.68,
+        "p95": 20.385,
+        "samples_within_10m": 24
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_gpu_service_point_gpu",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 22.679,
+        "maximum_distance_sample_index": 100,
+        "mean": 14.68,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 21.879,
+        "samples_within_10m": 21,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 22.679,
+        "minimum": 6.68,
+        "p95": 21.879,
+        "samples_within_10m": 21
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_gpu_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_gpu_service_point_to_kauo_g31_stand_1_service_approach_gpu",
+      "from": "ga_parking_stand_gpu_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 22.679,
+        "maximum_distance_sample_index": 0,
+        "mean": 14.68,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 21.879,
+        "samples_within_10m": 21,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 22.679,
+        "minimum": 6.68,
+        "p95": 21.879,
+        "samples_within_10m": 21
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_pushback_service_point_pushback",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 21.255,
+        "maximum_distance_sample_index": 100,
+        "mean": 13.967,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 20.526,
+        "samples_within_10m": 23,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 21.255,
+        "minimum": 6.68,
+        "p95": 20.526,
+        "samples_within_10m": 23
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_pushback_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_pushback_service_point_to_kauo_g31_stand_1_service_approach_pushback",
+      "from": "ga_parking_stand_pushback_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 21.255,
+        "maximum_distance_sample_index": 0,
+        "mean": 13.967,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 20.526,
+        "samples_within_10m": 23,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 21.255,
+        "minimum": 6.68,
+        "p95": 20.526,
+        "samples_within_10m": 23
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_stairs_service_point_stairs",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 17.1,
+        "maximum_distance_sample_index": 100,
+        "mean": 11.89,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 16.579,
+        "samples_within_10m": 32,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 17.1,
+        "minimum": 6.68,
+        "p95": 16.579,
+        "samples_within_10m": 32
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_stairs_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_stairs_service_point_to_kauo_g31_stand_1_service_approach_stairs",
+      "from": "ga_parking_stand_stairs_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 17.1,
+        "maximum_distance_sample_index": 0,
+        "mean": 11.89,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 16.579,
+        "samples_within_10m": 32,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 17.1,
+        "minimum": 6.68,
+        "p95": 16.579,
+        "samples_within_10m": 32
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_airstart_service_point_airstart",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 10.992,
+        "maximum_distance_sample_index": 100,
+        "mean": 8.836,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 10.776,
+        "samples_within_10m": 77,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 10.992,
+        "minimum": 6.68,
+        "p95": 10.776,
+        "samples_within_10m": 77
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_airstart_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_airstart_service_point_to_kauo_g31_stand_1_service_approach_airstart",
+      "from": "ga_parking_stand_airstart_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 10.992,
+        "maximum_distance_sample_index": 0,
+        "mean": 8.836,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 10.776,
+        "samples_within_10m": 77,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 10.992,
+        "minimum": 6.68,
+        "p95": 10.776,
+        "samples_within_10m": 77
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION shared stand approach route",
+      "edge_id": "fbo_apron_junction_to_kauo_g31_stand_2_service_approach",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.432,
+        "maximum_distance_sample_index": 100,
+        "mean": 17.404,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 68.731,
+        "samples_within_10m": 60,
+        "samples_within_1m": 52,
+        "samples_within_5m": 55
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 72.432,
+        "minimum": 0.0,
+        "p95": 68.731,
+        "samples_within_10m": 60
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION shared stand approach route",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_fbo_apron_junction",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.432,
+        "maximum_distance_sample_index": 0,
+        "mean": 17.404,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 68.731,
+        "samples_within_10m": 60,
+        "samples_within_1m": 52,
+        "samples_within_5m": 55
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 72.432,
+        "minimum": 0.0,
+        "p95": 68.731,
+        "samples_within_10m": 60
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_fuel_service_point_fuel",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 81.63,
+        "maximum_distance_sample_index": 68,
+        "mean": 78.289,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 81.49,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 81.63,
+        "minimum": 72.432,
+        "p95": 81.49,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_fuel_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_fuel_service_point_to_kauo_g31_stand_2_service_approach_fuel",
+      "from": "ga_parking_stand_02_fuel_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 81.63,
+        "maximum_distance_sample_index": 32,
+        "mean": 78.289,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 81.49,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 81.63,
+        "minimum": 72.432,
+        "p95": 81.49,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_baggage_service_point_baggage",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 87.438,
+        "maximum_distance_sample_index": 100,
+        "mean": 80.309,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 87.267,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 87.438,
+        "minimum": 72.432,
+        "p95": 87.267,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_baggage_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_baggage_service_point_to_kauo_g31_stand_2_service_approach_baggage",
+      "from": "ga_parking_stand_02_baggage_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 87.438,
+        "maximum_distance_sample_index": 0,
+        "mean": 80.309,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 87.267,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 87.438,
+        "minimum": 72.432,
+        "p95": 87.267,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_catering_service_point_catering",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 87.941,
+        "maximum_distance_sample_index": 100,
+        "mean": 80.17,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 87.161,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 87.941,
+        "minimum": 72.432,
+        "p95": 87.161,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_catering_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_catering_service_point_to_kauo_g31_stand_2_service_approach_catering",
+      "from": "ga_parking_stand_02_catering_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 87.941,
+        "maximum_distance_sample_index": 0,
+        "mean": 80.17,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 87.161,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 87.941,
+        "minimum": 72.432,
+        "p95": 87.161,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_lavatory_service_point_lavatory",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 85.201,
+        "maximum_distance_sample_index": 100,
+        "mean": 78.719,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 84.536,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 85.201,
+        "minimum": 72.432,
+        "p95": 84.536,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_lavatory_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_lavatory_service_point_to_kauo_g31_stand_2_service_approach_lavatory",
+      "from": "ga_parking_stand_02_lavatory_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 85.201,
+        "maximum_distance_sample_index": 0,
+        "mean": 78.719,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 84.536,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 85.201,
+        "minimum": 72.432,
+        "p95": 84.536,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_water_service_point_water",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 80.346,
+        "maximum_distance_sample_index": 100,
+        "mean": 76.18,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 79.893,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 80.346,
+        "minimum": 72.432,
+        "p95": 79.893,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_water_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_water_service_point_to_kauo_g31_stand_2_service_approach_water",
+      "from": "ga_parking_stand_02_water_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 80.346,
+        "maximum_distance_sample_index": 0,
+        "mean": 76.18,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 79.893,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 80.346,
+        "minimum": 72.432,
+        "p95": 79.893,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_gpu_service_point_gpu",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 73.982,
+        "maximum_distance_sample_index": 100,
+        "mean": 72.921,
+        "minimum": 72.426,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 73.823,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 73.982,
+        "minimum": 72.426,
+        "p95": 73.823,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_gpu_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_gpu_service_point_to_kauo_g31_stand_2_service_approach_gpu",
+      "from": "ga_parking_stand_02_gpu_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 73.982,
+        "maximum_distance_sample_index": 0,
+        "mean": 72.921,
+        "minimum": 72.426,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 73.823,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 73.982,
+        "minimum": 72.426,
+        "p95": 73.823,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_pushback_service_point_pushback",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.432,
+        "maximum_distance_sample_index": 0,
+        "mean": 69.475,
+        "minimum": 67.056,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 72.088,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 72.432,
+        "minimum": 67.056,
+        "p95": 72.088,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_pushback_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_pushback_service_point_to_kauo_g31_stand_2_service_approach_pushback",
+      "from": "ga_parking_stand_02_pushback_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.432,
+        "maximum_distance_sample_index": 100,
+        "mean": 69.475,
+        "minimum": 67.056,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 72.088,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 72.432,
+        "minimum": 67.056,
+        "p95": 72.088,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_stairs_service_point_stairs",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.432,
+        "maximum_distance_sample_index": 0,
+        "mean": 66.511,
+        "minimum": 60.896,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 71.815,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 72.432,
+        "minimum": 60.896,
+        "p95": 71.815,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_stairs_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_stairs_service_point_to_kauo_g31_stand_2_service_approach_stairs",
+      "from": "ga_parking_stand_02_stairs_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.432,
+        "maximum_distance_sample_index": 100,
+        "mean": 66.511,
+        "minimum": 60.896,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 71.815,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 72.432,
+        "minimum": 60.896,
+        "p95": 71.815,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_airstart_service_point_airstart",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.432,
+        "maximum_distance_sample_index": 0,
+        "mean": 64.722,
+        "minimum": 57.063,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 71.657,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 72.432,
+        "minimum": 57.063,
+        "p95": 71.657,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_02_airstart_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_02_airstart_service_point_to_kauo_g31_stand_2_service_approach_airstart",
+      "from": "ga_parking_stand_02_airstart_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 72.432,
+        "maximum_distance_sample_index": 100,
+        "mean": 64.722,
+        "minimum": 57.063,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 71.657,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 72.432,
+        "minimum": 57.063,
+        "p95": 71.657,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION shared stand approach route",
+      "edge_id": "fbo_apron_junction_to_kauo_g31_stand_3_service_approach",
+      "from": "fbo_apron_junction",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 174.831,
+        "maximum_distance_sample_index": 100,
+        "mean": 51.429,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 159.613,
+        "samples_within_10m": 42,
+        "samples_within_1m": 36,
+        "samples_within_5m": 39
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 174.831,
+        "minimum": 0.0,
+        "p95": 159.613,
+        "samples_within_10m": 42
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "ASSUMED FOR SIMULATION shared stand approach route",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_fbo_apron_junction",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 174.831,
+        "maximum_distance_sample_index": 0,
+        "mean": 51.429,
+        "minimum": 0.0,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 159.613,
+        "samples_within_10m": 42,
+        "samples_within_1m": 36,
+        "samples_within_5m": 39
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 174.831,
+        "minimum": 0.0,
+        "p95": 159.613,
+        "samples_within_10m": 42
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "fbo_apron_junction"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_fuel_service_point_fuel",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 174.831,
+        "maximum_distance_sample_index": 0,
+        "mean": 171.231,
+        "minimum": 167.632,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 174.471,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 174.831,
+        "minimum": 167.632,
+        "p95": 174.471,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_fuel_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_fuel_service_point_to_kauo_g31_stand_3_service_approach_fuel",
+      "from": "ga_parking_stand_03_fuel_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 174.831,
+        "maximum_distance_sample_index": 100,
+        "mean": 171.231,
+        "minimum": 167.632,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 174.471,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 174.831,
+        "minimum": 167.632,
+        "p95": 174.471,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_baggage_service_point_baggage",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 174.831,
+        "maximum_distance_sample_index": 0,
+        "mean": 174.588,
+        "minimum": 174.345,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 174.806,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 174.831,
+        "minimum": 174.345,
+        "p95": 174.806,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_baggage_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_baggage_service_point_to_kauo_g31_stand_3_service_approach_baggage",
+      "from": "ga_parking_stand_03_baggage_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 174.831,
+        "maximum_distance_sample_index": 100,
+        "mean": 174.588,
+        "minimum": 174.345,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 174.806,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 174.831,
+        "minimum": 174.345,
+        "p95": 174.806,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_catering_service_point_catering",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 181.15,
+        "maximum_distance_sample_index": 100,
+        "mean": 177.99,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 180.834,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 181.15,
+        "minimum": 174.831,
+        "p95": 180.834,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_catering_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_catering_service_point_to_kauo_g31_stand_3_service_approach_catering",
+      "from": "ga_parking_stand_03_catering_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 181.15,
+        "maximum_distance_sample_index": 0,
+        "mean": 177.99,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 180.834,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 181.15,
+        "minimum": 174.831,
+        "p95": 180.834,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_lavatory_service_point_lavatory",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 186.77,
+        "maximum_distance_sample_index": 100,
+        "mean": 180.8,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 186.173,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 186.77,
+        "minimum": 174.831,
+        "p95": 186.173,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_lavatory_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_lavatory_service_point_to_kauo_g31_stand_3_service_approach_lavatory",
+      "from": "ga_parking_stand_03_lavatory_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 186.77,
+        "maximum_distance_sample_index": 0,
+        "mean": 180.8,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 186.173,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 186.77,
+        "minimum": 174.831,
+        "p95": 186.173,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_water_service_point_water",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 190.153,
+        "maximum_distance_sample_index": 100,
+        "mean": 182.492,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 189.387,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 190.153,
+        "minimum": 174.831,
+        "p95": 189.387,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_water_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_water_service_point_to_kauo_g31_stand_3_service_approach_water",
+      "from": "ga_parking_stand_03_water_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 190.153,
+        "maximum_distance_sample_index": 0,
+        "mean": 182.492,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 189.387,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 190.153,
+        "minimum": 174.831,
+        "p95": 189.387,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_gpu_service_point_gpu",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 190.664,
+        "maximum_distance_sample_index": 100,
+        "mean": 182.747,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 189.873,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 190.664,
+        "minimum": 174.831,
+        "p95": 189.873,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_gpu_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_gpu_service_point_to_kauo_g31_stand_3_service_approach_gpu",
+      "from": "ga_parking_stand_03_gpu_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 190.664,
+        "maximum_distance_sample_index": 0,
+        "mean": 182.747,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 189.873,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 190.664,
+        "minimum": 174.831,
+        "p95": 189.873,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_pushback_service_point_pushback",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 188.209,
+        "maximum_distance_sample_index": 100,
+        "mean": 181.52,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 187.54,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 188.209,
+        "minimum": 174.831,
+        "p95": 187.54,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_pushback_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_pushback_service_point_to_kauo_g31_stand_3_service_approach_pushback",
+      "from": "ga_parking_stand_03_pushback_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 188.209,
+        "maximum_distance_sample_index": 0,
+        "mean": 181.52,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 187.54,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 188.209,
+        "minimum": 174.831,
+        "p95": 187.54,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_stairs_service_point_stairs",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 183.247,
+        "maximum_distance_sample_index": 100,
+        "mean": 179.039,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 182.826,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 183.247,
+        "minimum": 174.831,
+        "p95": 182.826,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_stairs_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_stairs_service_point_to_kauo_g31_stand_3_service_approach_stairs",
+      "from": "ga_parking_stand_03_stairs_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 183.247,
+        "maximum_distance_sample_index": 0,
+        "mean": 179.039,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 182.826,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 183.247,
+        "minimum": 174.831,
+        "p95": 182.826,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_airstart_service_point_airstart",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 176.708,
+        "maximum_distance_sample_index": 100,
+        "mean": 175.769,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 176.614,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 176.708,
+        "minimum": 174.831,
+        "p95": 176.614,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "ga_parking_stand_03_airstart_service_point"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE service bay approach / SIMULATION ASSUMPTION",
+      "edge_id": "ga_parking_stand_03_airstart_service_point_to_kauo_g31_stand_3_service_approach_airstart",
+      "from": "ga_parking_stand_03_airstart_service_point",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 176.708,
+        "maximum_distance_sample_index": 0,
+        "mean": 175.769,
+        "minimum": 174.831,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 176.614,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 176.708,
+        "minimum": 174.831,
+        "p95": 176.614,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_apron_transfer_1_approach_approach",
+      "from": "kauo_g31_stand_1_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 75.5,
+        "maximum_distance_sample_index": 89,
+        "mean": 44.651,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 74.332,
+        "samples_within_10m": 5,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 75.5,
+        "minimum": 6.68,
+        "p95": 74.332,
+        "samples_within_10m": 5
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_apron_transfer_2_approach_approach",
+      "from": "kauo_g31_stand_2_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 174.831,
+        "maximum_distance_sample_index": 100,
+        "mean": 126.475,
+        "minimum": 72.432,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 170.289,
+        "samples_within_10m": 0,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 174.831,
+        "minimum": 72.432,
+        "p95": 170.289,
+        "samples_within_10m": 0
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "edge_classification": "APPROXIMATE GSE apron transfer lane / SIMULATION ASSUMPTION",
+      "edge_id": "kauo_g31_apron_transfer_3_approach_approach",
+      "from": "kauo_g31_stand_3_service_approach",
+      "nearest_operating_surface_distance_m": {
+        "maximum": 174.831,
+        "maximum_distance_sample_index": 0,
+        "mean": 90.755,
+        "minimum": 6.68,
+        "nearest_feature_at_maximum": "aldot_auo_248",
+        "nearest_feature_use_at_maximum": "APRON",
+        "p95": 166.423,
+        "samples_within_10m": 2,
+        "samples_within_1m": 0,
+        "samples_within_5m": 0
+      },
+      "nearest_taxiway_or_apron_distance_m": {
+        "maximum": 174.831,
+        "minimum": 6.68,
+        "p95": 166.423,
+        "samples_within_10m": 2
+      },
+      "production_route_assignments": 0,
+      "sample_count": 101,
+      "to": "kauo_g31_stand_1_service_approach"
+    }
+  ],
+  "faa_runway_anchor_to_aldot_runway_polygon_checks": [
+    {
+      "nearest_ALDOT_runway_feature_id": "aldot_auo_241",
+      "nearest_ALDOT_runway_polygon_distance_m": 0.324,
+      "node_id": "rwy36_hold",
+      "reference": "FAA Runway 36-end anchor reused by the taxi-hold node"
+    },
+    {
+      "nearest_ALDOT_runway_feature_id": "aldot_auo_241",
+      "nearest_ALDOT_runway_polygon_distance_m": 0.0,
+      "node_id": "rwy18_threshold",
+      "reference": "FAA runway-end anchor"
+    },
+    {
+      "nearest_ALDOT_runway_feature_id": "aldot_auo_253",
+      "nearest_ALDOT_runway_polygon_distance_m": 0.0,
+      "node_id": "rwy11_threshold",
+      "reference": "FAA runway-end anchor"
+    },
+    {
+      "nearest_ALDOT_runway_feature_id": "aldot_auo_274",
+      "nearest_ALDOT_runway_polygon_distance_m": 0.825,
+      "node_id": "rwy29_threshold",
+      "reference": "FAA runway-end anchor"
+    }
+  ],
+  "interpretation": {
+    "crs_or_origin_diagnosis": "The near-zero Taxiway A alignment and runway anchors near FAA/ALDOT pavement argue against a single large translation or axis-sign error. The major production discrepancies are localized to approximate apron access, assumed stand locations, and service connectors. This is a consistency diagnosis, not a survey-accuracy claim.",
+    "outlier_edge_ids": [
+      "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_gpu_service_point_gpu",
+      "ga_parking_stand_03_gpu_service_point_to_kauo_g31_stand_3_service_approach_gpu",
+      "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_water_service_point_water",
+      "ga_parking_stand_03_water_service_point_to_kauo_g31_stand_3_service_approach_water",
+      "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_pushback_service_point_pushback",
+      "ga_parking_stand_03_pushback_service_point_to_kauo_g31_stand_3_service_approach_pushback",
+      "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_lavatory_service_point_lavatory",
+      "ga_parking_stand_03_lavatory_service_point_to_kauo_g31_stand_3_service_approach_lavatory",
+      "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_stairs_service_point_stairs",
+      "ga_parking_stand_03_stairs_service_point_to_kauo_g31_stand_3_service_approach_stairs"
+    ],
+    "unconstrained": true
+  },
+  "method": {
+    "coordinate_system": "WGS 84 geographic (EPSG:4326) source polygons transformed to FAA KAUO ENU meters (EPSG:4979 origin); graph and polygons audited without post-hoc alignment",
+    "distance": "minimum Euclidean point-to-polygon distance in airport-local ENU meters; inside a valid polygon is 0 m",
+    "edge_sampling": "101 evenly spaced samples including each endpoint per straight graph edge",
+    "known_transform_limitation": "ALDOT service query supplied 4326 geometry; original 3857 geometry was not separately acquired for an independent projection round-trip check",
+    "origin": {
+      "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+      "ellipsoid_height_m": 208.22,
+      "field_elevation_ft_msl": 776.8,
+      "latitude_degrees": 32.61511111,
+      "longitude_degrees": -85.434,
+      "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+      "source_record": {
+        "ARPT_ID": "AUO",
+        "ARPT_PSN_SOURCE": "3RD PARTY SURVEY",
+        "EFF_DATE": "2026/10/01",
+        "ICAO_ID": "KAUO",
+        "POSITION_SRC_DATE": "2006/05/22",
+        "file": "APT_BASE.csv"
+      }
+    },
+    "source_layer_original_crs": "Web Mercator (WKID 102100 / EPSG:3857)",
+    "source_query_crs": "WGS 84 longitude/latitude (EPSG:4326)",
+    "surfaces": "ALDOT outer boundaries and interior rings; aircraft-operable RUNWAY, TAXIWAY, and APRON classifications only"
+  },
+  "nodes": [
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "rwy18_36_mid"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.324,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "rwy36_hold"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_246",
+      "nearest_surface_use": "TAXIWAY",
+      "node_id": "twy_a_south"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_267",
+      "nearest_surface_use": "TAXIWAY",
+      "node_id": "twy_a_mid"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_267",
+      "nearest_surface_use": "TAXIWAY",
+      "node_id": "twy_a_north"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 21.259,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "fbo_apron_junction"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_255",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "fbo_apron_detour"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 32.508,
+      "nearest_surface_id": "aldot_auo_244",
+      "nearest_surface_use": "TAXIWAY",
+      "node_id": "self_serve_fuel_farm"
+    },
+    {
+      "classification": "APPROXIMATE / ASSUMED FOR SIMULATION; no surveyed stand position is available",
+      "nearest_operating_surface_distance_m": 67.885,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 41.447,
+      "nearest_surface_id": "aldot_auo_251",
+      "nearest_surface_use": "TAXIWAY",
+      "node_id": "fbo_service_staging_west"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 62.622,
+      "nearest_surface_id": "aldot_auo_251",
+      "nearest_surface_use": "TAXIWAY",
+      "node_id": "fbo_service_staging_east"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 15.172,
+      "nearest_surface_id": "aldot_auo_251",
+      "nearest_surface_use": "TAXIWAY",
+      "node_id": "fbo_service_staging_fuel"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "rwy18_threshold"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_253",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "rwy11_threshold"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.825,
+      "nearest_surface_id": "aldot_auo_274",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "rwy29_threshold"
+    },
+    {
+      "classification": "UNCLASSIFIED",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "runway_intersection"
+    },
+    {
+      "classification": "APPROXIMATE / ASSUMED FOR SIMULATION",
+      "nearest_operating_surface_distance_m": 161.424,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_fuel_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 3.728,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_baggage_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 10.651,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_catering_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 16.829,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_lavatory_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 21.106,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_water_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 22.679,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_gpu_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 21.255,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_pushback_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 17.1,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_stairs_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 10.992,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_airstart_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 80.512,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_fuel_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 87.438,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_baggage_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 87.941,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_catering_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 85.201,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_lavatory_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 80.346,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_water_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 73.982,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_gpu_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 67.056,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_pushback_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 60.896,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_stairs_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 57.063,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_02_airstart_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 167.632,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_fuel_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 174.345,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_baggage_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 181.15,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_catering_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 186.77,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_lavatory_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 190.153,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_water_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 190.664,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_gpu_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 188.209,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_pushback_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 183.247,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_stairs_service_point"
+    },
+    {
+      "classification": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 176.708,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "ga_parking_stand_03_airstart_service_point"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 69.603,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "gse_fuel_depot_02"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 40.859,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "gse_catering_depot"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 16.662,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "gse_lavatory_depot"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "gse_water_depot"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "gse_gpu_depot"
+    },
+    {
+      "classification": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "nearest_operating_surface_distance_m": 0.0,
+      "nearest_surface_id": "aldot_auo_241",
+      "nearest_surface_use": "RUNWAY",
+      "node_id": "gse_tug_depot"
+    },
+    {
+      "classification": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 6.68,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "classification": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 72.432,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "classification": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+      "nearest_operating_surface_distance_m": 174.831,
+      "nearest_surface_id": "aldot_auo_248",
+      "nearest_surface_use": "APRON",
+      "node_id": "kauo_g31_stand_3_service_approach"
+    }
+  ],
+  "production_edge_max_distance_distribution_m": {
+    "edges_with_max_distance_at_most_10m": 1,
+    "edges_with_max_distance_at_most_1m": 1,
+    "maximum": 161.424,
+    "mean": 58.339,
+    "median": 49.692,
+    "minimum": 0.084,
+    "p95": 161.424
+  },
+  "schema_version": 1
+}

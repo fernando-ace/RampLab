@@ -1,0 +1,15 @@
+{
+  "document_date": "2024-04-12",
+  "publisher": "Auburn University Board of Trustees / Facilities Management",
+  "relevant_reported_facts": [
+    "Existing terminal ramp expansion proposed to the north.",
+    "Base project adds 8,760 square yards of ramp and 15 aircraft tie-down spaces.",
+    "Bid alternates 1 and 2 add 2,660 square yards and 8 tie-downs; alternate 3 adds five helicopter pads."
+  ],
+  "retrieved_date": "2026-10-14",
+  "retrieved_pdf_sha256": "548c7e830c750b83c46ced1f381ec8f7cd5bc16a97a7abd683ad82df54387cfb",
+  "source_payload_retained": "The extracted facts and SHA-256 are preserved here; the full 16.3 MB board packet is retrievable from the official URL.",
+  "source_url": "https://www.auburn.edu/administration/trustees/materials/materials-20240412.pdf",
+  "title": "Auburn University Board of Trustees meeting materials, April 12, 2024; Auburn University Regional Airport Terminal Ramp Expansion, Authority to Execute",
+  "use_and_limits": "Primary operator-side project record; useful for identifying layout change/currentness and scenario scale, but the downloaded board packet contains no georeferenced geometry or surveyed stand coordinates. It does not establish completion or present-day operational status."
+}

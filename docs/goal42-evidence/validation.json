@@ -29,6 +29,12 @@
     "tolerance_m": 2e-05,
     "unreal_render_validation": "BLOCKED_MISSING_CESIUM"
   },
+  "currentness": {
+    "aldot_layer_last_edit": "2024-10-17",
+    "as_built_geometry_obtained": false,
+    "later_north_terminal_area_phases_reported": "ALDOT June 2026 Phase 5 and Phase 6",
+    "status": "CURRENT_LAYOUT_UNVERIFIED"
+  },
   "dashboard_browser": {
     "reason": "Browser Harness Chrome CDP Runtime.evaluate timed out after 5 seconds on the Studio tab and on a blank tab.",
     "status": "UNVERIFIED"
@@ -56,6 +62,103 @@
     "source": "ALDOT Airport Pavement Management Program GIS",
     "source_sha256": "5327a009231bfe3352e6473caf2cf8e4ec46a92bfc15e6ed2efc002b8a9e6f89",
     "surface_feature_count": 37
+  },
+  "geometry_reconciliation": {
+    "all_edges": {
+      "edges_with_max_distance_at_most_10m": 6,
+      "edges_with_max_distance_at_most_1m": 2,
+      "edges_with_max_distance_at_most_25m": 25,
+      "maximum": 190.664,
+      "mean": 80.388,
+      "median": 70.087,
+      "minimum": 0.0,
+      "p95": 188.209
+    },
+    "counts": {
+      "production_route_assignment_count": 18,
+      "production_route_edges_used": 6,
+      "route_edges": 94,
+      "route_nodes": 54,
+      "valid_operating_surface_features": 31,
+      "valid_operating_surface_polygon_parts": 33
+    },
+    "faa_runway_anchor_to_aldot_runway_polygon_checks": [
+      {
+        "nearest_ALDOT_runway_feature_id": "aldot_auo_241",
+        "nearest_ALDOT_runway_polygon_distance_m": 0.324,
+        "node_id": "rwy36_hold",
+        "reference": "FAA Runway 36-end anchor reused by the taxi-hold node"
+      },
+      {
+        "nearest_ALDOT_runway_feature_id": "aldot_auo_241",
+        "nearest_ALDOT_runway_polygon_distance_m": 0.0,
+        "node_id": "rwy18_threshold",
+        "reference": "FAA runway-end anchor"
+      },
+      {
+        "nearest_ALDOT_runway_feature_id": "aldot_auo_253",
+        "nearest_ALDOT_runway_polygon_distance_m": 0.0,
+        "node_id": "rwy11_threshold",
+        "reference": "FAA runway-end anchor"
+      },
+      {
+        "nearest_ALDOT_runway_feature_id": "aldot_auo_274",
+        "nearest_ALDOT_runway_polygon_distance_m": 0.825,
+        "node_id": "rwy29_threshold",
+        "reference": "FAA runway-end anchor"
+      }
+    ],
+    "interpretation": {
+      "crs_or_origin_diagnosis": "The near-zero Taxiway A alignment and runway anchors near FAA/ALDOT pavement argue against a single large translation or axis-sign error. The major production discrepancies are localized to approximate apron access, assumed stand locations, and service connectors. This is a consistency diagnosis, not a survey-accuracy claim.",
+      "outlier_edge_ids": [
+        "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_gpu_service_point_gpu",
+        "ga_parking_stand_03_gpu_service_point_to_kauo_g31_stand_3_service_approach_gpu",
+        "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_water_service_point_water",
+        "ga_parking_stand_03_water_service_point_to_kauo_g31_stand_3_service_approach_water",
+        "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_pushback_service_point_pushback",
+        "ga_parking_stand_03_pushback_service_point_to_kauo_g31_stand_3_service_approach_pushback",
+        "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_lavatory_service_point_lavatory",
+        "ga_parking_stand_03_lavatory_service_point_to_kauo_g31_stand_3_service_approach_lavatory",
+        "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_stairs_service_point_stairs",
+        "ga_parking_stand_03_stairs_service_point_to_kauo_g31_stand_3_service_approach_stairs"
+      ],
+      "unconstrained": true
+    },
+    "method": {
+      "coordinate_system": "WGS 84 geographic (EPSG:4326) source polygons transformed to FAA KAUO ENU meters (EPSG:4979 origin); graph and polygons audited without post-hoc alignment",
+      "distance": "minimum Euclidean point-to-polygon distance in airport-local ENU meters; inside a valid polygon is 0 m",
+      "edge_sampling": "101 evenly spaced samples including each endpoint per straight graph edge",
+      "known_transform_limitation": "ALDOT service query supplied 4326 geometry; original 3857 geometry was not separately acquired for an independent projection round-trip check",
+      "origin": {
+        "classification": "AUTHORITATIVE horizontal / DERIVED ellipsoid height",
+        "ellipsoid_height_m": 208.22,
+        "field_elevation_ft_msl": 776.8,
+        "latitude_degrees": 32.61511111,
+        "longitude_degrees": -85.434,
+        "source": "FAA 28 Day NASR APT_BASE, effective 2026-10-01; ARPT_PSN_SOURCE=3RD PARTY SURVEY, POSITION_SRC_DATE=2006/05/22. Ellipsoid height is the published field elevation converted to meters plus approximate GEOID18 separation (-28.56 m).",
+        "source_record": {
+          "ARPT_ID": "AUO",
+          "ARPT_PSN_SOURCE": "3RD PARTY SURVEY",
+          "EFF_DATE": "2026/10/01",
+          "ICAO_ID": "KAUO",
+          "POSITION_SRC_DATE": "2006/05/22",
+          "file": "APT_BASE.csv"
+        }
+      },
+      "source_layer_original_crs": "Web Mercator (WKID 102100 / EPSG:3857)",
+      "source_query_crs": "WGS 84 longitude/latitude (EPSG:4326)",
+      "surfaces": "ALDOT outer boundaries and interior rings; aircraft-operable RUNWAY, TAXIWAY, and APRON classifications only"
+    },
+    "production_routes": {
+      "edges_with_max_distance_at_most_10m": 1,
+      "edges_with_max_distance_at_most_1m": 1,
+      "maximum": 161.424,
+      "mean": 58.339,
+      "median": 49.692,
+      "minimum": 0.084,
+      "p95": 161.424
+    },
+    "status": "PASS_DIAGNOSTIC; ROUTES_NOT_YET_RECONCILED_OR_ENFORCED"
   },
   "goal": "Goal 42 authoritative KAUO surface geometry and unified digital-twin replay",
   "javascript": {

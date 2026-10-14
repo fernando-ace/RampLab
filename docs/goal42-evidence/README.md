@@ -2,8 +2,9 @@
 
 This folder is the self-contained evidence set for the Goal 42 KAUO geometry and event-replay prototype. Start with `../goal42-authoritative-kauo-digital-twin.md`, then inspect:
 
-- `geometry/kauo_goal42.geometry.json`: normalized KAUO geometry, per-class provenance, and 94-edge polygon-overlap diagnostic.
-- `sources/`: original ALDOT FeatureServer GeoJSON query, layer metadata, and acquisition manifest.
+- `geometry/kauo_goal42.geometry.json`: normalized KAUO geometry, per-class provenance, and inherited 94-edge graph.
+- `geometry/geometry-reconciliation.json` and `geometry/geometry-reconciliation-overlay.png`: nearest-surface distance distribution for every graph edge, the production-used edges, and a map overlay. No alignment was adjusted to improve the numbers.
+- `sources/`: original ALDOT FeatureServer GeoJSON query, layer metadata, acquisition manifest, FAA cycle 2610 airport-diagram PDF, Auburn University 2024 ramp-project record, and ALDOT 2026 terminal-area phases record. The FAA diagram supports names/topology but not survey centerlines; the later ramp records expose source-vintage limits but provide no georeferenced as-built geometry.
 - `coordinate-transform.json`: source CRS, KAUO ENU origin, Unreal axis mapping, and known-point assertions.
 - `scenario-generation/mapping.kauo_goal42.json`: profile that connects the canonical KAUO package to Goal 42 geometry.
 - `run/`: Goal 42 control/disruption and repeat run artifacts, generated scenarios, structured decisions, canonical event histories, Goal 19 analysis, and validation. The `run/` name refers to this completed Goal 42 run; the runner is reused from Goal 41.

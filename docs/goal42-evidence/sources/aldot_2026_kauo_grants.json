@@ -1,0 +1,25 @@
+{
+  "interpretation": "Shows ongoing north terminal-area/apron project phases after the ALDOT pavement layer last-edit date (2024-10-17). It does not provide as-built geometry, survey coordinates, or prove work completion. The 2024 pavement snapshot therefore cannot be called current without newer geometry.",
+  "published_date": "2026-06-16",
+  "publisher": "Alabama Department of Transportation News Hub",
+  "relevant_rows": [
+    {
+      "airport": "Auburn University Regional Airport",
+      "airport_sponsor_funds_usd": 7500,
+      "faa_funds_usd": 285000,
+      "project_description": "Expand Terminal Area (North) (Phase 5)",
+      "state_funds_usd": 7500,
+      "total_usd": 300000
+    },
+    {
+      "airport": "Auburn University Regional Airport",
+      "airport_sponsor_funds_usd": 1936,
+      "faa_funds_usd": 73546,
+      "project_description": "Expand Terminal Area Apron (North) (Phase 6)",
+      "state_funds_usd": 1935,
+      "total_usd": 77417
+    }
+  ],
+  "retrieved_date": "2026-10-14",
+  "source_url": "https://www.aldotnews.com/2026/06/16/alabama-airport-improvement-grants-total-2-million/"
+}
