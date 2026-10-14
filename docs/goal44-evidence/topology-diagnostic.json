@@ -1,0 +1,191 @@
+{
+  "aircraft_allowed_edge_count": 10,
+  "all_arrivals_and_departures_reachable": true,
+  "all_arrivals_reachable_in_static_graph_during_scheduled_closure": true,
+  "classification": "DERIVED_SIMULATION_TOPOLOGY_AUDIT",
+  "clearance_pass": true,
+  "clearance_requirement_m": 30.0,
+  "edge_clearance": [
+    {
+      "edge_id": "runway36_hold_twy_a_south",
+      "minimum_clearance_m": 483.33,
+      "nearest_depot_node": "gse_tug_depot",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "twy_a_south_mid",
+      "minimum_clearance_m": 140.0,
+      "nearest_depot_node": "gse_tug_depot",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "twy_a_mid_north",
+      "minimum_clearance_m": 140.684,
+      "nearest_depot_node": "gse_tug_depot",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "twy_a_mid_fbo_primary",
+      "minimum_clearance_m": 38.184,
+      "nearest_depot_node": "gse_tug_depot",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "twy_a_north_fbo_detour",
+      "minimum_clearance_m": 430.074,
+      "nearest_depot_node": "fbo_service_staging_fuel",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "twy_c_fbo_detour",
+      "minimum_clearance_m": 38.833,
+      "nearest_depot_node": "gse_tug_depot",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "fbo_junction_parking",
+      "minimum_clearance_m": 76.942,
+      "nearest_depot_node": "gse_gpu_depot",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "fbo_junction_fuel_farm",
+      "minimum_clearance_m": 76.0,
+      "nearest_depot_node": "gse_gpu_depot",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "fbo_apron_parking_02",
+      "minimum_clearance_m": 76.942,
+      "nearest_depot_node": "gse_gpu_depot",
+      "passes_30m_clearance": true
+    },
+    {
+      "edge_id": "fbo_apron_parking_03",
+      "minimum_clearance_m": 76.942,
+      "nearest_depot_node": "gse_gpu_depot",
+      "passes_30m_clearance": true
+    }
+  ],
+  "flight_routes": [
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "arrival_exit": "twy_a_mid",
+      "arrival_to_gate": {
+        "distance_m": 1474.524,
+        "edge_ids": [
+          "twy_a_mid_fbo_primary",
+          "fbo_junction_parking"
+        ],
+        "reachable": true
+      },
+      "arrival_to_gate_while_scheduled_edges_closed": {
+        "contains_unverified_runway_crossing": true,
+        "crosses_runway_inventory": true,
+        "distance_m": 3370.136,
+        "edge_ids": [
+          "twy_a_mid_north",
+          "twy_a_north_fbo_detour",
+          "twy_c_fbo_detour",
+          "fbo_junction_parking"
+        ],
+        "reachable": true
+      },
+      "gate_id": "GA-PARK-01",
+      "gate_node": "ga_parking_stand",
+      "gate_to_departure_handoff": {
+        "distance_m": 2505.921,
+        "edge_ids": [
+          "fbo_junction_parking",
+          "twy_a_mid_fbo_primary",
+          "twy_a_south_mid",
+          "runway36_hold_twy_a_south"
+        ],
+        "reachable": true
+      }
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "arrival_exit": "twy_a_mid",
+      "arrival_to_gate": {
+        "distance_m": 1488.24,
+        "edge_ids": [
+          "twy_a_mid_fbo_primary",
+          "fbo_apron_parking_02"
+        ],
+        "reachable": true
+      },
+      "arrival_to_gate_while_scheduled_edges_closed": {
+        "contains_unverified_runway_crossing": true,
+        "crosses_runway_inventory": true,
+        "distance_m": 3383.852,
+        "edge_ids": [
+          "twy_a_mid_north",
+          "twy_a_north_fbo_detour",
+          "twy_c_fbo_detour",
+          "fbo_apron_parking_02"
+        ],
+        "reachable": true
+      },
+      "gate_id": "GA-PARK-02",
+      "gate_node": "ga_parking_stand_02",
+      "gate_to_departure_handoff": {
+        "distance_m": 2519.637,
+        "edge_ids": [
+          "fbo_apron_parking_02",
+          "twy_a_mid_fbo_primary",
+          "twy_a_south_mid",
+          "runway36_hold_twy_a_south"
+        ],
+        "reachable": true
+      }
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "arrival_exit": "twy_a_mid",
+      "arrival_to_gate": {
+        "distance_m": 1493.897,
+        "edge_ids": [
+          "twy_a_mid_fbo_primary",
+          "fbo_apron_parking_03"
+        ],
+        "reachable": true
+      },
+      "arrival_to_gate_while_scheduled_edges_closed": {
+        "contains_unverified_runway_crossing": true,
+        "crosses_runway_inventory": true,
+        "distance_m": 3389.509,
+        "edge_ids": [
+          "twy_a_mid_north",
+          "twy_a_north_fbo_detour",
+          "twy_c_fbo_detour",
+          "fbo_apron_parking_03"
+        ],
+        "reachable": true
+      },
+      "gate_id": "GA-PARK-03",
+      "gate_node": "ga_parking_stand_03",
+      "gate_to_departure_handoff": {
+        "distance_m": 2525.294,
+        "edge_ids": [
+          "fbo_apron_parking_03",
+          "twy_a_mid_fbo_primary",
+          "twy_a_south_mid",
+          "runway36_hold_twy_a_south"
+        ],
+        "reachable": true
+      }
+    }
+  ],
+  "ground_only_edge_count": 84,
+  "limitations": [
+    "Route geometry derives from ALDOT pavement inventory polygons, not approved taxiway centerlines.",
+    "Stand and GSE depot positions remain explicitly approximate simulation assumptions.",
+    "Graph reachability does not establish legal runway crossing, approved airport movement, or live operational suitability."
+  ],
+  "minimum_aircraft_edge_clearance_m": 38.184,
+  "scenario": "results\\goal44\\generated\\disruption\\scenario.json",
+  "scheduled_closed_edges": [
+    "twy_a_mid_fbo_primary"
+  ]
+}
