@@ -1,0 +1,26 @@
+{
+  "dataset_id": "kauo-goal31-turnaround-gse-demo",
+  "finding_count": 1,
+  "findings": [
+    {
+      "code": "ROUTE_REFERENCE_UNRESOLVED",
+      "field": "resource_id",
+      "message": "route/resource ID is structurally retained but cannot be checked against airport geometry in Goal 24A",
+      "record": null,
+      "severity": "info",
+      "source": "",
+      "value": "KAUO-TWY-A-RAMP-CONNECTOR"
+    }
+  ],
+  "source_files": {
+    "PROVENANCE.md": "047526a6864dc60ea7f6f3fbd5a0cdc8cb7ad4d9234e1105b422c2890bbfc662",
+    "aircraft.json": "c67641f9c6360246bdc84bd42ba79f913c09627ae6cbfa45e91129c28b0816a6",
+    "disruptions.json": "4278f43138830d2101cb3e2cbd935cd317ac85ac57ecaa39c26701173953de3c",
+    "equipment.json": "70c851d789b63e5ad3b1d1f560da21508d57295b88bc323d498fe5724ef0b304",
+    "flights.json": "45f04716202671e43fb6a93d01b4e193c91719721f0f81c038a5ad2334526b9f",
+    "gates.json": "362542d08d29291aea21c6fd05447b0656375a55aaba44cf97d800bd0c0251c4",
+    "manifest.json": "82a59b5df9cb97d9dd2f14db965ca0f0740f5207cacf390cf701c8351e852eba",
+    "turnaround.json": "b597546b59f55492c6065c1ede533a2e90a04f7701e1504618a0c56ca5be93d2"
+  },
+  "status": "PASS"
+}

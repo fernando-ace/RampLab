@@ -1,0 +1,138 @@
+{
+  "adapter_row_count": 193,
+  "dashboard_position_source": "same canonical event object consumed by event replay; no independent dashboard localization",
+  "samples": [
+    {
+      "dashboard_event_position_enu_m": {
+        "east": -250.184,
+        "north": -1039.62
+      },
+      "entity_id": "aircraft-1",
+      "entity_name": "KAUO-G31-GA-01",
+      "event_type": "AircraftLanded",
+      "interpolation": "none; event sample only",
+      "route_edge_id": null,
+      "sample": "arrival",
+      "sequence": 2,
+      "simulator_position_enu_m": {
+        "east": -250.184,
+        "north": -1039.62
+      },
+      "state": "Arriving",
+      "task_id": null,
+      "time_seconds": 1,
+      "tolerance_m": 2e-05,
+      "unreal_location_cm": {
+        "x": -25018.4,
+        "y": 103962.0,
+        "z": 0.0
+      },
+      "unreal_roundtrip_error_m": 0.0,
+      "unreal_roundtrip_position_enu_m": {
+        "east": -250.18400000000003,
+        "north": -1039.62
+      },
+      "within_tolerance": true
+    },
+    {
+      "dashboard_event_position_enu_m": {
+        "east": -400.184,
+        "north": -1039.62
+      },
+      "entity_id": "aircraft-3",
+      "entity_name": "KAUO-G31-GA-03",
+      "event_type": "SurfaceRunwayClearance",
+      "interpolation": "none; event sample only",
+      "route_edge_id": null,
+      "sample": "departure",
+      "sequence": 308,
+      "simulator_position_enu_m": {
+        "east": -400.184,
+        "north": -1039.62
+      },
+      "state": "ReadyForPushback",
+      "task_id": null,
+      "time_seconds": 4319,
+      "tolerance_m": 2e-05,
+      "unreal_location_cm": {
+        "x": -40018.4,
+        "y": 103962.0,
+        "z": 0.0
+      },
+      "unreal_roundtrip_error_m": 0.0,
+      "unreal_roundtrip_position_enu_m": {
+        "east": -400.184,
+        "north": -1039.62
+      },
+      "within_tolerance": true
+    },
+    {
+      "dashboard_event_position_enu_m": {
+        "east": -310.184,
+        "north": -1039.62
+      },
+      "entity_id": "aircraft-3",
+      "entity_name": "KAUO-G31-GA-03",
+      "event_type": "TurnaroundDisruptionDetected",
+      "interpolation": "none; event sample only",
+      "route_edge_id": null,
+      "sample": "pushback_disruption",
+      "sequence": 55,
+      "simulator_position_enu_m": {
+        "east": -310.184,
+        "north": -1039.62
+      },
+      "state": "Arriving",
+      "task_id": 31,
+      "time_seconds": 241,
+      "tolerance_m": 2e-05,
+      "unreal_location_cm": {
+        "x": -31018.4,
+        "y": 103962.0,
+        "z": 0.0
+      },
+      "unreal_roundtrip_error_m": 0.0,
+      "unreal_roundtrip_position_enu_m": {
+        "east": -310.184,
+        "north": -1039.62
+      },
+      "within_tolerance": true
+    },
+    {
+      "dashboard_event_position_enu_m": {
+        "east": 96.2571,
+        "north": -152.79
+      },
+      "entity_id": "vehicle-3",
+      "entity_name": "G31-FUEL-01",
+      "event_type": "TurnaroundTaskStarted",
+      "interpolation": "none; event sample only",
+      "route_edge_id": null,
+      "sample": "ground_service",
+      "sequence": 124,
+      "simulator_position_enu_m": {
+        "east": 96.2571,
+        "north": -152.79
+      },
+      "state": "Idle",
+      "task_id": 5,
+      "time_seconds": 515,
+      "tolerance_m": 2e-05,
+      "unreal_location_cm": {
+        "x": 9625.71,
+        "y": 15279.0,
+        "z": 0.0
+      },
+      "unreal_roundtrip_error_m": 0.0,
+      "unreal_roundtrip_position_enu_m": {
+        "east": 96.2571,
+        "north": -152.79
+      },
+      "within_tolerance": true
+    }
+  ],
+  "schema_version": 1,
+  "source_event_count": 314,
+  "source_event_file": "events.jsonl",
+  "unreal_tolerance_m": 2e-05
+}

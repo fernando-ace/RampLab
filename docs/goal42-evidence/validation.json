@@ -1,0 +1,144 @@
+{
+  "base_commit": "0747981ba6753792043943c0b4776f54ec82d69b",
+  "branch": "goal42-authoritative-kauo-digital-twin",
+  "coordinate_transform": {
+    "representative_known_points": "PASS",
+    "roundtrip_error_m": 3.077730070799589e-09,
+    "status": "PASS"
+  },
+  "cpp": {
+    "ctest": {
+      "failed": 0,
+      "passed": 219,
+      "status": "PASS"
+    },
+    "release_build_cli_and_tests": "PASS",
+    "release_configure": "PASS"
+  },
+  "cross_surface_correlation": {
+    "dashboard_browser_visual_validation": "UNVERIFIED",
+    "max_roundtrip_error_m": 0.0,
+    "sample_count": 4,
+    "samples": [
+      "arrival",
+      "departure",
+      "pushback_disruption",
+      "ground_service"
+    ],
+    "status": "PASS_TRANSFORM_AND_IDENTITY_ONLY",
+    "tolerance_m": 2e-05,
+    "unreal_render_validation": "BLOCKED_MISSING_CESIUM"
+  },
+  "dashboard_browser": {
+    "reason": "Browser Harness Chrome CDP Runtime.evaluate timed out after 5 seconds on the Studio tab and on a blank tab.",
+    "status": "UNVERIFIED"
+  },
+  "determinism": {
+    "repeated_control_event_stream": "byte_identical",
+    "repeated_disruption_event_stream": "byte_identical",
+    "repeated_metrics": "equivalent",
+    "status": "PASS"
+  },
+  "geometry": {
+    "airport": "KAUO",
+    "classification": "SOURCE_BACKED_DERIVED",
+    "counts_by_use": {
+      "APRON": 2,
+      "RUNWAY": 6,
+      "TAXIWAY": 23,
+      "UNCLASSIFIED_OTHER": 6
+    },
+    "route_graph": {
+      "edge_count": 94,
+      "edges_with_at_least_90_percent_inventory_overlap": 2,
+      "movement_constrained_by_surfaces": false
+    },
+    "source": "ALDOT Airport Pavement Management Program GIS",
+    "source_sha256": "5327a009231bfe3352e6473caf2cf8e4ec46a92bfc15e6ed2efc002b8a9e6f89",
+    "surface_feature_count": 37
+  },
+  "goal": "Goal 42 authoritative KAUO surface geometry and unified digital-twin replay",
+  "javascript": {
+    "dashboard_app_js": "PASS node --check",
+    "scenario_studio_studio_js": "PASS node --check"
+  },
+  "live_session": {
+    "aircraft": 3,
+    "artifacts_ready": true,
+    "control_path": "tools/ops_dashboard/live_session.py LiveSession using build-goal42/Release/airside_cli.exe",
+    "events": 314,
+    "final_state": "completed",
+    "finished": true,
+    "scenario": "generated/disruption/scenario.json",
+    "simulated_time_seconds": 4409,
+    "start_state": "paused",
+    "status": "PASS_SIMULATOR_BACKED_API; BROWSER_UI_UNVERIFIED",
+    "tasks": 33,
+    "vehicles": 9
+  },
+  "portable_evidence": {
+    "archive": "goal42-portable-evidence.zip",
+    "archive_digest_sidecar": "goal42-portable-evidence.zip.sha256",
+    "checksum_ledger": "SHA256SUMS.txt",
+    "status": "PASS"
+  },
+  "python_tests": {
+    "airport_data_ingestion": {
+      "failed": 0,
+      "passed": 13
+    },
+    "airport_scenario_generation_geospatial_goal42": {
+      "failed": 0,
+      "passed": 44
+    },
+    "evidence_bundle": {
+      "failed": 0,
+      "passed": 13
+    },
+    "experiment_analysis": {
+      "failed": 0,
+      "passed": 10
+    },
+    "goal42_focused": {
+      "failed": 0,
+      "passed": 13
+    },
+    "ops_dashboard_scenario_studio": {
+      "failed": 0,
+      "passed": 76,
+      "skip_note": "Includes the simulator export integration skip because the test harness expects its default CLI path; Goal 41 runner exercised the explicit Release CLI.",
+      "skipped": 7
+    }
+  },
+  "safety": {
+    "aircraft_aircraft_collisions": 0,
+    "aircraft_ground_collisions": 0,
+    "configured_failures_each": 0,
+    "fleet_collisions": 0,
+    "note": "These are configured simulator results, not real-airport safety evidence.",
+    "status": "PASS"
+  },
+  "scenario": {
+    "arrivals_completed_each": 3,
+    "control_and_disruption_completed": true,
+    "departures_completed_each": 3,
+    "disruption": "Assumed pushback task delay from 180 to 480 seconds at t=241 for KAUO-G31-GA-03",
+    "required_tasks_completed_each": 33,
+    "seed": 42,
+    "status": "PASS",
+    "turnarounds_completed_each": 3,
+    "turnarounds_total_each": 3
+  },
+  "scenario_studio_api": {
+    "airport": "KAUO",
+    "provenance": "FAA NASR runway ends; ALDOT pavement inventory polygons; derived route graph; approximate stands and service points",
+    "status": "PASS",
+    "surface_areas": 37
+  },
+  "unreal_editor": {
+    "build_attempt": "FAILED as expected by missing project dependency",
+    "engine": "Unreal Engine 5.8 installed",
+    "exact_error": "Unable to find plugin 'CesiumForUnreal' (referenced via RampLabViewer.uproject).",
+    "status": "BLOCKED"
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "aircraft": {
+    "KAUO-G31-GA-01": "KAUO-G31-GA-01",
+    "KAUO-G31-GA-02": "KAUO-G31-GA-02",
+    "KAUO-G31-GA-03": "KAUO-G31-GA-03"
+  },
+  "disruptions": {},
+  "equipment": {
+    "G31-BAG-01": "G31-BAG-01",
+    "G31-CATER-01": "G31-CATER-01",
+    "G31-FUEL-01": "G31-FUEL-01",
+    "G31-FUEL-02": "G31-FUEL-02",
+    "G31-GPU-01": "G31-GPU-01",
+    "G31-LAV-01": "G31-LAV-01",
+    "G31-LOAD-01": "G31-LOAD-01",
+    "G31-TUG-01": "G31-TUG-01",
+    "G31-WATER-01": "G31-WATER-01"
+  },
+  "flights": {
+    "KAUO-G31-01-ARR": {
+      "canonical_aircraft_id": "KAUO-G31-GA-01",
+      "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-01",
+      "operation": "arrival",
+      "simulator_aircraft_id": "KAUO-G31-GA-01",
+      "simulator_gate_id": "GA-PARK-01"
+    },
+    "KAUO-G31-01-DEP": {
+      "canonical_aircraft_id": "KAUO-G31-GA-01",
+      "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-01",
+      "operation": "departure",
+      "simulator_aircraft_id": "KAUO-G31-GA-01",
+      "simulator_gate_id": "GA-PARK-01"
+    },
+    "KAUO-G31-02-ARR": {
+      "canonical_aircraft_id": "KAUO-G31-GA-02",
+      "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-02",
+      "operation": "arrival",
+      "simulator_aircraft_id": "KAUO-G31-GA-02",
+      "simulator_gate_id": "GA-PARK-02"
+    },
+    "KAUO-G31-02-DEP": {
+      "canonical_aircraft_id": "KAUO-G31-GA-02",
+      "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-02",
+      "operation": "departure",
+      "simulator_aircraft_id": "KAUO-G31-GA-02",
+      "simulator_gate_id": "GA-PARK-02"
+    },
+    "KAUO-G31-03-ARR": {
+      "canonical_aircraft_id": "KAUO-G31-GA-03",
+      "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-03",
+      "operation": "arrival",
+      "simulator_aircraft_id": "KAUO-G31-GA-03",
+      "simulator_gate_id": "GA-PARK-03"
+    },
+    "KAUO-G31-03-DEP": {
+      "canonical_aircraft_id": "KAUO-G31-GA-03",
+      "canonical_gate_id": "GA-PARK-ILLUSTRATIVE-03",
+      "operation": "departure",
+      "simulator_aircraft_id": "KAUO-G31-GA-03",
+      "simulator_gate_id": "GA-PARK-03"
+    }
+  },
+  "gates": {
+    "GA-PARK-ILLUSTRATIVE-01": "GA-PARK-01",
+    "GA-PARK-ILLUSTRATIVE-02": "GA-PARK-02",
+    "GA-PARK-ILLUSTRATIVE-03": "GA-PARK-03"
+  },
+  "turnaround_requirements": {
+    "G31-01-CATER": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-CATER"
+    },
+    "G31-01-CHOCKS": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-CHOCKS"
+    },
+    "G31-01-CLEAN": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-CLEAN"
+    },
+    "G31-01-DEBOARD": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-DEBOARD"
+    },
+    "G31-01-FUEL": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-FUEL"
+    },
+    "G31-01-GPU": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-GPU"
+    },
+    "G31-01-LAV": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-LAV"
+    },
+    "G31-01-LOAD": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-LOAD"
+    },
+    "G31-01-PUSH": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-PUSH"
+    },
+    "G31-01-UNLOAD": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-UNLOAD"
+    },
+    "G31-01-WATER": {
+      "aircraft": "KAUO-G31-GA-01",
+      "task": "G31-01-WATER"
+    },
+    "G31-02-CATER": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-CATER"
+    },
+    "G31-02-CHOCKS": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-CHOCKS"
+    },
+    "G31-02-CLEAN": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-CLEAN"
+    },
+    "G31-02-DEBOARD": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-DEBOARD"
+    },
+    "G31-02-FUEL": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-FUEL"
+    },
+    "G31-02-GPU": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-GPU"
+    },
+    "G31-02-LAV": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-LAV"
+    },
+    "G31-02-LOAD": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-LOAD"
+    },
+    "G31-02-PUSH": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-PUSH"
+    },
+    "G31-02-UNLOAD": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-UNLOAD"
+    },
+    "G31-02-WATER": {
+      "aircraft": "KAUO-G31-GA-02",
+      "task": "G31-02-WATER"
+    },
+    "G31-03-CATER": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-CATER"
+    },
+    "G31-03-CHOCKS": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-CHOCKS"
+    },
+    "G31-03-CLEAN": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-CLEAN"
+    },
+    "G31-03-DEBOARD": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-DEBOARD"
+    },
+    "G31-03-FUEL": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-FUEL"
+    },
+    "G31-03-GPU": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-GPU"
+    },
+    "G31-03-LAV": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-LAV"
+    },
+    "G31-03-LOAD": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-LOAD"
+    },
+    "G31-03-PUSH": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-PUSH"
+    },
+    "G31-03-UNLOAD": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-UNLOAD"
+    },
+    "G31-03-WATER": {
+      "aircraft": "KAUO-G31-GA-03",
+      "task": "G31-03-WATER"
+    }
+  }
+}
