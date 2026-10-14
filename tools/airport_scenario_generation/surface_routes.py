@@ -177,7 +177,8 @@ def _nearest_area(point: tuple[float, float], areas: list[dict[str, Any]], uses:
 
 def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m: float = 250.0,
                           aircraft_clearance_m: float = 0.0,
-                          explicit_aircraft_edges: bool = False) -> dict[str, Any]:
+                          explicit_aircraft_edges: bool = False,
+                          goal44_endpoint_audit: bool = False) -> dict[str, Any]:
     """Attach approximate graph nodes and route edges to classified pavement.
 
     Ground vehicles use TAXIWAY/APRON only. Aircraft may also use RUNWAY.
@@ -242,13 +243,17 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         node_cells[node_id]["aircraft"] = cell if aircraft_grid.open(cell) else aircraft_grid.nearest(attached, GRID_M)
         node_cells[node_id]["ground_vehicle"] = cell if ground_grid.open(cell) else ground_grid.nearest(attached, GRID_M)
         node["surface_attachment"] = {
-            "classification": "SOURCE_BACKED_DERIVED" if displacement <= GRID_M else "MANUALLY_RECONCILED_APPROXIMATION",
+            "classification": ("SOURCE_BACKED_PAVEMENT_SNAP" if displacement <= GRID_M else "UNVERIFIED_APPROXIMATE_NODE_SNAP")
+                if goal44_endpoint_audit else
+                ("SOURCE_BACKED_DERIVED" if displacement <= GRID_M else "MANUALLY_RECONCILED_APPROXIMATION"),
             "source_feature_id": feature_id,
             "source": "ALDOT_AUO_PAVEMENT_GIS",
             "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON" if node_id in RUNWAY_NODE_IDS else "TAXIWAY_OR_APRON",
             "original_position_local_m": {"x_m": round(original[0], 3), "y_m": round(original[1], 3)},
             "attachment_displacement_m": round(displacement, 3),
         }
+        if goal44_endpoint_audit:
+            node["surface_attachment"]["node_location_status"] = node.get("classification", "UNSPECIFIED")
         if aircraft_clearance_m > 0:
             node["surface_attachment"]["attached_position_local_m"] = {
                 "x_m": round(attached[0], 3), "y_m": round(attached[1], 3)}
@@ -344,7 +349,20 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         "source_uses": {"aircraft": sorted(AIRCRAFT_USES), "ground_vehicle": sorted(GROUND_USES)},
         "route_counts": route_count,
         "node_attachments": attachments,
-        "classification": "SOURCE_BACKED_DERIVED_WITH_MANUALLY_RECONCILED_APPROXIMATIONS",
+        "classification": "SOURCE_BACKED_PAVEMENT_WITH_UNVERIFIED_APPROXIMATE_ENDPOINTS"
+            if goal44_endpoint_audit else "SOURCE_BACKED_DERIVED_WITH_MANUALLY_RECONCILED_APPROXIMATIONS",
+        **({"attachment_summary": {
+            "node_count": len(attachments),
+            "source_backed_pavement_snap_count": sum(
+                item["classification"] == "SOURCE_BACKED_PAVEMENT_SNAP" for item in attachments),
+            "unverified_approximate_node_snap_count": sum(
+                item["classification"] == "UNVERIFIED_APPROXIMATE_NODE_SNAP" for item in attachments),
+            "maximum_displacement_m": round(max(
+                (item["attachment_displacement_m"] for item in attachments), default=0.0), 3),
+            "mean_displacement_m": round(sum(
+                item["attachment_displacement_m"] for item in attachments) / len(attachments), 3)
+                if attachments else 0.0,
+        }} if goal44_endpoint_audit else {}),
         "limitations": [
             "ALDOT pavement inventory polygons do not define operational centerlines, legal connectivity, markings, or current status.",
             "Raster routes are deterministic interior paths for simulation, not surveyed or approved airport routes.",

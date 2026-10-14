@@ -60,6 +60,11 @@ def audit(scenario_path: Path = DEFAULT_SCENARIO) -> dict[str, Any]:
     depots = [(node["id"], (float(node["x_m"]), float(node["y_m"])))
               for node in nodes.values()
               if str(node.get("classification", "")).startswith("APPROXIMATE GSE depot")]
+    attachments = [node["surface_attachment"] | {"node_id": node["id"]}
+                   for node in nodes.values() if isinstance(node.get("surface_attachment"), dict)]
+    attachment_displacements = [float(item["attachment_displacement_m"]) for item in attachments]
+    unverified_endpoints = [item for item in attachments
+                            if item.get("classification") == "UNVERIFIED_APPROXIMATE_NODE_SNAP"]
     clearance_rows = []
     for edge in edges:
         if not edge.get("aircraft_allowed"):
@@ -96,6 +101,17 @@ def audit(scenario_path: Path = DEFAULT_SCENARIO) -> dict[str, Any]:
         "clearance_requirement_m": CLEARANCE_M,
         "aircraft_allowed_edge_count": len(clearance_rows),
         "ground_only_edge_count": sum(not edge.get("aircraft_allowed", False) for edge in edges),
+        "node_attachment_summary": {
+            "node_count": len(attachments),
+            "unverified_approximate_node_snap_count": len(unverified_endpoints),
+            "maximum_displacement_m": round(max(attachment_displacements, default=0.0), 3),
+            "mean_displacement_m": round(sum(attachment_displacements) / len(attachment_displacements), 3)
+                if attachment_displacements else 0.0,
+            "largest_displacements": sorted(
+                ({"node_id": item["node_id"], "displacement_m": item["attachment_displacement_m"]}
+                 for item in unverified_endpoints),
+                key=lambda item: (-item["displacement_m"], item["node_id"]))[:10],
+        },
         "minimum_aircraft_edge_clearance_m": round(min((row["minimum_clearance_m"] for row in clearance_rows), default=math.inf), 3),
         "clearance_pass": all(row["passes_30m_clearance"] for row in clearance_rows),
         "edge_clearance": clearance_rows,
@@ -108,6 +124,7 @@ def audit(scenario_path: Path = DEFAULT_SCENARIO) -> dict[str, Any]:
         "limitations": [
             "Route geometry derives from ALDOT pavement inventory polygons, not approved taxiway centerlines.",
             "Stand and GSE depot positions remain explicitly approximate simulation assumptions.",
+            "Large node snaps are unverified endpoint approximations; a pavement attachment does not establish the real location of an assumed stand or service point.",
             "Graph reachability does not establish legal runway crossing, approved airport movement, or live operational suitability.",
         ],
     }

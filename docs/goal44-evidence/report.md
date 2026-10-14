@@ -10,6 +10,8 @@
 - Added Goal44-only movement semantics. The 84 explicitly classified GSE, service, and stand-approach edges are ground-only. The ten aircraft-eligible edges are generated on the aircraft pavement raster buffered around all nine nodes classified as approximate GSE depots.
 - Five connectors have no continuous TAXIWAY/APRON-only raster route. They remain unavailable to ground vehicles because connecting them would require an unverified runway crossing. The ALDOT pavement inventory does not grant that access.
 - Added exact point-to-polyline depot-clearance, graph reachability, scheduled-closure, and topology-rendering tools. See [the topology diagnostic](goal44-evidence/topology-diagnostic.json) and [the rendered topology](goal44-evidence/topology.png).
+- Audited all 54 node attachments against the 2 m route raster. The mean snap displacement is **80.743 m** and the maximum is **225.899 m**; 46 attachments exceed one raster cell and 19 exceed 100 m. Stand 03 and its assumed service points account for the largest displacements. These inherited node locations remain unverified assumptions; snapping them to pavement does not establish their real-world locations.
+- Corrected the machine-readable label `MANUALLY_RECONCILED_APPROXIMATION`: no manual survey or reconciliation supports these endpoints. They are now labeled `UNVERIFIED_APPROXIMATE_NODE_SNAP`, with source node classification and aggregate displacement metrics retained. The surface paths describe pavement-constrained geometry between assumed endpoints only.
 
 ## Static topology findings
 
@@ -21,24 +23,26 @@ The Goal43 baseline documented three safe arrival failures and 24 clearance-bloc
 
 ## Native simulator evidence
 
-The control replay reaches all three assigned gates and starts all three turnarounds. Its event stream records 20 completed service tasks, then the CLI exits with `dispatcher assigned a request without an available route` while returning vehicle 9 from the third gate’s water stand. The diagnostic build showed 30 vehicle-local graph links unavailable after runtime replanning, including both links between the third stand approach and the FBO hub. No completed control metrics were emitted, so the control run cannot be reported as a successful or collision-free run.
+The original control replay reached all three assigned gates and started all three turnarounds, then exited with `dispatcher assigned a request without an available route` while returning vehicle 9 from the third gate’s water stand. Commit `140132f` resets request feasibility to the scenario graph with currently active road closures, avoiding that specific exception. The resulting control trace is still incomplete: it has 219 events through simulated second 4570, one aircraft ready for pushback, no departure event, and no final metrics. The run was stopped after memory use reached about 1.7 GB. This is not a passing or collision-free control run. The trace shows an unresolved fleet-return/turnaround dependency, but available exported events do not establish which return request or state transition is blocking progress. The post-reset trace and stop summary are retained under `goal44-evidence/runs/control-after-routing-reset/`.
 
-The scheduled-closure replay exits normally but is unsafe and incomplete: **0/3 aircraft departed, 0/3 turnarounds completed, three safe surface failures, three aircraft-to-aircraft collisions, one aircraft-to-ground collision, and 499 fleet collisions**. The fleet minimum separation was 0.063 m; the aircraft-to-ground minimum separation was 3.434 m. The run is retained as negative evidence, not as a passing result.
+The retained scheduled-closure replay from before the routing-graph reset is unsafe and incomplete: **0/3 aircraft departed, 0/3 turnarounds completed, three safe surface failures, three aircraft-to-aircraft collisions, one aircraft-to-ground collision, and 499 fleet collisions**. The fleet minimum separation was 0.063 m; the aircraft-to-ground minimum separation was 3.434 m. It is negative evidence, not a passing result. A post-reset disruption replay has not yet produced replacement final metrics.
 
 The exact final conservative run files are in `docs/goal44-evidence/runs/`. Earlier exploratory runs that temporarily enabled ground access across unverified runway surfaces were not accepted as evidence and did not change the final geometry policy.
 
 ## Validation
 
-- Goal42 plus Goal44 focused geometry tests: **11 passed**.
-- Airport scenario-generation package tests: **48 passed**.
+- Goal42 focused geometry tests: **8 passed**; Goal44 focused geometry tests: **4 passed**.
+- Airport scenario-generation package tests, imported as package modules: **49 passed**.
 - Airport data-ingestion tests: **13 passed**.
 - Release CTest: **222/222 passed**.
 - Control scenario generation repeated three times: `scenario.json`, `manifest.json`, `identity-map.json`, and `support-matrix.json` were byte-identical. Two Goal44 geometry builds were byte-identical.
 - Both final generated scenarios pass `validate --generated`.
+- Goal44 evidence ZIP CRC and every internal SHA-256 ledger entry were verified; its adjacent archive sidecar records the ZIP SHA-256.
 - Native Goal44 control and disruption acceptance: **failed**, as described above.
+- Endpoint attachment audit: **54 nodes; mean 80.743 m; maximum 225.899 m; 46 beyond the 2 m grid resolution**. Long snaps are explicitly unverified approximations, not manual reconciliation.
 
 ## Remaining evidence needed
 
-Do not enable the five ground connectors or use the static closure alternates as operational routes without authoritative movement-area centerlines and runway-crossing permissions. A truthful Goal44 completion also requires resolving the runtime fleet-route invalidations and eliminating the observed collisions without changing the 30 m clearance or collision thresholds, then producing successful control/disruption runs and three byte-identical successful replays.
+Do not enable the five ground connectors or use the static closure alternates as operational routes without authoritative movement-area centerlines and runway-crossing permissions. The current ALDOT inventory does not locate the assumed stands and service points closely enough to support operational endpoint claims. A truthful Goal44 completion also requires resolving the runtime fleet-return dependency and eliminating the observed collisions without changing the 30 m clearance or collision thresholds, then producing successful control/disruption runs and three byte-identical successful replays.
 
 All work remains local on branch `goal44-routable-kauo-surface-topology`. Nothing was pushed, published, deployed, merged, or opened as a pull request.

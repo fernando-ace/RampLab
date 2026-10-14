@@ -1,0 +1,1 @@
+Post-routing-reset control trace (negative/incomplete evidence)\nEvent count: 219\nLast event: sequence 218, simulated second 4570, TurnaroundPredictedLate\nAircraft departures in trace: 0\nSHA-256 events.jsonl: 0380a6fd7b83ef4ff75ced8ed1b2b30a3b6eeefa869bafcea131c65d582808fc\nThe run produced no final simulator metrics and was stopped after memory use reached about 1.7 GB.\n

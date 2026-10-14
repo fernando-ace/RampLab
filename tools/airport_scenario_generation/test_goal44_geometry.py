@@ -55,6 +55,22 @@ class Goal44GeometryTests(unittest.TestCase):
         self.assertTrue(all("runway-crossing permission is unverified" in edge["ground_vehicle_access_limitation"]
                             for edge in connectors))
 
+    def test_large_node_snaps_are_reported_as_unverified_not_manually_reconciled(self):
+        routing = self.airport["surface_routing_model"]
+        attachments = routing["node_attachments"]
+        summary = routing["attachment_summary"]
+        unverified = [item for item in attachments
+                      if item["classification"] == "UNVERIFIED_APPROXIMATE_NODE_SNAP"]
+        self.assertTrue(unverified)
+        self.assertTrue(all(item["attachment_displacement_m"] > routing["grid_size_m"]
+                            for item in unverified))
+        self.assertTrue(all(item["node_location_status"] for item in unverified))
+        self.assertEqual(summary["node_count"], len(attachments))
+        self.assertEqual(summary["unverified_approximate_node_snap_count"], len(unverified))
+        self.assertEqual(summary["maximum_displacement_m"], max(
+            item["attachment_displacement_m"] for item in attachments))
+        self.assertNotIn("MANUALLY_RECONCILED", routing["classification"])
+
 
 if __name__ == "__main__":
     unittest.main()

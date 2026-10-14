@@ -181,9 +181,58 @@
   "limitations": [
     "Route geometry derives from ALDOT pavement inventory polygons, not approved taxiway centerlines.",
     "Stand and GSE depot positions remain explicitly approximate simulation assumptions.",
+    "Large node snaps are unverified endpoint approximations; a pavement attachment does not establish the real location of an assumed stand or service point.",
     "Graph reachability does not establish legal runway crossing, approved airport movement, or live operational suitability."
   ],
   "minimum_aircraft_edge_clearance_m": 38.184,
+  "node_attachment_summary": {
+    "largest_displacements": [
+      {
+        "displacement_m": 225.899,
+        "node_id": "ga_parking_stand_03_catering_service_point"
+      },
+      {
+        "displacement_m": 225.718,
+        "node_id": "ga_parking_stand_03_lavatory_service_point"
+      },
+      {
+        "displacement_m": 221.901,
+        "node_id": "ga_parking_stand_03_baggage_service_point"
+      },
+      {
+        "displacement_m": 215.89,
+        "node_id": "ga_parking_stand_03_fuel_service_point"
+      },
+      {
+        "displacement_m": 211.144,
+        "node_id": "kauo_g31_stand_3_service_approach"
+      },
+      {
+        "displacement_m": 209.445,
+        "node_id": "ga_parking_stand_03_water_service_point"
+      },
+      {
+        "displacement_m": 205.697,
+        "node_id": "ga_parking_stand_03_gpu_service_point"
+      },
+      {
+        "displacement_m": 199.435,
+        "node_id": "ga_parking_stand_03_pushback_service_point"
+      },
+      {
+        "displacement_m": 197.284,
+        "node_id": "ga_parking_stand_03"
+      },
+      {
+        "displacement_m": 193.854,
+        "node_id": "ga_parking_stand_03_stairs_service_point"
+      }
+    ],
+    "maximum_displacement_m": 225.899,
+    "mean_displacement_m": 80.743,
+    "node_count": 54,
+    "unverified_approximate_node_snap_count": 46
+  },
   "scenario": "results\\goal44\\generated\\disruption\\scenario.json",
   "scheduled_closed_edges": [
     "twy_a_mid_fbo_primary"

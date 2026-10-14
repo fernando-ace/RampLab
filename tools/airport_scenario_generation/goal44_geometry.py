@@ -176,7 +176,8 @@ def build_geometry(base_path: Path = BASE, source_path: Path = SOURCE) -> dict[s
     if not isinstance(airport, dict):
         raise ValueError("base geometry has no airport object")
     airport["surface_areas"] = normalized["surface_areas"]
-    airport["surface_routing_model"] = derive_surface_routes(airport, aircraft_clearance_m=30.0, explicit_aircraft_edges=True)
+    airport["surface_routing_model"] = derive_surface_routes(
+        airport, aircraft_clearance_m=30.0, explicit_aircraft_edges=True, goal44_endpoint_audit=True)
     airport["graph_alignment_audit"] = graph_alignment_audit(airport, normalized["surface_areas"])
     airport["geometry_provenance"] = {
         "runway_reference_points": {
@@ -201,8 +202,8 @@ def build_geometry(base_path: Path = BASE, source_path: Path = SOURCE) -> dict[s
         },
         "route_graph": {
             "source": "Deterministic 2 m raster A* through FAA/ALDOT-aligned operating-pavement inventory areas",
-            "classification": "SOURCE_BACKED_DERIVED_WITH_MANUALLY_RECONCILED_APPROXIMATIONS",
-            "limitations": ["ALDOT inventory polygons do not define approved taxiway centerlines or legal routing; approximate node attachment displacements are retained per node."]
+            "classification": "SOURCE_BACKED_PAVEMENT_WITH_UNVERIFIED_APPROXIMATE_ENDPOINTS",
+            "limitations": ["ALDOT inventory polygons do not define approved taxiway centerlines or legal routing; node snaps beyond the 2 m raster resolution are unverified approximations, not manually reconciled locations."]
         },
         "stands_and_gates": {
             "source": "Illustrative simulator mapping; no surveyed stand coordinates obtained",

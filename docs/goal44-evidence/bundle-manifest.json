@@ -1,7 +1,7 @@
 {
   "classification": "NEGATIVE_AND_STATIC_DERIVED_EVIDENCE; not a successful operational validation",
-  "control_runtime": "failed: dispatcher route missing during return-to-depot; partial event trace retained",
-  "disruption_runtime": "completed with safe failures and collisions; not a passing operational result",
-  "important_limitation": "ALDOT pavement inventory is not an approved movement-area or runway-crossing dataset.",
+  "control_runtime": "after request-routing fix: partial 219-event trace through simulated second 4570; one aircraft ready for pushback, no departures, no final metrics; stopped near 1.7 GB memory",
+  "disruption_runtime": "retained pre-routing-fix run completed with safe failures and collisions; not a passing operational result; no post-fix replacement metrics",
+  "important_limitation": "ALDOT pavement inventory is not an approved movement-area or runway-crossing dataset; 46 of 54 endpoint snaps exceed the 2 m raster resolution and remain unverified approximations.",
   "source_snapshot_sha256": "5327a009231bfe3352e6473caf2cf8e4ec46a92bfc15e6ed2efc002b8a9e6f89"
 }

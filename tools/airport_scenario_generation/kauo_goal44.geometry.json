@@ -8721,9 +8721,9 @@
     },
     "geometry_provenance": {
       "route_graph": {
-        "classification": "SOURCE_BACKED_DERIVED_WITH_MANUALLY_RECONCILED_APPROXIMATIONS",
+        "classification": "SOURCE_BACKED_PAVEMENT_WITH_UNVERIFIED_APPROXIMATE_ENDPOINTS",
         "limitations": [
-          "ALDOT inventory polygons do not define approved taxiway centerlines or legal routing; approximate node attachment displacements are retained per node."
+          "ALDOT inventory polygons do not define approved taxiway centerlines or legal routing; node snaps beyond the 2 m raster resolution are unverified approximations, not manually reconciled locations."
         ],
         "source": "Deterministic 2 m raster A* through FAA/ALDOT-aligned operating-pavement inventory areas"
       },
@@ -9460,8 +9460,9 @@
             "y_m": -238.0
           },
           "attachment_displacement_m": 0.583,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -205.621,
             "y_m": -237.556
@@ -9481,8 +9482,9 @@
             "y_m": -1036.0
           },
           "attachment_displacement_m": 3.628,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -220.184,
             "y_m": -1039.623
@@ -9502,8 +9504,9 @@
             "y_m": -618.0
           },
           "attachment_displacement_m": 0.8,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -329.94,
             "y_m": -617.202
@@ -9523,8 +9526,9 @@
             "y_m": -120.0
           },
           "attachment_displacement_m": 0.85,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -324.459,
             "y_m": -119.284
@@ -9544,8 +9548,9 @@
             "y_m": 450.0
           },
           "attachment_displacement_m": 0.918,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -319.987,
             "y_m": 449.082
@@ -9565,8 +9570,9 @@
             "y_m": -72.0
           },
           "attachment_displacement_m": 23.343,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -29.34,
             "y_m": -72.364
@@ -9586,8 +9592,9 @@
             "y_m": 522.0
           },
           "attachment_displacement_m": 116.007,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -89.037,
             "y_m": 437.084
@@ -9607,8 +9614,9 @@
             "y_m": -134.0
           },
           "attachment_displacement_m": 0.856,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": 93.16,
             "y_m": -133.834
@@ -9628,8 +9636,9 @@
             "y_m": -232.0
           },
           "attachment_displacement_m": 36.233,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -544.048,
             "y_m": -204.898
@@ -9650,8 +9659,9 @@
             "y_m": -30.0
           },
           "attachment_displacement_m": 77.078,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE / ASSUMED FOR SIMULATION; no surveyed stand position is available",
           "original_position_local_m": {
             "x_m": 170.0,
             "y_m": -85.0
@@ -9672,8 +9682,9 @@
             "y_m": 74.0
           },
           "attachment_displacement_m": 44.918,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -48.936,
             "y_m": 106.567
@@ -9694,8 +9705,9 @@
             "y_m": 52.0
           },
           "attachment_displacement_m": 65.613,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -83.468,
             "y_m": 99.305
@@ -9716,8 +9728,9 @@
             "y_m": 92.0
           },
           "attachment_displacement_m": 18.955,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -13.652,
             "y_m": 106.951
@@ -9737,8 +9750,9 @@
             "y_m": 564.0
           },
           "attachment_displacement_m": 1.071,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -191.059,
             "y_m": 564.511
@@ -9758,8 +9772,9 @@
             "y_m": 496.0
           },
           "attachment_displacement_m": 2.551,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -314.537,
             "y_m": 495.73
@@ -9779,8 +9794,9 @@
             "y_m": 132.0
           },
           "attachment_displacement_m": 3.552,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": 849.421,
             "y_m": 132.957
@@ -9800,8 +9816,9 @@
             "y_m": 458.0
           },
           "attachment_displacement_m": 1.007,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -192.995,
             "y_m": 457.849
@@ -9822,8 +9839,9 @@
             "y_m": -26.0
           },
           "attachment_displacement_m": 197.284,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE / ASSUMED FOR SIMULATION",
           "original_position_local_m": {
             "x_m": 260.0,
             "y_m": -165.0
@@ -9844,8 +9862,9 @@
             "y_m": -152.0
           },
           "attachment_displacement_m": 0.958,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 96.123,
             "y_m": -152.95
@@ -9866,8 +9885,9 @@
             "y_m": -156.0
           },
           "attachment_displacement_m": 6.447,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 102.443,
             "y_m": -155.784
@@ -9888,8 +9908,9 @@
             "y_m": -154.0
           },
           "attachment_displacement_m": 13.473,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 109.368,
             "y_m": -155.68
@@ -9910,8 +9931,9 @@
             "y_m": -150.0
           },
           "attachment_displacement_m": 19.781,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 115.601,
             "y_m": -152.66
@@ -9932,8 +9954,9 @@
             "y_m": -148.0
           },
           "attachment_displacement_m": 23.985,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 119.974,
             "y_m": -147.289
@@ -9954,8 +9977,9 @@
             "y_m": -140.0
           },
           "attachment_displacement_m": 25.672,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 121.666,
             "y_m": -140.573
@@ -9976,8 +10000,9 @@
             "y_m": -134.0
           },
           "attachment_displacement_m": 24.363,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 120.362,
             "y_m": -133.771
@@ -9998,8 +10023,9 @@
             "y_m": -128.0
           },
           "attachment_displacement_m": 20.307,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 116.306,
             "y_m": -128.157
@@ -10020,8 +10046,9 @@
             "y_m": -124.0
           },
           "attachment_displacement_m": 14.279,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 110.257,
             "y_m": -124.784
@@ -10042,8 +10069,9 @@
             "y_m": -34.0
           },
           "attachment_displacement_m": 97.344,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 180.202,
             "y_m": -101.436
@@ -10064,8 +10092,9 @@
             "y_m": -28.0
           },
           "attachment_displacement_m": 100.952,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 187.127,
             "y_m": -101.572
@@ -10086,8 +10115,9 @@
             "y_m": -24.0
           },
           "attachment_displacement_m": 103.427,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 193.461,
             "y_m": -98.769
@@ -10108,8 +10138,9 @@
             "y_m": -22.0
           },
           "attachment_displacement_m": 102.947,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 198.016,
             "y_m": -93.552
@@ -10130,8 +10161,9 @@
             "y_m": -16.0
           },
           "attachment_displacement_m": 83.41,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 199.94,
             "y_m": -86.898
@@ -10152,8 +10184,9 @@
             "y_m": -16.0
           },
           "attachment_displacement_m": 78.208,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 198.872,
             "y_m": -80.055
@@ -10174,8 +10207,9 @@
             "y_m": -14.0
           },
           "attachment_displacement_m": 71.822,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 195.011,
             "y_m": -74.304
@@ -10196,8 +10230,9 @@
             "y_m": -14.0
           },
           "attachment_displacement_m": 66.697,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 189.083,
             "y_m": -70.724
@@ -10218,8 +10253,9 @@
             "y_m": -16.0
           },
           "attachment_displacement_m": 61.856,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 182.196,
             "y_m": -69.985
@@ -10240,8 +10276,9 @@
             "y_m": -30.0
           },
           "attachment_displacement_m": 215.89,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 265.882,
             "y_m": -183.428
@@ -10262,8 +10299,9 @@
             "y_m": -28.0
           },
           "attachment_displacement_m": 221.901,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 272.564,
             "y_m": -185.251
@@ -10284,8 +10322,9 @@
             "y_m": -24.0
           },
           "attachment_displacement_m": 225.899,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 279.391,
             "y_m": -184.078
@@ -10306,8 +10345,9 @@
             "y_m": -20.0
           },
           "attachment_displacement_m": 225.718,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 285.082,
             "y_m": -180.13
@@ -10328,8 +10368,9 @@
             "y_m": -12.0
           },
           "attachment_displacement_m": 209.445,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 288.571,
             "y_m": -174.148
@@ -10350,8 +10391,9 @@
             "y_m": -14.0
           },
           "attachment_displacement_m": 205.697,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 289.205,
             "y_m": -167.251
@@ -10372,8 +10414,9 @@
             "y_m": -12.0
           },
           "attachment_displacement_m": 199.435,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 286.865,
             "y_m": -160.732
@@ -10394,8 +10437,9 @@
             "y_m": -12.0
           },
           "attachment_displacement_m": 193.854,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 281.989,
             "y_m": -155.813
@@ -10416,8 +10460,9 @@
             "y_m": -16.0
           },
           "attachment_displacement_m": 186.094,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 275.492,
             "y_m": -153.415
@@ -10438,8 +10483,9 @@
             "y_m": 28.0
           },
           "attachment_displacement_m": 80.168,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -115.918,
             "y_m": 85.447
@@ -10460,8 +10506,9 @@
             "y_m": 2.0
           },
           "attachment_displacement_m": 92.358,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -145.042,
             "y_m": 65.524
@@ -10482,8 +10529,9 @@
             "y_m": -20.0
           },
           "attachment_displacement_m": 103.176,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -169.719,
             "y_m": 40.303
@@ -10504,8 +10552,9 @@
             "y_m": -90.0
           },
           "attachment_displacement_m": 142.661,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -189.002,
             "y_m": 10.751
@@ -10526,8 +10575,9 @@
             "y_m": -84.0
           },
           "attachment_displacement_m": 135.205,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -202.149,
             "y_m": -21.994
@@ -10548,8 +10598,9 @@
             "y_m": -156.0
           },
           "attachment_displacement_m": 101.449,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -208.655,
             "y_m": -56.676
@@ -10570,8 +10621,9 @@
             "y_m": -142.0
           },
           "attachment_displacement_m": 9.855,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 105.673,
             "y_m": -140.113
@@ -10592,8 +10644,9 @@
             "y_m": -22.0
           },
           "attachment_displacement_m": 89.005,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 183.972,
             "y_m": -85.886
@@ -10614,8 +10667,9 @@
             "y_m": -20.0
           },
           "attachment_displacement_m": 211.144,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
+          "node_location_status": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 273.333,
             "y_m": -169.269
@@ -18953,7 +19007,14 @@
     "surface_routing_model": {
       "aircraft_clearance_m": 30.0,
       "aircraft_clearance_source": "attached assumed GSE depot positions; path is generated with raster buffer and verified against exact polyline distance",
-      "classification": "SOURCE_BACKED_DERIVED_WITH_MANUALLY_RECONCILED_APPROXIMATIONS",
+      "attachment_summary": {
+        "maximum_displacement_m": 225.899,
+        "mean_displacement_m": 80.743,
+        "node_count": 54,
+        "source_backed_pavement_snap_count": 8,
+        "unverified_approximate_node_snap_count": 46
+      },
+      "classification": "SOURCE_BACKED_PAVEMENT_WITH_UNVERIFIED_APPROXIMATE_ENDPOINTS",
       "grid_size_m": 2.0,
       "limitations": [
         "ALDOT pavement inventory polygons do not define operational centerlines, legal connectivity, markings, or current status.",
@@ -18968,9 +19029,10 @@
             "y_m": -238.0
           },
           "attachment_displacement_m": 0.583,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
           "node_id": "rwy18_36_mid",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -205.621,
             "y_m": -237.556
@@ -18984,9 +19046,10 @@
             "y_m": -1036.0
           },
           "attachment_displacement_m": 3.628,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
           "node_id": "rwy36_hold",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -220.184,
             "y_m": -1039.623
@@ -19000,9 +19063,10 @@
             "y_m": -618.0
           },
           "attachment_displacement_m": 0.8,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "twy_a_south",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -329.94,
             "y_m": -617.202
@@ -19016,9 +19080,10 @@
             "y_m": -120.0
           },
           "attachment_displacement_m": 0.85,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "twy_a_mid",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -324.459,
             "y_m": -119.284
@@ -19032,9 +19097,10 @@
             "y_m": 450.0
           },
           "attachment_displacement_m": 0.918,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "twy_a_north",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -319.987,
             "y_m": 449.082
@@ -19048,9 +19114,10 @@
             "y_m": -72.0
           },
           "attachment_displacement_m": 23.343,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "fbo_apron_junction",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -29.34,
             "y_m": -72.364
@@ -19064,9 +19131,10 @@
             "y_m": 522.0
           },
           "attachment_displacement_m": 116.007,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "fbo_apron_detour",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -89.037,
             "y_m": 437.084
@@ -19080,9 +19148,10 @@
             "y_m": -134.0
           },
           "attachment_displacement_m": 0.856,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": 93.16,
             "y_m": -133.834
@@ -19096,9 +19165,10 @@
             "y_m": -232.0
           },
           "attachment_displacement_m": 36.233,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "self_serve_fuel_farm",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -544.048,
             "y_m": -204.898
@@ -19112,9 +19182,10 @@
             "y_m": -30.0
           },
           "attachment_displacement_m": 77.078,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02",
+          "node_location_status": "APPROXIMATE / ASSUMED FOR SIMULATION; no surveyed stand position is available",
           "original_position_local_m": {
             "x_m": 170.0,
             "y_m": -85.0
@@ -19128,9 +19199,10 @@
             "y_m": 74.0
           },
           "attachment_displacement_m": 44.918,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "fbo_service_staging_west",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -48.936,
             "y_m": 106.567
@@ -19144,9 +19216,10 @@
             "y_m": 52.0
           },
           "attachment_displacement_m": 65.613,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "fbo_service_staging_east",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -83.468,
             "y_m": 99.305
@@ -19160,9 +19233,10 @@
             "y_m": 92.0
           },
           "attachment_displacement_m": 18.955,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "fbo_service_staging_fuel",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -13.652,
             "y_m": 106.951
@@ -19176,9 +19250,10 @@
             "y_m": 564.0
           },
           "attachment_displacement_m": 1.071,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
           "node_id": "rwy18_threshold",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -191.059,
             "y_m": 564.511
@@ -19192,9 +19267,10 @@
             "y_m": 496.0
           },
           "attachment_displacement_m": 2.551,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
           "node_id": "rwy11_threshold",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -314.537,
             "y_m": 495.73
@@ -19208,9 +19284,10 @@
             "y_m": 132.0
           },
           "attachment_displacement_m": 3.552,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
           "node_id": "rwy29_threshold",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": 849.421,
             "y_m": 132.957
@@ -19224,9 +19301,10 @@
             "y_m": 458.0
           },
           "attachment_displacement_m": 1.007,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "RUNWAY_OR_TAXIWAY_OR_APRON",
           "node_id": "runway_intersection",
+          "node_location_status": "UNSPECIFIED",
           "original_position_local_m": {
             "x_m": -192.995,
             "y_m": 457.849
@@ -19240,9 +19318,10 @@
             "y_m": -26.0
           },
           "attachment_displacement_m": 197.284,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03",
+          "node_location_status": "APPROXIMATE / ASSUMED FOR SIMULATION",
           "original_position_local_m": {
             "x_m": 260.0,
             "y_m": -165.0
@@ -19256,9 +19335,10 @@
             "y_m": -152.0
           },
           "attachment_displacement_m": 0.958,
-          "classification": "SOURCE_BACKED_DERIVED",
+          "classification": "SOURCE_BACKED_PAVEMENT_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_fuel_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 96.123,
             "y_m": -152.95
@@ -19272,9 +19352,10 @@
             "y_m": -156.0
           },
           "attachment_displacement_m": 6.447,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_baggage_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 102.443,
             "y_m": -155.784
@@ -19288,9 +19369,10 @@
             "y_m": -154.0
           },
           "attachment_displacement_m": 13.473,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_catering_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 109.368,
             "y_m": -155.68
@@ -19304,9 +19386,10 @@
             "y_m": -150.0
           },
           "attachment_displacement_m": 19.781,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_lavatory_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 115.601,
             "y_m": -152.66
@@ -19320,9 +19403,10 @@
             "y_m": -148.0
           },
           "attachment_displacement_m": 23.985,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_water_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 119.974,
             "y_m": -147.289
@@ -19336,9 +19420,10 @@
             "y_m": -140.0
           },
           "attachment_displacement_m": 25.672,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_gpu_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 121.666,
             "y_m": -140.573
@@ -19352,9 +19437,10 @@
             "y_m": -134.0
           },
           "attachment_displacement_m": 24.363,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_pushback_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 120.362,
             "y_m": -133.771
@@ -19368,9 +19454,10 @@
             "y_m": -128.0
           },
           "attachment_displacement_m": 20.307,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_stairs_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 116.306,
             "y_m": -128.157
@@ -19384,9 +19471,10 @@
             "y_m": -124.0
           },
           "attachment_displacement_m": 14.279,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_airstart_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 110.257,
             "y_m": -124.784
@@ -19400,9 +19488,10 @@
             "y_m": -34.0
           },
           "attachment_displacement_m": 97.344,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_fuel_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 180.202,
             "y_m": -101.436
@@ -19416,9 +19505,10 @@
             "y_m": -28.0
           },
           "attachment_displacement_m": 100.952,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_baggage_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 187.127,
             "y_m": -101.572
@@ -19432,9 +19522,10 @@
             "y_m": -24.0
           },
           "attachment_displacement_m": 103.427,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_catering_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 193.461,
             "y_m": -98.769
@@ -19448,9 +19539,10 @@
             "y_m": -22.0
           },
           "attachment_displacement_m": 102.947,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_lavatory_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 198.016,
             "y_m": -93.552
@@ -19464,9 +19556,10 @@
             "y_m": -16.0
           },
           "attachment_displacement_m": 83.41,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_water_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 199.94,
             "y_m": -86.898
@@ -19480,9 +19573,10 @@
             "y_m": -16.0
           },
           "attachment_displacement_m": 78.208,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_gpu_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 198.872,
             "y_m": -80.055
@@ -19496,9 +19590,10 @@
             "y_m": -14.0
           },
           "attachment_displacement_m": 71.822,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_pushback_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 195.011,
             "y_m": -74.304
@@ -19512,9 +19607,10 @@
             "y_m": -14.0
           },
           "attachment_displacement_m": 66.697,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_stairs_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 189.083,
             "y_m": -70.724
@@ -19528,9 +19624,10 @@
             "y_m": -16.0
           },
           "attachment_displacement_m": 61.856,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_02_airstart_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 182.196,
             "y_m": -69.985
@@ -19544,9 +19641,10 @@
             "y_m": -30.0
           },
           "attachment_displacement_m": 215.89,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_fuel_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 265.882,
             "y_m": -183.428
@@ -19560,9 +19658,10 @@
             "y_m": -28.0
           },
           "attachment_displacement_m": 221.901,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_baggage_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 272.564,
             "y_m": -185.251
@@ -19576,9 +19675,10 @@
             "y_m": -24.0
           },
           "attachment_displacement_m": 225.899,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_catering_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 279.391,
             "y_m": -184.078
@@ -19592,9 +19692,10 @@
             "y_m": -20.0
           },
           "attachment_displacement_m": 225.718,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_lavatory_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 285.082,
             "y_m": -180.13
@@ -19608,9 +19709,10 @@
             "y_m": -12.0
           },
           "attachment_displacement_m": 209.445,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_water_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 288.571,
             "y_m": -174.148
@@ -19624,9 +19726,10 @@
             "y_m": -14.0
           },
           "attachment_displacement_m": 205.697,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_gpu_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 289.205,
             "y_m": -167.251
@@ -19640,9 +19743,10 @@
             "y_m": -12.0
           },
           "attachment_displacement_m": 199.435,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_pushback_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 286.865,
             "y_m": -160.732
@@ -19656,9 +19760,10 @@
             "y_m": -12.0
           },
           "attachment_displacement_m": 193.854,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_stairs_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 281.989,
             "y_m": -155.813
@@ -19672,9 +19777,10 @@
             "y_m": -16.0
           },
           "attachment_displacement_m": 186.094,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "ga_parking_stand_03_airstart_service_point",
+          "node_location_status": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 275.492,
             "y_m": -153.415
@@ -19688,9 +19794,10 @@
             "y_m": 28.0
           },
           "attachment_displacement_m": 80.168,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "gse_fuel_depot_02",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -115.918,
             "y_m": 85.447
@@ -19704,9 +19811,10 @@
             "y_m": 2.0
           },
           "attachment_displacement_m": 92.358,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "gse_catering_depot",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -145.042,
             "y_m": 65.524
@@ -19720,9 +19828,10 @@
             "y_m": -20.0
           },
           "attachment_displacement_m": 103.176,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "gse_lavatory_depot",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -169.719,
             "y_m": 40.303
@@ -19736,9 +19845,10 @@
             "y_m": -90.0
           },
           "attachment_displacement_m": 142.661,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "gse_water_depot",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -189.002,
             "y_m": 10.751
@@ -19752,9 +19862,10 @@
             "y_m": -84.0
           },
           "attachment_displacement_m": 135.205,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "gse_gpu_depot",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -202.149,
             "y_m": -21.994
@@ -19768,9 +19879,10 @@
             "y_m": -156.0
           },
           "attachment_displacement_m": 101.449,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "gse_tug_depot",
+          "node_location_status": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
           "original_position_local_m": {
             "x_m": -208.655,
             "y_m": -56.676
@@ -19784,9 +19896,10 @@
             "y_m": -142.0
           },
           "attachment_displacement_m": 9.855,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "kauo_g31_stand_1_service_approach",
+          "node_location_status": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 105.673,
             "y_m": -140.113
@@ -19800,9 +19913,10 @@
             "y_m": -22.0
           },
           "attachment_displacement_m": 89.005,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "kauo_g31_stand_2_service_approach",
+          "node_location_status": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 183.972,
             "y_m": -85.886
@@ -19816,9 +19930,10 @@
             "y_m": -20.0
           },
           "attachment_displacement_m": 211.144,
-          "classification": "MANUALLY_RECONCILED_APPROXIMATION",
+          "classification": "UNVERIFIED_APPROXIMATE_NODE_SNAP",
           "movement_surface": "TAXIWAY_OR_APRON",
           "node_id": "kauo_g31_stand_3_service_approach",
+          "node_location_status": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
           "original_position_local_m": {
             "x_m": 273.333,
             "y_m": -169.269
