@@ -30,7 +30,7 @@ The workflow creates control, disruption and repeat runs, analysis, the standalo
 
 This vertical runs three illustrative aircraft through arrivals, turnarounds and departures, with nine configured ground units and 33 service tasks. The control and disruption scenarios use the same seed (42), ADAPTIVE aircraft routing policy, source inputs and initial scenario state. At 241 seconds, the disruption case extends Flight KAUO-G31-GA-03 task `G31-03-PUSH` from 180 to 480 seconds. This controlled task-duration event causes the simulator to recompute turnaround readiness.
 
-The C++ RampLab simulator remains authoritative for aircraft, fleet, task, runway and safety outcomes. Agent decisions are exported from its structured decision trace and summarized for operators. Evidence retains native metrics, aircraft rows, fleet assignments, events, full decision traces, repeat runs and the static comparison bundle.
+The C++ RampLab simulator remains authoritative for aircraft, fleet, task, runway and safety outcomes. Agent decisions are exported from its structured decision trace and summarized for operators. Evidence retains native metrics, aircraft rows, fleet assignments, events, full decision traces, batch repeat runs, the static comparison bundle and the completed Dashboard live-session artifacts.
 
 The COUNTERFACTUAL control run exceeded its 1800-second timeout without producing metrics. ADAPTIVE was selected as the strongest practical policy for this integrated run. This is a runtime-based selection; no comparative performance advantage is claimed. The timeout and selection rationale are recorded in `policy-selection.json`.
 
@@ -83,7 +83,9 @@ The full event streams are retained in order. The report does not reconstruct un
 - Scenario completion and exported safety fields: PASS.
 - Repeat-run determinism: PASS.
 - Release CTest: 218/218 passed.
-- Focused Python validation: 143 tests passed; 6 were skipped by existing test conditions.
+- Focused Python validation: 144 tests passed; 6 were skipped by existing test conditions.
+- Dashboard browser review: PASS: four batch runs loaded; live Goal 41 completed and its artifacts loaded into analysis and replay.
+- Scenario Studio browser review: PASS: the Goal 31 KAUO demonstration showed three aircraft, nine vehicles, three stands and approximate-geometry provenance.
 - Unreal Editor build was attempted with UE 5.8 and could not proceed because the enabled CesiumForUnreal plugin is not installed on this workstation.
 
 ## Product assessment
@@ -94,6 +96,6 @@ The largest remaining gaps are calibrated, authoritative taxiway/apron geometry 
 
 ## Portable evidence
 
-`goal41-portable-evidence.zip` contains the raw source package and provenance, canonical and generated scenarios, control/disruption/repeat outputs, native simulator metrics and ordered events, full autonomous traces, entity exports, Goal 19 comparison bundle, policy-selection rationale, validation records, this report, and `SHA256SUMS.txt`. The archive has a separate `.sha256` sidecar. Use the included hashes to verify extracted files.
+`goal41-portable-evidence.zip` contains the raw source package and provenance, canonical and generated scenarios, control/disruption/repeat outputs, the interactive completed live session, native simulator metrics and ordered events, full autonomous traces, entity exports, Goal 19 comparison bundle, policy-selection rationale, `ui-validation.json`, validation records, this report, and `SHA256SUMS.txt`. The archive has a separate `.sha256` sidecar. Use the included hashes to verify extracted files.
 
 See `vertical.json`, `summary.json`, `analysis.md`, `determinism.json`, and `bundle/index.html` for machine-readable results and the standalone evidence view.
