@@ -1,0 +1,81 @@
+{
+  "goal": "46 airport geometry ingestion and readiness pipeline",
+  "schema_version": "2.0.0",
+  "python_regressions": [
+    {
+      "scope": "Goal46 geometry pipeline",
+      "tests": 15,
+      "result": "passed",
+      "log": "goal46-tests.log"
+    },
+    {
+      "scope": "Goal45 airport ingestion and geometry readiness (fresh on Goal46 branch)",
+      "tests": 30,
+      "result": "passed",
+      "log": "goal45-regression.log"
+    },
+    {
+      "scope": "Goal45 scenario generation and earlier integration regressions (fresh on Goal46 branch)",
+      "tests": 31,
+      "result": "passed",
+      "log": "goal45-scenario-regression.log"
+    },
+    {
+      "scope": "Goal42 regression (Goal45 historical worktree)",
+      "tests": 10,
+      "result": "historical pass; not rerun in Goal46 branch",
+      "log": "goal42-historical-regression.log"
+    },
+    {
+      "scope": "Goal43 regression (Goal45 historical worktree)",
+      "tests": 10,
+      "result": "historical pass; not rerun in Goal46 branch",
+      "log": "goal43-historical-regression.log"
+    },
+    {
+      "scope": "Goal44 regression (Goal45 historical worktree)",
+      "tests": 15,
+      "result": "historical pass; not rerun in Goal46 branch",
+      "log": "goal44-historical-regression.log"
+    }
+  ],
+  "release_build": {
+    "configure": "cmake -S . -B build-goal46-release -DCMAKE_BUILD_TYPE=Release",
+    "build": "cmake --build build-goal46-release --config Release --parallel 8",
+    "generator": "Visual Studio 18 2026",
+    "result": "passed",
+    "logs": [
+      "cmake-configure.log",
+      "cmake-build.log"
+    ]
+  },
+  "ctest": {
+    "command": "ctest --test-dir build-goal46-release -C Release --output-on-failure",
+    "tests": 224,
+    "passed": 224,
+    "failed": 0,
+    "result": "passed",
+    "log": "ctest-release.log"
+  },
+  "kauo": {
+    "decision": "DATA_BLOCKED",
+    "schema_valid": true,
+    "active_source_backed_features": 7,
+    "quarantined_approximate_features": 148,
+    "production_simulator_allowed": false,
+    "run": false
+  },
+  "fixtures": {
+    "count": 8,
+    "synthetic_only": true,
+    "fixture_A_test_profile": "SIMULATOR_READY",
+    "production_simulator_allowed": false
+  },
+  "determinism": "determinism-results.json",
+  "external_actions": {
+    "data_requests_sent": false,
+    "published": false,
+    "pushed": false,
+    "deployed": false
+  }
+}

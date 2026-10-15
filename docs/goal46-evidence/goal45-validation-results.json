@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "date": "2026-10-14",
+  "python_regressions": [
+    {
+      "scope": "Goal45 airport data ingestion and geometry readiness",
+      "worktree": "goal45-authoritative-kauo-operational-geometry",
+      "command": "python -m unittest tools.airport_data_ingestion.test_ingestion tools.airport_data_ingestion.test_kauo_geometry -v",
+      "tests": 30,
+      "result": "passed",
+      "log": "python-ingestion-geometry.log"
+    },
+    {
+      "scope": "Airport scenario generation and earlier scenario integration regressions",
+      "worktree": "goal45-authoritative-kauo-operational-geometry",
+      "command": "python -m unittest tools.airport_scenario_generation.test_generation tools.airport_scenario_generation.test_geospatial tools.airport_scenario_generation.test_kauo_goal25 tools.airport_scenario_generation.test_kauo_goal26 tools.airport_scenario_generation.test_kauo_goal27 tools.airport_scenario_generation.test_run_artifacts -v",
+      "tests": 31,
+      "result": "passed",
+      "log": "python-scenario-generation.log"
+    },
+    {
+      "scope": "Goal42 geometry and Goal27 regression",
+      "worktree": "goal42-authoritative-kauo-digital-twin",
+      "tests": 10,
+      "result": "passed",
+      "log": "goal42-regression.log"
+    },
+    {
+      "scope": "Goal42 geometry and Goal27 regression",
+      "worktree": "goal43-kauo-deadlock-resolution",
+      "tests": 10,
+      "result": "passed",
+      "log": "goal43-regression.log"
+    },
+    {
+      "scope": "Goal42 and Goal44 geometry plus Goal27 regression",
+      "worktree": "goal44-routable-kauo-surface-topology",
+      "tests": 15,
+      "result": "passed",
+      "log": "goal44-regression.log"
+    }
+  ],
+  "release_build": {
+    "configure": "cmake -S . -B build-goal45-release -DCMAKE_BUILD_TYPE=Release",
+    "build": "cmake --build build-goal45-release --config Release --parallel 8",
+    "generator": "Visual Studio 18 2026",
+    "result": "passed",
+    "note": "CMAKE_BUILD_TYPE is unused by the Visual Studio generator; Release was selected with --config Release."
+  },
+  "ctest": {
+    "command": "ctest --test-dir build-goal45-release -C Release --output-on-failure",
+    "tests": 224,
+    "passed": 224,
+    "failed": 0,
+    "duration_seconds": 162.61,
+    "result": "passed",
+    "log": "ctest-release.log"
+  },
+  "determinism": {
+    "command": "python -m tools.airport_data_ingestion.kauo_geometry --authoritative-mode",
+    "independent_runs": 2,
+    "byte_identical": true,
+    "sha256": {
+      "kauo_operational_geometry.json": "ac54dd9b3f2b119eb013af78df981d8a5ac5950f7e99e83f3e441b0f879a5e28",
+      "readiness-report.json": "a16ae4637eb8fa74a308eff9cdbcf339cb5ffd47b27f4946eee29786faf0a2d5",
+      "source-vs-canonical.svg": "cf5fa4ad40894f5a5c8252472639cbc9860b7a6db449060752d0c2fa47bbd78c"
+    }
+  },
+  "source_integrity": {
+    "manifest": "source-artifact-manifest.json",
+    "files_checked": 12,
+    "hashes_matched": 12
+  },
+  "production_simulator": {
+    "run": false,
+    "decision": "DATA BLOCKED: production KAUO simulator execution prohibited by readiness gate",
+    "readiness_status": "BLOCKED"
+  }
+}

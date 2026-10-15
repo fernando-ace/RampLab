@@ -1,0 +1,503 @@
+{
+  "airport_id": "SYNTHETIC-C",
+  "clearance_assessments": [
+    {
+      "assessment_id": "gse-to-aircraft",
+      "feature_ids": [
+        "gse_depot_1"
+      ],
+      "measured_clearance_m": 1.25,
+      "required_clearance_m": 1.0,
+      "source_id": "synthetic_goal46_fixture_C",
+      "status": "PASS"
+    },
+    {
+      "assessment_id": "route-aircraft",
+      "feature_ids": [
+        "taxiway_alpha"
+      ],
+      "measured_clearance_m": 2.5,
+      "required_clearance_m": 2.0,
+      "source_id": "synthetic_goal46_fixture_C",
+      "status": "PASS"
+    }
+  ],
+  "decision": "DATA_BLOCKED",
+  "execution_scope": "TEST_FIXTURE_ONLY",
+  "feature_counts": {
+    "aircraft_stand": 1,
+    "airport_reference_point": 1,
+    "apron": 1,
+    "gse_access_link": 1,
+    "gse_depot": 1,
+    "gse_staging_area": 0,
+    "hold_short_position": 1,
+    "other": 0,
+    "protected_area": 0,
+    "restricted_area": 0,
+    "routing_edge": 0,
+    "routing_node": 0,
+    "runway": 1,
+    "runway_crossing": 1,
+    "runway_threshold": 2,
+    "service_road": 1,
+    "taxiway_centerline": 1,
+    "taxiway_intersection": 0,
+    "taxiway_polygon": 0
+  },
+  "graph_diagnostics": [
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0001",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0003",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0004",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0005",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DISCONNECTED_COMPONENTS",
+      "components": [
+        [
+          "n0001",
+          "n0002",
+          "n0003"
+        ],
+        [
+          "n0004",
+          "n0005"
+        ]
+      ],
+      "message": "routing graph has 2 disconnected components"
+    }
+  ],
+  "production_simulator_allowed": false,
+  "profile": "test_fixture",
+  "quarantined_feature_count": 0,
+  "requirements": [
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Airport reference point is supplied.",
+      "requirement": "REFERENCE_GEOMETRY",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "airport_ref"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Required runway axes and both threshold ends are present.",
+      "requirement": "RUNWAY_GEOMETRY",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "runway_09_27",
+        "threshold_09",
+        "threshold_27"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Taxiway centerline geometry is present.",
+      "requirement": "TAXIWAY_GEOMETRY",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "taxiway_alpha"
+      ]
+    },
+    {
+      "details": [
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0001",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0003",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0004",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0005",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DISCONNECTED_COMPONENTS",
+          "components": [
+            [
+              "n0001",
+              "n0002",
+              "n0003"
+            ],
+            [
+              "n0004",
+              "n0005"
+            ]
+          ],
+          "message": "routing graph has 2 disconnected components"
+        }
+      ],
+      "missing_information": [
+        "Routing graph is absent or disconnected."
+      ],
+      "reason": "Routing graph is absent or disconnected.",
+      "requirement": "TAXIWAY_CONNECTIVITY",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "BLOCKED",
+      "supporting_feature_ids": [
+        "gse_link_alpha",
+        "service_road_alpha",
+        "taxiway_alpha"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Source-backed runway entry/exit relationships are present.",
+      "requirement": "RUNWAY_CONNECTIONS",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "runway_entry_27",
+        "runway_exit_09"
+      ]
+    },
+    {
+      "details": [
+        {
+          "arrival_path": [
+            "n0001",
+            "n0002"
+          ],
+          "arrival_targets": [
+            "n0001"
+          ],
+          "departure_path": [
+            "n0002",
+            "n0001"
+          ],
+          "departure_targets": [
+            "n0001"
+          ],
+          "feature_id": "stand_A1",
+          "message": "Arrival and departure routes exist.",
+          "start_node": "n0002",
+          "status": "PASS"
+        }
+      ],
+      "missing_information": [],
+      "reason": "All stands have source-backed routes to runway entry/exit nodes.",
+      "requirement": "STAND_ACCESS",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "stand_A1"
+      ]
+    },
+    {
+      "details": [
+        {
+          "feature_id": "gse_depot_1",
+          "message": "gse_depot_1: depot is disconnected from the service-road/apron network or stand access.",
+          "path": [
+            "n0003",
+            "n0002"
+          ],
+          "start_node": "n0003",
+          "status": "FAIL",
+          "target_nodes": [
+            "n0002"
+          ]
+        }
+      ],
+      "missing_information": [
+        "GSE staging/depot access or a connected GSE route to a stand is missing."
+      ],
+      "reason": "GSE staging/depot access or a connected GSE route to a stand is missing.",
+      "requirement": "GSE_ACCESS",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "BLOCKED",
+      "supporting_feature_ids": [
+        "gse_depot_1"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Service-road geometry is supplied.",
+      "requirement": "SERVICE_ROADS",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "service_road_alpha"
+      ]
+    },
+    {
+      "details": [
+        {
+          "feature_id": "stand_A1",
+          "message": "Source-backed turnaround/pushback access exists.",
+          "node_id": "n0002",
+          "path": [
+            "n0002"
+          ],
+          "status": "PASS"
+        }
+      ],
+      "missing_information": [],
+      "reason": "Every stand has a source-backed turnaround/pushback link.",
+      "requirement": "PUSHBACK_TURNAROUND",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "stand_A1"
+      ]
+    },
+    {
+      "details": [
+        {
+          "coordinates": [
+            0.0,
+            10.0
+          ],
+          "crossing_feature_ids": [
+            "runway_crossing_1"
+          ],
+          "message": "Crossing has source-backed permission.",
+          "runway_feature_id": "runway_09_27",
+          "status": "PASS",
+          "taxiway_feature_id": "taxiway_alpha"
+        }
+      ],
+      "missing_information": [],
+      "reason": "All routed runway crossings have explicit permission evidence.",
+      "requirement": "RUNWAY_CROSSINGS",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "runway_crossing_1"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "All required clearance assessments pass and every route edge has source-backed width.",
+      "requirement": "ROUTE_CLEARANCES",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "gse-to-aircraft",
+        "route-aircraft"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Active feature authorities satisfy the test_fixture policy.",
+      "requirement": "SOURCE_AUTHORITY",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "airport_ref",
+        "apron_alpha",
+        "gse_depot_1",
+        "gse_link_alpha",
+        "hold_short_09",
+        "runway_09_27",
+        "runway_crossing_1",
+        "service_road_alpha",
+        "stand_A1",
+        "taxiway_alpha",
+        "threshold_09",
+        "threshold_27"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Feature provenance and schema are complete.",
+      "requirement": "PROVENANCE_COMPLETENESS",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "airport_ref",
+        "apron_alpha",
+        "gse_depot_1",
+        "gse_link_alpha",
+        "hold_short_09",
+        "runway_09_27",
+        "runway_crossing_1",
+        "service_road_alpha",
+        "stand_A1",
+        "taxiway_alpha",
+        "threshold_09",
+        "threshold_27"
+      ]
+    },
+    {
+      "details": [
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0001",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0003",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0004",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0005",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DISCONNECTED_COMPONENTS",
+          "components": [
+            [
+              "n0001",
+              "n0002",
+              "n0003"
+            ],
+            [
+              "n0004",
+              "n0005"
+            ]
+          ],
+          "message": "routing graph has 2 disconnected components"
+        }
+      ],
+      "missing_information": [
+        "Graph is missing or has blocking topology diagnostics."
+      ],
+      "reason": "Graph is missing or has blocking topology diagnostics.",
+      "requirement": "GRAPH_VALIDITY",
+      "source_ids": [
+        "synthetic_goal46_fixture_C"
+      ],
+      "status": "BLOCKED",
+      "supporting_feature_ids": [
+        "gse_link_alpha",
+        "service_road_alpha",
+        "taxiway_alpha"
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "topology_routes": {
+    "gse_to_stand": [
+      {
+        "feature_id": "gse_depot_1",
+        "message": "gse_depot_1: depot is disconnected from the service-road/apron network or stand access.",
+        "path": [
+          "n0003",
+          "n0002"
+        ],
+        "start_node": "n0003",
+        "status": "FAIL",
+        "target_nodes": [
+          "n0002"
+        ]
+      }
+    ],
+    "stand_to_runway": [
+      {
+        "arrival_path": [
+          "n0001",
+          "n0002"
+        ],
+        "arrival_targets": [
+          "n0001"
+        ],
+        "departure_path": [
+          "n0002",
+          "n0001"
+        ],
+        "departure_targets": [
+          "n0001"
+        ],
+        "feature_id": "stand_A1",
+        "message": "Arrival and departure routes exist.",
+        "start_node": "n0002",
+        "status": "PASS"
+      }
+    ],
+    "turnaround": [
+      {
+        "feature_id": "stand_A1",
+        "message": "Source-backed turnaround/pushback access exists.",
+        "node_id": "n0002",
+        "path": [
+          "n0002"
+        ],
+        "status": "PASS"
+      }
+    ]
+  },
+  "validation_findings": []
+}

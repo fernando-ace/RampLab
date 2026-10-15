@@ -1,0 +1,219 @@
+{
+  "airport_id": "KAUO",
+  "clearance_assessments": [],
+  "decision": "DATA_BLOCKED",
+  "execution_scope": "PRODUCTION",
+  "feature_counts": {
+    "aircraft_stand": 0,
+    "airport_reference_point": 1,
+    "apron": 0,
+    "gse_access_link": 0,
+    "gse_depot": 0,
+    "gse_staging_area": 0,
+    "hold_short_position": 0,
+    "other": 0,
+    "protected_area": 0,
+    "restricted_area": 0,
+    "routing_edge": 0,
+    "routing_node": 0,
+    "runway": 2,
+    "runway_crossing": 0,
+    "runway_threshold": 4,
+    "service_road": 0,
+    "taxiway_centerline": 0,
+    "taxiway_intersection": 0,
+    "taxiway_polygon": 0
+  },
+  "graph_diagnostics": [],
+  "production_simulator_allowed": false,
+  "profile": "production",
+  "quarantined_feature_count": 148,
+  "requirements": [
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Airport reference point is supplied.",
+      "requirement": "REFERENCE_GEOMETRY",
+      "source_ids": [
+        "faa_nasr_2026_10_01"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "airport_reference_point"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Required runway axes and both threshold ends are present.",
+      "requirement": "RUNWAY_GEOMETRY",
+      "source_ids": [
+        "faa_nasr_2026_10_01"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "runway_11_29_centerline",
+        "runway_11_29_threshold_11",
+        "runway_11_29_threshold_29",
+        "runway_18_36_centerline",
+        "runway_18_36_threshold_18",
+        "runway_18_36_threshold_36"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "No taxiway centerlines are supplied."
+      ],
+      "reason": "No taxiway centerlines are supplied.",
+      "requirement": "TAXIWAY_GEOMETRY",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Routing graph is absent or disconnected."
+      ],
+      "reason": "Routing graph is absent or disconnected.",
+      "requirement": "TAXIWAY_CONNECTIVITY",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "No source-backed runway entry/exit relationship is supplied."
+      ],
+      "reason": "No source-backed runway entry/exit relationship is supplied.",
+      "requirement": "RUNWAY_CONNECTIONS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Stand geometry or a source-backed route to a runway entry/exit is missing."
+      ],
+      "reason": "Stand geometry or a source-backed route to a runway entry/exit is missing.",
+      "requirement": "STAND_ACCESS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "GSE staging/depot access or a connected GSE route to a stand is missing."
+      ],
+      "reason": "GSE staging/depot access or a connected GSE route to a stand is missing.",
+      "requirement": "GSE_ACCESS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Service-road geometry is missing."
+      ],
+      "reason": "Service-road geometry is missing.",
+      "requirement": "SERVICE_ROADS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Stand pushback/turnaround connectivity is missing or unsupported."
+      ],
+      "reason": "Stand pushback/turnaround connectivity is missing or unsupported.",
+      "requirement": "PUSHBACK_TURNAROUND",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "No routing graph or runway-crossing permission geometry is supplied."
+      ],
+      "reason": "No routing graph or runway-crossing permission geometry is supplied.",
+      "requirement": "RUNWAY_CROSSINGS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Required width/boundary or clearance evidence is insufficient."
+      ],
+      "reason": "Required width/boundary or clearance evidence is insufficient.",
+      "requirement": "ROUTE_CLEARANCES",
+      "source_ids": [],
+      "status": "UNKNOWN",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Active feature authorities satisfy the production policy.",
+      "requirement": "SOURCE_AUTHORITY",
+      "source_ids": [
+        "faa_nasr_2026_10_01"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "airport_reference_point",
+        "runway_11_29_centerline",
+        "runway_11_29_threshold_11",
+        "runway_11_29_threshold_29",
+        "runway_18_36_centerline",
+        "runway_18_36_threshold_18",
+        "runway_18_36_threshold_36"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Feature provenance and schema are complete.",
+      "requirement": "PROVENANCE_COMPLETENESS",
+      "source_ids": [
+        "faa_nasr_2026_10_01"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "airport_reference_point",
+        "runway_11_29_centerline",
+        "runway_11_29_threshold_11",
+        "runway_11_29_threshold_29",
+        "runway_18_36_centerline",
+        "runway_18_36_threshold_18",
+        "runway_18_36_threshold_36"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Graph is missing or has blocking topology diagnostics."
+      ],
+      "reason": "Graph is missing or has blocking topology diagnostics.",
+      "requirement": "GRAPH_VALIDITY",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    }
+  ],
+  "schema_version": "1.0",
+  "topology_routes": {
+    "gse_to_stand": [],
+    "stand_to_runway": [],
+    "turnaround": []
+  },
+  "validation_findings": []
+}

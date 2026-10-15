@@ -1,0 +1,270 @@
+{
+  "added_features": [],
+  "after_dataset_id": "synthetic_goal46_fixture_H",
+  "before_dataset_id": "synthetic_goal46_fixture_A",
+  "changed_connectivity": {
+    "added_relationships": [
+      "{\"feature_id\": \"stand_A1\", \"from_node\": \"n0002\", \"relation_id\": \"turnaround_A1\", \"relation_type\": \"turnaround_access\", \"source_feature_ids\": [\"stand_A1\", \"taxiway_alpha\"], \"source_id\": \"synthetic_goal46_fixture_H\", \"to_node\": \"n0002\"}",
+      "{\"from_node\": \"n0001\", \"relation_id\": \"runway_exit_09\", \"relation_type\": \"runway_exit\", \"source_feature_ids\": [\"runway_09_27\", \"taxiway_alpha\"], \"source_id\": \"synthetic_goal46_fixture_H\"}",
+      "{\"relation_id\": \"runway_entry_27\", \"relation_type\": \"runway_entry\", \"source_feature_ids\": [\"runway_09_27\", \"taxiway_alpha\"], \"source_id\": \"synthetic_goal46_fixture_H\", \"to_node\": \"n0001\"}"
+    ],
+    "changed_edges": [
+      "edge:gse_link_alpha:part:0",
+      "edge:service_road_alpha:part:0",
+      "edge:taxiway_alpha:part:0"
+    ],
+    "removed_relationships": [
+      "{\"feature_id\": \"stand_A1\", \"from_node\": \"n0002\", \"relation_id\": \"turnaround_A1\", \"relation_type\": \"turnaround_access\", \"source_feature_ids\": [\"stand_A1\", \"taxiway_alpha\"], \"source_id\": \"synthetic_goal46_fixture_A\", \"to_node\": \"n0002\"}",
+      "{\"from_node\": \"n0001\", \"relation_id\": \"runway_exit_09\", \"relation_type\": \"runway_exit\", \"source_feature_ids\": [\"runway_09_27\", \"taxiway_alpha\"], \"source_id\": \"synthetic_goal46_fixture_A\"}",
+      "{\"relation_id\": \"runway_entry_27\", \"relation_type\": \"runway_entry\", \"source_feature_ids\": [\"runway_09_27\", \"taxiway_alpha\"], \"source_id\": \"synthetic_goal46_fixture_A\", \"to_node\": \"n0001\"}"
+    ]
+  },
+  "changed_features": [
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        }
+      ],
+      "geometry_id": "airport_ref"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        }
+      ],
+      "geometry_id": "apron_alpha"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        }
+      ],
+      "geometry_id": "gse_depot_1"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        }
+      ],
+      "geometry_id": "gse_link_alpha"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        }
+      ],
+      "geometry_id": "hold_short_09"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        }
+      ],
+      "geometry_id": "runway_09_27"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        },
+        {
+          "after": {
+            "permission_source_id": "synthetic_goal46_fixture_H",
+            "permitted": true,
+            "runway_id": "09/27"
+          },
+          "before": {
+            "permission_source_id": "synthetic_goal46_fixture_A",
+            "permitted": true,
+            "runway_id": "09/27"
+          },
+          "change": "properties_permissions_clearances"
+        }
+      ],
+      "geometry_id": "runway_crossing_1"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        },
+        {
+          "change": "moved",
+          "maximum_vertex_displacement_m": 2.0
+        }
+      ],
+      "geometry_id": "service_road_alpha"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        },
+        {
+          "change": "moved",
+          "maximum_vertex_displacement_m": 2.0
+        }
+      ],
+      "geometry_id": "stand_A1"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        },
+        {
+          "after": {
+            "crossing_permission_source_id": "synthetic_goal46_fixture_H",
+            "directed": false,
+            "permissions": [
+              "gse"
+            ],
+            "runway_crossing_permission": "permitted",
+            "width_m": 12.0
+          },
+          "before": {
+            "crossing_permission_source_id": "synthetic_goal46_fixture_A",
+            "directed": false,
+            "permissions": [
+              "aircraft",
+              "gse"
+            ],
+            "runway_crossing_permission": "permitted",
+            "width_m": 12.0
+          },
+          "change": "properties_permissions_clearances"
+        },
+        {
+          "change": "moved",
+          "maximum_vertex_displacement_m": 2.0
+        }
+      ],
+      "geometry_id": "taxiway_alpha"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        }
+      ],
+      "geometry_id": "threshold_09"
+    },
+    {
+      "changes": [
+        {
+          "after": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_H"
+          ],
+          "before": [
+            "SYNTHETIC",
+            "synthetic_goal46_fixture_A"
+          ],
+          "change": "authority_provenance"
+        }
+      ],
+      "geometry_id": "threshold_27"
+    }
+  ],
+  "readiness_change": {
+    "after": "DATA_BLOCKED",
+    "before": "SIMULATOR_READY"
+  },
+  "readiness_profile": "test_fixture",
+  "removed_features": [],
+  "schema_version": "1.0"
+}

@@ -1,0 +1,17 @@
+{
+  "findings": [
+    {
+      "code": "FEATURE_ID",
+      "message": "geometry_id must be nonempty and unique",
+      "path": "features[12].geometry_id",
+      "severity": "ERROR"
+    },
+    {
+      "code": "GRAPH_EDGE_ID",
+      "message": "graph edge ID must be nonempty and unique",
+      "path": "operational_graph.edges[3]",
+      "severity": "ERROR"
+    }
+  ],
+  "valid": false
+}
