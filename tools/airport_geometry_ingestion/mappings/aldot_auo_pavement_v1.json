@@ -1,0 +1,43 @@
+{
+  "dataset_id": "kauo_goal47_aldot_surface_inventory",
+  "airport": {
+    "airport_id": "KAUO",
+    "name": "Auburn University Regional Airport",
+    "icao_id": "KAUO"
+  },
+  "source": {
+    "source_id": "aldot_auo_apmp_2024",
+    "source_type": "Alabama DOT Aeronautics Airport Pavement Management GIS feature service snapshot",
+    "publisher": "Alabama Department of Transportation Aeronautics Bureau",
+    "source_identifier": "Section_241016/FeatureServer/0; NETWORKID=AUO",
+    "source_url": "https://services.arcgis.com/LZzQi3xDiclG6XvQ/arcgis/rest/services/Section_241016/FeatureServer/0",
+    "publication_date": null,
+    "acquisition_date": "2026-10-14",
+    "imagery_date": null,
+    "crs": "EPSG:4326 query output; service source is EPSG:3857",
+    "resolution": null,
+    "license": "Public ALDOT Aeronautics GIS; service usage terms not separately stated in the layer metadata",
+    "local_artifact_path": "tools/airport_scenario_generation/sources/aldot_auo_pavement_sections.geojson",
+    "authority": "AUTHORITATIVE",
+    "extraction_method": "Direct geometry retrieval from ALDOT Aeronautics GIS; explicit USE_ classification map; no route or permission inference",
+    "notes": "Authoritative only for the pavement inventory polygons and their source attributes. It is not an approved taxi route dataset, centerline survey, or operational-permission record. Source query snapshot and layer metadata are committed alongside the feature collection."
+  },
+  "source_crs": "EPSG:4326",
+  "source_units": "degrees",
+  "origin": {
+    "latitude_degrees": 32.61511111,
+    "longitude_degrees": -85.434,
+    "ellipsoid_height_m": 208.22
+  },
+  "field_mapping": {
+    "id": "OBJECTID",
+    "feature_type": "USE_",
+    "feature_type_map": {
+      "RUNWAY": "runway_pavement_polygon",
+      "TAXIWAY": "taxiway_polygon",
+      "APRON": "apron",
+      "OTHER": "other_surface_polygon",
+      "": "other_surface_polygon"
+    }
+  }
+}

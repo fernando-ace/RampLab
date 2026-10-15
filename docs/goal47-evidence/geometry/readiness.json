@@ -1,0 +1,3562 @@
+{
+  "airport_id": "KAUO",
+  "clearance_assessments": [],
+  "decision": "DATA_BLOCKED",
+  "execution_scope": "PRODUCTION",
+  "feature_counts": {
+    "aircraft_stand": 0,
+    "airport_reference_point": 1,
+    "apron": 2,
+    "gse_access_link": 0,
+    "gse_depot": 0,
+    "gse_staging_area": 0,
+    "hold_short_position": 0,
+    "other": 0,
+    "other_surface_polygon": 6,
+    "protected_area": 0,
+    "restricted_area": 0,
+    "routing_edge": 0,
+    "routing_node": 0,
+    "runway": 2,
+    "runway_crossing": 0,
+    "runway_pavement_polygon": 6,
+    "runway_threshold": 4,
+    "service_road": 0,
+    "taxiway_centerline": 55,
+    "taxiway_intersection": 0,
+    "taxiway_polygon": 23
+  },
+  "graph_diagnostics": [
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -273.080425,
+        526.295867
+      ],
+      "feature_id": "osm_taxiway_way_1019638703|osm_taxiway_way_1019639870",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -224.782094,
+        551.269646
+      ],
+      "feature_id": "osm_taxiway_way_1019638703|osm_taxiway_way_1019639871",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -319.991855,
+        149.033157
+      ],
+      "feature_id": "osm_taxiway_way_1019638707|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -319.44649,
+        179.808248
+      ],
+      "feature_id": "osm_taxiway_way_1019638708|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -325.387982,
+        -116.131598
+      ],
+      "feature_id": "osm_taxiway_way_1019638709|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -325.848802,
+        -143.712722
+      ],
+      "feature_id": "osm_taxiway_way_1019638710|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -325.999267,
+        -152.518275
+      ],
+      "feature_id": "osm_taxiway_way_1019638711|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -326.460102,
+        -180.465372
+      ],
+      "feature_id": "osm_taxiway_way_1019638712|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -327.221868,
+        -225.790681
+      ],
+      "feature_id": "osm_taxiway_way_1019638713|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -327.682692,
+        -253.194359
+      ],
+      "feature_id": "osm_taxiway_way_1019638714|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -333.231587,
+        -583.169598
+      ],
+      "feature_id": "osm_taxiway_way_1019638715|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -333.795915,
+        -617.116427
+      ],
+      "feature_id": "osm_taxiway_way_1019638716|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -89.078182,
+        -573.060578
+      ],
+      "feature_id": "osm_taxiway_way_1019638717|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -90.120629,
+        -633.08028
+      ],
+      "feature_id": "osm_taxiway_way_1019638718|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -82.09144,
+        -188.610526
+      ],
+      "feature_id": "osm_taxiway_way_1019638719|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -81.405945,
+        -151.281175
+      ],
+      "feature_id": "osm_taxiway_way_1019638720|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -5.359358,
+        81.455876
+      ],
+      "feature_id": "osm_taxiway_way_1019638721|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -32.663089,
+        50.037597
+      ],
+      "feature_id": "osm_taxiway_way_1019638722|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -533.32135,
+        -349.004137
+      ],
+      "feature_id": "osm_taxiway_way_1019638723|osm_taxiway_way_923906548",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -392.736778,
+        -205.504482
+      ],
+      "feature_id": "osm_taxiway_way_1019638724|osm_taxiway_way_923906546",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -366.090605,
+        -238.42098
+      ],
+      "feature_id": "osm_taxiway_way_1019638724|osm_taxiway_way_923906547",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        120.239349,
+        381.488979
+      ],
+      "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638734",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        120.239349,
+        381.488979
+      ],
+      "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638735",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        102.208415,
+        492.090678
+      ],
+      "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638754",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        83.324679,
+        498.079175
+      ],
+      "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638755",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -158.417329,
+        556.347653
+      ],
+      "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019639871",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -83.678531,
+        -287.290424
+      ],
+      "feature_id": "osm_taxiway_way_1019638730|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -84.270179,
+        -324.508867
+      ],
+      "feature_id": "osm_taxiway_way_1019638731|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        109.033309,
+        344.381268
+      ],
+      "feature_id": "osm_taxiway_way_1019638732|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        109.033309,
+        344.381268
+      ],
+      "feature_id": "osm_taxiway_way_1019638733|osm_taxiway_way_38807012",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -312.407215,
+        476.591038
+      ],
+      "feature_id": "osm_taxiway_way_1019639870|osm_taxiway_way_923906541",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -415.783093,
+        -283.001325
+      ],
+      "feature_id": "osm_taxiway_way_923906546|osm_taxiway_way_923906547",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "AMBIGUOUS_INTERSECTION",
+      "coordinates": [
+        -432.547802,
+        -302.641218
+      ],
+      "feature_id": "osm_taxiway_way_923906547|osm_taxiway_way_923906548",
+      "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0001",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0002",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0003",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0004",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0005",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0006",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0007",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0008",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0011",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0012",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0013",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0014",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0015",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0016",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0017",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0018",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0019",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0020",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0022",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0025",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0026",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0027",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0029",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0037",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0038",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0042",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0045",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0046",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0047",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0048",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0049",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0050",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0052",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0053",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0055",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0058",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0063",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0064",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0065",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0066",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0067",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0068",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DANGLING_ENDPOINT",
+      "feature_id": "n0069",
+      "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+      "severity": "WARNING"
+    },
+    {
+      "code": "DISCONNECTED_COMPONENTS",
+      "components": [
+        [
+          "n0001",
+          "n0004"
+        ],
+        [
+          "n0002",
+          "n0005"
+        ],
+        [
+          "n0003",
+          "n0009",
+          "n0013",
+          "n0014"
+        ],
+        [
+          "n0006",
+          "n0010",
+          "n0017",
+          "n0018"
+        ],
+        [
+          "n0007",
+          "n0008"
+        ],
+        [
+          "n0011",
+          "n0012",
+          "n0021",
+          "n0028",
+          "n0033",
+          "n0034",
+          "n0041",
+          "n0043",
+          "n0045",
+          "n0046"
+        ],
+        [
+          "n0015",
+          "n0016",
+          "n0023",
+          "n0030",
+          "n0035",
+          "n0036",
+          "n0040",
+          "n0044",
+          "n0049",
+          "n0050"
+        ],
+        [
+          "n0019",
+          "n0020",
+          "n0024",
+          "n0032",
+          "n0037",
+          "n0038"
+        ],
+        [
+          "n0022",
+          "n0026"
+        ],
+        [
+          "n0025",
+          "n0027",
+          "n0031",
+          "n0039",
+          "n0060"
+        ],
+        [
+          "n0029",
+          "n0042"
+        ],
+        [
+          "n0047",
+          "n0048",
+          "n0051",
+          "n0052",
+          "n0053",
+          "n0054"
+        ],
+        [
+          "n0055",
+          "n0057",
+          "n0058",
+          "n0063"
+        ],
+        [
+          "n0056",
+          "n0059",
+          "n0061",
+          "n0062"
+        ],
+        [
+          "n0064",
+          "n0065"
+        ],
+        [
+          "n0066",
+          "n0067"
+        ],
+        [
+          "n0068",
+          "n0069"
+        ]
+      ],
+      "message": "routing graph has 17 disconnected components"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638703:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638704:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638705:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638706:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638707:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638708:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638709:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638710:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638711:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638712:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638713:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638714:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638715:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638716:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638717:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638718:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638719:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638720:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638721:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638722:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638723:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638724:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638725:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638726:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638727:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638728:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638729:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638730:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638731:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638732:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638733:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638734:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638735:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638736:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638737:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638738:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638739:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638740:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638741:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638754:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019638755:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019639870:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1019639871:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_125535457:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_125535458:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_1482100073:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_38806998:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_38807012:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_38807039:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_923906541:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_923906543:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_923906544:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_923906546:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_923906547:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    },
+    {
+      "code": "EDGE_PERMISSIONS_UNKNOWN",
+      "feature_id": "edge:osm_taxiway_way_923906548:part:0",
+      "message": "vehicle permissions are missing; access cannot be assumed"
+    }
+  ],
+  "production_simulator_allowed": false,
+  "profile": "production",
+  "quarantined_feature_count": 151,
+  "requirements": [
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Airport reference point is supplied.",
+      "requirement": "REFERENCE_GEOMETRY",
+      "source_ids": [
+        "faa_nasr_2026_10_01"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "airport_reference_point"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "A required runway centerline, identifier, or matching pair of threshold ends is missing."
+      ],
+      "reason": "A required runway centerline, identifier, or matching pair of threshold ends is missing.",
+      "requirement": "RUNWAY_GEOMETRY",
+      "source_ids": [
+        "faa_nasr_2026_10_01"
+      ],
+      "status": "BLOCKED",
+      "supporting_feature_ids": [
+        "runway_11_29_centerline",
+        "runway_11_29_threshold_11",
+        "runway_11_29_threshold_29",
+        "runway_18_36_centerline",
+        "runway_18_36_threshold_18",
+        "runway_18_36_threshold_36"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Candidate centerlines exist but none meets production authority/confidence approval."
+      ],
+      "reason": "Candidate centerlines exist but none meets production authority/confidence approval.",
+      "requirement": "TAXIWAY_GEOMETRY",
+      "source_ids": [
+        "openstreetmap_kauo_aeroway_2026-10-15"
+      ],
+      "status": "BLOCKED",
+      "supporting_feature_ids": [
+        "osm_taxiway_way_1019638703",
+        "osm_taxiway_way_1019638704",
+        "osm_taxiway_way_1019638705",
+        "osm_taxiway_way_1019638706",
+        "osm_taxiway_way_1019638707",
+        "osm_taxiway_way_1019638708",
+        "osm_taxiway_way_1019638709",
+        "osm_taxiway_way_1019638710",
+        "osm_taxiway_way_1019638711",
+        "osm_taxiway_way_1019638712",
+        "osm_taxiway_way_1019638713",
+        "osm_taxiway_way_1019638714",
+        "osm_taxiway_way_1019638715",
+        "osm_taxiway_way_1019638716",
+        "osm_taxiway_way_1019638717",
+        "osm_taxiway_way_1019638718",
+        "osm_taxiway_way_1019638719",
+        "osm_taxiway_way_1019638720",
+        "osm_taxiway_way_1019638721",
+        "osm_taxiway_way_1019638722",
+        "osm_taxiway_way_1019638723",
+        "osm_taxiway_way_1019638724",
+        "osm_taxiway_way_1019638725",
+        "osm_taxiway_way_1019638726",
+        "osm_taxiway_way_1019638727",
+        "osm_taxiway_way_1019638728",
+        "osm_taxiway_way_1019638729",
+        "osm_taxiway_way_1019638730",
+        "osm_taxiway_way_1019638731",
+        "osm_taxiway_way_1019638732",
+        "osm_taxiway_way_1019638733",
+        "osm_taxiway_way_1019638734",
+        "osm_taxiway_way_1019638735",
+        "osm_taxiway_way_1019638736",
+        "osm_taxiway_way_1019638737",
+        "osm_taxiway_way_1019638738",
+        "osm_taxiway_way_1019638739",
+        "osm_taxiway_way_1019638740",
+        "osm_taxiway_way_1019638741",
+        "osm_taxiway_way_1019638754",
+        "osm_taxiway_way_1019638755",
+        "osm_taxiway_way_1019639870",
+        "osm_taxiway_way_1019639871",
+        "osm_taxiway_way_125535457",
+        "osm_taxiway_way_125535458",
+        "osm_taxiway_way_1482100073",
+        "osm_taxiway_way_38806998",
+        "osm_taxiway_way_38807012",
+        "osm_taxiway_way_38807039",
+        "osm_taxiway_way_923906541",
+        "osm_taxiway_way_923906543",
+        "osm_taxiway_way_923906544",
+        "osm_taxiway_way_923906546",
+        "osm_taxiway_way_923906547",
+        "osm_taxiway_way_923906548"
+      ]
+    },
+    {
+      "details": [
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -273.080425,
+            526.295867
+          ],
+          "feature_id": "osm_taxiway_way_1019638703|osm_taxiway_way_1019639870",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -224.782094,
+            551.269646
+          ],
+          "feature_id": "osm_taxiway_way_1019638703|osm_taxiway_way_1019639871",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -319.991855,
+            149.033157
+          ],
+          "feature_id": "osm_taxiway_way_1019638707|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -319.44649,
+            179.808248
+          ],
+          "feature_id": "osm_taxiway_way_1019638708|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -325.387982,
+            -116.131598
+          ],
+          "feature_id": "osm_taxiway_way_1019638709|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -325.848802,
+            -143.712722
+          ],
+          "feature_id": "osm_taxiway_way_1019638710|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -325.999267,
+            -152.518275
+          ],
+          "feature_id": "osm_taxiway_way_1019638711|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -326.460102,
+            -180.465372
+          ],
+          "feature_id": "osm_taxiway_way_1019638712|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -327.221868,
+            -225.790681
+          ],
+          "feature_id": "osm_taxiway_way_1019638713|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -327.682692,
+            -253.194359
+          ],
+          "feature_id": "osm_taxiway_way_1019638714|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -333.231587,
+            -583.169598
+          ],
+          "feature_id": "osm_taxiway_way_1019638715|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -333.795915,
+            -617.116427
+          ],
+          "feature_id": "osm_taxiway_way_1019638716|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -89.078182,
+            -573.060578
+          ],
+          "feature_id": "osm_taxiway_way_1019638717|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -90.120629,
+            -633.08028
+          ],
+          "feature_id": "osm_taxiway_way_1019638718|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -82.09144,
+            -188.610526
+          ],
+          "feature_id": "osm_taxiway_way_1019638719|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -81.405945,
+            -151.281175
+          ],
+          "feature_id": "osm_taxiway_way_1019638720|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -5.359358,
+            81.455876
+          ],
+          "feature_id": "osm_taxiway_way_1019638721|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -32.663089,
+            50.037597
+          ],
+          "feature_id": "osm_taxiway_way_1019638722|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -533.32135,
+            -349.004137
+          ],
+          "feature_id": "osm_taxiway_way_1019638723|osm_taxiway_way_923906548",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -392.736778,
+            -205.504482
+          ],
+          "feature_id": "osm_taxiway_way_1019638724|osm_taxiway_way_923906546",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -366.090605,
+            -238.42098
+          ],
+          "feature_id": "osm_taxiway_way_1019638724|osm_taxiway_way_923906547",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            120.239349,
+            381.488979
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638734",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            120.239349,
+            381.488979
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638735",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            102.208415,
+            492.090678
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638754",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            83.324679,
+            498.079175
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638755",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -158.417329,
+            556.347653
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019639871",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -83.678531,
+            -287.290424
+          ],
+          "feature_id": "osm_taxiway_way_1019638730|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -84.270179,
+            -324.508867
+          ],
+          "feature_id": "osm_taxiway_way_1019638731|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            109.033309,
+            344.381268
+          ],
+          "feature_id": "osm_taxiway_way_1019638732|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            109.033309,
+            344.381268
+          ],
+          "feature_id": "osm_taxiway_way_1019638733|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -312.407215,
+            476.591038
+          ],
+          "feature_id": "osm_taxiway_way_1019639870|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -415.783093,
+            -283.001325
+          ],
+          "feature_id": "osm_taxiway_way_923906546|osm_taxiway_way_923906547",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -432.547802,
+            -302.641218
+          ],
+          "feature_id": "osm_taxiway_way_923906547|osm_taxiway_way_923906548",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0001",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0002",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0003",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0004",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0005",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0006",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0007",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0008",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0011",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0012",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0013",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0014",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0015",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0016",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0017",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0018",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0019",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0020",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0022",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0025",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0026",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0027",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0029",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0037",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0038",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0042",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0045",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0046",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0047",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0048",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0049",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0050",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0052",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0053",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0055",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0058",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0063",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0064",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0065",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0066",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0067",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0068",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0069",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DISCONNECTED_COMPONENTS",
+          "components": [
+            [
+              "n0001",
+              "n0004"
+            ],
+            [
+              "n0002",
+              "n0005"
+            ],
+            [
+              "n0003",
+              "n0009",
+              "n0013",
+              "n0014"
+            ],
+            [
+              "n0006",
+              "n0010",
+              "n0017",
+              "n0018"
+            ],
+            [
+              "n0007",
+              "n0008"
+            ],
+            [
+              "n0011",
+              "n0012",
+              "n0021",
+              "n0028",
+              "n0033",
+              "n0034",
+              "n0041",
+              "n0043",
+              "n0045",
+              "n0046"
+            ],
+            [
+              "n0015",
+              "n0016",
+              "n0023",
+              "n0030",
+              "n0035",
+              "n0036",
+              "n0040",
+              "n0044",
+              "n0049",
+              "n0050"
+            ],
+            [
+              "n0019",
+              "n0020",
+              "n0024",
+              "n0032",
+              "n0037",
+              "n0038"
+            ],
+            [
+              "n0022",
+              "n0026"
+            ],
+            [
+              "n0025",
+              "n0027",
+              "n0031",
+              "n0039",
+              "n0060"
+            ],
+            [
+              "n0029",
+              "n0042"
+            ],
+            [
+              "n0047",
+              "n0048",
+              "n0051",
+              "n0052",
+              "n0053",
+              "n0054"
+            ],
+            [
+              "n0055",
+              "n0057",
+              "n0058",
+              "n0063"
+            ],
+            [
+              "n0056",
+              "n0059",
+              "n0061",
+              "n0062"
+            ],
+            [
+              "n0064",
+              "n0065"
+            ],
+            [
+              "n0066",
+              "n0067"
+            ],
+            [
+              "n0068",
+              "n0069"
+            ]
+          ],
+          "message": "routing graph has 17 disconnected components"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638703:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638704:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638705:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638706:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638707:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638708:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638709:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638710:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638711:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638712:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638713:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638714:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638715:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638716:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638717:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638718:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638719:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638720:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638721:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638722:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638723:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638724:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638725:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638726:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638727:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638728:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638729:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638730:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638731:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638732:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638733:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638734:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638735:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638736:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638737:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638738:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638739:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638740:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638741:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638754:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638755:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019639870:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019639871:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_125535457:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_125535458:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1482100073:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_38806998:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_38807012:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_38807039:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906541:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906543:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906544:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906546:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906547:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906548:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        }
+      ],
+      "missing_information": [
+        "Routing graph is absent or disconnected."
+      ],
+      "reason": "Routing graph is absent or disconnected.",
+      "requirement": "TAXIWAY_CONNECTIVITY",
+      "source_ids": [
+        "openstreetmap_kauo_aeroway_2026-10-15"
+      ],
+      "status": "BLOCKED",
+      "supporting_feature_ids": [
+        "osm_taxiway_way_1019638703",
+        "osm_taxiway_way_1019638704",
+        "osm_taxiway_way_1019638705",
+        "osm_taxiway_way_1019638706",
+        "osm_taxiway_way_1019638707",
+        "osm_taxiway_way_1019638708",
+        "osm_taxiway_way_1019638709",
+        "osm_taxiway_way_1019638710",
+        "osm_taxiway_way_1019638711",
+        "osm_taxiway_way_1019638712",
+        "osm_taxiway_way_1019638713",
+        "osm_taxiway_way_1019638714",
+        "osm_taxiway_way_1019638715",
+        "osm_taxiway_way_1019638716",
+        "osm_taxiway_way_1019638717",
+        "osm_taxiway_way_1019638718",
+        "osm_taxiway_way_1019638719",
+        "osm_taxiway_way_1019638720",
+        "osm_taxiway_way_1019638721",
+        "osm_taxiway_way_1019638722",
+        "osm_taxiway_way_1019638723",
+        "osm_taxiway_way_1019638724",
+        "osm_taxiway_way_1019638725",
+        "osm_taxiway_way_1019638726",
+        "osm_taxiway_way_1019638727",
+        "osm_taxiway_way_1019638728",
+        "osm_taxiway_way_1019638729",
+        "osm_taxiway_way_1019638730",
+        "osm_taxiway_way_1019638731",
+        "osm_taxiway_way_1019638732",
+        "osm_taxiway_way_1019638733",
+        "osm_taxiway_way_1019638734",
+        "osm_taxiway_way_1019638735",
+        "osm_taxiway_way_1019638736",
+        "osm_taxiway_way_1019638737",
+        "osm_taxiway_way_1019638738",
+        "osm_taxiway_way_1019638739",
+        "osm_taxiway_way_1019638740",
+        "osm_taxiway_way_1019638741",
+        "osm_taxiway_way_1019638754",
+        "osm_taxiway_way_1019638755",
+        "osm_taxiway_way_1019639870",
+        "osm_taxiway_way_1019639871",
+        "osm_taxiway_way_125535457",
+        "osm_taxiway_way_125535458",
+        "osm_taxiway_way_1482100073",
+        "osm_taxiway_way_38806998",
+        "osm_taxiway_way_38807012",
+        "osm_taxiway_way_38807039",
+        "osm_taxiway_way_923906541",
+        "osm_taxiway_way_923906543",
+        "osm_taxiway_way_923906544",
+        "osm_taxiway_way_923906546",
+        "osm_taxiway_way_923906547",
+        "osm_taxiway_way_923906548"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "No source-backed runway entry/exit relationship is supplied."
+      ],
+      "reason": "No source-backed runway entry/exit relationship is supplied.",
+      "requirement": "RUNWAY_CONNECTIONS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Stand geometry or a source-backed route to a runway entry/exit is missing."
+      ],
+      "reason": "Stand geometry or a source-backed route to a runway entry/exit is missing.",
+      "requirement": "STAND_ACCESS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "GSE staging/depot access or a connected GSE route to a stand is missing."
+      ],
+      "reason": "GSE staging/depot access or a connected GSE route to a stand is missing.",
+      "requirement": "GSE_ACCESS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Service-road geometry is missing."
+      ],
+      "reason": "Service-road geometry is missing.",
+      "requirement": "SERVICE_ROADS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Stand pushback/turnaround connectivity is missing or unsupported."
+      ],
+      "reason": "Stand pushback/turnaround connectivity is missing or unsupported.",
+      "requirement": "PUSHBACK_TURNAROUND",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [
+        {
+          "coordinates": [
+            -191.571416,
+            536.281854
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638703"
+        },
+        {
+          "coordinates": [
+            -211.821632,
+            -579.062097
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638727"
+        },
+        {
+          "coordinates": [
+            -212.596325,
+            -621.730711
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638728"
+        },
+        {
+          "coordinates": [
+            131.243283,
+            356.793023
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_11_29_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638732"
+        },
+        {
+          "coordinates": [
+            96.628108,
+            367.581617
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_11_29_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638733"
+        },
+        {
+          "coordinates": [
+            -198.05191,
+            179.348411
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638736"
+        },
+        {
+          "coordinates": [
+            -198.655882,
+            146.082784
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638737"
+        },
+        {
+          "coordinates": [
+            -204.020389,
+            -149.384239
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638738"
+        },
+        {
+          "coordinates": [
+            -204.652714,
+            -184.211504
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019638741"
+        },
+        {
+          "coordinates": [
+            -306.471938,
+            493.216762
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_11_29_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019639870"
+        },
+        {
+          "coordinates": [
+            -191.196686,
+            556.921275
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_1019639871"
+        },
+        {
+          "coordinates": [
+            114.343344,
+            362.060267
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_11_29_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_38807012"
+        },
+        {
+          "coordinates": [
+            -284.047796,
+            486.227776
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_11_29_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_923906541"
+        },
+        {
+          "coordinates": [
+            -219.392144,
+            -996.031683
+          ],
+          "crossing_feature_ids": [],
+          "message": "Crossing lacks explicit source-backed permission geometry.",
+          "runway_feature_id": "runway_18_36_centerline",
+          "status": "FAIL",
+          "taxiway_feature_id": "osm_taxiway_way_923906541"
+        }
+      ],
+      "missing_information": [
+        "A runway intersection lacks explicit source-backed permission geometry."
+      ],
+      "reason": "A runway intersection lacks explicit source-backed permission geometry.",
+      "requirement": "RUNWAY_CROSSINGS",
+      "source_ids": [],
+      "status": "BLOCKED",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "Required width/boundary or clearance evidence is insufficient."
+      ],
+      "reason": "Required width/boundary or clearance evidence is insufficient.",
+      "requirement": "ROUTE_CLEARANCES",
+      "source_ids": [],
+      "status": "UNKNOWN",
+      "supporting_feature_ids": []
+    },
+    {
+      "details": [],
+      "missing_information": [
+        "One or more active features are not approved under the production authority policy."
+      ],
+      "reason": "One or more active features are not approved under the production authority policy.",
+      "requirement": "SOURCE_AUTHORITY",
+      "source_ids": [
+        "aldot_auo_apmp_2024",
+        "faa_nasr_2026_10_01",
+        "openstreetmap_kauo_aeroway_2026-10-15"
+      ],
+      "status": "BLOCKED",
+      "supporting_feature_ids": [
+        "240",
+        "241",
+        "242",
+        "243",
+        "244",
+        "245",
+        "246",
+        "247",
+        "248",
+        "249",
+        "250",
+        "251",
+        "252",
+        "253",
+        "254",
+        "255",
+        "256",
+        "257",
+        "258",
+        "259",
+        "260",
+        "261",
+        "262",
+        "263",
+        "264",
+        "265",
+        "266",
+        "267",
+        "268",
+        "269",
+        "270",
+        "271",
+        "272",
+        "273",
+        "274",
+        "275",
+        "276",
+        "airport_reference_point",
+        "osm_taxiway_way_1019638703",
+        "osm_taxiway_way_1019638704",
+        "osm_taxiway_way_1019638705",
+        "osm_taxiway_way_1019638706",
+        "osm_taxiway_way_1019638707",
+        "osm_taxiway_way_1019638708",
+        "osm_taxiway_way_1019638709",
+        "osm_taxiway_way_1019638710",
+        "osm_taxiway_way_1019638711",
+        "osm_taxiway_way_1019638712",
+        "osm_taxiway_way_1019638713",
+        "osm_taxiway_way_1019638714",
+        "osm_taxiway_way_1019638715",
+        "osm_taxiway_way_1019638716",
+        "osm_taxiway_way_1019638717",
+        "osm_taxiway_way_1019638718",
+        "osm_taxiway_way_1019638719",
+        "osm_taxiway_way_1019638720",
+        "osm_taxiway_way_1019638721",
+        "osm_taxiway_way_1019638722",
+        "osm_taxiway_way_1019638723",
+        "osm_taxiway_way_1019638724",
+        "osm_taxiway_way_1019638725",
+        "osm_taxiway_way_1019638726",
+        "osm_taxiway_way_1019638727",
+        "osm_taxiway_way_1019638728",
+        "osm_taxiway_way_1019638729",
+        "osm_taxiway_way_1019638730",
+        "osm_taxiway_way_1019638731",
+        "osm_taxiway_way_1019638732",
+        "osm_taxiway_way_1019638733",
+        "osm_taxiway_way_1019638734",
+        "osm_taxiway_way_1019638735",
+        "osm_taxiway_way_1019638736",
+        "osm_taxiway_way_1019638737",
+        "osm_taxiway_way_1019638738",
+        "osm_taxiway_way_1019638739",
+        "osm_taxiway_way_1019638740",
+        "osm_taxiway_way_1019638741",
+        "osm_taxiway_way_1019638754",
+        "osm_taxiway_way_1019638755",
+        "osm_taxiway_way_1019639870",
+        "osm_taxiway_way_1019639871",
+        "osm_taxiway_way_125535457",
+        "osm_taxiway_way_125535458",
+        "osm_taxiway_way_1482100073",
+        "osm_taxiway_way_38806998",
+        "osm_taxiway_way_38807012",
+        "osm_taxiway_way_38807039",
+        "osm_taxiway_way_923906541",
+        "osm_taxiway_way_923906543",
+        "osm_taxiway_way_923906544",
+        "osm_taxiway_way_923906546",
+        "osm_taxiway_way_923906547",
+        "osm_taxiway_way_923906548",
+        "runway_11_29_centerline",
+        "runway_11_29_threshold_11",
+        "runway_11_29_threshold_29",
+        "runway_18_36_centerline",
+        "runway_18_36_threshold_18",
+        "runway_18_36_threshold_36"
+      ]
+    },
+    {
+      "details": [],
+      "missing_information": [],
+      "reason": "Feature provenance and schema are complete.",
+      "requirement": "PROVENANCE_COMPLETENESS",
+      "source_ids": [
+        "aldot_auo_apmp_2024",
+        "faa_nasr_2026_10_01",
+        "openstreetmap_kauo_aeroway_2026-10-15"
+      ],
+      "status": "PASS",
+      "supporting_feature_ids": [
+        "240",
+        "241",
+        "242",
+        "243",
+        "244",
+        "245",
+        "246",
+        "247",
+        "248",
+        "249",
+        "250",
+        "251",
+        "252",
+        "253",
+        "254",
+        "255",
+        "256",
+        "257",
+        "258",
+        "259",
+        "260",
+        "261",
+        "262",
+        "263",
+        "264",
+        "265",
+        "266",
+        "267",
+        "268",
+        "269",
+        "270",
+        "271",
+        "272",
+        "273",
+        "274",
+        "275",
+        "276",
+        "airport_reference_point",
+        "osm_taxiway_way_1019638703",
+        "osm_taxiway_way_1019638704",
+        "osm_taxiway_way_1019638705",
+        "osm_taxiway_way_1019638706",
+        "osm_taxiway_way_1019638707",
+        "osm_taxiway_way_1019638708",
+        "osm_taxiway_way_1019638709",
+        "osm_taxiway_way_1019638710",
+        "osm_taxiway_way_1019638711",
+        "osm_taxiway_way_1019638712",
+        "osm_taxiway_way_1019638713",
+        "osm_taxiway_way_1019638714",
+        "osm_taxiway_way_1019638715",
+        "osm_taxiway_way_1019638716",
+        "osm_taxiway_way_1019638717",
+        "osm_taxiway_way_1019638718",
+        "osm_taxiway_way_1019638719",
+        "osm_taxiway_way_1019638720",
+        "osm_taxiway_way_1019638721",
+        "osm_taxiway_way_1019638722",
+        "osm_taxiway_way_1019638723",
+        "osm_taxiway_way_1019638724",
+        "osm_taxiway_way_1019638725",
+        "osm_taxiway_way_1019638726",
+        "osm_taxiway_way_1019638727",
+        "osm_taxiway_way_1019638728",
+        "osm_taxiway_way_1019638729",
+        "osm_taxiway_way_1019638730",
+        "osm_taxiway_way_1019638731",
+        "osm_taxiway_way_1019638732",
+        "osm_taxiway_way_1019638733",
+        "osm_taxiway_way_1019638734",
+        "osm_taxiway_way_1019638735",
+        "osm_taxiway_way_1019638736",
+        "osm_taxiway_way_1019638737",
+        "osm_taxiway_way_1019638738",
+        "osm_taxiway_way_1019638739",
+        "osm_taxiway_way_1019638740",
+        "osm_taxiway_way_1019638741",
+        "osm_taxiway_way_1019638754",
+        "osm_taxiway_way_1019638755",
+        "osm_taxiway_way_1019639870",
+        "osm_taxiway_way_1019639871",
+        "osm_taxiway_way_125535457",
+        "osm_taxiway_way_125535458",
+        "osm_taxiway_way_1482100073",
+        "osm_taxiway_way_38806998",
+        "osm_taxiway_way_38807012",
+        "osm_taxiway_way_38807039",
+        "osm_taxiway_way_923906541",
+        "osm_taxiway_way_923906543",
+        "osm_taxiway_way_923906544",
+        "osm_taxiway_way_923906546",
+        "osm_taxiway_way_923906547",
+        "osm_taxiway_way_923906548",
+        "runway_11_29_centerline",
+        "runway_11_29_threshold_11",
+        "runway_11_29_threshold_29",
+        "runway_18_36_centerline",
+        "runway_18_36_threshold_18",
+        "runway_18_36_threshold_36"
+      ]
+    },
+    {
+      "details": [
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -273.080425,
+            526.295867
+          ],
+          "feature_id": "osm_taxiway_way_1019638703|osm_taxiway_way_1019639870",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -224.782094,
+            551.269646
+          ],
+          "feature_id": "osm_taxiway_way_1019638703|osm_taxiway_way_1019639871",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -319.991855,
+            149.033157
+          ],
+          "feature_id": "osm_taxiway_way_1019638707|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -319.44649,
+            179.808248
+          ],
+          "feature_id": "osm_taxiway_way_1019638708|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -325.387982,
+            -116.131598
+          ],
+          "feature_id": "osm_taxiway_way_1019638709|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -325.848802,
+            -143.712722
+          ],
+          "feature_id": "osm_taxiway_way_1019638710|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -325.999267,
+            -152.518275
+          ],
+          "feature_id": "osm_taxiway_way_1019638711|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -326.460102,
+            -180.465372
+          ],
+          "feature_id": "osm_taxiway_way_1019638712|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -327.221868,
+            -225.790681
+          ],
+          "feature_id": "osm_taxiway_way_1019638713|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -327.682692,
+            -253.194359
+          ],
+          "feature_id": "osm_taxiway_way_1019638714|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -333.231587,
+            -583.169598
+          ],
+          "feature_id": "osm_taxiway_way_1019638715|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -333.795915,
+            -617.116427
+          ],
+          "feature_id": "osm_taxiway_way_1019638716|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -89.078182,
+            -573.060578
+          ],
+          "feature_id": "osm_taxiway_way_1019638717|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -90.120629,
+            -633.08028
+          ],
+          "feature_id": "osm_taxiway_way_1019638718|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -82.09144,
+            -188.610526
+          ],
+          "feature_id": "osm_taxiway_way_1019638719|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -81.405945,
+            -151.281175
+          ],
+          "feature_id": "osm_taxiway_way_1019638720|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -5.359358,
+            81.455876
+          ],
+          "feature_id": "osm_taxiway_way_1019638721|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -32.663089,
+            50.037597
+          ],
+          "feature_id": "osm_taxiway_way_1019638722|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -533.32135,
+            -349.004137
+          ],
+          "feature_id": "osm_taxiway_way_1019638723|osm_taxiway_way_923906548",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -392.736778,
+            -205.504482
+          ],
+          "feature_id": "osm_taxiway_way_1019638724|osm_taxiway_way_923906546",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -366.090605,
+            -238.42098
+          ],
+          "feature_id": "osm_taxiway_way_1019638724|osm_taxiway_way_923906547",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            120.239349,
+            381.488979
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638734",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            120.239349,
+            381.488979
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638735",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            102.208415,
+            492.090678
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638754",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            83.324679,
+            498.079175
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019638755",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -158.417329,
+            556.347653
+          ],
+          "feature_id": "osm_taxiway_way_1019638725|osm_taxiway_way_1019639871",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -83.678531,
+            -287.290424
+          ],
+          "feature_id": "osm_taxiway_way_1019638730|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -84.270179,
+            -324.508867
+          ],
+          "feature_id": "osm_taxiway_way_1019638731|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            109.033309,
+            344.381268
+          ],
+          "feature_id": "osm_taxiway_way_1019638732|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            109.033309,
+            344.381268
+          ],
+          "feature_id": "osm_taxiway_way_1019638733|osm_taxiway_way_38807012",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -312.407215,
+            476.591038
+          ],
+          "feature_id": "osm_taxiway_way_1019639870|osm_taxiway_way_923906541",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -415.783093,
+            -283.001325
+          ],
+          "feature_id": "osm_taxiway_way_923906546|osm_taxiway_way_923906547",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "AMBIGUOUS_INTERSECTION",
+          "coordinates": [
+            -432.547802,
+            -302.641218
+          ],
+          "feature_id": "osm_taxiway_way_923906547|osm_taxiway_way_923906548",
+          "message": "supplied route lines intersect away from a shared endpoint; no graph connection was inferred"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0001",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0002",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0003",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0004",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0005",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0006",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0007",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0008",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0011",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0012",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0013",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0014",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0015",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0016",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0017",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0018",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0019",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0020",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0022",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0025",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0026",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0027",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0029",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0037",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0038",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0042",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0045",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0046",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0047",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0048",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0049",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0050",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0052",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0053",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0055",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0058",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0063",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0064",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0065",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0066",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0067",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0068",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DANGLING_ENDPOINT",
+          "feature_id": "n0069",
+          "message": "network endpoint has only one incident route edge; confirm it is an intentional terminus",
+          "severity": "WARNING"
+        },
+        {
+          "code": "DISCONNECTED_COMPONENTS",
+          "components": [
+            [
+              "n0001",
+              "n0004"
+            ],
+            [
+              "n0002",
+              "n0005"
+            ],
+            [
+              "n0003",
+              "n0009",
+              "n0013",
+              "n0014"
+            ],
+            [
+              "n0006",
+              "n0010",
+              "n0017",
+              "n0018"
+            ],
+            [
+              "n0007",
+              "n0008"
+            ],
+            [
+              "n0011",
+              "n0012",
+              "n0021",
+              "n0028",
+              "n0033",
+              "n0034",
+              "n0041",
+              "n0043",
+              "n0045",
+              "n0046"
+            ],
+            [
+              "n0015",
+              "n0016",
+              "n0023",
+              "n0030",
+              "n0035",
+              "n0036",
+              "n0040",
+              "n0044",
+              "n0049",
+              "n0050"
+            ],
+            [
+              "n0019",
+              "n0020",
+              "n0024",
+              "n0032",
+              "n0037",
+              "n0038"
+            ],
+            [
+              "n0022",
+              "n0026"
+            ],
+            [
+              "n0025",
+              "n0027",
+              "n0031",
+              "n0039",
+              "n0060"
+            ],
+            [
+              "n0029",
+              "n0042"
+            ],
+            [
+              "n0047",
+              "n0048",
+              "n0051",
+              "n0052",
+              "n0053",
+              "n0054"
+            ],
+            [
+              "n0055",
+              "n0057",
+              "n0058",
+              "n0063"
+            ],
+            [
+              "n0056",
+              "n0059",
+              "n0061",
+              "n0062"
+            ],
+            [
+              "n0064",
+              "n0065"
+            ],
+            [
+              "n0066",
+              "n0067"
+            ],
+            [
+              "n0068",
+              "n0069"
+            ]
+          ],
+          "message": "routing graph has 17 disconnected components"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638703:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638704:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638705:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638706:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638707:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638708:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638709:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638710:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638711:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638712:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638713:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638714:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638715:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638716:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638717:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638718:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638719:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638720:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638721:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638722:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638723:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638724:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638725:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638726:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638727:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638728:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638729:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638730:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638731:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638732:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638733:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638734:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638735:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638736:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638737:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638738:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638739:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638740:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638741:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638754:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019638755:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019639870:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1019639871:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_125535457:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_125535458:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_1482100073:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_38806998:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_38807012:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_38807039:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906541:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906543:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906544:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906546:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906547:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        },
+        {
+          "code": "EDGE_PERMISSIONS_UNKNOWN",
+          "feature_id": "edge:osm_taxiway_way_923906548:part:0",
+          "message": "vehicle permissions are missing; access cannot be assumed"
+        }
+      ],
+      "missing_information": [
+        "Graph is missing or has blocking topology diagnostics."
+      ],
+      "reason": "Graph is missing or has blocking topology diagnostics.",
+      "requirement": "GRAPH_VALIDITY",
+      "source_ids": [
+        "openstreetmap_kauo_aeroway_2026-10-15"
+      ],
+      "status": "BLOCKED",
+      "supporting_feature_ids": [
+        "osm_taxiway_way_1019638703",
+        "osm_taxiway_way_1019638704",
+        "osm_taxiway_way_1019638705",
+        "osm_taxiway_way_1019638706",
+        "osm_taxiway_way_1019638707",
+        "osm_taxiway_way_1019638708",
+        "osm_taxiway_way_1019638709",
+        "osm_taxiway_way_1019638710",
+        "osm_taxiway_way_1019638711",
+        "osm_taxiway_way_1019638712",
+        "osm_taxiway_way_1019638713",
+        "osm_taxiway_way_1019638714",
+        "osm_taxiway_way_1019638715",
+        "osm_taxiway_way_1019638716",
+        "osm_taxiway_way_1019638717",
+        "osm_taxiway_way_1019638718",
+        "osm_taxiway_way_1019638719",
+        "osm_taxiway_way_1019638720",
+        "osm_taxiway_way_1019638721",
+        "osm_taxiway_way_1019638722",
+        "osm_taxiway_way_1019638723",
+        "osm_taxiway_way_1019638724",
+        "osm_taxiway_way_1019638725",
+        "osm_taxiway_way_1019638726",
+        "osm_taxiway_way_1019638727",
+        "osm_taxiway_way_1019638728",
+        "osm_taxiway_way_1019638729",
+        "osm_taxiway_way_1019638730",
+        "osm_taxiway_way_1019638731",
+        "osm_taxiway_way_1019638732",
+        "osm_taxiway_way_1019638733",
+        "osm_taxiway_way_1019638734",
+        "osm_taxiway_way_1019638735",
+        "osm_taxiway_way_1019638736",
+        "osm_taxiway_way_1019638737",
+        "osm_taxiway_way_1019638738",
+        "osm_taxiway_way_1019638739",
+        "osm_taxiway_way_1019638740",
+        "osm_taxiway_way_1019638741",
+        "osm_taxiway_way_1019638754",
+        "osm_taxiway_way_1019638755",
+        "osm_taxiway_way_1019639870",
+        "osm_taxiway_way_1019639871",
+        "osm_taxiway_way_125535457",
+        "osm_taxiway_way_125535458",
+        "osm_taxiway_way_1482100073",
+        "osm_taxiway_way_38806998",
+        "osm_taxiway_way_38807012",
+        "osm_taxiway_way_38807039",
+        "osm_taxiway_way_923906541",
+        "osm_taxiway_way_923906543",
+        "osm_taxiway_way_923906544",
+        "osm_taxiway_way_923906546",
+        "osm_taxiway_way_923906547",
+        "osm_taxiway_way_923906548"
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "topology_routes": {
+    "gse_to_stand": [],
+    "stand_to_runway": [],
+    "turnaround": []
+  },
+  "validation_findings": []
+}

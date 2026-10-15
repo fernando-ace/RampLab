@@ -1,0 +1,25 @@
+{
+  "source_id": "usgs_naip_2023_kauo_context",
+  "publisher": "U.S. Geological Survey; imagery acquired by USDA Farm Service Agency APFO",
+  "source_name": "USGS The National Map NAIP ImageServer, catalog item m_3208529_ne_16_060_20231008",
+  "source_identifier": "OBJECTID 1290; raster m_3208529_ne_16_060_20231008",
+  "source_url": "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer",
+  "catalog_query_url": "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/identify?geometry=-9510447.1125%2C3844550.3342&geometryType=esriGeometryPoint&sr=3857&returnGeometry=false&returnCatalogItems=true&f=pjson",
+  "export_query": "exportImage?bbox=-9512200,3842850,-9508794,3846250&bboxSR=3857&imageSR=3857&size=4000,4000&format=jpg&pixelType=U8&interpolation=RSP_Bilinear&compressionQuality=90&mosaicRule={\"mosaicMethod\":\"esriMosaicAttribute\",\"where\":\"OBJECTID = 1290\",\"sortField\":\"OBJECTID\",\"ascending\":false}&f=image",
+  "acquisition_date": "2023-10-08",
+  "publication_date": null,
+  "imagery_date": "2023-10-08",
+  "crs": "EPSG:3857 (Web Mercator)",
+  "resolution": "0.6 m source pixel size; exported 4000 x 4000 JPEG from declared bbox",
+  "source_type": "orthorectified public-domain aerial imagery",
+  "license": "USGS describes NAIP downloads as public domain; imagery program is USDA FSA/APFO",
+  "local_artifact_path": "docs/goal47-evidence/sources/usgs-naip-2023-kauo-context.jpg",
+  "artifact_sha256": "D0F0DE380057EE71F99CD521968039C9388F07951A63228383EDD5B05A6B3D65",
+  "authority_classification": "AUTHORITATIVE imagery record; imagery is source context and was not used as a centerline or permission source in this revision",
+  "export_bbox_3857_m": [-9512200, 3842850, -9508794, 3846250],
+  "limitations": [
+    "NAIP pixel size is not a statement of horizontal positional accuracy.",
+    "The crop includes no-data margins outside the selected scene footprint.",
+    "Imagery acquisition predates the 2024 terminal-ramp expansion proposal; it cannot establish that proposal's completion or current operational policy."
+  ]
+}

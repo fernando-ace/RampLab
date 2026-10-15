@@ -1,0 +1,57 @@
+{
+  "branch": "goal47-kauo-evidence-constrained-geometry",
+  "base_commit": "4df3e5643fbf3a5f0f1629ab4ce1d715b50aede7",
+  "results": [
+    {
+      "name": "Goal46 geometry and Goal47 evidence model",
+      "command": "python -m unittest tools.airport_geometry_ingestion.test_geometry tools.airport_geometry_ingestion.test_goal47 -v",
+      "status": "PASS",
+      "tests": 18,
+      "fresh": true
+    },
+    {
+      "name": "Goal45 airport ingestion and KAUO geometry",
+      "command": "python -m unittest tools.airport_data_ingestion.test_ingestion tools.airport_data_ingestion.test_kauo_geometry -v",
+      "status": "PASS",
+      "tests": 30,
+      "fresh": true
+    },
+    {
+      "name": "Scenario generation, Goal42-44 geometry/replay, and KAUO scenario regressions",
+      "command": "python -m unittest tools.airport_scenario_generation.test_generation tools.airport_scenario_generation.test_geospatial tools.airport_scenario_generation.test_goal42_geometry tools.airport_scenario_generation.test_goal42_replay tools.airport_scenario_generation.test_goal44_geometry tools.airport_scenario_generation.test_goal44_topology_audit tools.airport_scenario_generation.test_kauo_goal25 tools.airport_scenario_generation.test_kauo_goal26 tools.airport_scenario_generation.test_kauo_goal27 tools.airport_scenario_generation.test_run_artifacts -v",
+      "status": "PASS",
+      "tests": 52,
+      "duration_seconds": 128.280,
+      "fresh": true
+    },
+    {
+      "name": "CMake Release configure, build, and CTest",
+      "configure_command": "cmake -S . -B build-goal47 -DCMAKE_BUILD_TYPE=Release",
+      "build_command": "cmake --build build-goal47 --config Release --parallel 2",
+      "test_command": "ctest --test-dir build-goal47 -C Release --output-on-failure",
+      "status": "PASS",
+      "tests": 229,
+      "duration_seconds": 122.86,
+      "notes": [
+        "Visual Studio is a multi-configuration generator; CMAKE_BUILD_TYPE was unused. Release was selected explicitly for the build and CTest commands."
+      ],
+      "fresh": true
+    },
+    {
+      "name": "Goal47 canonical dataset validation and production readiness",
+      "command": "python -m tools.airport_geometry_ingestion.cli validate docs/goal47-evidence/geometry/kauo_goal47.json",
+      "status": "PASS",
+      "findings": 0,
+      "production_readiness": "DATA_BLOCKED",
+      "fresh": true
+    }
+  ],
+  "simulator": {
+    "run": false,
+    "reason": "Production readiness DATA_BLOCKED; no simulator execution attempted."
+  },
+  "determinism": {
+    "unit_test": "PASS; canonical Goal47 dataset bytes and embedded SHA-256 are identical across independent builds.",
+    "dataset_sha256": "56fa37f5176becef2ac7a8bde81d65333c624250347b5c9aa2d62b98d75b6cb0"
+  }
+}

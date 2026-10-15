@@ -1,0 +1,31 @@
+{
+  "source_id": "openstreetmap_kauo_aeroway_2026-10-15",
+  "publisher": "OpenStreetMap contributors",
+  "source_name": "OpenStreetMap API map extract filtered to KAUO aeroway ways",
+  "source_identifier": "API bbox query; aeroway=taxiway|runway|apron",
+  "source_url": "https://api.openstreetmap.org/api/0.6/map?bbox=-85.455,32.600,-85.410,32.635",
+  "retrieved_at": "2026-10-15",
+  "source_snapshot_sha256": "5fed815a3e9cba88f1f24a5c432e2585d8db630bb68444e991d259ba8a7ecc13",
+  "selected_artifact_sha256": "0a91bd15c5067764dd104caa2e228c0932c0be89bf404fe40d4eecca5e2b2a3b",
+  "selected_artifact": "docs/goal47-evidence/sources/osm-kauo-aeroway.osm",
+  "selected_counts": {
+    "ways": 63,
+    "taxiway_ways": 58,
+    "runway_ways": 2,
+    "apron_ways": 3,
+    "referenced_nodes": 390
+  },
+  "bbox_wgs84_lon_lat": [-85.455, 32.600, -85.410, 32.635],
+  "element_timestamps": "Individual OSM way and node versions/timestamps are retained in the selected artifact; these differ by object.",
+  "crs": "WGS 84 geographic coordinates, EPSG:4326, OSM node attributes lat/lon",
+  "resolution": null,
+  "source_type": "crowd-sourced vector map; supporting evidence only",
+  "license": "Open Database License (ODbL) 1.0; attribution to OpenStreetMap contributors required",
+  "authority_classification": "SOURCE_DERIVED supporting source; not an official airport or survey dataset",
+  "extraction_method": "Retain only aeroway=taxiway, runway, and apron ways and their referenced nodes; remove unrelated surrounding address/building tags; preserve relevant way tags and element IDs/timestamps",
+  "limitations": [
+    "No horizontal positional accuracy or authoritative survey lineage is published for the retained ways.",
+    "OSM way geometry is used only as medium-confidence source-derived context and is excluded from production routing.",
+    "One mapped taxiway way does not intersect an ALDOT mapped taxiway pavement section and is quarantined from the candidate network."
+  ]
+}

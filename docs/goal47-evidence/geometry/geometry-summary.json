@@ -1,0 +1,357 @@
+{
+  "active_feature_count": 99,
+  "candidate_graph": {
+    "edges": 55,
+    "nodes": 69
+  },
+  "dataset_id": "kauo_goal47_evidence_reconstruction_2026-10-15",
+  "dataset_sha256": "56fa37f5176becef2ac7a8bde81d65333c624250347b5c9aa2d62b98d75b6cb0",
+  "derived_measurements": {
+    "basis": "DERIVED_MEASUREMENT from source coordinates after WGS84-to-local-ENU transform; positional source uncertainty is not quantified",
+    "candidate_basis": "OSM lines checked for containment in ALDOT mapped pavement; not simulation-approved",
+    "candidate_taxiway_centerline_length_m": 7714.378,
+    "pavement_polygon_area_m2_by_type": {
+      "apron": 66561.057,
+      "other_surface_polygon": 21114.15,
+      "runway_pavement_polygon": 76927.165,
+      "taxiway_polygon": 96951.149
+    }
+  },
+  "feature_counts_by_authority_and_confidence": {
+    "APPROXIMATE": {
+      "n/a": 151
+    },
+    "AUTHORITATIVE": {
+      "n/a": 42
+    },
+    "SOURCE_DERIVED": {
+      "MEDIUM": 57
+    }
+  },
+  "feature_counts_by_source": {
+    "aldot_auo_apmp_2024": 37,
+    "faa_nasr_2026_10_01": 7,
+    "legacy_goal31_geometry": 148,
+    "openstreetmap_kauo_aeroway_2026-10-15": 58
+  },
+  "feature_counts_by_type_and_authority": {
+    "airport_reference_point": {
+      "AUTHORITATIVE": 1
+    },
+    "apron": {
+      "AUTHORITATIVE": 2
+    },
+    "other_surface_polygon": {
+      "AUTHORITATIVE": 6
+    },
+    "routing_edge": {
+      "APPROXIMATE": 94
+    },
+    "routing_node": {
+      "APPROXIMATE": 54
+    },
+    "runway": {
+      "SOURCE_DERIVED": 2
+    },
+    "runway_pavement_polygon": {
+      "AUTHORITATIVE": 6
+    },
+    "runway_threshold": {
+      "AUTHORITATIVE": 4
+    },
+    "taxiway_centerline": {
+      "APPROXIMATE": 3,
+      "SOURCE_DERIVED": 55
+    },
+    "taxiway_polygon": {
+      "AUTHORITATIVE": 23
+    }
+  },
+  "legacy_pavement_comparison": {
+    "legacy_routing_node_count": 54,
+    "limitations": [
+      "Comparison tests mapped pavement-section containment only; it does not validate route legality, taxiway identity, or safety."
+    ],
+    "matched": [
+      {
+        "legacy_id": "legacy_node_fbo_apron_detour",
+        "matching_surface_ids": [
+          "255"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand",
+        "matching_surface_ids": [
+          "248"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_fuel_service_point",
+        "matching_surface_ids": [
+          "248"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_gse_gpu_depot",
+        "matching_surface_ids": [
+          "241"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_gse_tug_depot",
+        "matching_surface_ids": [
+          "241"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_gse_water_depot",
+        "matching_surface_ids": [
+          "241"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_runway_intersection",
+        "matching_surface_ids": [
+          "241"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_rwy11_threshold",
+        "matching_surface_ids": [
+          "253"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_rwy18_36_mid",
+        "matching_surface_ids": [
+          "241"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_rwy18_threshold",
+        "matching_surface_ids": [
+          "241"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_twy_a_mid",
+        "matching_surface_ids": [
+          "267"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_twy_a_north",
+        "matching_surface_ids": [
+          "267"
+        ]
+      },
+      {
+        "legacy_id": "legacy_node_twy_a_south",
+        "matching_surface_ids": [
+          "246"
+        ]
+      }
+    ],
+    "method": "point-in-polygon against ALDOT mapped pavement section polygons in shared KAUO local ENU; no legacy feature promoted",
+    "nodes_inside_mapped_pavement": 13,
+    "nodes_outside_mapped_pavement": 41,
+    "unmatched": [
+      {
+        "legacy_id": "legacy_node_fbo_apron_junction",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_fbo_service_staging_east",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_fbo_service_staging_fuel",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_fbo_service_staging_west",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_airstart_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_baggage_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_catering_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_fuel_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_gpu_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_lavatory_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_pushback_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_stairs_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_02_water_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_airstart_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_baggage_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_catering_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_fuel_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_gpu_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_lavatory_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_pushback_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_stairs_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_03_water_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_airstart_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_baggage_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_catering_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_gpu_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_lavatory_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_pushback_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_stairs_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_ga_parking_stand_water_service_point",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_gse_catering_depot",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_gse_fuel_depot_02",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_gse_lavatory_depot",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_kauo_g31_stand_1_service_approach",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_kauo_g31_stand_2_service_approach",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_kauo_g31_stand_3_service_approach",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_rwy29_threshold",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_rwy36_hold",
+        "matching_surface_ids": []
+      },
+      {
+        "legacy_id": "legacy_node_self_serve_fuel_farm",
+        "matching_surface_ids": []
+      }
+    ]
+  },
+  "network": {
+    "aircraft_routable_edges": 0,
+    "aircraft_routable_nodes": 0,
+    "candidate_centerline_count": 55,
+    "candidate_connected_components": 17,
+    "candidate_taxiway_edges": 55,
+    "candidate_taxiway_nodes": 69,
+    "gse_routable_edges": 0,
+    "gse_routable_nodes": 0,
+    "runway_crossings": 0,
+    "runway_entries": 0,
+    "runway_exits": 0,
+    "stands": 0,
+    "status": "candidate OSM centerline graph only; MEDIUM confidence, unknown widths/permissions, and topology diagnostics prevent operational routing"
+  },
+  "operational_graph": {
+    "edges": 0,
+    "nodes": 0
+  },
+  "quarantined_count_by_authority": {
+    "APPROXIMATE": 151
+  },
+  "quarantined_feature_count": 151,
+  "routing_eligible_active_feature_count": 0,
+  "source_hashes": {
+    "aldot_auo_apmp_2024": "5327a009231bfe3352e6473caf2cf8e4ec46a92bfc15e6ed2efc002b8a9e6f89",
+    "faa_d_tpp_airport_diagram_2610": "891470442f1bf3454f76e63d7af45a582ed53008b132c6494568d50dd6fe72ed",
+    "faa_nasr_2026_10_01": "24a449c1e64603902507f1b450c85ffe0c0f44b4e96b9f8755c0f0d66812d958",
+    "legacy_goal31_geometry": "658178db89ec11fe87c6f1728770dc87c7e60d55d50f672d933043efc9d5e440",
+    "openstreetmap_kauo_aeroway_2026-10-15": "0a91bd15c5067764dd104caa2e228c0932c0be89bf404fe40d4eecca5e2b2a3b",
+    "usgs_naip_2023_kauo_context": "d0f0de380057ee71f99cd521968039c9388f07951a63228383edd5b05a6b3d65"
+  }
+}
