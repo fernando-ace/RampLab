@@ -395,48 +395,48 @@
   "node_attachment_summary": {
     "largest_displacements": [
       {
-        "displacement_m": 225.899,
+        "displacement_m": 230.143,
         "node_id": "ga_parking_stand_03_catering_service_point"
       },
       {
-        "displacement_m": 225.718,
+        "displacement_m": 228.573,
         "node_id": "ga_parking_stand_03_lavatory_service_point"
       },
       {
-        "displacement_m": 221.901,
+        "displacement_m": 224.789,
         "node_id": "ga_parking_stand_03_baggage_service_point"
       },
       {
-        "displacement_m": 215.89,
+        "displacement_m": 220.144,
         "node_id": "ga_parking_stand_03_fuel_service_point"
       },
       {
-        "displacement_m": 211.144,
-        "node_id": "kauo_g31_stand_3_service_approach"
-      },
-      {
-        "displacement_m": 209.445,
+        "displacement_m": 212.556,
         "node_id": "ga_parking_stand_03_water_service_point"
       },
       {
-        "displacement_m": 205.697,
+        "displacement_m": 209.861,
         "node_id": "ga_parking_stand_03_gpu_service_point"
       },
       {
-        "displacement_m": 199.435,
+        "displacement_m": 209.734,
+        "node_id": "kauo_g31_stand_3_service_approach"
+      },
+      {
+        "displacement_m": 203.754,
         "node_id": "ga_parking_stand_03_pushback_service_point"
+      },
+      {
+        "displacement_m": 199.504,
+        "node_id": "ga_parking_stand_03_stairs_service_point"
       },
       {
         "displacement_m": 197.284,
         "node_id": "ga_parking_stand_03"
-      },
-      {
-        "displacement_m": 193.854,
-        "node_id": "ga_parking_stand_03_stairs_service_point"
       }
     ],
-    "maximum_displacement_m": 225.899,
-    "mean_displacement_m": 80.743,
+    "maximum_displacement_m": 230.143,
+    "mean_displacement_m": 81.689,
     "node_count": 54,
     "unverified_approximate_node_snap_count": 46
   },

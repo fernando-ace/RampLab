@@ -1,0 +1,18 @@
+{
+  "scenario_key": null,
+  "scenario": "airport_kauo",
+  "mode": "disruption",
+  "seed": 42,
+  "description": "Generated RampLab scenario",
+  "watch_for": [],
+  "kpis_to_review": [],
+  "artifacts": [
+    "aircraft.csv",
+    "events.jsonl",
+    "experiment.json",
+    "runs.csv",
+    "simulator-metrics.aircraft.csv",
+    "simulator-metrics.csv",
+    "simulator-metrics.json"
+  ]
+}
