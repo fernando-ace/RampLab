@@ -1,0 +1,87 @@
+{
+  "airport_id": "KAUO",
+  "authoritative_mode": true,
+  "banner": "KAUO DATA READINESS: BLOCKED",
+  "clearance_assessments": [],
+  "feature_counts": {
+    "canonical": {
+      "aircraft_stand": 0,
+      "gse_staging_position": 0,
+      "hold_short_location": 0,
+      "runway": 2,
+      "runway_crossing": 0,
+      "runway_threshold": 4,
+      "service_road": 0,
+      "taxiway_centerline": 0,
+      "taxiway_intersection": 0
+    },
+    "rejected": 148
+  },
+  "findings": [
+    {
+      "code": "AIRCRAFT_ROUTE_CLEARANCE_UNKNOWN",
+      "detail": "No operational route geometry and aircraft swept-clearance assessment are available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "ARRIVAL_RUNWAY_EXIT_CONNECTIVITY_MISSING",
+      "detail": "No source-backed arrival runway-exit attachment to the taxiway graph is available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "CLEARANCE_ASSESSMENTS_MISSING",
+      "detail": "No aircraft-route or stationary-GSE clearance results exist.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "DEPARTURE_RUNWAY_ENTRY_CONNECTIVITY_MISSING",
+      "detail": "No source-backed departure runway-entry route from the taxiway graph is available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "GATE_STAND_CONNECTIVITY_MISSING",
+      "detail": "No current source-backed aircraft stand coordinates or stand-to-taxiway connections are available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "GSE_SPAWN_ACCESSIBILITY_MISSING",
+      "detail": "No verified GSE staging locations or access graph are available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "OPERATIONAL_GRAPH_MISSING",
+      "detail": "The source-backed operational graph has no nodes or edges.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "RUNWAY_CROSSING_RULES_MISSING",
+      "detail": "The FAA diagram warns that runway crossing clearance is required; no crossing geometry and permissions are available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "SERVICE_ROAD_NETWORK_MISSING",
+      "detail": "No source-backed airside service-road network or restriction/access data are available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "STATIONARY_GSE_CLEARANCE_UNKNOWN",
+      "detail": "No source-backed GSE positions and stationary vehicle clearance assessment are available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "TAXIWAY_TOPOLOGY_MISSING",
+      "detail": "No source-backed taxiway centerlines, intersections, and connected graph edges are available.",
+      "severity": "BLOCKER"
+    },
+    {
+      "code": "TURNAROUND_SERVICE_ACCESS_MISSING",
+      "detail": "No verified service-area and turnaround access geometry is available.",
+      "severity": "BLOCKER"
+    }
+  ],
+  "graph_component_count": 0,
+  "report_schema_version": "1.0",
+  "simulation_authorized": false,
+  "simulation_decision": "DATA BLOCKED: production KAUO simulator execution prohibited by readiness gate",
+  "status": "BLOCKED"
+}
