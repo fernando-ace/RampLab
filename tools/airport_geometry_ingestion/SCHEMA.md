@@ -1,12 +1,12 @@
-# Airport operational geometry schema 2.0.0
+# Airport operational geometry schema 2.1.0
 
-The Goal46 package extends the project’s existing airport ingestion and geospatial code. It does not change the Goal24 tabular package or the Goal45 KAUO source dataset. The normalized artifact is deterministic UTF-8 JSON with sorted object keys and a final newline. It emits no generation timestamp.
+The Goal47 package extends the Goal46 airport ingestion and geospatial code. It does not change the Goal24 tabular package or the Goal45 KAUO source dataset. The normalized artifact is deterministic UTF-8 JSON with sorted object keys and a final newline. It emits no generation timestamp.
 
 ## Top-level model
 
 | Field | Meaning |
 |---|---|
-| `schema_version` | Exact semantic schema version, currently `2.0.0`. Unknown versions fail validation. |
+| `schema_version` | Exact semantic schema version, currently `2.1.0`. Unknown versions fail validation. |
 | `dataset_id` | Stable caller-provided revision identifier. |
 | `airport` | Identifier, optional name/IATA/ICAO, source and normalized CRS, units, airport reference point, and optional elevation/datum. |
 | `coordinate_system` | Source CRS, normalized CRS (`LOCAL_ENU`), metres, axis names, transform description and parameters, and tolerance. |
@@ -17,16 +17,17 @@ The Goal46 package extends the project’s existing airport ingestion and geospa
 | `operational_relationships` | Source-backed relationships such as runway entry/exit, stand access, turnaround, crossing, and service access. Every relationship cites a registered source and active source features. |
 | `clearance_assessments` | Measured clearance records with required/measured metres, assessment type/method, source ID, and assessed feature IDs. |
 | `authority_policy` | Machine-readable production, visualization, testing, and safety-claim rules. |
+| `simulation_assumptions` | Explicit simulator-only operational policies, separate from geometry and airport facts. |
 
-Feature types include airport reference point, runway and runway threshold, taxiway centerline/polygon/intersection, hold-short position, apron, aircraft stand, service road, GSE staging/access/depot, runway crossing, restricted/protected area, routing node/edge, and other. Geometry must agree with the declared feature type. Polygon coordinates preserve all rings. Widths, clearances, permissions, runway IDs, stand IDs, vehicle classes, access-node IDs, and other supplied attributes remain in `properties`; the importer does not rename similar fields by guessing.
+Feature types include airport reference point, runway axis and runway pavement polygon, runway threshold, taxiway centerline/polygon/intersection, hold-short position, apron, aircraft stand, service road, GSE staging/access/depot, runway crossing, restricted/protected area, routing node/edge, and other surface polygon. Geometry must agree with the declared feature type. Polygon coordinates preserve all rings. Widths, clearances, permissions, runway IDs, stand IDs, vehicle classes, access-node IDs, and other supplied attributes remain in `properties`; the importer does not rename similar fields by guessing.
 
 ## Provenance and authority
 
 Every active or quarantined feature records `source_id`, `original_feature_id`, `source_file`, `source_sha256`, optional `source_url` and `publication_date`, `extraction_method`, `transformation`, `authority`, `geometry_origin`, `accuracy_m`, and an explicit Boolean `simulation_approved`. Derived and inferred geometry additionally requires `derived_from` feature IDs. Graph edges carry the input feature ID and its provenance. Graph nodes list all input features, source IDs, source hashes, transformation, authority, and approval state.
 
-Authority values are `AUTHORITATIVE`, `SOURCE_DERIVED`, `OPERATOR_PROVIDED`, `SURVEYED`, `APPROXIMATE`, `SYNTHETIC`, and `UNKNOWN`. Production routing admits only the first four, requires complete lineage and explicit approval, and rejects inferred geometry. `APPROXIMATE`, `SYNTHETIC`, and `UNKNOWN` geometry cannot be simulation-approved. Visualization can display every class with a distinct style. Synthetic data is accepted only under `test_fixture` readiness scope. A test fixture can exercise a full readiness pass, but its report always sets `production_simulator_allowed: false`.
+Authority values are `AUTHORITATIVE`, `SOURCE_DERIVED`, `OPERATOR_PROVIDED`, `SURVEYED`, `APPROXIMATE`, `SYNTHETIC`, and `UNKNOWN`. `SOURCE_DERIVED` features require confidence `HIGH`, `MEDIUM`, or `LOW` and a reproducible derivation record. Production approval requires HIGH confidence, known horizontal accuracy no worse than 1 m, a derivation configuration SHA-256, an independent corroborating production-grade source, and passing CRS, airport-bounds, geometry, and independent-review checks. MEDIUM and LOW remain context only. Production routing requires complete lineage and explicit approval, and rejects inferred geometry. `APPROXIMATE`, `SYNTHETIC`, and `UNKNOWN` geometry cannot be simulation-approved. Visualization can display every class with a distinct style. Synthetic data is accepted only under `test_fixture` readiness scope. A test fixture can exercise a full readiness pass, but its report always sets `production_simulator_allowed: false`.
 
-The source registry authority and feature authority must be compatible. A registered authoritative, surveyed, or operator-provided source may produce source-derived features. A weaker source cannot label its feature authoritative. Positional accuracy and source-attribution confidence are separate fields; confidence never substitutes for accuracy.
+The source registry authority and feature authority must be compatible. A registered authoritative, surveyed, or operator-provided source may produce source-derived features. A weaker source cannot label its feature authoritative. Positional accuracy and source-attribution confidence are separate fields; confidence never substitutes for accuracy. The legacy numeric `confidence` field does not establish a HIGH confidence level or grant routing eligibility.
 
 ## Coordinates and transforms
 

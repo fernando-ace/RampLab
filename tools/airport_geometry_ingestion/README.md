@@ -1,6 +1,14 @@
-# Airport operational geometry ingestion (Goal46)
+# Airport operational geometry ingestion (Goals 46-47)
 
-This package imports documented airport geometry into canonical schema 2.0.0, records its source hashes and authority, builds a graph only from supplied linework, audits operational routes and clearances, reports readiness, compares revisions, and creates deterministic evidence archives. It is separate from the Goal24 flight/turnaround tables and reuses Goal45’s KAUO source data and WGS-84/ENU transform.
+This package imports documented airport geometry into canonical schema 2.1.0, records source hashes and authority, builds a graph only from supplied linework, audits operational routes and clearances, reports readiness, compares revisions, and creates deterministic evidence archives. Goal47 adds a reproducible ALDOT pavement inventory import, USGS NAIP imagery source manifest, explicit source-derived confidence requirements, and a KAUO dataset build. It is separate from the Goal24 flight/turnaround tables and reuses Goal45’s KAUO source data and WGS-84/ENU transform.
+
+Run the deterministic Goal47 data assembly with:
+
+```powershell
+python -m tools.airport_geometry_ingestion.goal47
+```
+
+This writes canonical data, geometry counts, readiness reports, and SVG comparison maps under `docs/goal47-evidence/`. The dataset remains `DATA_BLOCKED`: the ALDOT input provides pavement-section polygons, not taxiway centerlines, directed routes, stand access, GSE paths, or permissions. The imagery is retained for visual comparison but does not establish sub-meter positional accuracy.
 
 ## CLI
 
@@ -14,7 +22,7 @@ python -m tools.airport_geometry_ingestion inspect input.geojson --mapping mappi
 # Normalize GeoJSON, CSV, KML, or KMZ
 python -m tools.airport_geometry_ingestion normalize input.geojson --mapping mapping.json --output results/airport.json
 
-# Migrate the Goal45 KAUO dataset into schema 2.0 without promoting quarantine
+# Migrate the Goal45 KAUO dataset into schema 2.1 without promoting quarantine
 python -m tools.airport_geometry_ingestion normalize tools/airport_data_ingestion/kauo_operational_geometry.json --output results/kauo_goal46.json
 
 # Validate, construct graph, audit, and gate readiness
@@ -32,7 +40,7 @@ Expected validation/readiness failures print concise messages and use exit code 
 
 ## Formats and limits
 
-The CLI supports GeoJSON, explicit CSV point/edge records, KML, KMZ, canonical schema 2.0 JSON, and a dedicated Goal45 schema 1.0 KAUO migration. Every raw spatial format needs an explicit mapping; no field names, coordinate units, CRS, direction, vehicle permission, or source authority are inferred. KML altitude is retained but excluded from normalized Z when vertical datum/mode is unknown. Projected EPSG CRSs, shapefile, GeoPackage, DXF, WKT and WKB currently fail explicitly; they are documented as conversion inputs, not silently accepted.
+The CLI supports GeoJSON, explicit CSV point/edge records, KML, KMZ, canonical schema 2.1 JSON, and a dedicated Goal45 schema 1.0 KAUO migration. Every raw spatial format needs an explicit mapping; no field names, coordinate units, CRS, direction, vehicle permission, or source authority are inferred. KML altitude is retained but excluded from normalized Z when vertical datum/mode is unknown. Projected EPSG CRSs, shapefile, GeoPackage, DXF, WKT and WKB currently fail explicitly; they are documented as conversion inputs, not silently accepted.
 
 Read [SCHEMA.md](SCHEMA.md) for canonical fields, authority policy, coordinate rules, graph construction and readiness semantics. Read [MAPPING_EXAMPLES.md](MAPPING_EXAMPLES.md) for GeoJSON, CSV, and KML mapping files.
 

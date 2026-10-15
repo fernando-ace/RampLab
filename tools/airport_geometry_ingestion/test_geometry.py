@@ -33,7 +33,8 @@ def write_mapping(path: Path, *, crs="EPSG:4326", units="degrees", fields=None, 
 class Goal46GeometryTests(unittest.TestCase):
     def test_goal45_import_retains_seven_features_and_quarantines_148(self):
         dataset=convert_goal45_dataset(GOAL45)
-        self.assertEqual("2.0.0",dataset["schema_version"])
+        self.assertEqual("2.1.0",dataset["schema_version"])
+        self.assertTrue(any(s["source_id"] == "faa_d_tpp_airport_diagram_2610" for s in dataset["sources"]))
         self.assertEqual(7,len(dataset["features"]))
         self.assertEqual(148,len(dataset["quarantined_features"]))
         self.assertEqual(0,len(validate_dataset(dataset)))
@@ -241,6 +242,33 @@ class Goal46GeometryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             a=write_fixtures(Path(tmp)/"one"); b=write_fixtures(Path(tmp)/"two")
             self.assertEqual([canonical_bytes(a[k]) for k in "ABCDEFGH"],[canonical_bytes(b[k]) for k in "ABCDEFGH"])
+
+    def test_source_derived_confidence_and_routing_eligibility_are_fail_closed(self):
+        dataset=make_fixture("A")
+        feature=dataset["features"][4]
+        source_id="source_derived_test"
+        source_hash=hashlib.sha256(b"synthetic test evidence only").hexdigest()
+        dataset["sources"].extend([
+            {"source_id":source_id,"source_type":"synthetic test evidence","source_file":"test-evidence.txt",
+             "source_sha256":source_hash,"publication_date":None,"extraction_method":"test only","authority":"AUTHORITATIVE",
+             "notes":"Fixture for confidence-policy tests only; not real airport evidence."},
+            {"source_id":"independent_test_source","source_type":"synthetic test corroboration","source_file":"corroboration.txt",
+             "source_sha256":source_hash,"publication_date":None,"extraction_method":"test only","authority":"AUTHORITATIVE",
+             "notes":"Fixture for confidence-policy tests only; not real airport evidence."},
+        ])
+        provenance=feature["provenance"]
+        provenance.update({"authority":"SOURCE_DERIVED","source_id":source_id,"source_file":"test-evidence.txt",
+                           "source_sha256":source_hash,"confidence_level":"HIGH","accuracy_m":0.5,
+                           "geometry_origin":"derived","derived_from":["apron_alpha"],"simulation_approved":True,
+                           "derivation":{"configuration_sha256":hashlib.sha256(b"deterministic test derivation").hexdigest(),
+                             "corroborating_source_ids":["independent_test_source"],
+                             "validation_checks":{"crs":True,"airport_bounds":True,"geometry":True,"independent_review":True}}})
+        self.assertFalse(any(row["code"].startswith("SOURCE_DERIVED") for row in validate_dataset(dataset)))
+        provenance["confidence_level"]="MEDIUM"
+        self.assertTrue(any(row["code"]=="SOURCE_DERIVED_APPROVAL" for row in validate_dataset(dataset)))
+        provenance["confidence_level"]="HIGH"
+        provenance["accuracy_m"]=None
+        self.assertTrue(any(row["code"]=="SOURCE_DERIVED_HIGH" for row in validate_dataset(dataset)))
 
 
 if __name__=="__main__": unittest.main()

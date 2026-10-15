@@ -21,11 +21,12 @@ from . import SCHEMA_VERSION
 
 AUTHORITIES = {"AUTHORITATIVE", "SOURCE_DERIVED", "OPERATOR_PROVIDED", "SURVEYED", "APPROXIMATE", "SYNTHETIC", "UNKNOWN"}
 PRODUCTION_AUTHORITIES = {"AUTHORITATIVE", "SOURCE_DERIVED", "OPERATOR_PROVIDED", "SURVEYED"}
+SOURCE_DERIVED_CONFIDENCE = {"HIGH", "MEDIUM", "LOW"}
 GEOMETRIES = {"Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"}
 FEATURE_TYPES = {
-    "airport_reference_point", "runway", "runway_threshold", "taxiway_centerline", "taxiway_polygon",
+    "airport_reference_point", "runway", "runway_pavement_polygon", "runway_threshold", "taxiway_centerline", "taxiway_polygon",
     "taxiway_intersection", "hold_short_position", "apron", "aircraft_stand", "service_road",
-    "gse_staging_area", "gse_access_link", "gse_depot", "runway_crossing", "restricted_area",
+    "gse_staging_area", "gse_access_link", "gse_depot", "runway_crossing", "restricted_area", "other_surface_polygon",
     "protected_area", "routing_node", "routing_edge", "other",
 }
 REQUIRED_PROVENANCE = ("source_id", "original_feature_id", "extraction_method", "transformation", "authority", "geometry_origin")
@@ -141,20 +142,24 @@ def _map_coordinates(value: Any, geometry_type: str, crs: str, units: str, origi
 def _geometry_type_for_feature_type(kind: str) -> set[str]:
     if kind in {"runway", "taxiway_centerline", "service_road", "gse_access_link", "routing_edge", "runway_crossing"}:
         return {"LineString", "MultiLineString"}
-    if kind in {"taxiway_polygon", "apron", "gse_staging_area", "restricted_area", "protected_area"}:
+    if kind in {"runway_pavement_polygon", "taxiway_polygon", "apron", "gse_staging_area", "restricted_area", "protected_area", "other_surface_polygon"}:
         return {"Polygon", "MultiPolygon"}
     return {"Point", "MultiPoint"}
 
 
 def _source_entry(path: Path, raw: bytes, config: dict[str, Any], source_type: str) -> dict[str, Any]:
     source = config["source"]
-    return {
+    entry = {
         "source_id": source["source_id"], "source_type": source.get("source_type", source_type),
         "source_file": path.name, "source_url": source.get("source_url"),
         "source_sha256": _sha(raw), "publication_date": source.get("publication_date"),
         "extraction_method": source.get("extraction_method", f"explicit {source_type} field mapping"),
         "authority": source["authority"], "notes": source.get("notes", ""),
     }
+    for key in ("publisher", "source_identifier", "acquisition_date", "imagery_date", "crs", "resolution", "license", "local_artifact_path"):
+        if source.get(key) is not None:
+            entry[key] = source[key]
+    return entry
 
 
 def _feature(raw_id: Any, kind: Any, geometry_type: str, coords: Any, props: dict[str, Any], config: dict[str, Any],
@@ -162,6 +167,7 @@ def _feature(raw_id: Any, kind: Any, geometry_type: str, coords: Any, props: dic
     if not raw_id or not str(raw_id).strip():
         raise GeometryInputError("feature identifier is empty")
     kind = str(kind).strip()
+    kind = config.get("field_mapping", {}).get("feature_type_map", {}).get(kind, kind)
     if kind not in FEATURE_TYPES:
         raise GeometryInputError(f"unsupported feature_type {kind!r}; use one of the documented schema values")
     if geometry_type not in _geometry_type_for_feature_type(kind):
@@ -184,6 +190,12 @@ def _feature(raw_id: Any, kind: Any, geometry_type: str, coords: Any, props: dic
         "confidence":props.get("confidence"),
         "simulation_approved": props.get("simulation_approved", authority in PRODUCTION_AUTHORITIES),
     }
+    if authority == "SOURCE_DERIVED":
+        provenance["confidence_level"] = props.get("confidence_level", "LOW")
+        derivation = props.get("derivation", config.get("derivation"))
+        if derivation is not None:
+            provenance["derivation"] = derivation
+        provenance["simulation_approved"] = bool(props.get("simulation_approved", False))
     if authority in {"APPROXIMATE", "SYNTHETIC", "UNKNOWN"}:
         provenance["simulation_approved"] = False
     if "derived_from" in props:
@@ -313,7 +325,7 @@ def _raw_features(path: Path, raw: bytes, config: dict[str, Any]) -> tuple[list[
 
 
 def import_source(path: Path, mapping_path: Path) -> dict[str, Any]:
-    """Import GeoJSON/CSV plus an explicit mapping into canonical schema 2.0.0."""
+    """Import GeoJSON/CSV plus an explicit mapping into canonical schema 2.1.0."""
     path, mapping_path = Path(path), Path(mapping_path)
     config = _load_mapping(mapping_path)
     raw = path.read_bytes()
@@ -330,7 +342,7 @@ def import_source(path: Path, mapping_path: Path) -> dict[str, Any]:
                               "units": "m", "axes": ["east", "north", "up"],
                               "transformation": conversion,"transform_parameters":{"origin":config.get("origin"),"local_transform":config.get("local_transform"),
                               "source_units":config["source_units"]}, "tolerance_m": float(config.get("tolerance_m", 0.01))},
-        "sources": [source_entry], "features": features, "quarantined_features": [],
+        "sources": [source_entry], "features": features, "quarantined_features": [], "simulation_assumptions": [],
         "operational_graph": {"nodes": [], "edges": []},
         "operational_relationships": [], "clearance_assessments": [],
         "authority_policy": authority_policy(),
@@ -373,6 +385,16 @@ def convert_goal45_dataset(path: Path) -> dict[str, Any]:
                         "publication_date":source.get("version_date"), "extraction_method":"Goal45 schema 1.0 provenance migration",
                         "authority":authority, "original_publisher":source.get("publisher"),
                         "original_title":source.get("title"), "notes":"Hash identifies the committed source artifact named in source_file; import_metadata separately hashes the Goal45 canonical input."})
+    repo_root=Path(__file__).resolve().parents[2]
+    chart_path=repo_root/"docs/goal42-evidence/sources/faa-kauo-airport-diagram-cycle-2610.pdf"
+    chart_manifest_path=repo_root/"docs/goal42-evidence/sources/faa_kauo_diagram_manifest.json"
+    if chart_path.is_file() and chart_manifest_path.is_file():
+        chart_manifest=_read_json(chart_manifest_path)
+        sources.append({"source_id":"faa_d_tpp_airport_diagram_2610","source_type":"FAA d-TPP airport diagram",
+                        "source_file":chart_path.relative_to(repo_root).as_posix(),"source_url":chart_manifest.get("source_url"),
+                        "source_sha256":_sha(chart_path.read_bytes()),"publication_date":"2026-10-01",
+                        "extraction_method":"Rendered visual review for published labels and relative topology",
+                        "authority":"AUTHORITATIVE","notes":"Independent chart corroboration of runway/taxiway identity and relative topology only; no geodetic taxiway centerlines, stand coordinates, or survey accuracy."})
     source_map={s["source_id"]:s for s in sources}
     def translate(row: dict[str, Any], *, quarantined: bool) -> dict[str, Any]:
         sid=row.get("source_id")
@@ -400,7 +422,15 @@ def convert_goal45_dataset(path: Path) -> dict[str, Any]:
               "authority":authority, "geometry_origin":origin, "accuracy_m":row.get("accuracy_m"),
               "simulation_approved":bool(row.get("simulation_approved", False)) and not quarantined,
               "confidence":row.get("confidence"), "notes":row.get("notes", "")}
-        if lineage: prov["derived_from"]=lineage
+        if lineage:
+            prov["derived_from"]=lineage
+            prov["confidence_level"]="MEDIUM"
+            prov["simulation_approved"]=False
+            derivation_config={"method":capture,"derived_from":lineage,"algorithm":"straight segment between published runway thresholds"}
+            prov["derivation"]={"configuration_sha256":_sha(canonical_bytes(derivation_config)),
+                                "corroborating_source_ids":["faa_d_tpp_airport_diagram_2610"],
+                                "validation_checks":{"crs":True,"airport_bounds":True,"geometry":True,"independent_review":True},
+                                "limitation":"FAA runway endpoint records do not publish horizontal accuracy; confidence remains MEDIUM and routing approval is withheld."}
         return {"geometry_id":row.get("geometry_id"), "feature_type":kind, "geometry_type":geom,
                 "coordinates":row.get("coordinates"), "properties":keep, "provenance":prov}
     active=[translate(f, quarantined=False) for f in old.get("features", [])]
@@ -420,17 +450,26 @@ def convert_goal45_dataset(path: Path) -> dict[str, Any]:
              "operational_graph":{"nodes":[],"edges":[],"status":"unavailable"},
              "operational_relationships":old.get("operational_relationships",[]),
              "clearance_assessments":old.get("clearance_assessments",[]),
+             "simulation_assumptions":[],
              "authority_policy":authority_policy(),"required_runway_ids":old.get("required_runway_ids",[])}
     return dataset
 
 
 def authority_policy() -> dict[str, Any]:
     return {
-        "policy_version": "1.0",
+        "policy_version": "1.1",
         "production_routing": {"allowed_authorities": sorted(PRODUCTION_AUTHORITIES), "requires_complete_provenance": True,
-                               "derived_geometry_requires_lineage": True, "inferred_geometry_allowed": False},
+                               "derived_geometry_requires_lineage": True, "inferred_geometry_allowed": False,
+                               "source_derived_requires": "confidence_level HIGH, known horizontal accuracy <= 1 m, reproducible derivation configuration hash, at least one independent corroborating registered source, and passed CRS/bounds/geometry/reviewer checks"},
+        "source_derived_confidence": {
+            "levels": sorted(SOURCE_DERIVED_CONFIDENCE),
+            "high": "Meets every production eligibility check in production_routing.source_derived_requires.",
+            "medium": "Supported by real evidence but one or more HIGH criteria is missing; context only.",
+            "low": "Weak, ambiguous, poorly reproducible, or insufficiently accurate evidence; excluded from production routing.",
+        },
         "visualization": {"allowed_authorities": sorted(AUTHORITIES)},
         "testing": {"synthetic_allowed_only_in_test_fixture_scope": True},
+        "epistemic_states": {"observed": "directly supplied source geometry", "derived": "reconstructed from cited real evidence", "assumed": "explicit simulator-only operational policy", "synthetic": "invented test or hypothetical data"},
         "safety_claims": {"approximate_or_synthetic_requires_explicit_qualification": True},
     }
 
@@ -508,6 +547,7 @@ def validate_dataset(dataset: Any) -> list[dict[str, Any]]:
             source_authority=source_map[prov.get("source_id")].get("authority")
             allowed={source_authority}
             if source_authority in {"AUTHORITATIVE","SURVEYED","OPERATOR_PROVIDED"}: allowed.add("SOURCE_DERIVED")
+            if source_authority == "SOURCE_DERIVED": allowed.update({"SOURCE_DERIVED", "APPROXIMATE"})
             if source_authority=="AUTHORITATIVE": allowed.add("APPROXIMATE")
             if prov.get("authority") not in allowed:
                 add("AUTHORITY_MISMATCH",f"{p}.provenance.authority",f"feature authority {prov.get('authority')} conflicts with registered source authority {source_authority}")
@@ -523,6 +563,44 @@ def validate_dataset(dataset: Any) -> list[dict[str, Any]]:
         confidence=prov.get("confidence")
         if confidence is not None and (not _finite_number(confidence) or not 0<=float(confidence)<=1):
             add("CONFIDENCE",f"{p}.provenance.confidence","confidence must be null or a finite number from 0 to 1")
+        if prov.get("authority") == "SOURCE_DERIVED":
+            level = prov.get("confidence_level")
+            if level not in SOURCE_DERIVED_CONFIDENCE:
+                add("SOURCE_DERIVED_CONFIDENCE", f"{p}.provenance.confidence_level", "source-derived geometry requires HIGH, MEDIUM, or LOW confidence")
+            derivation = prov.get("derivation")
+            if not isinstance(derivation, dict):
+                add("DERIVATION_EVIDENCE", f"{p}.provenance.derivation", "source-derived geometry requires a reproducible derivation record")
+            else:
+                config_hash = derivation.get("configuration_sha256")
+                if not isinstance(config_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", config_hash):
+                    add("DERIVATION_CONFIG_HASH", f"{p}.provenance.derivation.configuration_sha256", "derivation configuration requires a lowercase SHA-256 hash")
+                corroborators = derivation.get("corroborating_source_ids")
+                if not isinstance(corroborators, list) or not corroborators:
+                    add("DERIVATION_CORROBORATION", f"{p}.provenance.derivation.corroborating_source_ids", "source-derived geometry requires an independent corroborating source")
+                else:
+                    for corroborator in corroborators:
+                        if corroborator == prov.get("source_id") or corroborator not in source_map:
+                            add("DERIVATION_CORROBORATION", f"{p}.provenance.derivation.corroborating_source_ids", "corroborating source IDs must resolve and differ from the geometry source")
+                        elif source_map[corroborator].get("authority") not in {"AUTHORITATIVE", "SURVEYED", "OPERATOR_PROVIDED"}:
+                            add("DERIVATION_CORROBORATION", f"{p}.provenance.derivation.corroborating_source_ids", "corroboration must come from a production-grade independent source")
+                checks = derivation.get("validation_checks")
+                required_checks = {"crs", "airport_bounds", "geometry", "independent_review"}
+                if (not isinstance(checks, dict) or not required_checks.issubset(checks)
+                        or any(not isinstance(checks.get(key), bool) for key in required_checks)
+                        or not all(checks.get(key) is True for key in {"crs", "airport_bounds", "geometry"})):
+                    add("DERIVATION_VALIDATION", f"{p}.provenance.derivation.validation_checks", "CRS, airport bounds, and geometry checks must pass; independent_review must be an explicit boolean")
+            high_eligible = (level == "HIGH" and _finite_number(prov.get("accuracy_m")) and float(prov["accuracy_m"]) <= 1.0
+                             and isinstance(derivation, dict)
+                             and isinstance(derivation.get("corroborating_source_ids"), list) and bool(derivation["corroborating_source_ids"])
+                             and isinstance(derivation.get("configuration_sha256"), str)
+                             and isinstance(derivation.get("validation_checks"), dict)
+                             and all(derivation["validation_checks"].get(k) is True for k in {"crs", "airport_bounds", "geometry", "independent_review"}))
+            if prov.get("simulation_approved") is True and not high_eligible:
+                add("SOURCE_DERIVED_APPROVAL", f"{p}.provenance.simulation_approved", "only fully evidenced HIGH-confidence source-derived geometry is eligible for production routing")
+            if level == "HIGH" and not high_eligible:
+                add("SOURCE_DERIVED_HIGH", f"{p}.provenance.confidence_level", "HIGH confidence requires known accuracy <= 1 m, reproducible configuration, independent corroboration, and all validation checks")
+            if level in {"MEDIUM", "LOW"} and prov.get("simulation_approved") is True:
+                add("SOURCE_DERIVED_APPROVAL", f"{p}.provenance.simulation_approved", "MEDIUM and LOW source-derived features are not eligible for production routing")
         if prov.get("geometry_origin") in {"derived", "inferred"} and not prov.get("derived_from"):
             add("LINEAGE_MISSING", f"{p}.provenance.derived_from", "derived or inferred geometry requires source-feature lineage")
         if prov.get("geometry_origin") in {"derived", "inferred"} and isinstance(prov.get("derived_from"), list):
@@ -566,6 +644,23 @@ def validate_dataset(dataset: Any) -> list[dict[str, Any]]:
             value=assessment.get(key)
             if value is not None and (not _finite_number(value) or float(value)<0): add("CLEARANCE_VALUE",f"{p}.{key}","clearance values must be null or finite nonnegative metres")
         if not isinstance(assessment.get("simulation_approved"),bool): add("CLEARANCE_APPROVAL",f"{p}.simulation_approved","clearance approval must be an explicit boolean")
+        if assessment.get("basis") not in {None, "PUBLISHED_REQUIREMENT", "DERIVED_MEASUREMENT"}:
+            add("CLEARANCE_BASIS", f"{p}.basis", "clearance basis must be PUBLISHED_REQUIREMENT or DERIVED_MEASUREMENT")
+    assumptions=dataset.get("simulation_assumptions", [])
+    if not isinstance(assumptions, list):
+        add("SIMULATION_ASSUMPTIONS", "simulation_assumptions", "simulation_assumptions must be an array")
+        assumptions=[]
+    assumption_ids=set()
+    for i, assumption in enumerate(assumptions):
+        p=f"simulation_assumptions[{i}]"
+        if not isinstance(assumption, dict):
+            add("SIMULATION_ASSUMPTION", p, "assumption must be an object")
+            continue
+        ident=assumption.get("assumption_id")
+        if not ident or ident in assumption_ids: add("SIMULATION_ASSUMPTION_ID", f"{p}.assumption_id", "assumption ID must be nonempty and unique")
+        assumption_ids.add(ident)
+        if not assumption.get("policy") or assumption.get("classification") != "SIMULATION_ASSUMPTION" or assumption.get("simulation_only") is not True:
+            add("SIMULATION_ASSUMPTION_LABEL", p, "policy must be explicitly labeled SIMULATION_ASSUMPTION and simulation_only=true")
     graph=dataset.get("operational_graph",{})
     if not isinstance(graph,dict):
         add("GRAPH_TYPE","operational_graph","operational_graph must be an object"); graph={}
@@ -957,10 +1052,16 @@ def readiness(dataset: dict[str, Any], *, profile: str = "production") -> dict[s
         thresholds.setdefault(feature.get("properties",{}).get("runway_id"),set()).add(feature.get("properties",{}).get("threshold_id"))
     runway_geometry_ok=bool(required_runway_ids) and required_runway_ids.issubset(runway_ids) and all(
         set(str(runway_id).split("/" )).issubset(thresholds.get(runway_id,set())) for runway_id in required_runway_ids)
+    eligible_runway_axes=[f for f in runway_features if profile=="test_fixture" or
+                          (f.get("provenance",{}).get("simulation_approved") is True and f.get("provenance",{}).get("authority") in authority_allowed)]
+    runway_geometry_ok=runway_geometry_ok and bool(eligible_runway_axes) and all(
+        profile=="test_fixture" or f.get("provenance",{}).get("simulation_approved") is True for f in runway_features)
+    eligible_taxiways=[f for f in taxiways if profile=="test_fixture" or
+                       (f.get("provenance",{}).get("simulation_approved") is True and f.get("provenance",{}).get("authority") in authority_allowed)]
     reqs = [
         _requirement("REFERENCE_GEOMETRY", "PASS" if by_type.get("airport_reference_point") else "BLOCKED", by_type.get("airport_reference_point", []), "Airport reference point is supplied." if by_type.get("airport_reference_point") else "No airport reference point is supplied."),
         _requirement("RUNWAY_GEOMETRY", "PASS" if runway_geometry_ok else "BLOCKED", by_type.get("runway", []) + by_type.get("runway_threshold", []), "Required runway axes and both threshold ends are present." if runway_geometry_ok else "A required runway centerline, identifier, or matching pair of threshold ends is missing."),
-        _requirement("TAXIWAY_GEOMETRY", "PASS" if taxiways else "BLOCKED", taxiways, "Taxiway centerline geometry is present." if taxiways else "No taxiway centerlines are supplied."),
+        _requirement("TAXIWAY_GEOMETRY", "PASS" if eligible_taxiways else "BLOCKED", taxiways, "Production-eligible taxiway centerline geometry is present." if eligible_taxiways else "Candidate centerlines exist but none meets production authority/confidence approval." if taxiways else "No taxiway centerlines are supplied."),
         _requirement("TAXIWAY_CONNECTIVITY", "PASS" if graph.get("edges") and not any(i["code"] == "DISCONNECTED_COMPONENTS" for i in graph_issues) else "BLOCKED", graph.get("edges", []), "Routing graph is connected." if graph.get("edges") and not any(i["code"] == "DISCONNECTED_COMPONENTS" for i in graph_issues) else "Routing graph is absent or disconnected.", details=graph_issues),
         _requirement("RUNWAY_CONNECTIONS", "PASS" if runway_connections else "BLOCKED", runway_relations, "Source-backed runway entry/exit relationships are present." if runway_connections else "No source-backed runway entry/exit relationship is supplied."),
         _requirement("STAND_ACCESS", "PASS" if stand_access else "BLOCKED", stands, "All stands have source-backed routes to runway entry/exit nodes." if stand_access else "Stand geometry or a source-backed route to a runway entry/exit is missing.", details=stand_routes),

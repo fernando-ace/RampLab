@@ -1,3 +1,3 @@
-"""Deterministic airport operational geometry ingestion (Goal46)."""
+"""Deterministic airport operational geometry ingestion (Goals 46-47)."""
 
-SCHEMA_VERSION = "2.0.0"
+SCHEMA_VERSION = "2.1.0"

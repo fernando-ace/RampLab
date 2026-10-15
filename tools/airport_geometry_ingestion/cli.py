@@ -42,7 +42,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("input", type=Path); p.add_argument("--mapping", type=Path)
     p=subs.add_parser("normalize", aliases=["convert"], help="normalize GeoJSON, CSV, KML/KMZ, or migrate Goal45 canonical JSON")
     p.add_argument("input", type=Path); p.add_argument("--mapping", type=Path); p.add_argument("--output", type=Path, required=True)
-    p=subs.add_parser("validate", help="validate a canonical schema 2.0 dataset")
+    p=subs.add_parser("validate", help="validate a canonical schema 2.1 dataset")
     p.add_argument("dataset", type=Path); p.add_argument("--report", type=Path)
     p=subs.add_parser("build-graph", help="build graph edges from supplied linework and snap supplied endpoints")
     p.add_argument("dataset", type=Path); p.add_argument("--output", type=Path, required=True); p.add_argument("--snap-tolerance-m", type=float, default=0.25)

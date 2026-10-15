@@ -35,6 +35,8 @@ Input properties include `feature_code` and `surface_kind`; geometry coordinates
 
 The example origin is illustrative and must be replaced with the source airport reference point. Supported feature-type values are listed in [`SCHEMA.md`](SCHEMA.md). A feature-level authority column can be mapped with `"authority": "authority_class"`; otherwise the source-level authority applies.
 
+When a source uses a documented class vocabulary, `field_mapping.feature_type_map` may explicitly map source values to canonical feature types. Goal47 uses this for ALDOT `USE_` values (`RUNWAY`, `TAXIWAY`, `APRON`, and unclassified surface sections); no routing centerline or access permission is inferred from a polygon class.
+
 ## CSV edge rows (local simulator grid)
 
 One row represents one supplied straight edge. All column names are explicit. Local X/Y are in feet; positive X has true bearing 90 degrees, with the origin shifted by the stated ENU offsets.
