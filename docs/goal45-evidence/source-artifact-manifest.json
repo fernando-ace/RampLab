@@ -1,0 +1,101 @@
+{
+  "manifest_schema_version": "1.0",
+  "research_date": "2026-10-14",
+  "retention_note": "Downloaded source files and review renders are retained locally under the ignored tmp/goal45-pdfs/ directory. They are not redistributed in the evidence bundle. Hashes allow a reviewer with access to the same public sources to verify the retained files.",
+  "raw_sources": [
+    {
+      "path": "tmp/goal45-pdfs/faa-2026-10-01-apt-csv.zip",
+      "publisher": "Federal Aviation Administration",
+      "source_url": "https://nfdc.faa.gov/webContent/28DaySub/extra/01_Oct_2026_APT_CSV.zip",
+      "title": "28 Day NASR APT CSV group, effective 2026-10-01",
+      "bytes": 8030968,
+      "sha256": "aba48ea877f249d9b8cd63988b14b3432a6a09ad1fbe9561a5e6443c99c03dd0",
+      "use": "Extracted AUO records from APT_BASE.csv, APT_RWY.csv, and APT_RWY_END.csv. The committed JSON extract retains all fields for the 1 airport, 2 runway, and 4 runway-end rows.",
+      "redistributed": false
+    },
+    {
+      "path": "tmp/goal45-pdfs/faa-kauo-airport-diagram-2610.pdf",
+      "publisher": "Federal Aviation Administration",
+      "source_url": "https://aeronav.faa.gov/d-tpp/2610/05127AD.PDF",
+      "title": "KAUO Airport Diagram, cycle 2610",
+      "bytes": 149358,
+      "sha256": "891470442f1bf3454f76e63d7af45a582ed53008b132c6494568d50dd6fe72ed",
+      "use": "Verified chart labels and diagram caveats; no chart-digitalized coordinates were added to canonical operational geometry.",
+      "redistributed": false
+    },
+    {
+      "path": "tmp/goal45-pdfs/auburn-trustees-2015-06-05.pdf",
+      "publisher": "Auburn University Board of Trustees",
+      "source_url": "https://www.auburn.edu/administration/trustees/materials/materials-20150605.pdf",
+      "title": "June 5, 2015 Board packet containing a KAUO Airport Layout Plan drawing",
+      "bytes": 8215300,
+      "sha256": "96655a44522c11309b67692c9406bf1f597d263b6116d2732a12f979df346f47",
+      "use": "Historical planning context only; no operational features digitized.",
+      "redistributed": false
+    },
+    {
+      "path": "tmp/goal45-pdfs/auburn-trustees-2024-04-12.pdf",
+      "publisher": "Auburn University Board of Trustees",
+      "source_url": "https://www.auburn.edu/administration/trustees/materials/materials-20240412.pdf",
+      "title": "April 12, 2024 Board packet with proposed KAUO terminal ramp expansion memo",
+      "bytes": 16299296,
+      "sha256": "548c7e830c750b83c46ced1f381ec8f7cd5bc16a97a7abd683ad82df54387cfb",
+      "use": "Confirms proposed ramp area/tie-down quantities and project scope; not treated as as-built geometry.",
+      "redistributed": false
+    },
+    {
+      "path": "tmp/goal45-pdfs/aldot-auburn-apmp-2022.pdf",
+      "publisher": "Alabama Department of Transportation Aeronautics Bureau",
+      "source_url": "https://www.dot.state.al.us/programs/pdf/PavementProgram/Auburn.pdf",
+      "title": "Auburn University Regional Airport Pavement Management Program final report, February 2022",
+      "bytes": 11962824,
+      "sha256": "457619b1be30d2d044f3d66be95f38f84c0b4f1e2266e29710054ca205079434",
+      "use": "Verified report date, inspection period, branch/section counts and pavement inventory scope; no operational route geometry used.",
+      "redistributed": false
+    }
+  ],
+  "review_previews": [
+    {
+      "path": "tmp/goal45-pdfs/2015-alp-030.png",
+      "bytes": 763332,
+      "sha256": "5ce0999918f444f59b47b620197e2715b4b229384aba6c2c2f4fb77d812697b0",
+      "note": "Local render of the rotated 2015 ALP sheet for visual review; not georeferenced or used to digitize coordinates."
+    },
+    {
+      "path": "tmp/goal45-pdfs/2024-airport-ramp-014.png",
+      "bytes": 116749,
+      "sha256": "2489f9eba1efc09086acd3fbefca95f0286f6da4c31ed8fc05c60dc7183b2b33",
+      "note": "Local render of an unrelated Recreation and Wellness Center memo page; explicitly excluded from airport source evidence."
+    },
+    {
+      "path": "tmp/goal45-pdfs/2024-pages-012.png",
+      "bytes": 193553,
+      "sha256": "64e18ed97d683c37763458241afcd260d1daaa9ee9302b6d31cfa1d724507983",
+      "note": "Local review render of a page from the Board packet; not used for airport geometry."
+    },
+    {
+      "path": "tmp/goal45-pdfs/2024-pages-013.png",
+      "bytes": 199832,
+      "sha256": "b2cc11cf40074a01610fc8bbce590f49ac8f2d96088013245d3ad71cae2881e4",
+      "note": "Local review render of a page from the Board packet; not used for airport geometry."
+    },
+    {
+      "path": "tmp/goal45-pdfs/2024-pages-014.png",
+      "bytes": 112637,
+      "sha256": "f9e5ac108ad7d3b5aaf264f433d6a96fb38156cb9dba0e80d0b347391b41c092",
+      "note": "Local review render of a page from the Board packet; not used for airport geometry."
+    },
+    {
+      "path": "tmp/goal45-pdfs/2024-pages-015.png",
+      "bytes": 504655,
+      "sha256": "2e24b555e1813746a59ed9227c6b82f183f46cad7c5c4d28e1b4f5d91edb8e1d",
+      "note": "Local review render of a page from the Board packet; not used for airport geometry."
+    },
+    {
+      "path": "tmp/goal45-pdfs/2024-pages-016.png",
+      "bytes": 339804,
+      "sha256": "64bf1c66b3c5f0c0a8e09afc94127cb43ffc93f0a93650804e3c95ec3b28bb0d",
+      "note": "Local review render of a page from the Board packet; not used for airport geometry."
+    }
+  ]
+}

@@ -1,0 +1,453 @@
+Test project C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/build-goal45-release
+        Start   1: EventQueueTest.ProcessesEventsChronologically
+  1/224 Test   #1: EventQueueTest.ProcessesEventsChronologically .....................................................   Passed    0.02 sec
+        Start   2: EventQueueTest.PreservesInsertionOrderForTies
+  2/224 Test   #2: EventQueueTest.PreservesInsertionOrderForTies .....................................................   Passed    0.02 sec
+        Start   3: EventQueueTest.EmptyQueueIsSafe
+  3/224 Test   #3: EventQueueTest.EmptyQueueIsSafe ...................................................................   Passed    0.03 sec
+        Start   4: EventQueueTest.EventsCanBeScheduledAfterProcessingBegins
+  4/224 Test   #4: EventQueueTest.EventsCanBeScheduledAfterProcessingBegins ..........................................   Passed    0.02 sec
+        Start   5: EventStreamTest.EmitsOrderedTypedLifecycleRecordsWithEntityIds
+  5/224 Test   #5: EventStreamTest.EmitsOrderedTypedLifecycleRecordsWithEntityIds ....................................   Passed    0.03 sec
+        Start   6: EventStreamTest.RegisteringMultipleSinksDoesNotChangeDomainResult
+  6/224 Test   #6: EventStreamTest.RegisteringMultipleSinksDoesNotChangeDomainResult .................................   Passed    0.02 sec
+        Start   7: SnapshotTest.CapturesActiveAircraftGateAndTimedMultiSegmentRoutes
+  7/224 Test   #7: SnapshotTest.CapturesActiveAircraftGateAndTimedMultiSegmentRoutes .................................   Passed    0.03 sec
+        Start   8: SnapshotTest.IsIndependentOfLaterSimulationMutationAndReflectsRoadClosure
+  8/224 Test   #8: SnapshotTest.IsIndependentOfLaterSimulationMutationAndReflectsRoadClosure .........................   Passed    0.02 sec
+        Start   9: SnapshotTest.FinalSnapshotContainsDepartedAircraftIdleVehiclesAndAvailableGates
+  9/224 Test   #9: SnapshotTest.FinalSnapshotContainsDepartedAircraftIdleVehiclesAndAvailableGates ...................   Passed    0.02 sec
+        Start  10: SnapshotTest.RepeatedSnapshotGenerationDoesNotMutateSimulation
+ 10/224 Test  #10: SnapshotTest.RepeatedSnapshotGenerationDoesNotMutateSimulation ....................................   Passed    0.03 sec
+        Start  11: VisualizationTest.ConvertsMetersWithOneCentralTransform
+ 11/224 Test  #11: VisualizationTest.ConvertsMetersWithOneCentralTransform ...........................................   Passed    0.04 sec
+        Start  12: VisualizationTest.InterpolatesAcrossCompleteMultiSegmentJourney
+ 12/224 Test  #12: VisualizationTest.InterpolatesAcrossCompleteMultiSegmentJourney ...................................   Passed    0.02 sec
+        Start  13: VisualizationTest.ClampsBeforeDepartureAndAtExactDestination
+ 13/224 Test  #13: VisualizationTest.ClampsBeforeDepartureAndAtExactDestination ......................................   Passed    0.02 sec
+        Start  14: VisualizationTest.RejectsMissingOrMalformedJourneyData
+ 14/224 Test  #14: VisualizationTest.RejectsMissingOrMalformedJourneyData ............................................   Passed    0.02 sec
+        Start  15: ScenarioLoaderTest.LoadsExternalBaselineAndDefaultSeed
+ 15/224 Test  #15: ScenarioLoaderTest.LoadsExternalBaselineAndDefaultSeed ............................................   Passed    0.02 sec
+        Start  16: ScenarioLoaderTest.AllowsOnlyCapabilitiesUsedByTheScenario
+ 16/224 Test  #16: ScenarioLoaderTest.AllowsOnlyCapabilitiesUsedByTheScenario ........................................   Passed    0.04 sec
+        Start  17: ScenarioLoaderTest.AllowsArrivalOnlyScenarioWithoutServiceVehicles
+ 17/224 Test  #17: ScenarioLoaderTest.AllowsArrivalOnlyScenarioWithoutServiceVehicles ................................   Passed    0.03 sec
+        Start  18: ScenarioLoaderTest.LoadsIntegratedArrivalTurnaroundOperation
+ 18/224 Test  #18: ScenarioLoaderTest.LoadsIntegratedArrivalTurnaroundOperation ......................................   Passed    0.07 sec
+        Start  19: ScenarioLoaderTest.LoadsExtendedGroundServiceEquipmentTypes
+ 19/224 Test  #19: ScenarioLoaderTest.LoadsExtendedGroundServiceEquipmentTypes .......................................   Passed    0.07 sec
+        Start  20: ScenarioLoaderTest.RejectsDuplicateIds
+ 20/224 Test  #20: ScenarioLoaderTest.RejectsDuplicateIds ............................................................   Passed    0.09 sec
+        Start  21: ScenarioLoaderTest.RejectsMissingReferencedNode
+ 21/224 Test  #21: ScenarioLoaderTest.RejectsMissingReferencedNode ...................................................   Passed    0.05 sec
+        Start  22: ScenarioLoaderTest.RejectsAircraftReferencingNonexistentGate
+ 22/224 Test  #22: ScenarioLoaderTest.RejectsAircraftReferencingNonexistentGate ......................................   Passed    0.04 sec
+        Start  23: ScenarioLoaderTest.RejectsInvalidEdgeAndDuration
+ 23/224 Test  #23: ScenarioLoaderTest.RejectsInvalidEdgeAndDuration ..................................................   Passed    0.05 sec
+        Start  24: ScenarioLoaderTest.RejectsInvalidVehicleSpeedAndRoadEvent
+ 24/224 Test  #24: ScenarioLoaderTest.RejectsInvalidVehicleSpeedAndRoadEvent .........................................   Passed    0.05 sec
+        Start  25: ScenarioLoaderTest.RejectsUnreachableRoutesAndInvalidTimestamps
+ 25/224 Test  #25: ScenarioLoaderTest.RejectsUnreachableRoutesAndInvalidTimestamps ...................................   Passed    0.05 sec
+        Start  26: ScenarioLoaderTest.RejectsMalformedYaml
+ 26/224 Test  #26: ScenarioLoaderTest.RejectsMalformedYaml ...........................................................   Passed    0.05 sec
+        Start  27: ScenarioLoaderTest.CommandLineSeedOverridesScenarioDefault
+ 27/224 Test  #27: ScenarioLoaderTest.CommandLineSeedOverridesScenarioDefault ........................................   Passed    0.05 sec
+        Start  28: AStarTest.FindsShortestAvailableRoute
+ 28/224 Test  #28: AStarTest.FindsShortestAvailableRoute .............................................................   Passed    0.03 sec
+        Start  29: AStarTest.DisabledEdgeCausesReroute
+ 29/224 Test  #29: AStarTest.DisabledEdgeCausesReroute ...............................................................   Passed    0.02 sec
+        Start  30: AStarTest.ReportsUnreachableDestination
+ 30/224 Test  #30: AStarTest.ReportsUnreachableDestination ...........................................................   Passed    0.02 sec
+        Start  31: AStarTest.EqualCostPathSelectionIsDeterministic
+ 31/224 Test  #31: AStarTest.EqualCostPathSelectionIsDeterministic ...................................................   Passed    0.02 sec
+        Start  32: AStarTest.OneWayEdgesCanOnlyBeTraversedFromTheirConfiguredOrigin
+ 32/224 Test  #32: AStarTest.OneWayEdgesCanOnlyBeTraversedFromTheirConfiguredOrigin ..................................   Passed    0.03 sec
+        Start  33: AStarTest.CandidateRoutesAreBoundedDeterministicAndExcludeClosedEdges
+ 33/224 Test  #33: AStarTest.CandidateRoutesAreBoundedDeterministicAndExcludeClosedEdges .............................   Passed    0.02 sec
+        Start  34: AircraftStateTest.FollowsExplicitValidTransitions
+ 34/224 Test  #34: AircraftStateTest.FollowsExplicitValidTransitions .................................................   Passed    0.02 sec
+        Start  35: AircraftStateTest.RejectsInvalidTransitionAndPrematureDeparture
+ 35/224 Test  #35: AircraftStateTest.RejectsInvalidTransitionAndPrematureDeparture ...................................   Passed    0.02 sec
+        Start  36: AircraftStateTest.BecomesReadyOnlyAfterEveryRequiredService
+ 36/224 Test  #36: AircraftStateTest.BecomesReadyOnlyAfterEveryRequiredService .......................................   Passed    0.02 sec
+        Start  37: VehicleStateTest.ExecutesAssignmentServiceAndReturnLifecycle
+ 37/224 Test  #37: VehicleStateTest.ExecutesAssignmentServiceAndReturnLifecycle ......................................   Passed    0.02 sec
+        Start  38: VehicleStateTest.RejectsStartingServiceWhileIdle
+ 38/224 Test  #38: VehicleStateTest.RejectsStartingServiceWhileIdle ..................................................   Passed    0.02 sec
+        Start  39: OperationalAgentPolicyTests.ScriptedPolicyReplansOnInvalidationAndKeepsSafeNoRouteBlocked
+ 39/224 Test  #39: OperationalAgentPolicyTests.ScriptedPolicyReplansOnInvalidationAndKeepsSafeNoRouteBlocked .........   Passed    0.02 sec
+        Start  40: OperationalAgentPolicyTests.AdaptivePolicyUsesThresholdAndCooldownBeforeCongestionReplan
+ 40/224 Test  #40: OperationalAgentPolicyTests.AdaptivePolicyUsesThresholdAndCooldownBeforeCongestionReplan ..........   Passed    0.02 sec
+        Start  41: OperationalAgentPolicyTests.AdaptivePolicyChoosesLowerScoringRouteBeforeAClosureOrBlockage
+ 41/224 Test  #41: OperationalAgentPolicyTests.AdaptivePolicyChoosesLowerScoringRouteBeforeAClosureOrBlockage ........   Passed    0.04 sec
+        Start  42: OperationalAgentPolicyTests.WaitCandidateIncludesContinuationTaxiCost
+ 42/224 Test  #42: OperationalAgentPolicyTests.WaitCandidateIncludesContinuationTaxiCost .............................   Passed    0.03 sec
+        Start  43: OperationalAgentPolicyTests.AdaptiveCandidateTieBreakUsesStableCandidateOrder
+ 43/224 Test  #43: OperationalAgentPolicyTests.AdaptiveCandidateTieBreakUsesStableCandidateOrder .....................   Passed    0.03 sec
+        Start  44: OperationalAgentPolicyTests.ClosureReplanIsImmediateAndPolicyOutputIsDeterministic
+ 44/224 Test  #44: OperationalAgentPolicyTests.ClosureReplanIsImmediateAndPolicyOutputIsDeterministic ................   Passed    0.05 sec
+        Start  45: OperationalAgentPolicyTests.ObjectiveCompletionAndDestinationChangesAreExplicit
+ 45/224 Test  #45: OperationalAgentPolicyTests.ObjectiveCompletionAndDestinationChangesAreExplicit ...................   Passed    0.03 sec
+        Start  46: OperationalAgentPolicyTests.AutonomyModeParsingIsStableAndRejectsUnknownModes
+ 46/224 Test  #46: OperationalAgentPolicyTests.AutonomyModeParsingIsStableAndRejectsUnknownModes .....................   Passed    0.03 sec
+        Start  47: OperationalAgentPolicyTests.CostAwareCounterfactualRejectsWastefulDetourAndAcceptsWorthwhileOne
+ 47/224 Test  #47: OperationalAgentPolicyTests.CostAwareCounterfactualRejectsWastefulDetourAndAcceptsWorthwhileOne ...   Passed    0.02 sec
+        Start  48: OperationalAgentPolicyTests.CostAwareWaitAgeAndPriorityCanProtectAnOlderAircraft
+ 48/224 Test  #48: OperationalAgentPolicyTests.CostAwareWaitAgeAndPriorityCanProtectAnOlderAircraft ..................   Passed    0.03 sec
+        Start  49: OperationalAgentPolicyTests.CostAwareCandidateCostCannotMakeAnInfeasibleRouteWin
+ 49/224 Test  #49: OperationalAgentPolicyTests.CostAwareCandidateCostCannotMakeAnInfeasibleRouteWin ..................   Passed    0.04 sec
+        Start  50: OperationalAgentPolicyTests.CostAwareCostCannotTradeAwayBoundedObjectiveCompletion
+ 50/224 Test  #50: OperationalAgentPolicyTests.CostAwareCostCannotTradeAwayBoundedObjectiveCompletion ................   Passed    0.02 sec
+        Start  51: OperationalAgentPolicyTests.CostAwareCompleteCostTiesKeepCandidateEnumerationOrder
+ 51/224 Test  #51: OperationalAgentPolicyTests.CostAwareCompleteCostTiesKeepCandidateEnumerationOrder ................   Passed    0.03 sec
+        Start  52: OperationalAgentPolicyTests.SyntheticDownstreamOutcomeCanOverrideLocallyCheapestRoute
+ 52/224 Test  #52: OperationalAgentPolicyTests.SyntheticDownstreamOutcomeCanOverrideLocallyCheapestRoute .............   Passed    0.02 sec
+        Start  53: OperationalAgentPolicyTests.CounterfactualRejectsUnsafeAndUsesStableOrderForExactTies
+ 53/224 Test  #53: OperationalAgentPolicyTests.CounterfactualRejectsUnsafeAndUsesStableOrderForExactTies .............   Passed    0.04 sec
+        Start  54: OperationalAgentPolicyTests.RollingHorizonPolicyPrefersAPathThatAvoidsForecastEdgeOverlap
+ 54/224 Test  #54: OperationalAgentPolicyTests.RollingHorizonPolicyPrefersAPathThatAvoidsForecastEdgeOverlap .........   Passed    0.04 sec
+        Start  55: OperationalAgentPolicyTests.RollingHorizonImmediatelyReplansAfterClosureAndKeepsSafeFallback
+ 55/224 Test  #55: OperationalAgentPolicyTests.RollingHorizonImmediatelyReplansAfterClosureAndKeepsSafeFallback ......   Passed    0.08 sec
+        Start  56: OperationalAgentPolicyTests.CoordinatedPolicyCanTradeLocalCostForLowerSystemCost
+ 56/224 Test  #56: OperationalAgentPolicyTests.CoordinatedPolicyCanTradeLocalCostForLowerSystemCost ..................   Passed    0.05 sec
+        Start  57: OperationalAgentPolicyTests.CoordinatedPolicyUsesStableCandidateOrderOnSystemCostTie
+ 57/224 Test  #57: OperationalAgentPolicyTests.CoordinatedPolicyUsesStableCandidateOrderOnSystemCostTie ..............   Passed    0.03 sec
+        Start  58: OperationalAgentPolicyTests.CoordinatedPolicyDoesNotTreatWaitAsZeroSystemCost
+ 58/224 Test  #58: OperationalAgentPolicyTests.CoordinatedPolicyDoesNotTreatWaitAsZeroSystemCost .....................   Passed    0.02 sec
+        Start  59: OperationalAgentPolicyTests.CoordinatedPolicyCanTradeLocalCostForLowerSharedSystemCost
+ 59/224 Test  #59: OperationalAgentPolicyTests.CoordinatedPolicyCanTradeLocalCostForLowerSharedSystemCost ............   Passed    0.02 sec
+        Start  60: OperationalAgentPolicyTests.CoordinatedCostDecisionAndExplanationAreStable
+ 60/224 Test  #60: OperationalAgentPolicyTests.CoordinatedCostDecisionAndExplanationAreStable ........................   Passed    0.05 sec
+        Start  61: OperationalAgentPolicyTests.CoordinatedPolicyCanTemporarilyHoldForLowerSharedCost
+ 61/224 Test  #61: OperationalAgentPolicyTests.CoordinatedPolicyCanTemporarilyHoldForLowerSharedCost .................   Passed    0.04 sec
+        Start  62: OperationalAgentPolicyTests.CoordinationPriorityUsesWaitThenObjectivePriorityThenStableId
+ 62/224 Test  #62: OperationalAgentPolicyTests.CoordinationPriorityUsesWaitThenObjectivePriorityThenStableId .........   Passed    0.06 sec
+        Start  63: ResourcePoolTest.AssignsAvailableResourceImmediately
+ 63/224 Test  #63: ResourcePoolTest.AssignsAvailableResourceImmediately ..............................................   Passed    0.12 sec
+        Start  64: ResourcePoolTest.QueuesRequestWhenResourceIsUnavailable
+ 64/224 Test  #64: ResourcePoolTest.QueuesRequestWhenResourceIsUnavailable ...........................................   Passed    0.03 sec
+        Start  65: ResourcePoolTest.AssignsOldestWaitingRequestOnRelease
+ 65/224 Test  #65: ResourcePoolTest.AssignsOldestWaitingRequestOnRelease .............................................   Passed    0.04 sec
+        Start  66: ResourcePoolTest.ReturnsResourceToAvailablePoolAfterQueueDrains
+ 66/224 Test  #66: ResourcePoolTest.ReturnsResourceToAvailablePoolAfterQueueDrains ...................................   Passed    0.03 sec
+        Start  67: ResourcePoolTest.DuplicateRequestDoesNotEnterQueueTwice
+ 67/224 Test  #67: ResourcePoolTest.DuplicateRequestDoesNotEnterQueueTwice ...........................................   Passed    0.02 sec
+        Start  68: ResourcePoolTest.DeadlinePriorityAndSimulationTimeAgingHaveStableTieBreaks
+ 68/224 Test  #68: ResourcePoolTest.DeadlinePriorityAndSimulationTimeAgingHaveStableTieBreaks ........................   Passed    0.04 sec
+        Start  69: TurnaroundTest.IndependentTasksOverlapAndDependenciesWaitForPrerequisites
+ 69/224 Test  #69: TurnaroundTest.IndependentTasksOverlapAndDependenciesWaitForPrerequisites .........................   Passed    0.26 sec
+        Start  70: TurnaroundTest.ResourceContentionCompletesAllAircraftDeterministically
+ 70/224 Test  #70: TurnaroundTest.ResourceContentionCompletesAllAircraftDeterministically ............................   Passed    1.79 sec
+        Start  71: TurnaroundTest.StaggeredFlightBankCompletesThreeIndependentAircraftSafely
+ 71/224 Test  #71: TurnaroundTest.StaggeredFlightBankCompletesThreeIndependentAircraftSafely .........................   Passed    2.15 sec
+        Start  72: TurnaroundTest.MultiAircraftTaskDurationDisruptionDelaysDeterministicallyWithoutCollisions
+ 72/224 Test  #72: TurnaroundTest.MultiAircraftTaskDurationDisruptionDelaysDeterministicallyWithoutCollisions ........   Passed    1.78 sec
+        Start  73: TurnaroundTest.FlightBankReassignsOutagedVehicleSafelyAndDeterministically
+ 73/224 Test  #73: TurnaroundTest.FlightBankReassignsOutagedVehicleSafelyAndDeterministically ........................   Passed   17.49 sec
+        Start  74: TurnaroundTest.RuntimeVehicleOutageEntersDeterministicEventStream
+ 74/224 Test  #74: TurnaroundTest.RuntimeVehicleOutageEntersDeterministicEventStream .................................   Passed   98.36 sec
+        Start  75: TurnaroundTest.RuntimeVehicleOutageRejectsUnknownVehicle
+ 75/224 Test  #75: TurnaroundTest.RuntimeVehicleOutageRejectsUnknownVehicle ..........................................   Passed    0.05 sec
+        Start  76: TurnaroundTest.DisruptionReplansAndChangesEstimatedReadyTimeWithoutReset
+ 76/224 Test  #76: TurnaroundTest.DisruptionReplansAndChangesEstimatedReadyTimeWithoutReset ..........................   Passed    0.50 sec
+        Start  77: TurnaroundTest.UnrecoverableFleetOutageFailsSafelyWithoutDeparting
+ 77/224 Test  #77: TurnaroundTest.UnrecoverableFleetOutageFailsSafelyWithoutDeparting ................................   Passed    7.79 sec
+        Start  78: TurnaroundTest.ScenarioLoaderRejectsCyclicTaskDependencies
+ 78/224 Test  #78: TurnaroundTest.ScenarioLoaderRejectsCyclicTaskDependencies ........................................   Passed    0.04 sec
+        Start  79: SurfaceTrafficTest.ControlCoordinatesPushbackTaxiContentionAndRunwayQueue
+ 79/224 Test  #79: SurfaceTrafficTest.ControlCoordinatesPushbackTaxiContentionAndRunwayQueue .........................   Passed    0.36 sec
+        Start  80: SurfaceTrafficTest.ArrivalTurnaroundContinuesThroughPushbackAndDeparture
+ 80/224 Test  #80: SurfaceTrafficTest.ArrivalTurnaroundContinuesThroughPushbackAndDeparture ..........................   Passed    0.03 sec
+        Start  81: SurfaceTrafficTest.StationaryDepartureQueueSkipsToNextScheduledOperation
+ 81/224 Test  #81: SurfaceTrafficTest.StationaryDepartureQueueSkipsToNextScheduledOperation ..........................   Passed    0.02 sec
+        Start  82: SurfaceTrafficTest.ClosureInvalidatesRouteAndReroutesWithoutBlockingDeparture
+ 82/224 Test  #82: SurfaceTrafficTest.ClosureInvalidatesRouteAndReroutesWithoutBlockingDeparture .....................   Passed    0.50 sec
+        Start  83: SurfaceTrafficTest.AdaptiveAgentsReplanDeterministicallyAndCompleteAfterScheduledClosure
+ 83/224 Test  #83: SurfaceTrafficTest.AdaptiveAgentsReplanDeterministicallyAndCompleteAfterScheduledClosure ..........   Passed    0.48 sec
+        Start  84: SurfaceTrafficTest.CoordinatedPolicyHandlesClosureWithoutBypassingSafetyOrLosingDeterminism
+ 84/224 Test  #84: SurfaceTrafficTest.CoordinatedPolicyHandlesClosureWithoutBypassingSafetyOrLosingDeterminism .......   Passed    0.54 sec
+        Start  85: SurfaceTrafficTest.RollingHorizonPolicyProducesDeterministicSafeForecastTrace
+ 85/224 Test  #85: SurfaceTrafficTest.RollingHorizonPolicyProducesDeterministicSafeForecastTrace .....................   Passed    0.51 sec
+        Start  86: SurfaceTrafficTest.CounterfactualRolloutsAreIsolatedAndReplayDeterministically
+ 86/224 Test  #86: SurfaceTrafficTest.CounterfactualRolloutsAreIsolatedAndReplayDeterministically ....................   Passed    0.52 sec
+        Start  87: SurfaceTrafficTest.SyntheticBottleneckRolloutCanTradeTaxiDistanceForLessDownstreamWait
+ 87/224 Test  #87: SurfaceTrafficTest.SyntheticBottleneckRolloutCanTradeTaxiDistanceForLessDownstreamWait ............   Passed    0.32 sec
+        Start  88: SurfaceTrafficTest.CostAwareFixturesRejectWastefulAcceptWorthwhileAndProtectAgedWaiter
+ 88/224 Test  #88: SurfaceTrafficTest.CostAwareFixturesRejectWastefulAcceptWorthwhileAndProtectAgedWaiter ............   Passed    0.77 sec
+        Start  89: SurfaceTrafficTest.AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutcome
+ 89/224 Test  #89: SurfaceTrafficTest.AdaptiveRouteChoiceUsesForecastCongestionAndRecordsOutcome .....................   Passed    0.55 sec
+        Start  90: SurfaceTrafficTest.CoordinatedChoiceReducesTaxiTimeOnSyntheticSharedRouteContention
+ 90/224 Test  #90: SurfaceTrafficTest.CoordinatedChoiceReducesTaxiTimeOnSyntheticSharedRouteContention ...............   Passed    1.52 sec
+        Start  91: SurfaceTrafficTest.OperatorClosureIsObservedAndRecordedByAffectedAgent
+ 91/224 Test  #91: SurfaceTrafficTest.OperatorClosureIsObservedAndRecordedByAffectedAgent ............................   Passed    0.27 sec
+        Start  92: SurfaceTrafficTest.RepeatedSeedProducesIdenticalSurfaceEventsAndMetrics
+ 92/224 Test  #92: SurfaceTrafficTest.RepeatedSeedProducesIdenticalSurfaceEventsAndMetrics ...........................   Passed    0.48 sec
+        Start  93: SurfaceTrafficTest.SeedsFortyTwoThroughFortyFourMatchSerialAndParallelExperiments
+ 93/224 Test  #93: SurfaceTrafficTest.SeedsFortyTwoThroughFortyFourMatchSerialAndParallelExperiments .................   Passed    1.02 sec
+        Start  94: SurfaceTrafficTest.MixedRunwaySeedsFortyTwoThroughFortyFourMatchSerialAndParallel
+ 94/224 Test  #94: SurfaceTrafficTest.MixedRunwaySeedsFortyTwoThroughFortyFourMatchSerialAndParallel .................   Passed    1.29 sec
+        Start  95: SurfaceTrafficTest.IntegratedLifecycleSeedsFortyTwoThroughFortyFourMatchSerialAndParallel
+ 95/224 Test  #95: SurfaceTrafficTest.IntegratedLifecycleSeedsFortyTwoThroughFortyFourMatchSerialAndParallel .........   Passed    3.18 sec
+        Start  96: SurfaceTrafficTest.DisconnectedDepartureHandoffSafelyFailsAtGate
+ 96/224 Test  #96: SurfaceTrafficTest.DisconnectedDepartureHandoffSafelyFailsAtGate ..................................   Passed    0.32 sec
+        Start  97: SurfaceTrafficTest.MixedArrivalDisruptionCompletesInboundAndOutboundAircraft
+ 97/224 Test  #97: SurfaceTrafficTest.MixedArrivalDisruptionCompletesInboundAndOutboundAircraft ......................   Passed    0.36 sec
+        Start  98: SurfaceTrafficTest.ControlMixedTrafficUsesSharedRunwayAndReleasesEveryOperation
+ 98/224 Test  #98: SurfaceTrafficTest.ControlMixedTrafficUsesSharedRunwayAndReleasesEveryOperation ...................   Passed    0.32 sec
+        Start  99: SurfaceTrafficTest.SimultaneousArrivalRequestsUseStableAircraftIdTieBreakAndRepeatExactly
+ 99/224 Test  #99: SurfaceTrafficTest.SimultaneousArrivalRequestsUseStableAircraftIdTieBreakAndRepeatExactly .........   Passed    0.58 sec
+        Start 100: SurfaceTrafficTest.ArrivalWithNoReachableTaxiRouteFailsSafelyWithReason
+100/224 Test #100: SurfaceTrafficTest.ArrivalWithNoReachableTaxiRouteFailsSafelyWithReason ...........................   Passed    0.35 sec
+        Start 101: SurfaceTrafficTest.CollisionDetectorsPreserveHoldAndCollisionThresholds
+101/224 Test #101: SurfaceTrafficTest.CollisionDetectorsPreserveHoldAndCollisionThresholds ...........................   Passed    0.02 sec
+        Start 102: MetricsTest.CalculatesTurnaroundDelayWaitingAndUtilization
+102/224 Test #102: MetricsTest.CalculatesTurnaroundDelayWaitingAndUtilization ........................................   Passed    0.11 sec
+        Start 103: ExperimentDefinitionTest.GeneratesStableCartesianProductAndIds
+103/224 Test #103: ExperimentDefinitionTest.GeneratesStableCartesianProductAndIds ....................................   Passed    0.04 sec
+        Start 104: ExperimentDefinitionTest.ExpandsSeedsAndReplicationsDeterministically
+104/224 Test #104: ExperimentDefinitionTest.ExpandsSeedsAndReplicationsDeterministically .............................   Passed    0.02 sec
+        Start 105: ExperimentDefinitionTest.RejectsInvalidDefinitionsAndOverrideValues
+105/224 Test #105: ExperimentDefinitionTest.RejectsInvalidDefinitionsAndOverrideValues ...............................   Passed    0.03 sec
+        Start 106: ExperimentDefinitionTest.AppliesTypedOverridesWithoutMutatingBaseScenario
+106/224 Test #106: ExperimentDefinitionTest.AppliesTypedOverridesWithoutMutatingBaseScenario .........................   Passed    0.02 sec
+        Start 107: ExperimentLoaderTest.LoadsValidatedFileSeedRangeAndTypedParameters
+107/224 Test #107: ExperimentLoaderTest.LoadsValidatedFileSeedRangeAndTypedParameters ................................   Passed    0.04 sec
+        Start 108: ExperimentLoaderTest.SupportsSingleSeedListAndReplications
+108/224 Test #108: ExperimentLoaderTest.SupportsSingleSeedListAndReplications ........................................   Passed    0.07 sec
+        Start 109: ExperimentLoaderTest.RejectsMissingScenarioInvalidWorkersAndSeedRange
+109/224 Test #109: ExperimentLoaderTest.RejectsMissingScenarioInvalidWorkersAndSeedRange .............................   Passed    0.14 sec
+        Start 110: ExperimentLoaderTest.RejectsUnknownParameterAndMalformedYaml
+110/224 Test #110: ExperimentLoaderTest.RejectsUnknownParameterAndMalformedYaml ......................................   Passed    0.07 sec
+        Start 111: ExperimentExecutorTest.ExecutesEveryRunExactlyOnceWithDeterministicOrdering
+111/224 Test #111: ExperimentExecutorTest.ExecutesEveryRunExactlyOnceWithDeterministicOrdering .......................   Passed    0.06 sec
+        Start 112: ExperimentExecutorTest.OneAndMultipleWorkersProduceIdenticalSimulationResultsRepeatedly
+112/224 Test #112: ExperimentExecutorTest.OneAndMultipleWorkersProduceIdenticalSimulationResultsRepeatedly ...........   Passed    0.06 sec
+        Start 113: ExperimentExecutorTest.BaselineAndHighCapacitySeed42MatchKnownMetrics
+113/224 Test #113: ExperimentExecutorTest.BaselineAndHighCapacitySeed42MatchKnownMetrics .............................   Passed    0.04 sec
+        Start 114: ExperimentExecutorTest.DiscardPolicyDoesNotRetainEventHistory
+114/224 Test #114: ExperimentExecutorTest.DiscardPolicyDoesNotRetainEventHistory .....................................   Passed    0.02 sec
+        Start 115: ExperimentStatisticsTest.CalculatesStablePopulationStatisticsAndNearestRankPercentiles
+115/224 Test #115: ExperimentStatisticsTest.CalculatesStablePopulationStatisticsAndNearestRankPercentiles ............   Passed    0.02 sec
+        Start 116: ExperimentStatisticsTest.MedianAveragesTwoMiddleValues
+116/224 Test #116: ExperimentStatisticsTest.MedianAveragesTwoMiddleValues ............................................   Passed    0.03 sec
+        Start 117: ExperimentStatisticsTest.RejectsEmptyInput
+117/224 Test #117: ExperimentStatisticsTest.RejectsEmptyInput ........................................................   Passed    0.08 sec
+        Start 118: ExperimentStatisticsTest.AggregatesDelayProbabilityPerCase
+118/224 Test #118: ExperimentStatisticsTest.AggregatesDelayProbabilityPerCase ........................................   Passed    0.04 sec
+        Start 119: FleetTest.ThreeVehiclesShareClockAndResolveCompetingTrafficSafely
+119/224 Test #119: FleetTest.ThreeVehiclesShareClockAndResolveCompetingTrafficSafely .................................   Passed    0.06 sec
+        Start 120: FleetTest.SameSeedProducesIdenticalFleetEventAndMetricDigest
+120/224 Test #120: FleetTest.SameSeedProducesIdenticalFleetEventAndMetricDigest ......................................   Passed    0.07 sec
+        Start 121: FleetTest.AggregateMetricsMatchVehicleResultsAndCommonCompletionHorizon
+121/224 Test #121: FleetTest.AggregateMetricsMatchVehicleResultsAndCommonCompletionHorizon ...........................   Passed    0.06 sec
+        Start 122: FleetTest.WaitForDependenciesExposeBlockerResourceAndSimulationDuration
+122/224 Test #122: FleetTest.WaitForDependenciesExposeBlockerResourceAndSimulationDuration ...........................   Passed    0.15 sec
+        Start 123: FleetTest.DifferentSeedsChangeStochasticVehicleTrajectories
+123/224 Test #123: FleetTest.DifferentSeedsChangeStochasticVehicleTrajectories .......................................   Passed    0.11 sec
+        Start 124: FleetTest.IndependentSafetyValidatorDetectsOverlappingVehicles
+124/224 Test #124: FleetTest.IndependentSafetyValidatorDetectsOverlappingVehicles ....................................   Passed    0.08 sec
+        Start 125: FleetTest.FaultedMemberRetainsPerVehicleFaultMetrics
+125/224 Test #125: FleetTest.FaultedMemberRetainsPerVehicleFaultMetrics ..............................................   Passed    0.04 sec
+        Start 126: FleetTest.VehicleIdentifiersMustBeUnique
+126/224 Test #126: FleetTest.VehicleIdentifiersMustBeUnique ..........................................................   Passed    0.08 sec
+        Start 127: FleetTest.ScenarioLoadsThreeMissionsAndConfiguredFault
+127/224 Test #127: FleetTest.ScenarioLoadsThreeMissionsAndConfiguredFault ............................................   Passed    0.15 sec
+        Start 128: FleetScenarioTest.IndependentTrafficCompletesWithoutReservations
+128/224 Test #128: FleetScenarioTest.IndependentTrafficCompletesWithoutReservations ..................................   Passed    0.07 sec
+        Start 129: FleetScenarioTest.SharedSegmentMergeWaitsThenCompletesWithoutCollision
+129/224 Test #129: FleetScenarioTest.SharedSegmentMergeWaitsThenCompletesWithoutCollision ............................   Passed    0.08 sec
+        Start 130: FleetScenarioTest.OpposingVehiclesReserveNarrowEdgeBeforeLeavingHoldingBays
+130/224 Test #130: FleetScenarioTest.OpposingVehiclesReserveNarrowEdgeBeforeLeavingHoldingBays .......................   Passed    0.09 sec
+        Start 131: FleetScenarioTest.DynamicClosureReplansBeforeVehicleCanEnterClosedEdge
+131/224 Test #131: FleetScenarioTest.DynamicClosureReplansBeforeVehicleCanEnterClosedEdge ............................   Passed    0.12 sec
+        Start 132: FleetScenarioTest.EightVehicleOpposingCorridorsCompleteWithoutCollisions
+132/224 Test #132: FleetScenarioTest.EightVehicleOpposingCorridorsCompleteWithoutCollisions ..........................   Passed    0.17 sec
+        Start 133: FleetScenarioTest.ThreeVehicleWaitForCycleTriggersPersistentRecovery
+133/224 Test #133: FleetScenarioTest.ThreeVehicleWaitForCycleTriggersPersistentRecovery ..............................   Passed    0.16 sec
+        Start 134: FleetScenarioTest.UnrecoverableCycleFailsSafelyWithoutRetryLoop
+134/224 Test #134: FleetScenarioTest.UnrecoverableCycleFailsSafelyWithoutRetryLoop ...................................   Passed    0.08 sec
+        Start 135: FleetExperimentTest.DynamicRoadChangesAreIdenticalAcrossSerialAndParallelWorkers
+135/224 Test #135: FleetExperimentTest.DynamicRoadChangesAreIdenticalAcrossSerialAndParallelWorkers ..................   Passed    0.19 sec
+        Start 136: FleetExperimentTest.ThreeVehicleDeadlockRecoveryIsIdenticalAcrossSerialAndParallelWorkers
+136/224 Test #136: FleetExperimentTest.ThreeVehicleDeadlockRecoveryIsIdenticalAcrossSerialAndParallelWorkers .........   Passed    0.18 sec
+        Start 137: FleetExperimentTest.EightVehicleCongestionIsIdenticalAcrossSerialAndParallelWorkers
+137/224 Test #137: FleetExperimentTest.EightVehicleCongestionIsIdenticalAcrossSerialAndParallelWorkers ...............   Passed    1.13 sec
+        Start 138: FleetExperimentTest.SerialAndParallelFleetResultsAreIdentical
+138/224 Test #138: FleetExperimentTest.SerialAndParallelFleetResultsAreIdentical .....................................   Passed    0.89 sec
+        Start 139: FleetExperimentTest.OpposingEdgeFleetResultsMatchSerialAndParallelExactly
+139/224 Test #139: FleetExperimentTest.OpposingEdgeFleetResultsMatchSerialAndParallelExactly .........................   Passed    0.36 sec
+        Start 140: FleetExperimentTest.DynamicDispatchMatchesSerialParallelAndIndependentRuns
+140/224 Test #140: FleetExperimentTest.DynamicDispatchMatchesSerialParallelAndIndependentRuns ........................   Passed    0.94 sec
+        Start 141: FleetReservationTest.SameTimestampUsesPriorityThenVehicleId
+141/224 Test #141: FleetReservationTest.SameTimestampUsesPriorityThenVehicleId .......................................   Passed    0.03 sec
+        Start 142: FleetReservationTest.RequestsQueueAndReleaseTransfersExclusiveOwnership
+142/224 Test #142: FleetReservationTest.RequestsQueueAndReleaseTransfersExclusiveOwnership ...........................   Passed    0.03 sec
+        Start 143: FleetReservationTest.CancelledStaleWaiterDoesNotReceiveReleasedResource
+143/224 Test #143: FleetReservationTest.CancelledStaleWaiterDoesNotReceiveReleasedResource ...........................   Passed    0.03 sec
+        Start 144: FleetReservationTest.PruningStaleWaiterPreservesActiveWaiterOrdering
+144/224 Test #144: FleetReservationTest.PruningStaleWaiterPreservesActiveWaiterOrdering ..............................   Passed    0.16 sec
+        Start 145: FleetReservationTest.OlderWaiterCannotBeStarvedByLaterHighPriorityRequest
+145/224 Test #145: FleetReservationTest.OlderWaiterCannotBeStarvedByLaterHighPriorityRequest .........................   Passed    0.03 sec
+        Start 146: FleetDeadlockTest.DetectsEveryVehicleInCycleButNotVehiclesMerelyBlockedByIt
+146/224 Test #146: FleetDeadlockTest.DetectsEveryVehicleInCycleButNotVehiclesMerelyBlockedByIt .......................   Passed    0.02 sec
+        Start 147: FleetDeadlockTest.DetectsTwoAndFourVehicleCyclesInStableOrder
+147/224 Test #147: FleetDeadlockTest.DetectsTwoAndFourVehicleCyclesInStableOrder .....................................   Passed    0.02 sec
+        Start 148: FleetDeadlockTest.FailedRetreatVehicleIsIdentifiedWhenItBlocksAnotherVehicle
+148/224 Test #148: FleetDeadlockTest.FailedRetreatVehicleIsIdentifiedWhenItBlocksAnotherVehicle ......................   Passed    0.02 sec
+        Start 149: FleetDeadlockTest.LivenessThresholdExcludesIntentionalServiceWaits
+149/224 Test #149: FleetDeadlockTest.LivenessThresholdExcludesIntentionalServiceWaits ................................   Passed    0.02 sec
+        Start 150: FleetDeadlockTest.SelectsYieldVehicleByPriorityWaitThenStableId
+150/224 Test #150: FleetDeadlockTest.SelectsYieldVehicleByPriorityWaitThenStableId ...................................   Passed    0.02 sec
+        Start 151: FleetDispatcherScenarioTest.LoadsVehicleCapabilitiesAndDynamicallyReleasedServiceRequests
+151/224 Test #151: FleetDispatcherScenarioTest.LoadsVehicleCapabilitiesAndDynamicallyReleasedServiceRequests .........   Passed    0.02 sec
+        Start 152: FleetDispatcherIntegrationTest.DynamicScenarioCompletesWithoutCollisionOrLeakedReservations
+152/224 Test #152: FleetDispatcherIntegrationTest.DynamicScenarioCompletesWithoutCollisionOrLeakedReservations .......   Passed    0.25 sec
+        Start 153: FleetDispatcherIntegrationTest.AgingScenarioServesHighPriorityFirstAndPromotesOldWork
+153/224 Test #153: FleetDispatcherIntegrationTest.AgingScenarioServesHighPriorityFirstAndPromotesOldWork .............   Passed    0.06 sec
+        Start 154: FleetDispatcherIntegrationTest.UnavailableVehicleReassignsTaskAndBackupCompletesSafely
+154/224 Test #154: FleetDispatcherIntegrationTest.UnavailableVehicleReassignsTaskAndBackupCompletesSafely ............   Passed    0.09 sec
+        Start 155: FleetDispatcherIntegrationTest.DependencyUnlockedRequestUsesLiveReservationsAndCollisionChecks
+155/224 Test #155: FleetDispatcherIntegrationTest.DependencyUnlockedRequestUsesLiveReservationsAndCollisionChecks ....   Passed    0.15 sec
+        Start 156: FleetDispatcherTest.ChoosesLowestAvailableRouteCostAndUsesStableIdForExactTies
+156/224 Test #156: FleetDispatcherTest.ChoosesLowestAvailableRouteCostAndUsesStableIdForExactTies ....................   Passed    0.06 sec
+        Start 157: FleetDispatcherTest.CapabilityFilteringPrecedesDistance
+157/224 Test #157: FleetDispatcherTest.CapabilityFilteringPrecedesDistance ...........................................   Passed    0.07 sec
+        Start 158: FleetDispatcherTest.RequestsReleaseAtSimulationTimeAndAssignmentsAreDeterministic
+158/224 Test #158: FleetDispatcherTest.RequestsReleaseAtSimulationTimeAndAssignmentsAreDeterministic .................   Passed    0.03 sec
+        Start 159: FleetDispatcherTest.PrioritySelectsWorkFirstAndAgingEventuallyPromotesOldRequests
+159/224 Test #159: FleetDispatcherTest.PrioritySelectsWorkFirstAndAgingEventuallyPromotesOldRequests .................   Passed    0.02 sec
+        Start 160: FleetDispatcherTest.VehicleUnavailabilityRequeuesAndReassignsWithoutChangingProgress
+160/224 Test #160: FleetDispatcherTest.VehicleUnavailabilityRequeuesAndReassignsWithoutChangingProgress ..............   Passed    0.02 sec
+        Start 161: FleetDispatcherTest.BusyDegradedUnavailableAndRecoveringVehiclesAreNotCandidates
+161/224 Test #161: FleetDispatcherTest.BusyDegradedUnavailableAndRecoveringVehiclesAreNotCandidates ..................   Passed    0.02 sec
+        Start 162: FleetDispatcherTest.ClosedRoadMakesCandidateRouteUnavailableAndTerminalStatesAreValidated
+162/224 Test #162: FleetDispatcherTest.ClosedRoadMakesCandidateRouteUnavailableAndTerminalStatesAreValidated .........   Passed    0.04 sec
+        Start 163: FleetDispatcherTest.AcceptsDependencyUnlockedRequestsAndOnlyReplansQueuedWork
+163/224 Test #163: FleetDispatcherTest.AcceptsDependencyUnlockedRequestsAndOnlyReplansQueuedWork .....................   Passed    0.14 sec
+        Start 164: SensorClockTest.PhaseAndSequencesUseSimulationTime
+164/224 Test #164: SensorClockTest.PhaseAndSequencesUseSimulationTime ................................................   Passed    0.05 sec
+        Start 165: SensorClockTest.SeededJitterAndPacketLossRepeatExactly
+165/224 Test #165: SensorClockTest.SeededJitterAndPacketLossRepeatExactly ............................................   Passed    0.02 sec
+        Start 166: SensorClockTest.InvalidAndStaleObservationsAreExplicit
+166/224 Test #166: SensorClockTest.InvalidAndStaleObservationsAreExplicit ............................................   Passed    0.03 sec
+        Start 167: SensorRecorderTest.WritesMachineReadableRecordsAndStableDigest
+167/224 Test #167: SensorRecorderTest.WritesMachineReadableRecordsAndStableDigest ....................................   Passed    0.02 sec
+        Start 168: SimulationTest.ExposesNextEventTimeWithoutAdvancing
+168/224 Test #168: SimulationTest.ExposesNextEventTimeWithoutAdvancing ...............................................   Passed    0.03 sec
+        Start 169: SimulationTest.ResourceContentionCreatesWaitingAndDepartureDelay
+169/224 Test #169: SimulationTest.ResourceContentionCreatesWaitingAndDepartureDelay ..................................   Passed    0.02 sec
+        Start 170: SimulationTest.EveryAircraftCompletesServicesBeforeDeparture
+170/224 Test #170: SimulationTest.EveryAircraftCompletesServicesBeforeDeparture ......................................   Passed    0.02 sec
+        Start 171: SimulationTest.SameSeedProducesIdenticalDomainResults
+171/224 Test #171: SimulationTest.SameSeedProducesIdenticalDomainResults .............................................   Passed    0.02 sec
+        Start 172: SimulationTest.ExternalHighCapacityScenarioChangesContentionResults
+172/224 Test #172: SimulationTest.ExternalHighCapacityScenarioChangesContentionResults ...............................   Passed    0.03 sec
+        Start 173: SimulationTest.RoadClosureReroutesLaterVehicleDispatch
+173/224 Test #173: SimulationTest.RoadClosureReroutesLaterVehicleDispatch ............................................   Passed    0.02 sec
+        Start 174: SimulationTest.RuntimeSurfaceClosureIsOrderedAndDeterministic
+174/224 Test #174: SimulationTest.RuntimeSurfaceClosureIsOrderedAndDeterministic .....................................   Passed    0.03 sec
+        Start 175: SimulationTest.RuntimeSurfaceClosureRejectsUnknownEdges
+175/224 Test #175: SimulationTest.RuntimeSurfaceClosureRejectsUnknownEdges ...........................................   Passed    0.08 sec
+        Start 176: AutonomyTest.AStarRouteBecomesAirportLocalWaypoints
+176/224 Test #176: AutonomyTest.AStarRouteBecomesAirportLocalWaypoints ...............................................   Passed    0.12 sec
+        Start 177: AutonomyTest.SensorExtrinsicsAndCameraTimingLoadFromScenario
+177/224 Test #177: AutonomyTest.SensorExtrinsicsAndCameraTimingLoadFromScenario ......................................   Passed    0.06 sec
+        Start 178: AutonomyTest.CameraMetadataRecordingIsDeterministicAndContainsNoPixelPayload
+178/224 Test #178: AutonomyTest.CameraMetadataRecordingIsDeterministicAndContainsNoPixelPayload ......................   Passed    0.11 sec
+        Start 179: AutonomyTest.CameraMetadataLatencyUsesSimulationTime
+179/224 Test #179: AutonomyTest.CameraMetadataLatencyUsesSimulationTime ..............................................   Passed    0.03 sec
+        Start 180: AutonomyTest.IncrementalSnapshotSeparatesTruthFromSensorValues
+180/224 Test #180: AutonomyTest.IncrementalSnapshotSeparatesTruthFromSensorValues ....................................   Passed    0.02 sec
+        Start 181: AutonomyTest.ExplicitReverseCommandMovesBackwardWithBoundedVehicleMotion
+181/224 Test #181: AutonomyTest.ExplicitReverseCommandMovesBackwardWithBoundedVehicleMotion ..........................   Passed    0.03 sec
+        Start 182: AutonomyTest.SensorRatesAreIndependentAndTimestampsUseSimulationTime
+182/224 Test #182: AutonomyTest.SensorRatesAreIndependentAndTimestampsUseSimulationTime ..............................   Passed    0.10 sec
+        Start 183: AutonomyTest.RepeatedSeedRecordsIdenticalDeliveredObservationStream
+183/224 Test #183: AutonomyTest.RepeatedSeedRecordsIdenticalDeliveredObservationStream ...............................   Passed    0.07 sec
+        Start 184: AutonomyTest.SameSeedProducesIdenticalClosedLoopDigestAndState
+184/224 Test #184: AutonomyTest.SameSeedProducesIdenticalClosedLoopDigestAndState ....................................   Passed    0.05 sec
+        Start 185: AutonomyTest.DifferentSeedsChangeSensorAndTrajectoryDigest
+185/224 Test #185: AutonomyTest.DifferentSeedsChangeSensorAndTrajectoryDigest ........................................   Passed    0.04 sec
+        Start 186: AutonomyTest.LegacyLocalizationModeIsDeterministicForSeed42
+186/224 Test #186: AutonomyTest.LegacyLocalizationModeIsDeterministicForSeed42 .......................................   Passed    0.03 sec
+        Start 187: AutonomyTest.CircleLidarReportsNearestHitAndMaximumRange
+187/224 Test #187: AutonomyTest.CircleLidarReportsNearestHitAndMaximumRange ..........................................   Passed    0.03 sec
+        Start 188: AutonomyTest.LidarRotatesAndTranslatesWithVehicle
+188/224 Test #188: AutonomyTest.LidarRotatesAndTranslatesWithVehicle .................................................   Passed    0.05 sec
+        Start 189: AutonomyTest.SensorNoiseIsDeterministicAndDifferentSeedsVary
+189/224 Test #189: AutonomyTest.SensorNoiseIsDeterministicAndDifferentSeedsVary ......................................   Passed    0.10 sec
+        Start 190: AutonomyTest.VehicleEnforcesSpeedAndYawLimits
+190/224 Test #190: AutonomyTest.VehicleEnforcesSpeedAndYawLimits .....................................................   Passed    0.05 sec
+        Start 191: AutonomyTest.LidarSafetyStopsBeforePhysicalCollision
+191/224 Test #191: AutonomyTest.LidarSafetyStopsBeforePhysicalCollision ..............................................   Passed    0.03 sec
+        Start 192: AutonomyTest.IndependentCollisionSystemRecordsImpact
+192/224 Test #192: AutonomyTest.IndependentCollisionSystemRecordsImpact ..............................................   Passed    0.10 sec
+        Start 193: AutonomyTest.OptionalTrajectoryRecordingHasGroundTruthAndObservationColumns
+193/224 Test #193: AutonomyTest.OptionalTrajectoryRecordingHasGroundTruthAndObservationColumns .......................   Passed    0.12 sec
+        Start 194: StateEstimatorTest.InitializesOnlyFromGnssAndMaintainsFiniteCovariance
+194/224 Test #194: StateEstimatorTest.InitializesOnlyFromGnssAndMaintainsFiniteCovariance ............................   Passed    0.03 sec
+        Start 195: StateEstimatorTest.WheelIncrementIsIntegratedOnceAcrossVariableMeasurementIntervals
+195/224 Test #195: StateEstimatorTest.WheelIncrementIsIntegratedOnceAcrossVariableMeasurementIntervals ...............   Passed    0.02 sec
+        Start 196: StateEstimatorTest.TurningPredictionAndYawWrappingRemainBounded
+196/224 Test #196: StateEstimatorTest.TurningPredictionAndYawWrappingRemainBounded ...................................   Passed    0.02 sec
+        Start 197: StateEstimatorTest.GatesOutlyingGnssAndRejectsStaleTimestamps
+197/224 Test #197: StateEstimatorTest.GatesOutlyingGnssAndRejectsStaleTimestamps .....................................   Passed    0.02 sec
+        Start 198: StateEstimatorTest.PositionCovarianceGrowsWithoutAbsoluteFixAndContractsWhenFixReturns
+198/224 Test #198: StateEstimatorTest.PositionCovarianceGrowsWithoutAbsoluteFixAndContractsWhenFixReturns ............   Passed    0.02 sec
+        Start 199: StateEstimatorTest.RejectsMalformedConfiguration
+199/224 Test #199: StateEstimatorTest.RejectsMalformedConfiguration ..................................................   Passed    0.05 sec
+        Start 200: StateEstimatorTest.WheelHealthStartsNominalAndIgnoresOneTransientDisagreement
+200/224 Test #200: StateEstimatorTest.WheelHealthStartsNominalAndIgnoresOneTransientDisagreement .....................   Passed    0.10 sec
+        Start 201: StateEstimatorTest.SustainedWheelScaleErrorDegradesAndDownweightsThenRecovers
+201/224 Test #201: StateEstimatorTest.SustainedWheelScaleErrorDegradesAndDownweightsThenRecovers .....................   Passed    0.06 sec
+        Start 202: StateEstimatorTest.RepeatedConsistentGnssReacquiresWithBoundedCorrectionsAndSafetyHealth
+202/224 Test #202: StateEstimatorTest.RepeatedConsistentGnssReacquiresWithBoundedCorrectionsAndSafetyHealth ..........   Passed    0.05 sec
+        Start 203: StateEstimatorTest.InconsistentMovingGnssCandidatesCannotConfirmRecovery
+203/224 Test #203: StateEstimatorTest.InconsistentMovingGnssCandidatesCannotConfirmRecovery ..........................   Passed    0.03 sec
+        Start 204: StateEstimatorTest.IsolatedGnssOutlierDoesNotStartReacquisition
+204/224 Test #204: StateEstimatorTest.IsolatedGnssOutlierDoesNotStartReacquisition ...................................   Passed    0.03 sec
+        Start 205: StateEstimatorTest.RemainsUninitializedUntilPositionAndHeadingAreAvailable
+205/224 Test #205: StateEstimatorTest.RemainsUninitializedUntilPositionAndHeadingAreAvailable ........................   Passed    0.02 sec
+        Start 206: StateEstimatorTest.WheelSlipFlowsThroughOdometrySpeedAndImuDropoutUsesOdometryHeading
+206/224 Test #206: StateEstimatorTest.WheelSlipFlowsThroughOdometrySpeedAndImuDropoutUsesOdometryHeading .............   Passed    0.02 sec
+        Start 207: StateEstimatorTest.CovarianceStaysFiniteSymmetricAndNonnegativeAcrossRepeatedUpdates
+207/224 Test #207: StateEstimatorTest.CovarianceStaysFiniteSymmetricAndNonnegativeAcrossRepeatedUpdates ..............   Passed    0.02 sec
+        Start 208: StateEstimatorTest.RepeatedSameMeasurementSequenceProducesIdenticalState
+208/224 Test #208: StateEstimatorTest.RepeatedSameMeasurementSequenceProducesIdenticalState ..........................   Passed    0.02 sec
+        Start 209: AutonomyFaultTest.GnssDropoutHonorsHalfOpenSimulationIntervalAndRecordsEvents
+209/224 Test #209: AutonomyFaultTest.GnssDropoutHonorsHalfOpenSimulationIntervalAndRecordsEvents .....................   Passed    0.03 sec
+        Start 210: AutonomyFaultTest.LidarRangeLimitAndAngularMaskOnlyRemoveInformation
+210/224 Test #210: AutonomyFaultTest.LidarRangeLimitAndAngularMaskOnlyRemoveInformation ..............................   Passed    0.03 sec
+        Start 211: AutonomyFaultTest.GnssBiasIsAppliedOnceToEachNewMeasurement
+211/224 Test #211: AutonomyFaultTest.GnssBiasIsAppliedOnceToEachNewMeasurement .......................................   Passed    0.02 sec
+        Start 212: AutonomyFaultTest.AddedGnssNoiseUsesFaultSeedAndUpdatesReportedAccuracy
+212/224 Test #212: AutonomyFaultTest.AddedGnssNoiseUsesFaultSeedAndUpdatesReportedAccuracy ...........................   Passed    0.11 sec
+        Start 213: AutonomyFaultTest.ImuBiasAndWheelSlipAlterOnlyMeasurements
+213/224 Test #213: AutonomyFaultTest.ImuBiasAndWheelSlipAlterOnlyMeasurements ........................................   Passed    0.12 sec
+        Start 214: AutonomyFaultTest.PacketLossSequenceUsesDedicatedFaultSeed
+214/224 Test #214: AutonomyFaultTest.PacketLossSequenceUsesDedicatedFaultSeed ........................................   Passed    0.03 sec
+        Start 215: AutonomyFaultTest.DelayedAndBurstLossFaultsRecordDeterministicMetrics
+215/224 Test #215: AutonomyFaultTest.DelayedAndBurstLossFaultsRecordDeterministicMetrics .............................   Passed    0.02 sec
+        Start 216: AutonomyFaultTest.DelayHoldsMeasurementUntilItsSimulationDeliveryTime
+216/224 Test #216: AutonomyFaultTest.DelayHoldsMeasurementUntilItsSimulationDeliveryTime .............................   Passed    0.04 sec
+        Start 217: AutonomyFaultTest.ProlongedLidarLossTriggersControlledStopWithoutCollision
+217/224 Test #217: AutonomyFaultTest.ProlongedLidarLossTriggersControlledStopWithoutCollision ........................   Passed    0.03 sec
+        Start 218: AutonomyFaultTest.BriefGnssLossEntersDegradedModeButUsesDeadReckoning
+218/224 Test #218: AutonomyFaultTest.BriefGnssLossEntersDegradedModeButUsesDeadReckoning .............................   Passed    0.03 sec
+        Start 219: AutonomyFaultTest.LongLocalizationLossTransitionsUnsafeStopsAndRecovers
+219/224 Test #219: AutonomyFaultTest.LongLocalizationLossTransitionsUnsafeStopsAndRecovers ...........................   Passed    0.05 sec
+        Start 220: AutonomyExperimentTest.SerialAndParallelRunsHaveStableOrdinalAndIdenticalResults
+220/224 Test #220: AutonomyExperimentTest.SerialAndParallelRunsHaveStableOrdinalAndIdenticalResults ..................   Passed    0.16 sec
+        Start 221: AutonomyExperimentTest.WorkerFailurePropagatesToCaller
+221/224 Test #221: AutonomyExperimentTest.WorkerFailurePropagatesToCaller ............................................   Passed    0.03 sec
+        Start 222: AutonomyExperimentTest.Goal9DiagnosticsAreIdenticalAcrossSerialAndParallelRuns
+222/224 Test #222: AutonomyExperimentTest.Goal9DiagnosticsAreIdenticalAcrossSerialAndParallelRuns ....................   Passed    0.07 sec
+        Start 223: AutonomyFaultYamlTest.LoadsFaultSchemaAndRejectsMalformedIntervals
+223/224 Test #223: AutonomyFaultYamlTest.LoadsFaultSchemaAndRejectsMalformedIntervals ................................   Passed    0.14 sec
+        Start 224: SurfaceTrafficExportFieldsTest
+224/224 Test #224: SurfaceTrafficExportFieldsTest ....................................................................   Passed    3.41 sec
+
+100% tests passed out of 224
+
+Total Test time (real) = 162.61 sec

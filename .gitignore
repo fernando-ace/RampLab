@@ -47,6 +47,7 @@ Testing/
 coverage/
 /results/
 __pycache__/
+tmp/goal45-pdfs/
 
 # OS metadata
 .DS_Store

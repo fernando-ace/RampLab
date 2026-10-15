@@ -1,0 +1,8 @@
+tools/airport_data_ingestion/kauo_operational_geometry.json text eol=lf
+tools/airport_data_ingestion/sources/faa_nasr_auo_2026-10-01.json text eol=lf
+docs/goal45-evidence/*.json text eol=lf
+docs/goal45-evidence/*.svg text eol=lf
+docs/goal45-evidence/*.md text eol=lf
+docs/goal45-evidence/*.txt text eol=lf
+docs/goal45-evidence/*.log text eol=lf
+docs/goal45-evidence.zip.sha256 text eol=lf

@@ -1,0 +1,50 @@
+test_bad_relationship_rejected (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_bad_relationship_rejected) ... ok
+test_cli_help_and_manifest_schema_rejection (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_cli_help_and_manifest_schema_rejection) ... ok
+test_collision_and_unsupported_type (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_collision_and_unsupported_type) ... ok
+test_csv_json_equivalence_for_operations (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_csv_json_equivalence_for_operations) ... ok
+test_delayed_service_can_reference_turnaround_requirement (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_delayed_service_can_reference_turnaround_requirement) ... ok
+test_dimension_units_normalize_and_reject_unknown (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_dimension_units_normalize_and_reject_unknown) ... ok
+test_example_valid_and_sources_hashed (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_example_valid_and_sources_hashed) ... ok
+test_gate_overlap_is_only_reported_with_supplied_windows (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_gate_overlap_is_only_reported_with_supplied_windows) ... ok
+test_inspection_and_cli_validation_failure (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_inspection_and_cli_validation_failure) ... Validation failed: 3 error(s)
+ok
+test_malformed_csv_and_json_report_stable_parse_code (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_malformed_csv_and_json_report_stable_parse_code) ... ok
+test_naive_timezone_ambiguous_time_fails_without_database (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_naive_timezone_ambiguous_time_fails_without_database) ... ok
+test_repeat_build_bytes_and_finding_order_stable (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_repeat_build_bytes_and_finding_order_stable) ... ok
+test_static_equivalence_fixtures_and_malformed_fixture (tools.airport_data_ingestion.test_ingestion.IngestionTests.test_static_equivalence_fixtures_and_malformed_fixture) ... ok
+test_all_canonical_and_rejected_geometry_has_complete_provenance (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_all_canonical_and_rejected_geometry_has_complete_provenance) ... ok
+test_approximate_canonical_geometry_cannot_be_simulation_approved (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_approximate_canonical_geometry_cannot_be_simulation_approved) ... ok
+test_clearance_audit_preserves_unknown_and_detects_failure (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_clearance_audit_preserves_unknown_and_detects_failure) ... ok
+test_committed_dataset_is_deterministic_and_current (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_committed_dataset_is_deterministic_and_current) ... ok
+test_complete_source_backed_fixture_can_pass_gate (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_complete_source_backed_fixture_can_pass_gate) ... ok
+test_components_detect_disconnection_and_missing_edges (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_components_detect_disconnection_and_missing_edges) ... ok
+test_dataset_contains_no_synthetic_operational_features (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_dataset_contains_no_synthetic_operational_features) ... ok
+test_faa_extract_includes_required_records_and_source_archive_hash (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_faa_extract_includes_required_records_and_source_archive_hash) ... ok
+test_faa_extract_matches_anchor_snapshot (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_faa_extract_matches_anchor_snapshot) ... ok
+test_faa_threshold_coordinate_transform_and_round_trip (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_faa_threshold_coordinate_transform_and_round_trip) ... ok
+test_known_faa_runway_and_threshold_counts (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_known_faa_runway_and_threshold_counts) ... ok
+test_missing_provenance_is_rejected (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_missing_provenance_is_rejected) ... ok
+test_point_to_segment_clearance_distance (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_point_to_segment_clearance_distance) ... ok
+test_readiness_fails_closed_with_explicit_missing_data (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_readiness_fails_closed_with_explicit_missing_data) ... ok
+test_readiness_reports_are_deterministic (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_readiness_reports_are_deterministic) ... ok
+test_require_ready_cli_returns_blocked_exit_without_running_simulator (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_require_ready_cli_returns_blocked_exit_without_running_simulator) ... ok
+test_visualization_explains_source_derived_and_quarantined_data (tools.airport_data_ingestion.test_kauo_geometry.KauoGeometryTests.test_visualization_explains_source_derived_and_quarantined_data) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.360s
+
+OK
+aircraft: 0
+disruptions: 0
+equipment: 0
+flights: 0
+gates: 0
+turnaround_requirements: 0
+ERROR SOURCE_PARSE_ERROR bad.json: bad.json: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+ERROR SOURCE_PARSE_ERROR bad.json: bad.json: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+ERROR SOURCE_PARSE_ERROR bad.json: bad.json: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+KAUO DATA READINESS: BLOCKED
+DATA BLOCKED: production KAUO simulator execution prohibited by readiness gate
+dataset=C:\Users\Ferna\AppData\Local\Temp\tmpcb7y8mad\dataset.json
+report=C:\Users\Ferna\AppData\Local\Temp\tmpcb7y8mad\report.json
+visualization=C:\Users\Ferna\AppData\Local\Temp\tmpcb7y8mad\geometry.svg

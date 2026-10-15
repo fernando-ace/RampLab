@@ -1,0 +1,4461 @@
+{
+  "airport_id": "KAUO",
+  "clearance_assessments": [],
+  "coordinate_reference_system": {
+    "origin": {
+      "ellipsoid_height_m": 208.22,
+      "latitude_degrees": 32.61511111,
+      "longitude_degrees": -85.434,
+      "source_id": "faa_nasr_2026_10_01"
+    },
+    "simulation": "local ENU meters, +X east, +Y north, +Z up",
+    "source": "WGS 84 geographic 3D (EPSG:4979)",
+    "transform": "WGS-84 geodetic to ECEF then tangent-plane ENU at airport reference point; see tools/airport_scenario_generation/geospatial.py.",
+    "vertical_datum": "Source endpoint elevations are FAA-published feet MSL; spatial coordinates use the existing project ellipsoid-height origin. No independent geoid model is applied to endpoint positions."
+  },
+  "dataset_id": "kauo_authoritative_geometry_goal45",
+  "feature_inventory": [
+    {
+      "feature_type": "runway",
+      "geometry_count": 2,
+      "notes": "Two centerlines derived from FAA-published endpoints and dimensions.",
+      "status": "available"
+    },
+    {
+      "feature_type": "runway_threshold",
+      "geometry_count": 4,
+      "notes": "Four FAA-published runway-end positions; accuracy not published.",
+      "status": "available"
+    },
+    {
+      "feature_type": "taxiway_centerline",
+      "geometry_count": 0,
+      "notes": "FAA diagram gives labels and relative layout only; no suitable source coordinates obtained.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "taxiway_intersection",
+      "geometry_count": 0,
+      "notes": "No current surveyed/GIS intersection coordinates.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "taxilane",
+      "geometry_count": 0,
+      "notes": "No current operational centerline data obtained.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "apron_boundary",
+      "geometry_count": 0,
+      "notes": "Public project drawings are schematic/proposed or old; no current as-built geospatial boundary obtained.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "aircraft_stand",
+      "geometry_count": 0,
+      "notes": "No current surveyed stand/parking coordinates or identifiers obtained.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "service_road",
+      "geometry_count": 0,
+      "notes": "No airside service road network or access restrictions obtained.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "gse_staging_position",
+      "geometry_count": 0,
+      "notes": "No verified GSE staging/depot locations obtained.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "terminal_service_area",
+      "geometry_count": 0,
+      "notes": "Airport operator confirms FBO service, but not service-area footprint or curb geometry.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "hold_short_location",
+      "geometry_count": 0,
+      "notes": "Diagram depicts markings, but exact surveyed coordinates and aircraft-specific stop geometry are not present.",
+      "status": "missing"
+    },
+    {
+      "feature_type": "runway_crossing",
+      "geometry_count": 0,
+      "notes": "Chart warning requires crossing clearance; no operational permissions/logic data obtained.",
+      "status": "missing"
+    }
+  ],
+  "features": [
+    {
+      "accuracy_m": null,
+      "authoritative": true,
+      "capture_method": "FAA_PUBLISHED_POSITION",
+      "classification": "AUTHORITATIVE",
+      "confidence": 0.95,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        0.0,
+        0.0
+      ],
+      "feature_type": "airport_reference_point",
+      "geometry_id": "airport_reference_point",
+      "geometry_type": "Point",
+      "notes": "NASR labels this airport reference position third-party survey dated 2006-05-22; no horizontal accuracy estimate is published.",
+      "simulation_approved": true,
+      "source_coordinates": {
+        "latitude_degrees": 32.61511111,
+        "longitude_degrees": -85.434
+      },
+      "source_date": "2026-10-01",
+      "source_id": "faa_nasr_2026_10_01",
+      "source_type": "FAA NASR APT_BASE.csv"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "STRAIGHT_SEGMENT_BETWEEN_PUBLISHED_THRESHOLDS",
+      "classification": "SOURCE_DERIVED",
+      "confidence": 0.9,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -314.53713,
+          495.730459
+        ],
+        [
+          849.420982,
+          132.956881
+        ]
+      ],
+      "endpoint_distance_m": 1219.181346,
+      "feature_type": "runway",
+      "geometry_id": "runway_11_29_centerline",
+      "geometry_type": "LineString",
+      "notes": "Centerline is a straight segment between FAA-published runway ends. It does not define runway pavement shoulders, blast pads, declared distances, or surveyed pavement edges.",
+      "published_length_m": 1219.2,
+      "runway_id": "11/29",
+      "simulation_approved": true,
+      "source_date": "2026-10-01",
+      "source_id": "faa_nasr_2026_10_01",
+      "source_type": "Derived from FAA NASR APT_RWY and APT_RWY_END.csv",
+      "surface": "asphalt",
+      "width_m": 22.86
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": true,
+      "capture_method": "FAA_PUBLISHED_POSITION",
+      "classification": "AUTHORITATIVE",
+      "confidence": 0.95,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -314.53713,
+        495.730459
+      ],
+      "feature_type": "runway_threshold",
+      "geometry_id": "runway_11_29_threshold_11",
+      "geometry_type": "Point",
+      "notes": "FAA cycle record identifies a third-party survey; absolute horizontal accuracy is not published.",
+      "runway_id": "11/29",
+      "simulation_approved": true,
+      "source_coordinates": {
+        "elevation_ft_msl": 774.9,
+        "latitude_degrees": 32.61958108,
+        "longitude_degrees": -85.4373513,
+        "vertical_datum": "MSL"
+      },
+      "source_date": "2006-05-22",
+      "source_id": "faa_nasr_2026_10_01",
+      "source_type": "FAA NASR APT_RWY_END.csv",
+      "threshold_id": "11"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": true,
+      "capture_method": "FAA_PUBLISHED_POSITION",
+      "classification": "AUTHORITATIVE",
+      "confidence": 0.95,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        849.420982,
+        132.956881
+      ],
+      "feature_type": "runway_threshold",
+      "geometry_id": "runway_11_29_threshold_29",
+      "geometry_type": "Point",
+      "notes": "FAA cycle record identifies a third-party survey; absolute horizontal accuracy is not published.",
+      "runway_id": "11/29",
+      "simulation_approved": true,
+      "source_coordinates": {
+        "elevation_ft_msl": 766.3,
+        "latitude_degrees": 32.61630966,
+        "longitude_degrees": -85.42495,
+        "vertical_datum": "MSL"
+      },
+      "source_date": "2006-05-22",
+      "source_id": "faa_nasr_2026_10_01",
+      "source_type": "FAA NASR APT_RWY_END.csv",
+      "threshold_id": "29"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "STRAIGHT_SEGMENT_BETWEEN_PUBLISHED_THRESHOLDS",
+      "classification": "SOURCE_DERIVED",
+      "confidence": 0.9,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -191.058895,
+          564.510565
+        ],
+        [
+          -220.183588,
+          -1039.622948
+        ]
+      ],
+      "endpoint_distance_m": 1604.397886,
+      "feature_type": "runway",
+      "geometry_id": "runway_18_36_centerline",
+      "geometry_type": "LineString",
+      "notes": "Centerline is a straight segment between FAA-published runway ends. It does not define runway pavement shoulders, blast pads, declared distances, or surveyed pavement edges.",
+      "published_length_m": 1604.4672,
+      "runway_id": "18/36",
+      "simulation_approved": true,
+      "source_date": "2026-10-01",
+      "source_id": "faa_nasr_2026_10_01",
+      "source_type": "Derived from FAA NASR APT_RWY and APT_RWY_END.csv",
+      "surface": "asphalt, grooved",
+      "width_m": 30.48
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": true,
+      "capture_method": "FAA_PUBLISHED_POSITION",
+      "classification": "AUTHORITATIVE",
+      "confidence": 0.95,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -191.058895,
+        564.510565
+      ],
+      "feature_type": "runway_threshold",
+      "geometry_id": "runway_18_36_threshold_18",
+      "geometry_type": "Point",
+      "notes": "FAA cycle record identifies a third-party survey; absolute horizontal accuracy is not published.",
+      "runway_id": "18/36",
+      "simulation_approved": true,
+      "source_coordinates": {
+        "elevation_ft_msl": 776.8,
+        "latitude_degrees": 32.6202013,
+        "longitude_degrees": -85.43603569,
+        "vertical_datum": "MSL"
+      },
+      "source_date": "2006-05-22",
+      "source_id": "faa_nasr_2026_10_01",
+      "source_type": "FAA NASR APT_RWY_END.csv",
+      "threshold_id": "18"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": true,
+      "capture_method": "FAA_PUBLISHED_POSITION",
+      "classification": "AUTHORITATIVE",
+      "confidence": 0.95,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -220.183588,
+        -1039.622948
+      ],
+      "feature_type": "runway_threshold",
+      "geometry_id": "runway_18_36_threshold_36",
+      "geometry_type": "Point",
+      "notes": "FAA cycle record identifies a third-party survey; absolute horizontal accuracy is not published.",
+      "runway_id": "18/36",
+      "simulation_approved": true,
+      "source_coordinates": {
+        "elevation_ft_msl": 731.1,
+        "latitude_degrees": 32.60573677,
+        "longitude_degrees": -85.43634563,
+        "vertical_datum": "MSL"
+      },
+      "source_date": "2006-05-22",
+      "source_id": "faa_nasr_2026_10_01",
+      "source_type": "FAA NASR APT_RWY_END.csv",
+      "threshold_id": "36"
+    }
+  ],
+  "generated_by": "tools.airport_data_ingestion.kauo_geometry.build_dataset",
+  "generation_policy": "Deterministic transform from committed FAA NASR anchor snapshot; all legacy chart/assumption geometry remains rejected and non-simulation-approved.",
+  "operational_graph": {
+    "edges": [],
+    "nodes": [],
+    "source_id": null,
+    "status": "unavailable"
+  },
+  "operational_relationships": [],
+  "readiness_requirements": [
+    "taxiway_topology",
+    "arrival_runway_exit_connectivity",
+    "departure_runway_entry_connectivity",
+    "gate_stand_connectivity",
+    "turnaround_service_access",
+    "gse_spawn_accessibility",
+    "stationary_gse_clearance",
+    "aircraft_route_clearance",
+    "service_road_availability",
+    "runway_crossing_definitions",
+    "geometry_provenance",
+    "geometry_confidence",
+    "unsupported_inferred_attachments"
+  ],
+  "rejected_features": [
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_fbo_apron_junction_to_kauo_g31_stand_1_service_approach",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 151.058,
+      "legacy_id": "fbo_apron_junction_to_kauo_g31_stand_1_service_approach",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_fbo_apron_junction_to_kauo_g31_stand_2_service_approach",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 213.74,
+      "legacy_id": "fbo_apron_junction_to_kauo_g31_stand_2_service_approach",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_fbo_apron_junction_to_kauo_g31_stand_3_service_approach",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 317.808,
+      "legacy_id": "fbo_apron_junction_to_kauo_g31_stand_3_service_approach",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          170.0,
+          -85.0
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_fbo_apron_parking_02",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 199.74,
+      "legacy_id": "fbo_apron_parking_02",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          260.0,
+          -165.0
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_fbo_apron_parking_03",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 303.808,
+      "legacy_id": "fbo_apron_parking_03",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -544.048314,
+          -204.898264
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_fbo_junction_fuel_farm",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 531.498,
+      "legacy_id": "fbo_junction_fuel_farm",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "self_serve_fuel_farm"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          93.160375,
+          -133.834301
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_fbo_junction_parking",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 137.058,
+      "legacy_id": "fbo_junction_parking",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          170.0,
+          -85.0
+        ],
+        [
+          -83.468,
+          99.305
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02",
+      "geometry_id": "legacy_edge_fbo_service_staging_east_link",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 313.392,
+      "legacy_id": "fbo_service_staging_east_link",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_service_staging_east"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          93.160375,
+          -133.834301
+        ],
+        [
+          -13.652,
+          106.951
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand",
+      "geometry_id": "legacy_edge_fbo_service_staging_fuel_link",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 263.413,
+      "legacy_id": "fbo_service_staging_fuel_link",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_service_staging_fuel"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          93.160375,
+          -133.834301
+        ],
+        [
+          -48.936,
+          106.567
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand",
+      "geometry_id": "legacy_edge_fbo_service_staging_west_link",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 279.256,
+      "legacy_id": "fbo_service_staging_west_link",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_service_staging_west"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          182.196,
+          -69.985
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_airstart_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_airstart_service_point_to_kauo_g31_stand_2_service_approach_airstart",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_airstart_service_point_to_kauo_g31_stand_2_service_approach_airstart",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          187.127,
+          -101.572
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_baggage_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_baggage_service_point_to_kauo_g31_stand_2_service_approach_baggage",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_baggage_service_point_to_kauo_g31_stand_2_service_approach_baggage",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          193.461,
+          -98.769
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_catering_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_catering_service_point_to_kauo_g31_stand_2_service_approach_catering",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_catering_service_point_to_kauo_g31_stand_2_service_approach_catering",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          180.202,
+          -101.436
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_fuel_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_fuel_service_point_to_kauo_g31_stand_2_service_approach_fuel",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_fuel_service_point_to_kauo_g31_stand_2_service_approach_fuel",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          198.872,
+          -80.055
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_gpu_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_gpu_service_point_to_kauo_g31_stand_2_service_approach_gpu",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_gpu_service_point_to_kauo_g31_stand_2_service_approach_gpu",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          198.016,
+          -93.552
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_lavatory_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_lavatory_service_point_to_kauo_g31_stand_2_service_approach_lavatory",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_lavatory_service_point_to_kauo_g31_stand_2_service_approach_lavatory",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          195.011,
+          -74.304
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_pushback_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_pushback_service_point_to_kauo_g31_stand_2_service_approach_pushback",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_pushback_service_point_to_kauo_g31_stand_2_service_approach_pushback",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          189.083,
+          -70.724
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_stairs_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_stairs_service_point_to_kauo_g31_stand_2_service_approach_stairs",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_stairs_service_point_to_kauo_g31_stand_2_service_approach_stairs",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          199.94,
+          -86.898
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_02_water_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_02_water_service_point_to_kauo_g31_stand_2_service_approach_water",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_02_water_service_point_to_kauo_g31_stand_2_service_approach_water",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          275.492,
+          -153.415
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_airstart_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_airstart_service_point_to_kauo_g31_stand_3_service_approach_airstart",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_airstart_service_point_to_kauo_g31_stand_3_service_approach_airstart",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          272.564,
+          -185.251
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_baggage_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_baggage_service_point_to_kauo_g31_stand_3_service_approach_baggage",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_baggage_service_point_to_kauo_g31_stand_3_service_approach_baggage",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          279.391,
+          -184.078
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_catering_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_catering_service_point_to_kauo_g31_stand_3_service_approach_catering",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_catering_service_point_to_kauo_g31_stand_3_service_approach_catering",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          265.882,
+          -183.428
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_fuel_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_fuel_service_point_to_kauo_g31_stand_3_service_approach_fuel",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_fuel_service_point_to_kauo_g31_stand_3_service_approach_fuel",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          289.205,
+          -167.251
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_gpu_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_gpu_service_point_to_kauo_g31_stand_3_service_approach_gpu",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_gpu_service_point_to_kauo_g31_stand_3_service_approach_gpu",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          285.082,
+          -180.13
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_lavatory_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_lavatory_service_point_to_kauo_g31_stand_3_service_approach_lavatory",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_lavatory_service_point_to_kauo_g31_stand_3_service_approach_lavatory",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          286.865,
+          -160.732
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_pushback_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_pushback_service_point_to_kauo_g31_stand_3_service_approach_pushback",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_pushback_service_point_to_kauo_g31_stand_3_service_approach_pushback",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          281.989,
+          -155.813
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_stairs_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_stairs_service_point_to_kauo_g31_stand_3_service_approach_stairs",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_stairs_service_point_to_kauo_g31_stand_3_service_approach_stairs",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          288.571,
+          -174.148
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_03_water_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_03_water_service_point_to_kauo_g31_stand_3_service_approach_water",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_03_water_service_point_to_kauo_g31_stand_3_service_approach_water",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          110.257,
+          -124.784
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_airstart_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_airstart_service_point_to_kauo_g31_stand_1_service_approach_airstart",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_airstart_service_point_to_kauo_g31_stand_1_service_approach_airstart",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          102.443,
+          -155.784
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_baggage_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_baggage_service_point_to_kauo_g31_stand_1_service_approach_baggage",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_baggage_service_point_to_kauo_g31_stand_1_service_approach_baggage",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          109.368,
+          -155.68
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_catering_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_catering_service_point_to_kauo_g31_stand_1_service_approach_catering",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_catering_service_point_to_kauo_g31_stand_1_service_approach_catering",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          96.123,
+          -152.95
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_fuel_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_fuel_service_point_to_kauo_g31_stand_1_service_approach_fuel",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_fuel_service_point_to_kauo_g31_stand_1_service_approach_fuel",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          121.666,
+          -140.573
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_gpu_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_gpu_service_point_to_kauo_g31_stand_1_service_approach_gpu",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_gpu_service_point_to_kauo_g31_stand_1_service_approach_gpu",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          115.601,
+          -152.66
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_lavatory_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_lavatory_service_point_to_kauo_g31_stand_1_service_approach_lavatory",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_lavatory_service_point_to_kauo_g31_stand_1_service_approach_lavatory",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          120.362,
+          -133.771
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_pushback_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_pushback_service_point_to_kauo_g31_stand_1_service_approach_pushback",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_pushback_service_point_to_kauo_g31_stand_1_service_approach_pushback",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          116.306,
+          -128.157
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_stairs_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_stairs_service_point_to_kauo_g31_stand_1_service_approach_stairs",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_stairs_service_point_to_kauo_g31_stand_1_service_approach_stairs",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          119.974,
+          -147.289
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "ga_parking_stand_water_service_point",
+      "geometry_id": "legacy_edge_ga_parking_stand_water_service_point_to_kauo_g31_stand_1_service_approach_water",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "ga_parking_stand_water_service_point_to_kauo_g31_stand_1_service_approach_water",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -13.652,
+          106.951
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_1",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_1",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_service_staging_fuel"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -115.918,
+          85.447
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_2",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_2",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "gse_fuel_depot_02"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -48.936,
+          106.567
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_3",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_3",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_service_staging_west"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -83.468,
+          99.305
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_4",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_4",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_service_staging_east"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -145.042,
+          65.524
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_5",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_5",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "gse_catering_depot"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -169.719,
+          40.303
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_6",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_6",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "gse_lavatory_depot"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -189.002,
+          10.751
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_7",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_7",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "gse_water_depot"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -202.149,
+          -21.994
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_8",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_8",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "gse_gpu_depot"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -29.34007,
+          -72.36365
+        ],
+        [
+          -208.655,
+          -56.676
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_junction",
+      "geometry_id": "legacy_edge_gse_hub_to_spawn_9",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_hub_to_spawn_9",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "gse_tug_depot"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -13.652,
+          106.951
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_service_staging_fuel",
+      "geometry_id": "legacy_edge_gse_spawn_1_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_1_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -115.918,
+          85.447
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "gse_fuel_depot_02",
+      "geometry_id": "legacy_edge_gse_spawn_2_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_2_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -48.936,
+          106.567
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_service_staging_west",
+      "geometry_id": "legacy_edge_gse_spawn_3_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_3_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -83.468,
+          99.305
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_service_staging_east",
+      "geometry_id": "legacy_edge_gse_spawn_4_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_4_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -145.042,
+          65.524
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "gse_catering_depot",
+      "geometry_id": "legacy_edge_gse_spawn_5_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_5_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -169.719,
+          40.303
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "gse_lavatory_depot",
+      "geometry_id": "legacy_edge_gse_spawn_6_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_6_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -189.002,
+          10.751
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "gse_water_depot",
+      "geometry_id": "legacy_edge_gse_spawn_7_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_7_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -202.149,
+          -21.994
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "gse_gpu_depot",
+      "geometry_id": "legacy_edge_gse_spawn_8_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_8_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -208.655,
+          -56.676
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "gse_tug_depot",
+      "geometry_id": "legacy_edge_gse_spawn_9_to_hub",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 180.0,
+      "legacy_id": "gse_spawn_9_to_hub",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          183.972,
+          -85.886
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_apron_transfer_1_approach_approach",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 95.243,
+      "legacy_id": "kauo_g31_apron_transfer_1_approach_approach",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_2_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          273.333,
+          -169.269
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_apron_transfer_2_approach_approach",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 122.222,
+      "legacy_id": "kauo_g31_apron_transfer_2_approach_approach",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_3_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          105.673,
+          -140.113
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_apron_transfer_3_approach_approach",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 170.176,
+      "legacy_id": "kauo_g31_apron_transfer_3_approach_approach",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "kauo_g31_stand_1_service_approach"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_fbo_apron_junction",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 151.058,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_fbo_apron_junction",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          110.257,
+          -124.784
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_airstart_service_point_airstart",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_airstart_service_point_airstart",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_airstart_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          102.443,
+          -155.784
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_baggage_service_point_baggage",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_baggage_service_point_baggage",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_baggage_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          109.368,
+          -155.68
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_catering_service_point_catering",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_catering_service_point_catering",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_catering_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          96.123,
+          -152.95
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_fuel_service_point_fuel",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_fuel_service_point_fuel",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_fuel_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          121.666,
+          -140.573
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_gpu_service_point_gpu",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_gpu_service_point_gpu",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_gpu_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          115.601,
+          -152.66
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_lavatory_service_point_lavatory",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_lavatory_service_point_lavatory",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_lavatory_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          120.362,
+          -133.771
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_pushback_service_point_pushback",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_pushback_service_point_pushback",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_pushback_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          116.306,
+          -128.157
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_stairs_service_point_stairs",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_stairs_service_point_stairs",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_stairs_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          105.673,
+          -140.113
+        ],
+        [
+          119.974,
+          -147.289
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_1_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_1_service_approach_to_ga_parking_stand_water_service_point_water",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_1_service_approach_to_ga_parking_stand_water_service_point_water",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_water_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_fbo_apron_junction",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 213.74,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_fbo_apron_junction",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          182.196,
+          -69.985
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_airstart_service_point_airstart",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_airstart_service_point_airstart",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_airstart_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          187.127,
+          -101.572
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_baggage_service_point_baggage",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_baggage_service_point_baggage",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_baggage_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          193.461,
+          -98.769
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_catering_service_point_catering",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_catering_service_point_catering",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_catering_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          180.202,
+          -101.436
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_fuel_service_point_fuel",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_fuel_service_point_fuel",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_fuel_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          198.872,
+          -80.055
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_gpu_service_point_gpu",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_gpu_service_point_gpu",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_gpu_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          198.016,
+          -93.552
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_lavatory_service_point_lavatory",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_lavatory_service_point_lavatory",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_lavatory_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          195.011,
+          -74.304
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_pushback_service_point_pushback",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_pushback_service_point_pushback",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_pushback_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          189.083,
+          -70.724
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_stairs_service_point_stairs",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_stairs_service_point_stairs",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_stairs_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          183.972,
+          -85.886
+        ],
+        [
+          199.94,
+          -86.898
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_2_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_water_service_point_water",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_2_service_approach_to_ga_parking_stand_02_water_service_point_water",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_02_water_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_fbo_apron_junction",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 317.808,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_fbo_apron_junction",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          275.492,
+          -153.415
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_airstart_service_point_airstart",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_airstart_service_point_airstart",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_airstart_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          272.564,
+          -185.251
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_baggage_service_point_baggage",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_baggage_service_point_baggage",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_baggage_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          279.391,
+          -184.078
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_catering_service_point_catering",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_catering_service_point_catering",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_catering_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          265.882,
+          -183.428
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_fuel_service_point_fuel",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_fuel_service_point_fuel",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_fuel_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          289.205,
+          -167.251
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_gpu_service_point_gpu",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_gpu_service_point_gpu",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_gpu_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          285.082,
+          -180.13
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_lavatory_service_point_lavatory",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_lavatory_service_point_lavatory",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_lavatory_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          286.865,
+          -160.732
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_pushback_service_point_pushback",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_pushback_service_point_pushback",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_pushback_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          281.989,
+          -155.813
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_stairs_service_point_stairs",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_stairs_service_point_stairs",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_stairs_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          273.333,
+          -169.269
+        ],
+        [
+          288.571,
+          -174.148
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "kauo_g31_stand_3_service_approach",
+      "geometry_id": "legacy_edge_kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_water_service_point_water",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 16.0,
+      "legacy_id": "kauo_g31_stand_3_service_approach_to_ga_parking_stand_03_water_service_point_water",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "ga_parking_stand_03_water_service_point"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -220.183588,
+          -1039.622948
+        ],
+        [
+          -329.939582,
+          -617.202097
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "rwy36_hold",
+      "geometry_id": "legacy_edge_runway36_hold_twy_a_south",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 436.447,
+      "legacy_id": "runway36_hold_twy_a_south",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "twy_a_south"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -324.459431,
+          -119.284465
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "twy_a_mid",
+      "geometry_id": "legacy_edge_twy_a_mid_fbo_primary",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 298.826,
+      "legacy_id": "twy_a_mid_fbo_primary",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -324.459431,
+          -119.284465
+        ],
+        [
+          -319.987342,
+          449.081614
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "twy_a_mid",
+      "geometry_id": "legacy_edge_twy_a_mid_north",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 568.384,
+      "legacy_id": "twy_a_mid_north",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "twy_a_north"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -319.987342,
+          449.081614
+        ],
+        [
+          -89.036988,
+          437.084363
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "twy_a_north",
+      "geometry_id": "legacy_edge_twy_a_north_fbo_detour",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 231.262,
+      "legacy_id": "twy_a_north_fbo_detour",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_detour"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -329.939582,
+          -617.202097
+        ],
+        [
+          -324.459431,
+          -119.284465
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "twy_a_south",
+      "geometry_id": "legacy_edge_twy_a_south_mid",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 497.948,
+      "legacy_id": "twy_a_south_mid",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "twy_a_mid"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "LEGACY_GRAPH_CONNECTION",
+      "classification": "APPROXIMATE",
+      "confidence": 0.1,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        [
+          -89.036988,
+          437.084363
+        ],
+        [
+          -29.34007,
+          -72.36365
+        ]
+      ],
+      "feature_type": "legacy_graph_edge",
+      "from_node": "fbo_apron_detour",
+      "geometry_id": "legacy_edge_twy_c_fbo_detour",
+      "geometry_type": "LineString",
+      "legacy_distance_m": 512.934,
+      "legacy_id": "twy_c_fbo_detour",
+      "notes": "Graph edge is quarantined with its endpoints; route length/topology has no current surveyed surface support.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON",
+      "to_node": "fbo_apron_junction"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -89.036988,
+        437.084363
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_fbo_apron_detour",
+      "geometry_type": "Point",
+      "legacy_id": "fbo_apron_detour",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -29.34007,
+        -72.36365
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_fbo_apron_junction",
+      "geometry_type": "Point",
+      "legacy_id": "fbo_apron_junction",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -83.468,
+        99.305
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_fbo_service_staging_east",
+      "geometry_type": "Point",
+      "legacy_id": "fbo_service_staging_east",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -13.652,
+        106.951
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_fbo_service_staging_fuel",
+      "geometry_type": "Point",
+      "legacy_id": "fbo_service_staging_fuel",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -48.936,
+        106.567
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_fbo_service_staging_west",
+      "geometry_type": "Point",
+      "legacy_id": "fbo_service_staging_west",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        93.160375,
+        -133.834301
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        170.0,
+        -85.0
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02",
+      "notes": "APPROXIMATE / ASSUMED FOR SIMULATION; no surveyed stand position is available",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        182.196,
+        -69.985
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_airstart_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_airstart_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        187.127,
+        -101.572
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_baggage_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_baggage_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        193.461,
+        -98.769
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_catering_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_catering_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        180.202,
+        -101.436
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_fuel_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_fuel_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        198.872,
+        -80.055
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_gpu_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_gpu_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        198.016,
+        -93.552
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_lavatory_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_lavatory_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        195.011,
+        -74.304
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_pushback_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_pushback_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        189.083,
+        -70.724
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_stairs_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_stairs_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        199.94,
+        -86.898
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_02_water_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_02_water_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        260.0,
+        -165.0
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03",
+      "notes": "APPROXIMATE / ASSUMED FOR SIMULATION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        275.492,
+        -153.415
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_airstart_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_airstart_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        272.564,
+        -185.251
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_baggage_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_baggage_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        279.391,
+        -184.078
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_catering_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_catering_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        265.882,
+        -183.428
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_fuel_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_fuel_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        289.205,
+        -167.251
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_gpu_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_gpu_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        285.082,
+        -180.13
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_lavatory_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_lavatory_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        286.865,
+        -160.732
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_pushback_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_pushback_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        281.989,
+        -155.813
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_stairs_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_stairs_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        288.571,
+        -174.148
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_03_water_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_03_water_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        110.257,
+        -124.784
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_airstart_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_airstart_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        102.443,
+        -155.784
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_baggage_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_baggage_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        109.368,
+        -155.68
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_catering_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_catering_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        96.123,
+        -152.95
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_fuel_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_fuel_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        121.666,
+        -140.573
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_gpu_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_gpu_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        115.601,
+        -152.66
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_lavatory_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_lavatory_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        120.362,
+        -133.771
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_pushback_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_pushback_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        116.306,
+        -128.157
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_stairs_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_stairs_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        119.974,
+        -147.289
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_ga_parking_stand_water_service_point",
+      "geometry_type": "Point",
+      "legacy_id": "ga_parking_stand_water_service_point",
+      "notes": "APPROXIMATE SERVICE POINT / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -145.042,
+        65.524
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_gse_catering_depot",
+      "geometry_type": "Point",
+      "legacy_id": "gse_catering_depot",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -115.918,
+        85.447
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_gse_fuel_depot_02",
+      "geometry_type": "Point",
+      "legacy_id": "gse_fuel_depot_02",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -202.149,
+        -21.994
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_gse_gpu_depot",
+      "geometry_type": "Point",
+      "legacy_id": "gse_gpu_depot",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -169.719,
+        40.303
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_gse_lavatory_depot",
+      "geometry_type": "Point",
+      "legacy_id": "gse_lavatory_depot",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -208.655,
+        -56.676
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_gse_tug_depot",
+      "geometry_type": "Point",
+      "legacy_id": "gse_tug_depot",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -189.002,
+        10.751
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_gse_water_depot",
+      "geometry_type": "Point",
+      "legacy_id": "gse_water_depot",
+      "notes": "APPROXIMATE GSE depot / SIMULATION ASSUMPTION; offset outside service approach lanes",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        105.673,
+        -140.113
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_kauo_g31_stand_1_service_approach",
+      "geometry_type": "Point",
+      "legacy_id": "kauo_g31_stand_1_service_approach",
+      "notes": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        183.972,
+        -85.886
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_kauo_g31_stand_2_service_approach",
+      "geometry_type": "Point",
+      "legacy_id": "kauo_g31_stand_2_service_approach",
+      "notes": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        273.333,
+        -169.269
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_kauo_g31_stand_3_service_approach",
+      "geometry_type": "Point",
+      "legacy_id": "kauo_g31_stand_3_service_approach",
+      "notes": "APPROXIMATE SAFE GSE APPROACH / SIMULATION ASSUMPTION",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -192.99544,
+        457.849273
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_runway_intersection",
+      "geometry_type": "Point",
+      "legacy_id": "runway_intersection",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -314.53713,
+        495.730459
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_rwy11_threshold",
+      "geometry_type": "Point",
+      "legacy_id": "rwy11_threshold",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -205.621241,
+        -237.556191
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_rwy18_36_mid",
+      "geometry_type": "Point",
+      "legacy_id": "rwy18_36_mid",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -191.058895,
+        564.510565
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_rwy18_threshold",
+      "geometry_type": "Point",
+      "legacy_id": "rwy18_threshold",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        849.420982,
+        132.956881
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_rwy29_threshold",
+      "geometry_type": "Point",
+      "legacy_id": "rwy29_threshold",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -220.183588,
+        -1039.622948
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_rwy36_hold",
+      "geometry_type": "Point",
+      "legacy_id": "rwy36_hold",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -544.048314,
+        -204.898264
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_self_serve_fuel_farm",
+      "geometry_type": "Point",
+      "legacy_id": "self_serve_fuel_farm",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -324.459431,
+        -119.284465
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_twy_a_mid",
+      "geometry_type": "Point",
+      "legacy_id": "twy_a_mid",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -319.987342,
+        449.081614
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_twy_a_north",
+      "geometry_type": "Point",
+      "legacy_id": "twy_a_north",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    },
+    {
+      "accuracy_m": null,
+      "authoritative": false,
+      "capture_method": "CHART_GRATICULE_OR_ASSUMED_LEGACY_COORDINATE",
+      "classification": "APPROXIMATE",
+      "confidence": 0.25,
+      "coordinate_reference_system": "RampLab KAUO airport-local ENU meters (+X east, +Y north)",
+      "coordinates": [
+        -329.939582,
+        -617.202097
+      ],
+      "feature_type": "legacy_node",
+      "geometry_id": "legacy_node_twy_a_south",
+      "geometry_type": "Point",
+      "legacy_id": "twy_a_south",
+      "notes": "Legacy node has no per-feature source statement; treated as unsupported approximate geometry.",
+      "simulation_approved": false,
+      "source_date": null,
+      "source_id": "legacy_goal31_geometry",
+      "source_type": "RampLab Goal 25/31 JSON"
+    }
+  ],
+  "required_runway_ids": [
+    "11/29",
+    "18/36"
+  ],
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "accuracy_m": null,
+      "crs": null,
+      "data_type": "PAVER pavement inventory and condition report",
+      "features_not_supplied": [
+        "feature coordinates/polygons",
+        "operational centerlines",
+        "stand positions",
+        "clearances",
+        "crossing rules"
+      ],
+      "features_supplied": [
+        "pavement branch identifiers, use classes, aggregate dimensions/areas and condition indices"
+      ],
+      "license_use": "ALDOT public report; condition and branch statistics do not authorize operational routing.",
+      "publisher": "Alabama Department of Transportation Aeronautics Bureau",
+      "source_id": "aldot_apmp_auburn_2022",
+      "title": "Alabama Statewide Airport Pavement Management Program Update, Auburn University Regional Airport Final Report",
+      "url": "https://www.dot.state.al.us/programs/pdf/PavementProgram/Auburn.pdf",
+      "version_date": "2022-02; visual pavement inspections November 2019; database ALDOT_210119"
+    },
+    {
+      "accuracy_m": null,
+      "crs": "Not established from public viewer metadata in this review",
+      "data_type": "ArcGIS web application",
+      "features_not_supplied": [
+        "verified operational centerline/stand/road data export",
+        "survey accuracy and operational permissions"
+      ],
+      "features_supplied": [
+        "pavement program map and inventory context"
+      ],
+      "license_use": "Public viewer; no machine-readable AUO operational layer with suitable accuracy/provenance was obtained.",
+      "publisher": "Alabama Department of Transportation Aeronautics Bureau",
+      "source_id": "aldot_apmp_gis",
+      "title": "Aeronautics Airport Pavement Management GIS",
+      "url": "https://aldot.maps.arcgis.com/apps/webappviewer/index.html?id=ad7f40b4cbc94b499e69c518444a8a63",
+      "version_date": "accessed 2026-10-14"
+    },
+    {
+      "accuracy_m": null,
+      "crs": null,
+      "data_type": "airport improvement grant table",
+      "features_not_supplied": [
+        "as-built status",
+        "coordinates",
+        "taxiway/stand geometry",
+        "operational permissions"
+      ],
+      "features_supplied": [
+        "Auburn north terminal apron phases 5 and 6 listed as funded projects"
+      ],
+      "license_use": "Public project-status information; funding/phase labels are not proof of construction completion.",
+      "publisher": "Alabama Department of Transportation News Hub",
+      "source_id": "aldot_grants_2026",
+      "title": "Alabama Airport Improvement Grants Total $2 Million",
+      "url": "https://aldotnews.com/2026/06/16/alabama-airport-improvement-grants-total-2-million/",
+      "version_date": "2026-06-16"
+    },
+    {
+      "accuracy_m": null,
+      "crs": null,
+      "data_type": "PDF board packet drawing",
+      "features_not_supplied": [
+        "verified current as-built state",
+        "machine-readable coordinates",
+        "stand coordinates",
+        "vehicle access/clearance",
+        "current operational rules"
+      ],
+      "features_supplied": [
+        "broad runway/taxiway/apron/hangar/property-plan context"
+      ],
+      "license_use": "Publicly accessible board packet; no redistribution rights assumed. The drawing/version and georeferencing are not established as current.",
+      "publisher": "Auburn University Board of Trustees",
+      "source_id": "auburn_alp_board_packet_2015",
+      "title": "Auburn University Regional Airport Layout Plan, attachment in June 5, 2015 packet",
+      "url": "https://www.auburn.edu/administration/trustees/materials/materials-20150605.pdf",
+      "version_date": "2015-06-05 packet; drawing page says Page 3 of 4"
+    },
+    {
+      "accuracy_m": null,
+      "crs": null,
+      "data_type": "public procurement guidance",
+      "features_not_supplied": [
+        "public downloadable KAUO CAD/GIS geometry without project enrollment and prequalification"
+      ],
+      "features_supplied": [
+        "identifies project plans/specifications as part of bid documentation"
+      ],
+      "license_use": "Official guidance states bidding documents are available to enrolled/prequalified contractors; this review did not access restricted project documents.",
+      "publisher": "Auburn University Facilities Management",
+      "source_id": "auburn_facilities_bid_documents",
+      "title": "Public Works Bid Calendar and project documentation process",
+      "url": "https://fm.auburn.edu/contractor/",
+      "version_date": "accessed 2026-10-14"
+    },
+    {
+      "accuracy_m": null,
+      "crs": null,
+      "data_type": "project memo and aerial site map",
+      "features_not_supplied": [
+        "as-built confirmation",
+        "survey coordinates",
+        "taxi routes",
+        "stand dimensions",
+        "vehicle clearance"
+      ],
+      "features_supplied": [
+        "proposed north terminal ramp expansion and tie-down-space quantities"
+      ],
+      "license_use": "Public board packet; proposal/site map is not as-built geometry.",
+      "publisher": "Auburn University Board of Trustees",
+      "source_id": "auburn_terminal_ramp_expansion_2024",
+      "title": "Auburn University Regional Airport Terminal Ramp Expansion",
+      "url": "https://www.auburn.edu/administration/trustees/materials/materials-20240412.pdf",
+      "version_date": "2024-04-12"
+    },
+    {
+      "accuracy_m": null,
+      "crs": null,
+      "data_type": "FAA airport diagram PDF",
+      "features_not_supplied": [
+        "surveyed centerline coordinates",
+        "stand coordinates",
+        "service roads",
+        "GSE locations",
+        "operational crossing permissions"
+      ],
+      "features_supplied": [
+        "charted runway/taxiway labels",
+        "relative airfield arrangement",
+        "hold-short markings as depicted"
+      ],
+      "license_use": "Use as a chart for labels and diagrammatic relationships; digitized coordinates are approximate, not survey geometry.",
+      "publisher": "Federal Aviation Administration",
+      "source_id": "faa_airport_diagram_2610",
+      "title": "KAUO Airport Diagram",
+      "url": "https://aeronav.faa.gov/d-tpp/2610/05127AD.PDF",
+      "version_date": "2026-10-01/2026-10-28"
+    },
+    {
+      "accuracy_m": null,
+      "crs": "WGS 84 geographic (EPSG:4979)",
+      "data_type": "CSV aeronautical records",
+      "features_not_supplied": [
+        "taxiway centerlines",
+        "taxilanes",
+        "apron boundaries",
+        "stands",
+        "service roads",
+        "GSE locations",
+        "crossing permissions"
+      ],
+      "features_supplied": [
+        "airport reference point",
+        "runway identifiers and dimensions",
+        "runway-end coordinates"
+      ],
+      "license_use": "FAA public aeronautical data; retain cycle and source fields. FAA does not publish horizontal accuracy in the cited NASR fields.",
+      "publisher": "Federal Aviation Administration",
+      "source_id": "faa_nasr_2026_10_01",
+      "title": "28 Day NASR Subscription",
+      "url": "https://www.faa.gov/air_traffic/flight_info/aeronav/Aero_Data/NASR_Subscription/2026-10-01/",
+      "version_date": "2026-10-01"
+    },
+    {
+      "accuracy_m": null,
+      "crs": "airport-local ENU after documented legacy-frame transform",
+      "data_type": "project JSON",
+      "features_not_supplied": [
+        "survey proof, operational validation, current surface state"
+      ],
+      "features_supplied": [
+        "legacy approximate reference nodes and edges used only for rejection visualization"
+      ],
+      "license_use": "Project-owned model artifact; quarantined from simulation approval. Not an independent airport data source.",
+      "publisher": "RampLab Goal 25/31 project artifact",
+      "source_id": "legacy_goal31_geometry",
+      "title": "Legacy chart-graticule KAUO geometry and movement graph",
+      "url": "repository:tools/airport_scenario_generation/kauo_goal31.geometry.json",
+      "version_date": null
+    }
+  ]
+}
