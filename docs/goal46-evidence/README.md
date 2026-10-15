@@ -25,7 +25,7 @@ Each `fixtures/fixture_X/` directory contains canonical schema JSON, its source 
 
 - `goal46-tests.log`: Goal46 geometry ingestion and readiness unit tests.
 - `goal45-regression.log` and `goal45-scenario-regression.log`: fresh runs on this branch of the Goal45 ingestion and scenario-generation suites.
-- `goal42-historical-regression.log`, `goal43-historical-regression.log`, and `goal44-historical-regression.log`: copied, unmodified passing logs from Goal45's earlier dedicated worktrees. Goal42-44 production modules are no longer present in this branch, so those historical suites were not represented as fresh Goal46-branch runs.
+- `goal42-historical-regression.log`, `goal43-historical-regression.log`, and `goal44-historical-regression.log`: copied, unmodified passing logs from Goal45's earlier dedicated worktrees. Goal42-44 production modules are no longer present in this branch; `goal42-module-availability.log` records the unavailable-module check, and the historical suites are not represented as fresh Goal46-branch runs.
 - Release configure/build/CTest logs and their result summary are recorded alongside this README.
 - `determinism-results.json` records independent byte comparison runs for fixture and KAUO outputs.
 - `SHA256SUMS.txt` covers every evidence file except itself; the ZIP has a separate SHA-256 sidecar.
@@ -37,3 +37,4 @@ From repository root, run the Goal46 and Goal45 Python commands reflected in the
 ```powershell
 python -m tools.airport_geometry_ingestion bundle docs/goal46-evidence --output docs/goal46-evidence.zip
 ```
+
