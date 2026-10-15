@@ -15,10 +15,10 @@ test_schema_requires_complete_provenance_and_disallows_approximate_approval (too
 test_shapefile_and_projected_crs_fail_as_actionable_unsupported_inputs (tools.airport_geometry_ingestion.test_geometry.Goal46GeometryTests.test_shapefile_and_projected_crs_fail_as_actionable_unsupported_inputs) ... ok
 
 ----------------------------------------------------------------------
-Ran 15 tests in 0.225s
+Ran 15 tests in 0.933s
 
 OK
 VALID: 0 finding(s)
 DATA_BLOCKED (production)
-ZIP integrity PASS: C:\Users\Ferna\AppData\Local\Temp\tmp6qkmoz38\bundle.zip; SHA-256 38886abe776c2f6c5ce48a1e3890636008125986c9460063e13095489efe54c6
-ZIP integrity PASS: C:\Users\Ferna\AppData\Local\Temp\tmp6qkmoz38\bundle.zip; SHA-256 38886abe776c2f6c5ce48a1e3890636008125986c9460063e13095489efe54c6
+ZIP integrity PASS: C:\Users\Ferna\AppData\Local\Temp\tmp8x0uv_xe\bundle.zip; SHA-256 38886abe776c2f6c5ce48a1e3890636008125986c9460063e13095489efe54c6
+ZIP integrity PASS: C:\Users\Ferna\AppData\Local\Temp\tmp8x0uv_xe\bundle.zip; SHA-256 38886abe776c2f6c5ce48a1e3890636008125986c9460063e13095489efe54c6

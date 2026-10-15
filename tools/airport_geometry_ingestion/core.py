@@ -1109,4 +1109,3 @@ def markdown_readiness(report: dict[str, Any]) -> str:
                 path="; ".join(parts) or "no path"
                 lines.append(f"- **{route['feature_id']} — {route['status']}**: {route['message']} Path: `{path}`.")
     return "\n".join(lines)+"\n"
-
