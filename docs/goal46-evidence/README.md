@@ -37,4 +37,3 @@ From repository root, run the Goal46 and Goal45 Python commands reflected in the
 ```powershell
 python -m tools.airport_geometry_ingestion bundle docs/goal46-evidence --output docs/goal46-evidence.zip
 ```
-
