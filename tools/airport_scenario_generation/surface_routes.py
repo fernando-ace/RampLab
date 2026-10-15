@@ -198,13 +198,14 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
     attached_gse_depots: list[tuple[float, float]] = []
     attached_gse_service_points: list[tuple[float, float]] = []
     service_approaches = []
-    for node_id, node in nodes.items():
-        if not node_id.endswith("_service_approach"):
-            continue
-        approach_cell = ground_grid.nearest((float(node["x_m"]), float(node["y_m"])),
-                                            maximum_attachment_distance_m)
-        if approach_cell is not None:
-            service_approaches.append(ground_grid.pixel_to_world(approach_cell))
+    if goal44_endpoint_audit:
+        for node_id, node in nodes.items():
+            if not node_id.endswith("_service_approach"):
+                continue
+            approach_cell = ground_grid.nearest((float(node["x_m"]), float(node["y_m"])),
+                                                maximum_attachment_distance_m)
+            if approach_cell is not None:
+                service_approaches.append(ground_grid.pixel_to_world(approach_cell))
     for node_id, node in nodes.items():
         original = (float(node["x_m"]), float(node["y_m"]))
         movement = "aircraft" if node_id in RUNWAY_NODE_IDS else "ground_vehicle"
@@ -213,7 +214,7 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         if cell is None:
             raise ValueError(f"node {node_id!r} cannot attach to an eligible operating surface within {maximum_attachment_distance_m:g} m")
         is_gse_depot = node_id.startswith("gse_") and node_id.endswith("_depot")
-        is_gse_service_point = node_id.endswith("_service_point")
+        is_gse_service_point = goal44_endpoint_audit and node_id.endswith("_service_point")
         attached_candidate = grid.pixel_to_world(cell)
         depot_conflict = is_gse_depot and any(
             math.dist(attached_candidate, previous) < GSE_DEPOT_MIN_SEPARATION_M
@@ -378,7 +379,8 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         if explicit_aircraft_edges:
             route_count["ground_only_by_semantics"] += int(not aircraft_semantic)
     result = {
-        "method": "2 m raster A* paths through classified ALDOT pavement interiors with a 2 m raster inset; 8-connected movement; diagonal corner cutting disallowed; approximate service-point attachments maintain at least 4 m separation",
+        "method": "2 m raster A* paths through classified ALDOT pavement interiors with a 2 m raster inset; 8-connected movement; diagonal corner cutting disallowed" +
+            ("; approximate service-point attachments maintain at least 4 m separation" if goal44_endpoint_audit else ""),
         "grid_size_m": GRID_M,
         "source_uses": {"aircraft": sorted(AIRCRAFT_USES), "ground_vehicle": sorted(GROUND_USES)},
         "route_counts": route_count,
@@ -407,9 +409,11 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
             "ALDOT pavement inventory polygons do not define operational centerlines, legal connectivity, markings, or current status.",
             "Raster routes are deterministic interior paths for simulation, not surveyed or approved airport routes.",
             "Approximate node displacements are recorded per node; current as-built apron geometry remains unverified.",
-            "GSE service-point snaps are illustrative attachment assumptions separated from shared service approaches and other points; they are not surveyed service-bay coordinates.",
         ],
     }
+    if goal44_endpoint_audit:
+        result["limitations"].append(
+            "GSE service-point snaps are illustrative attachment assumptions separated from shared service approaches and other points; they are not surveyed service-bay coordinates.")
     if aircraft_clearance_m > 0:
         result["aircraft_clearance_m"] = aircraft_clearance_m
         result["aircraft_clearance_source"] = "attached assumed GSE depot positions; path is generated with raster buffer and verified against exact polyline distance"
