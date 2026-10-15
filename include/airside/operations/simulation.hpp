@@ -152,6 +152,8 @@ private:
     void emit_aircraft_state(Aircraft& aircraft, AircraftState previous);
     void emit_vehicle_state(ServiceVehicle& vehicle, VehicleState previous);
 
+    [[nodiscard]] std::map<EdgeId, VehicleId> stationary_ground_vehicle_blockers() const;
+
     [[nodiscard]] Aircraft& aircraft(AircraftId id);
     [[nodiscard]] ServiceVehicle& vehicle(VehicleId id);
     [[nodiscard]] ResourcePool& pool(ServiceType type);
