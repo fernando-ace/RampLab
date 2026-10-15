@@ -250,7 +250,7 @@ class Goal46GeometryTests(unittest.TestCase):
         source_hash=hashlib.sha256(b"synthetic test evidence only").hexdigest()
         dataset["sources"].extend([
             {"source_id":source_id,"source_type":"synthetic test evidence","source_file":"test-evidence.txt",
-             "source_sha256":source_hash,"publication_date":None,"extraction_method":"test only","authority":"AUTHORITATIVE",
+             "source_sha256":source_hash,"publication_date":None,"extraction_method":"test only","authority":"SOURCE_DERIVED",
              "notes":"Fixture for confidence-policy tests only; not real airport evidence."},
             {"source_id":"independent_test_source","source_type":"synthetic test corroboration","source_file":"corroboration.txt",
              "source_sha256":source_hash,"publication_date":None,"extraction_method":"test only","authority":"AUTHORITATIVE",
@@ -264,9 +264,16 @@ class Goal46GeometryTests(unittest.TestCase):
                              "corroborating_source_ids":["independent_test_source"],
                              "validation_checks":{"crs":True,"airport_bounds":True,"geometry":True,"independent_review":True}}})
         self.assertFalse(any(row["code"].startswith("SOURCE_DERIVED") for row in validate_dataset(dataset)))
+        self.assertEqual("SOURCE_DERIVED", provenance["authority"])
+        high_readiness=readiness(dataset,profile="production")
+        self.assertEqual("PASS",next(r["status"] for r in high_readiness["requirements"] if r["requirement"]=="TAXIWAY_GEOMETRY"))
         provenance["confidence_level"]="MEDIUM"
         self.assertTrue(any(row["code"]=="SOURCE_DERIVED_APPROVAL" for row in validate_dataset(dataset)))
+        provenance["simulation_approved"]=False
+        low_readiness=readiness(dataset,profile="production")
+        self.assertEqual("BLOCKED",next(r["status"] for r in low_readiness["requirements"] if r["requirement"]=="TAXIWAY_GEOMETRY"))
         provenance["confidence_level"]="HIGH"
+        provenance["simulation_approved"]=True
         provenance["accuracy_m"]=None
         self.assertTrue(any(row["code"]=="SOURCE_DERIVED_HIGH" for row in validate_dataset(dataset)))
 
