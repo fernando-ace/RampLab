@@ -1,0 +1,23 @@
+{
+  "aircraft": 3,
+  "artifacts_ready": true,
+  "events": 314,
+  "final_state": "completed",
+  "finished": true,
+  "output_directory": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\live-session\\run-001",
+  "planned_disruption": {
+    "added_duration_seconds": 300,
+    "aircraft_id": "KAUO-G31-GA-03",
+    "base_duration_seconds": 180,
+    "classification": "Assumed scenario exercise; not a reported airport condition",
+    "duration_seconds": 480,
+    "kind": "service_delay",
+    "service_type": "pushback",
+    "starts_at_seconds": 241,
+    "task_id": "G31-03-PUSH"
+  },
+  "simulated_time_seconds": 4409,
+  "start_state": "paused",
+  "tasks": 33,
+  "vehicles": 9
+}

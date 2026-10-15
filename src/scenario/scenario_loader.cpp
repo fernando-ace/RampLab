@@ -20,6 +20,7 @@ struct NodeDocument { std::string id; std::string name; double x; double y; };
 struct EdgeDocument {
     std::string id; std::string from; std::string to; double distance;
     std::int64_t traversal_seconds; bool enabled; bool one_way;
+    std::vector<Point2d> centerline; bool aircraft_allowed{true}; bool ground_vehicle_allowed{true}; bool crosses_runway{false};
 };
 struct GateDocument { std::string id; std::string name; std::string node; bool enabled; };
 struct VehicleDocument {
@@ -103,11 +104,21 @@ ScenarioDocument parse_document(const YAML::Node& root) {
     for (std::size_t index = 0; index < edges.size(); ++index) {
         const auto item = edges[index];
         const auto context = std::format("airport.edges[{}]", index);
-        document.edges.push_back({scalar<std::string>(item, "id", context),
+        EdgeDocument edge{scalar<std::string>(item, "id", context),
             scalar<std::string>(item, "from", context), scalar<std::string>(item, "to", context),
             scalar<double>(item, "distance_m", context),
             scalar<std::int64_t>(item, "traversal_time_seconds", context),
-            optional_bool(item, "enabled", true, context), optional_bool(item, "one_way", false, context)});
+            optional_bool(item, "enabled", true, context), optional_bool(item, "one_way", false, context)};
+        edge.aircraft_allowed = optional_bool(item, "aircraft_allowed", true, context);
+        edge.ground_vehicle_allowed = optional_bool(item, "ground_vehicle_allowed", true, context);
+        edge.crosses_runway = optional_bool(item, "surface_route_crosses_runway", false, context);
+        if (item["surface_centerline"]) {
+            if (!item["surface_centerline"].IsSequence() || item["surface_centerline"].size() < 2)
+                throw ScenarioLoadError(context + ".surface_centerline must contain at least two points");
+            for (const auto& point : item["surface_centerline"])
+                edge.centerline.push_back({scalar<double>(point, "x_m", context), scalar<double>(point, "y_m", context)});
+        }
+        document.edges.push_back(std::move(edge));
     }
 
     const auto gates = required(root, "gates", "scenario");
@@ -355,9 +366,14 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         }
         const auto id = EdgeId{static_cast<std::uint32_t>(index + 1)};
         edges.emplace(value.id, id);
-        scenario.graph.add_edge({id, lookup(nodes, value.from, std::format("edge '{}'.from", value.id)),
+        RoadEdge edge{id, lookup(nodes, value.from, std::format("edge '{}'.from", value.id)),
             lookup(nodes, value.to, std::format("edge '{}'.to", value.id)), value.distance,
-            SimTime{value.traversal_seconds}, value.enabled, value.one_way});
+            SimTime{value.traversal_seconds}, value.enabled, value.one_way};
+        edge.centerline = value.centerline;
+        edge.aircraft_allowed = value.aircraft_allowed;
+        edge.ground_vehicle_allowed = value.ground_vehicle_allowed;
+        edge.crosses_runway = value.crosses_runway;
+        scenario.graph.add_edge(std::move(edge));
     }
     for (std::size_t index = 0; index < document.gates.size(); ++index) {
         const auto& value = document.gates[index];
@@ -518,7 +534,7 @@ Scenario validate_and_build(const ScenarioDocument& document) {
             if (task.type != ServiceType::Fueling && task.type != ServiceType::Baggage) continue;
             const auto reachable = std::ranges::any_of(scenario.vehicles, [&](const auto& vehicle) {
                 return vehicle.capability() == task.type &&
-                    find_route(scenario.graph, vehicle.depot_node(), flight.gate_node()).has_value();
+                    find_route(scenario.graph, vehicle.depot_node(), flight.gate_node(), MovementClass::GroundVehicle).has_value();
             });
             if (!reachable) {
                 throw ScenarioLoadError(std::format("aircraft '{}' gate has no route for required {} service",

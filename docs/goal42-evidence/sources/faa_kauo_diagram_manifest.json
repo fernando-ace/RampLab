@@ -1,0 +1,9 @@
+{
+  "classification": "authoritative chart for published labels and relative topology; not geodetic taxiway centerlines or stands",
+  "effective": "2026-10-01 through 2026-10-29",
+  "retrieved_date": "2026-10-14",
+  "sha256": "891470442f1bf3454f76e63d7af45a582ed53008b132c6494568d50dd6fe72ed",
+  "source_url": "https://aeronav.faa.gov/d-tpp/2610/05127AD.PDF",
+  "title": "FAA d-TPP Airport Diagram, Auburn University Regional Airport (AUO/KAUO), cycle 2610",
+  "visual_inspection": "Rendered and reviewed at 170 dpi; runway 18/36 and 11/29, Taxiways A/C, A1/A2/A3, C2/C3, terminal/FBO apron and west apron are legible."
+}

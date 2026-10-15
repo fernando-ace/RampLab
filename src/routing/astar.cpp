@@ -50,12 +50,12 @@ struct Predecessor {
 
 }  // namespace
 
-std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId destination) {
-    return find_route(graph, origin, destination, {});
+std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId destination, MovementClass movement) {
+    return find_route(graph, origin, destination, {}, movement);
 }
 
 std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId destination,
-    const std::unordered_map<EdgeId, SimTime>& expected_wait) {
+    const std::unordered_map<EdgeId, SimTime>& expected_wait, MovementClass movement) {
     if (!graph.has_node(origin) || !graph.has_node(destination)) {
         throw std::invalid_argument("route endpoint is not in the graph");
     }
@@ -90,6 +90,8 @@ std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId
             if (!edge.available) {
                 continue;
             }
+            if ((movement == MovementClass::Aircraft && !edge.aircraft_allowed) ||
+                (movement == MovementClass::GroundVehicle && !edge.ground_vehicle_allowed)) continue;
             if (edge.one_way && edge.from != current.node) continue;
             const auto next = graph.other_endpoint(edge, current.node);
             const auto delay = expected_wait.find(edge_id);
@@ -130,7 +132,7 @@ std::optional<Route> find_route(const AirportGraph& graph, NodeId origin, NodeId
 }
 
 std::vector<Route> find_route_candidates(const AirportGraph& graph, NodeId origin, NodeId destination,
-    std::size_t maximum_candidates, const std::unordered_map<EdgeId, SimTime>& expected_wait) {
+    std::size_t maximum_candidates, const std::unordered_map<EdgeId, SimTime>& expected_wait, MovementClass movement) {
     if (maximum_candidates == 0) return {};
     if (!graph.has_node(origin) || !graph.has_node(destination))
         throw std::invalid_argument("route endpoint is not in the graph");
@@ -154,7 +156,9 @@ std::vector<Route> find_route_candidates(const AirportGraph& graph, NodeId origi
         if (edges.size() >= maximum_depth) return;
         for (const auto edge_id : graph.adjacent_edges(node)) {
             const auto& edge = graph.edge(edge_id);
-            if (!edge.available || (edge.one_way && edge.from != node)) continue;
+            if (!edge.available || (edge.one_way && edge.from != node) ||
+                (movement == MovementClass::Aircraft && !edge.aircraft_allowed) ||
+                (movement == MovementClass::GroundVehicle && !edge.ground_vehicle_allowed)) continue;
             const auto next = graph.other_endpoint(edge, node);
             if (visited.contains(next)) continue;
             const auto wait = expected_wait.find(edge_id);

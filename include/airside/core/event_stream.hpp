@@ -51,6 +51,12 @@ struct SimulationEventRecord {
     std::optional<VehicleState> vehicle_state;
     std::optional<Route> route;
     std::optional<Route> previous_route;
+    // Position/orientation sampled from the authoritative simulation snapshot
+    // at this event time. Empty means the entity has no defined surface pose.
+    std::optional<Vec2> position_m;
+    std::optional<double> heading_rad;
+    std::optional<Vec2> related_position_m;
+    std::optional<double> related_heading_rad;
     std::string aircraft_name;
     std::string vehicle_name;
     std::string agent_id;

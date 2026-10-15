@@ -1,0 +1,25 @@
+{
+  "download_crs": "WGS 84 longitude/latitude (EPSG:4326)",
+  "feature_layer": "https://services.arcgis.com/LZzQi3xDiclG6XvQ/arcgis/rest/services/Section_241016/FeatureServer/0",
+  "feature_use_counts": {
+    "APRON": 2,
+    "RUNWAY": 6,
+    "TAXIWAY": 23,
+    "UNCLASSIFIED_OTHER": 6
+  },
+  "layer_metadata_sha256": "6e1250710c83c2a48ad6bb801a7c69d9f4865937b19390d817412b8d0972eb16",
+  "limitations": [
+    "Pavement inventory outlines are not taxiway centerlines or legal routes.",
+    "No surveyed gate/stand or GSE staging geometry is provided.",
+    "Horizontal positions are source-backed mapped geometry; vertical coordinates are absent."
+  ],
+  "map_sheet": "Auburn University Regional Airport PMP report, Appendix B, Figure B1A/B1B; May 2021; scale 1 in = 400 ft",
+  "program_page": "https://www.dot.state.al.us/programs/AirportPavementMaintenance.html",
+  "query": "NETWORKID='AUO'; returnGeometry=true; outSR=4326; f=geojson",
+  "retrieved_at": "2026-10-14",
+  "schema_version": 1,
+  "source": "Alabama Department of Transportation Aeronautics Bureau, Airport Pavement Management Program GIS",
+  "source_feature_count": 37,
+  "source_layer_crs": "Web Mercator (WKID 102100 / EPSG:3857)",
+  "source_snapshot_sha256": "5327a009231bfe3352e6473caf2cf8e4ec46a92bfc15e6ed2efc002b8a9e6f89"
+}

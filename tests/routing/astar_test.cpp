@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <chrono>
+#include <limits>
+#include <stdexcept>
 
 namespace airside {
 namespace {
@@ -86,6 +88,33 @@ TEST(AStarTest, CandidateRoutesAreBoundedDeterministicAndExcludeClosedEdges) {
     EXPECT_TRUE(std::ranges::all_of(after_closure, [](const Route& route) {
         return std::ranges::find(route.edges, EdgeId{2}) == route.edges.end();
     }));
+}
+
+TEST(AStarTest, MovementClassFiltersEdgesAndInterpolatesTheCenterline) {
+    AirportGraph graph;
+    graph.add_node({NodeId{1}, "A", {0.0, 0.0}});
+    graph.add_node({NodeId{2}, "B", {100.0, 0.0}});
+    RoadEdge edge{EdgeId{1}, NodeId{1}, NodeId{2}, 100.0, 10s, true};
+    edge.centerline = {{0.0, 0.0}, {0.0, 50.0}, {100.0, 50.0}, {100.0, 0.0}};
+    edge.aircraft_allowed = true;
+    edge.ground_vehicle_allowed = false;
+    graph.add_edge(edge);
+
+    EXPECT_TRUE(find_route(graph, NodeId{1}, NodeId{2}, MovementClass::Aircraft).has_value());
+    EXPECT_FALSE(find_route(graph, NodeId{1}, NodeId{2}, MovementClass::GroundVehicle).has_value());
+    EXPECT_EQ(graph.edge_position(graph.edge(EdgeId{1}), NodeId{1}, 0.5), (Point2d{50.0, 50.0}));
+    EXPECT_EQ(graph.edge_position(graph.edge(EdgeId{1}), NodeId{2}, 0.0), (Point2d{100.0, 0.0}));
+}
+
+TEST(AStarTest, RejectsIncompleteOrNonFiniteCenterlines) {
+    AirportGraph graph;
+    graph.add_node({NodeId{1}, "A", {0.0, 0.0}});
+    graph.add_node({NodeId{2}, "B", {100.0, 0.0}});
+    RoadEdge edge{EdgeId{1}, NodeId{1}, NodeId{2}, 100.0, 10s, true};
+    edge.centerline = {{0.0, 0.0}};
+    EXPECT_THROW(graph.add_edge(edge), std::invalid_argument);
+    edge.centerline = {{0.0, 0.0}, {std::numeric_limits<double>::infinity(), 0.0}};
+    EXPECT_THROW(graph.add_edge(edge), std::invalid_argument);
 }
 
 }  // namespace

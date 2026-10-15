@@ -1,0 +1,211 @@
+{
+  "analysis_files": [
+    "kpis.json",
+    "validation.json",
+    "timeline.json"
+  ],
+  "creation_metadata": {
+    "created_at_utc": "2026-10-14T06:46:31+00:00"
+  },
+  "determinism_status": "PASS",
+  "format_version": "1.0",
+  "generated_outputs": [
+    "README.md",
+    "manifest.json",
+    "index.html",
+    "kpis.json",
+    "validation.json",
+    "timeline.json",
+    "determinism.json"
+  ],
+  "input_files": [
+    {
+      "bundle_path": "evidence/control/experiment.json",
+      "experiment": "control",
+      "sha256": "c0d98f3e298e6918e25154dbe29a79ae32886ac92fcfbac678a92a2785079780",
+      "size_bytes": 550509,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\control\\experiment.json"
+    },
+    {
+      "bundle_path": "evidence/control/runs.csv",
+      "experiment": "control",
+      "sha256": "62b877e4d2c2a05af689d99f359a26f0d2a3b600bad70fb9bd45449cb66b9f87",
+      "size_bytes": 1694,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\control\\runs.csv"
+    },
+    {
+      "bundle_path": "evidence/control/aircraft.csv",
+      "experiment": "control",
+      "sha256": "2c886bb0e041cbf406e53dfa14a1d7ae8d0b5e22b669dc4337f2b9e64ffd1636",
+      "size_bytes": 670,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\control\\aircraft.csv"
+    },
+    {
+      "bundle_path": "evidence/control/ground-units.csv",
+      "experiment": "control",
+      "sha256": "5cb821e55dad9fb740d01895e45b1293bfa4f5ab9505de6a2aab380e43443142",
+      "size_bytes": 1036,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\control\\ground-units.csv"
+    },
+    {
+      "bundle_path": "evidence/control/agent-decisions.json",
+      "experiment": "control",
+      "sha256": "78bd780325f4011dffe3bed8a8cb6e40b13cc0611100005560e88b61e778abce",
+      "size_bytes": 42204,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\control\\agent-decisions.json"
+    },
+    {
+      "bundle_path": "evidence/control/events.jsonl",
+      "experiment": "control",
+      "sha256": "c00c3f153200eae35e281ac82da6a8643469bbb224dc9e5f183872f3b5136551",
+      "size_bytes": 105167,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\control\\events.jsonl"
+    },
+    {
+      "bundle_path": "evidence/disruption/experiment.json",
+      "experiment": "disruption",
+      "sha256": "9ca495132244bfe3ac7a8bcf29b07d0bd5f24831a993c604993dc550772b2490",
+      "size_bytes": 552248,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\disruption\\experiment.json"
+    },
+    {
+      "bundle_path": "evidence/disruption/runs.csv",
+      "experiment": "disruption",
+      "sha256": "f976a58363ac6fc5ec0d1635ef3493962ce352680bf845f88572c1586a2b62f3",
+      "size_bytes": 1694,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\disruption\\runs.csv"
+    },
+    {
+      "bundle_path": "evidence/disruption/aircraft.csv",
+      "experiment": "disruption",
+      "sha256": "acf31b3292130d74de24563f9295650b5aecf32d3cc57e1788e454ff242b5bdb",
+      "size_bytes": 670,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\disruption\\aircraft.csv"
+    },
+    {
+      "bundle_path": "evidence/disruption/ground-units.csv",
+      "experiment": "disruption",
+      "sha256": "5cb821e55dad9fb740d01895e45b1293bfa4f5ab9505de6a2aab380e43443142",
+      "size_bytes": 1036,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\disruption\\ground-units.csv"
+    },
+    {
+      "bundle_path": "evidence/disruption/agent-decisions.json",
+      "experiment": "disruption",
+      "sha256": "31b19be082da867547dfe3d11e51a67e0f730c8e54b29a6a0320738c974755ec",
+      "size_bytes": 42196,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\disruption\\agent-decisions.json"
+    },
+    {
+      "bundle_path": "evidence/disruption/events.jsonl",
+      "experiment": "disruption",
+      "sha256": "8d0eaa033174222dff5bed5324c0c2c1e87952550f9c17844abdf4fbcefbb5c5",
+      "size_bytes": 105248,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\disruption\\events.jsonl"
+    },
+    {
+      "bundle_path": "determinism.json",
+      "experiment": "comparison",
+      "sha256": "052634c340cdf7d7ca058ed9e91ca351ea7957e35f74111a033257df68a410f9",
+      "size_bytes": 1156,
+      "source_path": "C:\\Users\\Ferna\\.codex\\worktrees\\goal42-authoritative-kauo-digital-twin\\docs\\goal42-evidence\\run-final\\determinism.json"
+    }
+  ],
+  "inputs": [
+    {
+      "completion_status": "COMPLETE",
+      "label": "control",
+      "name": "airport_kauo_goal41",
+      "run_count": 1,
+      "safety_status": "NO RECORDED COLLISIONS",
+      "scenario": "airport_kauo_goal41",
+      "seeds": [
+        42
+      ]
+    },
+    {
+      "completion_status": "COMPLETE",
+      "label": "disruption",
+      "name": "airport_kauo_goal41",
+      "run_count": 1,
+      "safety_status": "NO RECORDED COLLISIONS",
+      "scenario": "airport_kauo_goal41",
+      "seeds": [
+        42
+      ]
+    }
+  ],
+  "missing_optional_artifacts": [
+    {
+      "artifact": "summary.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "control"
+    },
+    {
+      "artifact": "interventions.json",
+      "experiment": "control"
+    },
+    {
+      "artifact": "unreal-live.png",
+      "experiment": "control"
+    },
+    {
+      "artifact": "unreal-live.log",
+      "experiment": "control"
+    },
+    {
+      "artifact": "summary.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "metrics.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "summary.csv",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "interventions.json",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "unreal-live.png",
+      "experiment": "disruption"
+    },
+    {
+      "artifact": "unreal-live.log",
+      "experiment": "disruption"
+    }
+  ],
+  "recognized_artifact_types": {
+    "control": [
+      "experiment.json",
+      "runs.csv",
+      "aircraft.csv",
+      "ground-units.csv",
+      "agent-decisions.json",
+      "events.jsonl"
+    ],
+    "disruption": [
+      "experiment.json",
+      "runs.csv",
+      "aircraft.csv",
+      "ground-units.csv",
+      "agent-decisions.json",
+      "events.jsonl"
+    ]
+  },
+  "safety_status": {
+    "control": "NO RECORDED COLLISIONS",
+    "disruption": "NO RECORDED COLLISIONS"
+  },
+  "warnings": []
+}

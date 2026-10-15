@@ -145,7 +145,7 @@ std::vector<std::pair<ServiceRequestId, VehicleId>> FleetDispatcher::dispatch(
             emit(simulation_time_s, DispatchEventKind::CandidateEvaluated, *task, {}, "unknown_origin");
             continue;
         }
-        if (!airside::find_route(graph, *origin, *destination)) {
+        if (!airside::find_route(graph, *origin, *destination, airside::MovementClass::GroundVehicle)) {
             emit(simulation_time_s, DispatchEventKind::CandidateEvaluated, *task, {}, "no_available_task_route");
             continue;
         }
@@ -165,7 +165,7 @@ std::vector<std::pair<ServiceRequestId, VehicleId>> FleetDispatcher::dispatch(
                 emit(simulation_time_s, DispatchEventKind::CandidateEvaluated, *task, vehicle.id, "unknown_vehicle_position");
                 continue;
             }
-            const auto route = airside::find_route(graph, *current, *origin);
+            const auto route = airside::find_route(graph, *current, *origin, airside::MovementClass::GroundVehicle);
             if (!route) {
                 emit(simulation_time_s, DispatchEventKind::CandidateEvaluated, *task, vehicle.id, "no_available_route");
                 continue;

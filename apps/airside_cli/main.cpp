@@ -636,10 +636,22 @@ public:
             output_ << "{\"sequence\":" << event.sequence
                     << ",\"time_seconds\":" << event.timestamp.count()
                     << ",\"type\":\"" << airside::to_string(event.type) << '"';
+            if (event.aircraft) output_ << ",\"entity_type\":\"aircraft\",\"entity_id\":\"aircraft-" << event.aircraft->value() << '"';
+            else if (event.vehicle) output_ << ",\"entity_type\":\"ground_vehicle\",\"entity_id\":\"vehicle-" << event.vehicle->value() << '"';
             if (event.aircraft) output_ << ",\"aircraft_id\":" << event.aircraft->value();
             if (!event.aircraft_name.empty()) output_ << ",\"aircraft\":\"" << json_escape(event.aircraft_name) << '"';
             if (event.vehicle) output_ << ",\"vehicle_id\":" << event.vehicle->value();
             if (!event.vehicle_name.empty()) output_ << ",\"vehicle\":\"" << json_escape(event.vehicle_name) << '"';
+            if (event.aircraft && event.vehicle) {
+                output_ << ",\"related_entity_type\":\"ground_vehicle\",\"related_entity_id\":\"vehicle-"
+                        << event.vehicle->value() << '"';
+                if (event.related_position_m) output_ << ",\"related_position_m\":{\"x\":"
+                    << event.related_position_m->x_m << ",\"y\":" << event.related_position_m->y_m << '}';
+                if (event.related_heading_rad) output_ << ",\"related_heading_rad\":" << *event.related_heading_rad;
+                if (event.vehicle_state) output_ << ",\"related_state\":\"" << airside::to_string(*event.vehicle_state) << '"';
+            }
+            if (event.aircraft_state) output_ << ",\"state\":\"" << airside::to_string(*event.aircraft_state) << '"';
+            else if (event.vehicle_state) output_ << ",\"state\":\"" << airside::to_string(*event.vehicle_state) << '"';
             if (!event.turnaround_id.empty()) output_ << ",\"turnaround_id\":\"" << json_escape(event.turnaround_id) << '"';
             if (!event.agent_id.empty()) output_ << ",\"agent_id\":\"" << json_escape(event.agent_id) << '"';
             if (!event.agent_event_id.empty()) output_ << ",\"event_id\":\"" << json_escape(event.agent_event_id) << '"';
@@ -652,6 +664,9 @@ public:
             if (!event.decision_result.empty()) output_ << ",\"result\":\"" << json_escape(event.decision_result) << '"';
             if (event.task) output_ << ",\"task_id\":" << event.task->value();
             if (event.edge) output_ << ",\"edge_id\":" << event.edge->value();
+            if (event.position_m) output_ << ",\"position_m\":{\"x\":" << event.position_m->x_m
+                                          << ",\"y\":" << event.position_m->y_m << '}';
+            if (event.heading_rad) output_ << ",\"heading_rad\":" << *event.heading_rad;
             if (event.service) output_ << ",\"service\":\"" << airside::to_string(*event.service) << '"';
             if (event.estimated_ready_time) output_ << ",\"estimated_ready_time_seconds\":" << event.estimated_ready_time->count();
             if (event.schedule_slack) output_ << ",\"schedule_slack_seconds\":" << event.schedule_slack->count();

@@ -1,0 +1,86 @@
+{
+  "download_crs": "WGS 84 longitude/latitude (EPSG:4326)",
+  "geodetic_conversion": "WGS-84 ECEF then topocentric ENU using tools/airport_scenario_generation/geospatial.py",
+  "heading_convention": "Simulator heading is atan2(delta_north, delta_east), radians from east toward north.",
+  "known_points": [
+    {
+      "local_enu_m": {
+        "east": 0,
+        "north": 0,
+        "up": 0
+      },
+      "name": "ARP origin",
+      "unreal_cm": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "local_enu_m": {
+        "east": 250,
+        "north": 0,
+        "up": 0
+      },
+      "name": "250 m east",
+      "unreal_cm": {
+        "x": 25000,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "local_enu_m": {
+        "east": 0,
+        "north": 250,
+        "up": 0
+      },
+      "name": "250 m north",
+      "unreal_cm": {
+        "x": 0,
+        "y": -25000,
+        "z": 0
+      }
+    },
+    {
+      "geodetic_roundtrip_enu_m": {
+        "east": 499.99999999988154,
+        "north": -1199.9999999994584,
+        "up": 34.99999999692227
+      },
+      "max_abs_roundtrip_error_m": 3.077730070799589e-09,
+      "name": "round-trip check",
+      "source_local_enu_m": {
+        "east": 500.0,
+        "north": -1200.0,
+        "up": 35.0
+      },
+      "unreal_cm": {
+        "x": 50000.0,
+        "y": 120000.0,
+        "z": 3500.0
+      }
+    }
+  ],
+  "note": "Polygon source is 2D. The assigned height only establishes a horizontal tangent frame; it does not invent pavement elevation.",
+  "origin": {
+    "ellipsoid_height_m": 208.22,
+    "latitude_degrees": 32.61511111,
+    "longitude_degrees": -85.434,
+    "source": "Existing KAUO ARP calibration from FAA NASR; ellipsoid height is derived."
+  },
+  "simulation_axes": {
+    "x": "east, meters",
+    "y": "north, meters",
+    "z": "up, meters; source pavement elevation unavailable"
+  },
+  "source_layer_crs": "Web Mercator (WKID 102100 / EPSG:3857)",
+  "source_sha256": "5327a009231bfe3352e6473caf2cf8e4ec46a92bfc15e6ed2efc002b8a9e6f89",
+  "surface_source_altitude": "Unknown; source polygon coordinates are 2D.",
+  "unreal_axes": {
+    "x_cm": "100 * east_m",
+    "y_cm": "-100 * north_m",
+    "yaw_degrees": "-heading_rad * 180/pi",
+    "z_cm": "100 * up_m when available; 0 visual plane for 2D pavement only"
+  }
+}

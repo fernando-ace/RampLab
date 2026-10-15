@@ -49,6 +49,7 @@ def _manifest(key: str) -> Path:
         "kauo": INGESTION / "examples" / "kauo" / "manifest.json",
         "kauo-goal27": INGESTION / "examples" / "kauo_goal27" / "manifest.json",
         "kauo-goal31": INGESTION / "examples" / "kauo_goal31" / "manifest.json",
+        "kauo-goal42": INGESTION / "examples" / "kauo_goal31" / "manifest.json",
         "synthetic": INGESTION / "examples" / "synthetic" / "manifest.json",
     }
     try:
@@ -62,6 +63,7 @@ def _mapping(key: str) -> Path:
         "kauo": GENERATION / "mapping.kauo.json",
         "kauo-goal27": GENERATION / "mapping.kauo_goal27.json",
         "kauo-goal31": GENERATION / "mapping.kauo_goal31.json",
+        "kauo-goal42": GENERATION / "mapping.kauo_goal42.json",
         "synthetic": GENERATION / "mapping.synthetic.json",
     }
     return choices[key]
@@ -501,6 +503,7 @@ def catalog() -> dict[str, Any]:
                 {"key": "kauo", "label": "KAUO · KAUO calibrated prototype", "provenance": "FAA runway references; approximate taxiway and apron geometry"},
                 {"key": "kauo-goal27", "label": "KAUO · two-aircraft operations prototype", "provenance": "Goal 27 scenario assumptions; approximate taxiway and apron geometry"},
                 {"key": "kauo-goal31", "label": "KAUO · three-aircraft turnaround/GSE demonstration", "provenance": "Goal 31 simulation assumptions; approximate service points and GSE fleet"},
+                {"key": "kauo-goal42", "label": "KAUO · ALDOT pavement geometry + Goal 41 operations", "provenance": "FAA NASR runway ends; ALDOT pavement inventory polygons; derived route graph; approximate stands and service points"},
                 {"key": "synthetic", "label": "Synthetic operations example", "provenance": "Synthetic regression fixture; not airport data"},
             ]}
 
@@ -515,6 +518,7 @@ def bootstrap(key: str = "kauo") -> dict[str, Any]:
                         "dataset_description": data["dataset"].get("description"), "validation": data["validation"],
                         "runways": meta.get("runways", [])},
             "geometry": {"nodes": geo.get("nodes", []), "edges": geo.get("edges", []), "features": geo.get("features", {}),
+                         "surface_areas": geo.get("surface_areas", []), "geometry_provenance": geo.get("geometry_provenance", {}),
                          "gates": geometry.get("gates", []), "surface_operations": geometry.get("surface_operations", {})},
             "capabilities": {"mapped_routes": mapping.get("route_ids", {}), "vehicle_types": mapping.get("equipment_types", {}),
                              "services": mapping.get("service_types", {}), "service_types": mapping.get("service_types", {})},
