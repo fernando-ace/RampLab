@@ -171,6 +171,12 @@ struct FleetMetrics {
     bool operator==(const FleetMetrics&) const = default;
 };
 
+// Construct a reverse route using recorded vehicle poses and a nearby route
+// entry waypoint. The returned path never interpolates outside traversal history.
+[[nodiscard]] std::optional<std::vector<Vec2>> build_retreat_path_from_history(
+    Vec2 current_position, const std::vector<Vec2>& traversal_history,
+    Vec2 route_entry, double entry_tolerance_m);
+
 class FleetSimulation {
 public:
     FleetSimulation(AutonomyScenario base, std::vector<FleetMission> missions, std::uint64_t seed,

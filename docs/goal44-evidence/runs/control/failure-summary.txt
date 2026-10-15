@@ -1,0 +1,3 @@
+Native Goal44 conservative control attempt exited nonzero.
+At simulated second 2107, while returning vehicle 9 from the third stand's water service point to its depot, the fleet dispatcher raised: dispatcher assigned a request without an available route.
+The control event stream contains 188 records: 3 arrivals at gates, 3 turnarounds started, and 20 service tasks completed; no completion metrics were emitted.

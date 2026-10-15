@@ -256,6 +256,19 @@ TEST(FleetTest, IndependentSafetyValidatorDetectsOverlappingVehicles){
     FleetSimulation fleet{base_scenario(),std::move(missions),42};
     (void)fleet.advance();const auto result=fleet.result();
     EXPECT_GT(result.collisions,0U);EXPECT_LT(result.minimum_separation_m,2.0);
+    EXPECT_EQ(std::ranges::count_if(result.events, [](const auto& event) {
+        return event.kind == TrafficEventKind::Collision;
+    }), 1);
+}
+
+TEST(FleetRecoveryTest, RetreatUsesRecordedPathWhenControllerRoundsWaypointCorner){
+    const std::vector<Vec2> history{{-10.0, 0.0}, {-5.0, 0.0}, {1.171, 0.0}};
+    const auto retreat = build_retreat_path_from_history({2.0, 0.0}, history, {0.0, 0.0}, 1.75);
+    ASSERT_TRUE(retreat);
+    ASSERT_EQ(retreat->size(), 2U);
+    EXPECT_DOUBLE_EQ(retreat->front().x_m, 2.0);
+    EXPECT_DOUBLE_EQ(retreat->back().x_m, 1.171);
+    EXPECT_FALSE(build_retreat_path_from_history({2.0, 0.0}, history, {0.0, 0.0}, 0.75));
 }
 
 TEST(FleetTest, FaultedMemberRetainsPerVehicleFaultMetrics){

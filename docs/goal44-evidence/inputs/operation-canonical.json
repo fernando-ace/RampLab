@@ -1,0 +1,650 @@
+{
+  "agent_policy": {
+    "aircraft_routing": "ADAPTIVE"
+  },
+  "aircraft": [
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "category": "illustrative simulator archetype",
+      "classification": "ASSUMED FOR SIMULATION; not an observed aircraft or assignment",
+      "type": "representative_single_engine_general_aviation"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "category": "illustrative simulator archetype",
+      "classification": "ASSUMED FOR SIMULATION; not an observed aircraft or assignment",
+      "type": "representative_single_engine_general_aviation"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "category": "illustrative simulator archetype",
+      "classification": "ASSUMED FOR SIMULATION; not an observed aircraft or assignment",
+      "type": "representative_single_engine_general_aviation"
+    }
+  ],
+  "airport": {
+    "airport_id": "KAUO",
+    "field_elevation_ft": 776.8,
+    "field_elevation_m": 236.785,
+    "iata": "AUO",
+    "icao": "KAUO",
+    "local_timezone": "America/Chicago",
+    "name": "Auburn University Regional Airport",
+    "operational_areas": [
+      {
+        "classification": "APPROXIMATE chart-informed operational area; boundary is not surveyed",
+        "id": "primary_fbo_apron",
+        "label": "Terminal/FBO apron"
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION; stand positions are not published FAA stands",
+        "id": "ga_parking_area",
+        "label": "Illustrative general aviation parking positions"
+      },
+      {
+        "classification": "ASSUMED FOR SIMULATION; not verified vehicle locations",
+        "id": "service_staging_area",
+        "label": "Illustrative apron service staging"
+      }
+    ],
+    "reference_latitude": 32.61511111,
+    "reference_longitude": -85.434,
+    "runways": [
+      {
+        "classification": "FAA published",
+        "identifier": "18/36",
+        "length_ft": 5264,
+        "surface": "asphalt, grooved",
+        "width_ft": 100
+      },
+      {
+        "classification": "FAA published",
+        "identifier": "11/29",
+        "length_ft": 4000,
+        "surface": "asphalt",
+        "width_ft": 75
+      }
+    ],
+    "timezone": "UTC"
+  },
+  "dataset": {
+    "dataset_id": "kauo-goal31-turnaround-gse-demo",
+    "description": "Illustrative Goal 31 multi-aircraft KAUO turnaround resource demonstration; schedules, fleet inventory, service positions and durations are simulation assumptions."
+  },
+  "disruptions": [
+    {
+      "classification": "ASSUMED FOR SIMULATION",
+      "disruption_id": "KAUO-G27-TWY-A-APRON-CLOSURE",
+      "end_time": "2026-10-09T14:38:00Z",
+      "reason": "Controlled scenario-only closure of the mapped primary taxiway-to-apron connector. It is not a reported, planned, or current KAUO closure.",
+      "resource_id": "KAUO-TWY-A-RAMP-CONNECTOR",
+      "start_time": "2026-10-09T14:00:15Z",
+      "type": "route_closure"
+    }
+  ],
+  "equipment": [
+    {
+      "classification": "ASSUMED FOR SIMULATION",
+      "equipment_id": "G31-BAG-01",
+      "initial_location": "fbo_service_staging_west",
+      "status": "available",
+      "type": "baggage_vehicle"
+    },
+    {
+      "classification": "ASSUMED FOR SIMULATION",
+      "equipment_id": "G31-CATER-01",
+      "initial_location": "gse_catering_depot",
+      "status": "available",
+      "type": "catering_vehicle"
+    },
+    {
+      "classification": "ASSUMED FOR SIMULATION",
+      "equipment_id": "G31-GPU-01",
+      "initial_location": "gse_gpu_depot",
+      "status": "available",
+      "type": "ground_power_unit"
+    },
+    {
+      "classification": "ASSUMED FOR SIMULATION",
+      "equipment_id": "G31-LAV-01",
+      "initial_location": "gse_lavatory_depot",
+      "status": "available",
+      "type": "lavatory_vehicle"
+    },
+    {
+      "classification": "ASSUMED FOR SIMULATION",
+      "equipment_id": "G31-LOAD-01",
+      "initial_location": "fbo_service_staging_east",
+      "status": "available",
+      "type": "service_cart"
+    },
+    {
+      "classification": "ASSUMED FOR SIMULATION",
+      "equipment_id": "G31-TUG-01",
+      "initial_location": "gse_tug_depot",
+      "status": "available",
+      "type": "tug"
+    },
+    {
+      "classification": "ASSUMED FOR SIMULATION",
+      "equipment_id": "G31-WATER-01",
+      "initial_location": "gse_water_depot",
+      "status": "available",
+      "type": "potable_water_vehicle"
+    },
+    {
+      "classification": "ASSUMED FOR SIMULATION; control fleet quantity is two fuel trucks",
+      "equipment_id": "G31-FUEL-02",
+      "initial_location": "gse_fuel_depot_02",
+      "status": "available",
+      "type": "fuel_vehicle"
+    },
+    {
+      "classification": "ASSUMED FOR SIMULATION; no KAUO equipment inventory or dispatch location is asserted",
+      "equipment_id": "G31-FUEL-01",
+      "initial_location": "fbo_service_staging_fuel",
+      "status": "available",
+      "type": "fuel_vehicle"
+    }
+  ],
+  "flights": [
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION; overlapping demonstration schedule, not an observed or forecast flight",
+      "flight_id": "KAUO-G31-01-ARR",
+      "flight_number": "G31-01-ARR",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-01",
+      "occupancy_end": "2026-10-09T15:00:00Z",
+      "occupancy_start": "2026-10-09T14:00:00Z",
+      "operation": "arrival",
+      "origin": "UNSPECIFIED",
+      "scheduled_time": "2026-10-09T14:00:00Z"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION; overlapping demonstration schedule, not an observed or forecast flight",
+      "destination": "UNSPECIFIED",
+      "flight_id": "KAUO-G31-01-DEP",
+      "flight_number": "G31-01-DEP",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-01",
+      "occupancy_end": "2026-10-09T15:14:00Z",
+      "occupancy_start": "2026-10-09T15:00:00Z",
+      "operation": "departure",
+      "scheduled_time": "2026-10-09T15:00:00Z"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION; overlapping demonstration schedule, not an observed or forecast flight",
+      "flight_id": "KAUO-G31-02-ARR",
+      "flight_number": "G31-02-ARR",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-02",
+      "occupancy_end": "2026-10-09T15:02:00Z",
+      "occupancy_start": "2026-10-09T14:02:00Z",
+      "operation": "arrival",
+      "origin": "UNSPECIFIED",
+      "scheduled_time": "2026-10-09T14:02:00Z"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION; overlapping demonstration schedule, not an observed or forecast flight",
+      "destination": "UNSPECIFIED",
+      "flight_id": "KAUO-G31-02-DEP",
+      "flight_number": "G31-02-DEP",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-02",
+      "occupancy_end": "2026-10-09T15:16:00Z",
+      "occupancy_start": "2026-10-09T15:02:00Z",
+      "operation": "departure",
+      "scheduled_time": "2026-10-09T15:02:00Z"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION; overlapping demonstration schedule, not an observed or forecast flight",
+      "flight_id": "KAUO-G31-03-ARR",
+      "flight_number": "G31-03-ARR",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-03",
+      "occupancy_end": "2026-10-09T15:04:00Z",
+      "occupancy_start": "2026-10-09T14:04:00Z",
+      "operation": "arrival",
+      "origin": "UNSPECIFIED",
+      "scheduled_time": "2026-10-09T14:04:00Z"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION; overlapping demonstration schedule, not an observed or forecast flight",
+      "destination": "UNSPECIFIED",
+      "flight_id": "KAUO-G31-03-DEP",
+      "flight_number": "G31-03-DEP",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-03",
+      "occupancy_end": "2026-10-09T15:18:00Z",
+      "occupancy_start": "2026-10-09T15:04:00Z",
+      "operation": "departure",
+      "scheduled_time": "2026-10-09T15:04:00Z"
+    }
+  ],
+  "gates": [
+    {
+      "classification": "APPROXIMATE / ASSUMED FOR SIMULATION",
+      "description": "Illustrative KAUO demonstration stand 1; not surveyed or an official stand ID.",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-01",
+      "remote": true,
+      "status": "available",
+      "terminal": "approximate FBO apron"
+    },
+    {
+      "classification": "APPROXIMATE / ASSUMED FOR SIMULATION",
+      "description": "Illustrative KAUO demonstration stand 2; not surveyed or an official stand ID.",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-02",
+      "remote": true,
+      "status": "available",
+      "terminal": "approximate FBO apron"
+    },
+    {
+      "classification": "APPROXIMATE / ASSUMED FOR SIMULATION",
+      "description": "Illustrative KAUO demonstration stand 3; not surveyed or an official stand ID.",
+      "gate_id": "GA-PARK-ILLUSTRATIVE-03",
+      "remote": true,
+      "status": "available",
+      "terminal": "approximate FBO apron"
+    }
+  ],
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "accepted_record_count": 3,
+      "filename": "aircraft.json",
+      "record_count": 3,
+      "rejected_record_count": 0,
+      "sha256": "c67641f9c6360246bdc84bd42ba79f913c09627ae6cbfa45e91129c28b0816a6",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 1,
+      "filename": "disruptions.json",
+      "record_count": 1,
+      "rejected_record_count": 0,
+      "sha256": "4278f43138830d2101cb3e2cbd935cd317ac85ac57ecaa39c26701173953de3c",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 9,
+      "filename": "equipment.json",
+      "record_count": 9,
+      "rejected_record_count": 0,
+      "sha256": "70c851d789b63e5ad3b1d1f560da21508d57295b88bc323d498fe5724ef0b304",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 6,
+      "filename": "flights.json",
+      "record_count": 6,
+      "rejected_record_count": 0,
+      "sha256": "45f04716202671e43fb6a93d01b4e193c91719721f0f81c038a5ad2334526b9f",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 3,
+      "filename": "gates.json",
+      "record_count": 3,
+      "rejected_record_count": 0,
+      "sha256": "362542d08d29291aea21c6fd05447b0656375a55aaba44cf97d800bd0c0251c4",
+      "type": "json"
+    },
+    {
+      "accepted_record_count": 33,
+      "filename": "turnaround.json",
+      "record_count": 33,
+      "rejected_record_count": 0,
+      "sha256": "b597546b59f55492c6065c1ede533a2e90a04f7701e1504618a0c56ca5be93d2",
+      "type": "json"
+    }
+  ],
+  "turnaround_requirements": [
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 0.5,
+      "requirement_id": "G31-01-CHOCKS",
+      "service_type": "chocks"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 1,
+      "requirement_id": "G31-01-GPU",
+      "service_type": "ground_power"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "requirement_id": "G31-01-CATER",
+      "service_type": "catering"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 12,
+      "requirement_id": "G31-01-FUEL",
+      "service_type": "fueling"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 3,
+      "requirement_id": "G31-01-WATER",
+      "service_type": "potable_water"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 5,
+      "requirement_id": "G31-01-DEBOARD",
+      "service_type": "deboarding"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "requirement_id": "G31-01-CLEAN",
+      "service_type": "cabin_cleaning"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 4,
+      "requirement_id": "G31-01-LAV",
+      "service_type": "lavatory_service"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 8,
+      "requirement_id": "G31-01-UNLOAD",
+      "service_type": "baggage"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-LOAD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 3,
+      "prerequisites": [
+        "G31-01-LOAD",
+        "G31-01-FUEL"
+      ],
+      "required_equipment_type": "tug",
+      "requirement_id": "G31-01-PUSH",
+      "service_type": "pushback"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-01",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-01-UNLOAD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "prerequisites": [
+        "G31-01-UNLOAD",
+        "G31-01-CLEAN"
+      ],
+      "requirement_id": "G31-01-LOAD",
+      "service_type": "baggage_load"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 0.5,
+      "requirement_id": "G31-02-CHOCKS",
+      "service_type": "chocks"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 1,
+      "requirement_id": "G31-02-GPU",
+      "service_type": "ground_power"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "requirement_id": "G31-02-CATER",
+      "service_type": "catering"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 12,
+      "requirement_id": "G31-02-FUEL",
+      "service_type": "fueling"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 3,
+      "requirement_id": "G31-02-WATER",
+      "service_type": "potable_water"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 5,
+      "requirement_id": "G31-02-DEBOARD",
+      "service_type": "deboarding"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "requirement_id": "G31-02-CLEAN",
+      "service_type": "cabin_cleaning"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 4,
+      "requirement_id": "G31-02-LAV",
+      "service_type": "lavatory_service"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 8,
+      "requirement_id": "G31-02-UNLOAD",
+      "service_type": "baggage"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-LOAD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 3,
+      "prerequisites": [
+        "G31-02-LOAD",
+        "G31-02-FUEL"
+      ],
+      "required_equipment_type": "tug",
+      "requirement_id": "G31-02-PUSH",
+      "service_type": "pushback"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-02",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-02-UNLOAD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "prerequisites": [
+        "G31-02-UNLOAD",
+        "G31-02-CLEAN"
+      ],
+      "requirement_id": "G31-02-LOAD",
+      "service_type": "baggage_load"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 0.5,
+      "requirement_id": "G31-03-CHOCKS",
+      "service_type": "chocks"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 1,
+      "requirement_id": "G31-03-GPU",
+      "service_type": "ground_power"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "requirement_id": "G31-03-CATER",
+      "service_type": "catering"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 12,
+      "requirement_id": "G31-03-FUEL",
+      "service_type": "fueling"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 3,
+      "requirement_id": "G31-03-WATER",
+      "service_type": "potable_water"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-CHOCKS",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 5,
+      "requirement_id": "G31-03-DEBOARD",
+      "service_type": "deboarding"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "requirement_id": "G31-03-CLEAN",
+      "service_type": "cabin_cleaning"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 4,
+      "requirement_id": "G31-03-LAV",
+      "service_type": "lavatory_service"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-DEBOARD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 8,
+      "requirement_id": "G31-03-UNLOAD",
+      "service_type": "baggage"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-LOAD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 3,
+      "prerequisites": [
+        "G31-03-LOAD",
+        "G31-03-FUEL"
+      ],
+      "required_equipment_type": "tug",
+      "requirement_id": "G31-03-PUSH",
+      "service_type": "pushback"
+    },
+    {
+      "aircraft_id": "KAUO-G31-GA-03",
+      "classification": "ASSUMED FOR SIMULATION",
+      "depends_on": "G31-03-UNLOAD",
+      "description": "Explicit Goal 31 demonstration requirement; simulation assumption, not measured KAUO service data.",
+      "duration_minutes": 10,
+      "prerequisites": [
+        "G31-03-UNLOAD",
+        "G31-03-CLEAN"
+      ],
+      "requirement_id": "G31-03-LOAD",
+      "service_type": "baggage_load"
+    }
+  ],
+  "validation": {
+    "counts": {
+      "aircraft": 3,
+      "disruptions": 1,
+      "equipment": 9,
+      "flights": 6,
+      "gates": 3,
+      "turnaround_requirements": 33
+    },
+    "error_count": 0,
+    "findings": [
+      {
+        "code": "ROUTE_REFERENCE_UNRESOLVED",
+        "field": "resource_id",
+        "message": "route/resource ID is structurally retained but cannot be checked against airport geometry in Goal 24A",
+        "record": null,
+        "severity": "info",
+        "source": "",
+        "value": "KAUO-TWY-A-RAMP-CONNECTOR"
+      }
+    ],
+    "info_count": 1,
+    "schema_version": "1.0",
+    "status": "valid",
+    "warning_count": 0
+  }
+}

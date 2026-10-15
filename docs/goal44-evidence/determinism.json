@@ -1,0 +1,36 @@
+{
+  "artifact_sha256": {
+    "events.jsonl": {
+      "run_1": "5222ab3ebe6f9ceadf08f97a141389c0e5d1529f6939acc1e51d705b8296526c",
+      "run_2": "5222ab3ebe6f9ceadf08f97a141389c0e5d1529f6939acc1e51d705b8296526c",
+      "run_3": "5222ab3ebe6f9ceadf08f97a141389c0e5d1529f6939acc1e51d705b8296526c"
+    },
+    "simulator-metrics.aircraft.csv": {
+      "run_1": "96f9e17957b0f96816e48b37ab6610e41cc8dc45b8b10167cc60cf6b13325fea",
+      "run_2": "96f9e17957b0f96816e48b37ab6610e41cc8dc45b8b10167cc60cf6b13325fea",
+      "run_3": "96f9e17957b0f96816e48b37ab6610e41cc8dc45b8b10167cc60cf6b13325fea"
+    },
+    "simulator-metrics.csv": {
+      "run_1": "43dbcdff7a623be2c746e292957e0c35bcc0c10b304b67f54a1340ff547d2639",
+      "run_2": "43dbcdff7a623be2c746e292957e0c35bcc0c10b304b67f54a1340ff547d2639",
+      "run_3": "43dbcdff7a623be2c746e292957e0c35bcc0c10b304b67f54a1340ff547d2639"
+    },
+    "simulator-metrics.json": {
+      "run_1": "4d4303d22d85e8b17b05c171459fffed327a8e2b35c858923a0977a639c5deb0",
+      "run_2": "4d4303d22d85e8b17b05c171459fffed327a8e2b35c858923a0977a639c5deb0",
+      "run_3": "4d4303d22d85e8b17b05c171459fffed327a8e2b35c858923a0977a639c5deb0"
+    }
+  },
+  "build": "cmake --build build-goal44 --config Release --target airside_cli --parallel 2",
+  "byte_identical": true,
+  "cli_release_sha256": "d0a28ce22acc976c9c5298eb89b88ec8ce69209a16e3052b992c97df21adbdb1",
+  "geometry_sha256": "ee4781bf37e005235177d811e4b56085d7f9264e314bb50f09a6c1f968f56a30",
+  "interpretation": "Repeatability evidence for a failed safety run; not operational success.",
+  "runs": [
+    "control-service-layout",
+    "control-repeat-2",
+    "control-repeat-3"
+  ],
+  "scenario_sha256": "7fe4603e120fe23d42248f11732b364df0d4178208066ca17bea538616031ca0",
+  "seed": 42
+}

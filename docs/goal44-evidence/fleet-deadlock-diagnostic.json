@@ -1,0 +1,66 @@
+{
+  "classification": "DERIVED_SIMULATOR_FAILURE_DIAGNOSTIC",
+  "contested_resources": {
+    "edge/52": {
+      "aircraft_allowed": false,
+      "edge_id": "fbo_apron_junction_to_kauo_g31_stand_2_service_approach",
+      "from": "fbo_apron_junction",
+      "graph_edge_numbering": "one-based",
+      "ground_vehicle_allowed": true,
+      "surface_route_uses": [
+        "APRON"
+      ],
+      "to": "kauo_g31_stand_2_service_approach"
+    },
+    "intersection/6": {
+      "graph_node_numbering": "one-based",
+      "node_id": "fbo_apron_junction",
+      "position_m": {
+        "x_m": -6.0,
+        "y_m": -72.0
+      }
+    }
+  },
+  "deadlock_count": 1,
+  "deadlocked_vehicles": [
+    "2",
+    "7"
+  ],
+  "failure_reason": "DEADLOCK_UNRESOLVED: wait-for cycle has no safe retreat route",
+  "fleet_collisions": 499,
+  "fleet_minimum_separation_m": 0.063348,
+  "limitations": [
+    "This is a diagnostic of the retained pre-routing-reset disruption run.",
+    "It identifies a shared-apron wait cycle but does not establish the cause of fleet collisions.",
+    "No runtime recovery or geometry correction is proven by this artifact."
+  ],
+  "recovery_events": [
+    "2928.24s fleet_deadlock_detected vehicle=2 other= resource=wait_for_cycle position=0.00:0.00 progress=0.00",
+    "2928.24s fleet_deadlock_detected vehicle=7 other= resource=wait_for_cycle position=0.00:0.00 progress=0.00",
+    "2928.24s retreat_failed vehicle=2 other= resource=edge/52 position=0.00:0.00 progress=0.00",
+    "2928.24s retreat_failed vehicle=2 other= resource=intersection/6 position=0.00:0.00 progress=0.00",
+    "2928.24s deadlock_unresolved vehicle=9 other=1 resource=edge/32 position=-30.72:42.72 progress=324.74",
+    "2928.24s deadlock_unresolved vehicle=7 other=2 resource=intersection/6 position=-38.00:52.00 progress=2.00",
+    "2928.24s deadlock_unresolved vehicle=7 other=3 resource=intersection/6 position=-38.00:52.00 progress=388.24",
+    "2928.24s deadlock_unresolved vehicle=2 other=4 resource=edge/52 position=14.74:29.12 progress=113.06",
+    "2928.24s deadlock_unresolved vehicle=2 other=5 resource=edge/52 position=14.74:29.12 progress=674.28",
+    "2928.24s deadlock_unresolved vehicle=9 other=6 resource=edge/32 position=-30.72:42.72 progress=510.48",
+    "2928.24s deadlock_unresolved vehicle=2 other=7 resource=edge/52 position=14.74:29.12 progress=592.22",
+    "2928.24s deadlock_unresolved vehicle=7 other=9 resource=intersection/6 position=-38.00:52.00 progress=592.22"
+  ],
+  "scenario": "generated/disruption/scenario.json",
+  "simulated_second": 2928.24,
+  "source_metrics": "runs/disruption/simulator-metrics.json",
+  "source_metrics_sha256": "375e8a7c3a41fb7f6818a9c61e5e365af21e29e8ded489e0bb4c6c8dd70eab7b",
+  "unresolved_deadlock": true,
+  "wait_dependencies": [
+    "1 -> 9 [edge/32] 324.74s",
+    "2 -> 7 [intersection/6] 2.00s",
+    "3 -> 7 [intersection/6] 388.24s",
+    "4 -> 2 [edge/52] 113.06s",
+    "5 -> 2 [edge/52] 674.28s",
+    "6 -> 9 [edge/32] 510.48s",
+    "7 -> 2 [edge/52] 592.22s",
+    "9 -> 7 [intersection/6] 592.22s"
+  ]
+}

@@ -97,6 +97,24 @@ std::string shared_route_resource(const std::vector<std::string>& a,const std::v
 
 }
 
+std::optional<std::vector<Vec2>> build_retreat_path_from_history(
+    Vec2 current_position, const std::vector<Vec2>& traversal_history,
+    Vec2 route_entry, double entry_tolerance_m) {
+    if (traversal_history.size() < 2 || !std::isfinite(entry_tolerance_m) || entry_tolerance_m < 0.0)
+        return std::nullopt;
+    std::vector<Vec2> path{current_position};
+    for (auto it = traversal_history.rbegin(); it != traversal_history.rend(); ++it) {
+        if (separation(path.back(), *it) > 0.05) path.push_back(*it);
+        if (separation(*it, route_entry) <= entry_tolerance_m) break;
+    }
+    const auto safe = std::ranges::find_if(path, [&](Vec2 point) {
+        return separation(point, route_entry) <= entry_tolerance_m;
+    });
+    if (safe == path.end()) return std::nullopt;
+    path.erase(std::next(safe), path.end());
+    return path;
+}
+
 namespace {
 std::uint64_t resource_vehicle_order(const std::string& resource, const VehicleId& vehicle) {
     std::uint64_t vehicle_hash = 14695981039346656037ULL;
@@ -365,6 +383,7 @@ struct FleetSimulation::Impl {
     std::map<std::string, std::vector<OpposingEdgeUse>> opposing_edge_uses;
     std::vector<TrafficEvent> events;
     std::vector<bool> was_conflicting;
+    std::vector<bool> was_colliding;
     bool resource_specific_tie_breaks{};
     TrafficReservationTable reservations;
     double now{};
@@ -468,6 +487,7 @@ struct FleetSimulation::Impl {
             users.erase(std::unique(users.begin(), users.end()), users.end());
         }
         was_conflicting.resize(members.size()*members.size());
+        was_colliding.resize(members.size()*members.size());
     }
 
     double dispatch_horizon_s{};
@@ -546,10 +566,27 @@ struct FleetSimulation::Impl {
         return vehicles;
     }
 
+    AirportGraph current_routing_graph() const {
+        auto graph = base_scenario.airport.graph;
+        for (const auto& change : road_events) {
+            if (static_cast<double>(change.time.count()) > now + 1e-9) break;
+            graph.set_edge_available(change.edge, change.available);
+        }
+        return graph;
+    }
+
     void start_request(Member& member, const ServiceTaskSnapshot& task) {
         member.idle_time_s += std::max(0.0, now - member.dispatch_state_since_s);
         member.dispatch_state_since_s = now;
-        const auto graph = member.simulation.graph();
+        // Start each dispatch from the immutable fleet topology. Per-mission
+        // replanning may temporarily disable edges to route around conflicts;
+        // carrying those transient exclusions into the next request can make
+        // an otherwise connected service route appear permanently unavailable.
+        // Replay only scheduled road changes already applied by the fleet so
+        // legitimate closures remain authoritative for the new mission.
+        auto scenario = base_scenario;
+        scenario.airport.graph = current_routing_graph();
+        const auto graph = scenario.airport.graph;
         const auto find_node = [&](const std::string& name) -> std::optional<NodeId> {
             for (const auto& node : graph.nodes()) if (node.name == name) return node.id;
             return std::nullopt;
@@ -562,7 +599,6 @@ struct FleetSimulation::Impl {
         const auto service_route = airside::find_route(graph, *origin, *destination, airside::MovementClass::GroundVehicle);
         if (!approach || !service_route) throw std::logic_error("dispatcher assigned a request without an available route");
 
-        auto scenario = member.simulation.scenario();
         scenario.name += "_" + task.request.id.value;
         scenario.start_node = member.current_node;
         scenario.goal_node = task.request.destination;
@@ -637,7 +673,7 @@ struct FleetSimulation::Impl {
     void dispatch_ready_requests() {
         if (!dispatch_mode) return;
         dispatcher->release_due(now);
-        const auto graph = members.front().simulation.graph();
+        const auto graph = current_routing_graph();
         auto vehicles = dispatch_vehicle_states();
         const auto assignments = dispatcher->dispatch(now, vehicles, graph);
         const auto tasks = dispatcher->snapshot();
@@ -927,13 +963,19 @@ struct FleetSimulation::Impl {
         return false;
     }
 
-    bool begin_retreat(Member& member, const std::string& resource) {
+    bool begin_retreat(Member& member, const std::string& resource, std::string* retreat_failure_detail = nullptr) {
         constexpr std::size_t max_attempts = 2;
-        if (member.recovery_attempts >= max_attempts || member.traversal_history.size() < 2) return false;
+        const auto fail = [&](std::string reason) {
+            if (retreat_failure_detail) *retreat_failure_detail = std::move(reason);
+            return false;
+        };
+        if (member.recovery_attempts >= max_attempts) return fail("recovery_attempt_limit");
+        if (member.traversal_history.size() < 2) return fail("insufficient_traversal_history");
         const auto& state = member.simulation.state();
-        if (!(resource.starts_with("edge/") || resource.starts_with("intersection/"))) return false;
+        if (!(resource.starts_with("edge/") || resource.starts_with("intersection/")))
+            return fail("unsupported_contested_resource");
         const auto& waypoints = member.simulation.mission().waypoints;
-        if (waypoints.size() < 2) return false;
+        if (waypoints.size() < 2) return fail("mission_route_too_short");
         std::size_t current_segment = 0;
         double best_distance = std::numeric_limits<double>::infinity();
         for (std::size_t i = 0; i + 1 < waypoints.size(); ++i) {
@@ -952,18 +994,24 @@ struct FleetSimulation::Impl {
             }
         }
         const Vec2 entry = waypoints[current_segment];
-        if (separation(state.position, entry) < 0.75) return false;
-        member.retreat_path.clear();
-        member.retreat_path.push_back(state.position);
-        for (auto it = member.traversal_history.rbegin(); it != member.traversal_history.rend(); ++it) {
-            if (separation(member.retreat_path.back(), *it) > 0.05) member.retreat_path.push_back(*it);
-            if (separation(*it, entry) <= 0.75) break;
+        if (separation(state.position, entry) < 0.75) return fail("route_segment_entry_too_close");
+        // The controller may round a route corner without sampling the exact
+        // waypoint. Retreat still follows recorded poses, so accept a history
+        // point within the vehicle's physical-clearance margin of the entry.
+        const double entry_tolerance_m = std::max(
+            0.75, member.simulation.scenario().limits.radius_m + 1.0);
+        auto retreat_path = build_retreat_path_from_history(
+            state.position, member.traversal_history, entry, entry_tolerance_m);
+        if (!retreat_path) {
+            const auto nearest = std::ranges::min_element(member.traversal_history, [&](Vec2 left, Vec2 right) {
+                return separation(left, entry) < separation(right, entry);
+            });
+            const double nearest_entry_distance = nearest == member.traversal_history.end()
+                ? std::numeric_limits<double>::infinity() : separation(*nearest, entry);
+            return fail(std::format("entry_not_found_in_traversal_history_nearest_m={:.3f}",
+                                    nearest_entry_distance));
         }
-        const auto safe = std::ranges::find_if(member.retreat_path, [&](Vec2 point) {
-            return separation(point, entry) <= 0.75;
-        });
-        if (safe == member.retreat_path.end()) return false;
-        member.retreat_path.erase(std::next(safe), member.retreat_path.end());
+        member.retreat_path = std::move(*retreat_path);
         member.recovery_state = RecoveryState::Selected;
         member.recovery_resource = resource;
         member.retreat_cursor = member.retreat_path.size() > 1 ? 1 : 0;
@@ -1545,7 +1593,8 @@ bool FleetSimulation::advance(){
                     append_resources(!x.dispatch_mode);
                     for (const auto& contested_resource : contested_resources) {
                         ++x.recovery_attempts;
-                        if (x.begin_retreat(*candidate, contested_resource)) {
+                        std::string retreat_failure_reason;
+                        if (x.begin_retreat(*candidate, contested_resource, &retreat_failure_reason)) {
                             x.events.push_back({x.now, TrafficEventKind::DeadlockRecovery,
                                 candidate->mission.id, {}, "deterministic_opposing_road_retreat"});
                             yielding[candidate_index] = false;
@@ -1569,7 +1618,7 @@ bool FleetSimulation::advance(){
                             }
                         }
                         x.events.push_back({x.now, TrafficEventKind::RetreatFailed,
-                            candidate->mission.id, {}, contested_resource});
+                            candidate->mission.id, {}, contested_resource + " reason=" + retreat_failure_reason});
                     }
                     if (retreat_started) break;
                 }
@@ -1670,8 +1719,16 @@ bool FleetSimulation::advance(){
     for(std::size_t i=0;i<x.members.size();++i)for(std::size_t j=i+1;j<x.members.size();++j){
         const auto&a=x.members[i].simulation.state();const auto&b=x.members[j].simulation.state();
         const double d=separation(a.position,b.position);x.minimum_separation=std::min(x.minimum_separation,d);
-        if(d<x.members[i].simulation.scenario().limits.radius_m+x.members[j].simulation.scenario().limits.radius_m){
-            ++x.collisions;x.events.push_back({x.now,TrafficEventKind::Collision,x.members[i].mission.id,x.members[j].mission.id,"vehicle_conflict",a.position,b.position});}
+        const auto index=i*x.members.size()+j;
+        const bool colliding=d<x.members[i].simulation.scenario().limits.radius_m+
+                                 x.members[j].simulation.scenario().limits.radius_m;
+        if(colliding){
+            ++x.collisions;
+            if(!x.was_colliding[index])
+                x.events.push_back({x.now,TrafficEventKind::Collision,x.members[i].mission.id,
+                                    x.members[j].mission.id,"vehicle_conflict",a.position,b.position});
+        }
+        x.was_colliding[index]=colliding;
     }
     return !finished();
 }
