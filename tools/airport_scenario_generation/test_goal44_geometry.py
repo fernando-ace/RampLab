@@ -46,6 +46,26 @@ class Goal44GeometryTests(unittest.TestCase):
                       for edge in aircraft_edges for depot in depots)
         self.assertGreaterEqual(minimum, 30.0)
 
+    def test_service_point_attachments_preserve_fleet_vehicle_clearance(self):
+        service_points = [node for node in self.airport["nodes"]
+                          if node["id"].endswith("_service_point")]
+        self.assertEqual(len(service_points), 27)
+        points = [(node["x_m"], node["y_m"]) for node in service_points]
+        minimum = min(math.dist(left, right) for index, left in enumerate(points)
+                      for right in points[index + 1:])
+        routing = self.airport["surface_routing_model"]
+        summary = routing["attachment_summary"]
+        self.assertGreaterEqual(minimum, 4.0)
+        self.assertEqual(summary["gse_service_point_count"], len(service_points))
+        self.assertEqual(summary["gse_service_point_required_separation_m"], 4.0)
+        self.assertEqual(summary["gse_service_approach_required_separation_m"], 6.0)
+        self.assertEqual(summary["gse_service_point_minimum_separation_m"], round(minimum, 3))
+        self.assertTrue(all(node["surface_attachment"]["source_feature_id"] for node in service_points))
+        approaches = [(node["x_m"], node["y_m"]) for node in self.airport["nodes"]
+                      if node["id"].endswith("_service_approach")]
+        self.assertTrue(all(min(math.dist(point, approach) for approach in approaches) >= 6.0
+                            for point in points))
+
     def test_runway_crossing_ground_connectors_remain_unavailable(self):
         connectors = [edge for edge in self.airport["edges"]
                       if edge.get("ground_vehicle_access_limitation")]

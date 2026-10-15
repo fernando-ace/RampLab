@@ -16,6 +16,10 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 GRID_M = 2.0
 EDGE_INSET_CELLS = 1
 GSE_DEPOT_MIN_SEPARATION_M = 8.0
+# Two 0.75 m vehicle radii plus the fleet's 1.25 m physical margin is 2.75 m;
+# the 2 m raster's next representable clear spacing is 4 m.
+GSE_SERVICE_POINT_MIN_SEPARATION_M = 4.0
+GSE_SERVICE_APPROACH_MIN_SEPARATION_M = 6.0
 AIRCRAFT_USES = {"RUNWAY", "TAXIWAY", "APRON"}
 GROUND_USES = {"TAXIWAY", "APRON"}
 RUNWAY_NODE_IDS = {
@@ -192,6 +196,15 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
     attachments = []
     claimed_cells: dict[str, set[tuple[int, int]]] = {"aircraft": set(), "ground_vehicle": set()}
     attached_gse_depots: list[tuple[float, float]] = []
+    attached_gse_service_points: list[tuple[float, float]] = []
+    service_approaches = []
+    for node_id, node in nodes.items():
+        if not node_id.endswith("_service_approach"):
+            continue
+        approach_cell = ground_grid.nearest((float(node["x_m"]), float(node["y_m"])),
+                                            maximum_attachment_distance_m)
+        if approach_cell is not None:
+            service_approaches.append(ground_grid.pixel_to_world(approach_cell))
     for node_id, node in nodes.items():
         original = (float(node["x_m"]), float(node["y_m"]))
         movement = "aircraft" if node_id in RUNWAY_NODE_IDS else "ground_vehicle"
@@ -200,11 +213,19 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         if cell is None:
             raise ValueError(f"node {node_id!r} cannot attach to an eligible operating surface within {maximum_attachment_distance_m:g} m")
         is_gse_depot = node_id.startswith("gse_") and node_id.endswith("_depot")
+        is_gse_service_point = node_id.endswith("_service_point")
         attached_candidate = grid.pixel_to_world(cell)
         depot_conflict = is_gse_depot and any(
             math.dist(attached_candidate, previous) < GSE_DEPOT_MIN_SEPARATION_M
             for previous in attached_gse_depots)
-        if (cell in claimed_cells[movement] and math.dist(original, attached_candidate) > GRID_M / 2) or depot_conflict:
+        service_point_conflict = is_gse_service_point and any(
+            math.dist(attached_candidate, previous) < GSE_SERVICE_POINT_MIN_SEPARATION_M
+            for previous in attached_gse_service_points)
+        approach_conflict = is_gse_service_point and any(
+            math.dist(attached_candidate, approach) < GSE_SERVICE_APPROACH_MIN_SEPARATION_M
+            for approach in service_approaches)
+        if ((cell in claimed_cells[movement] and math.dist(original, attached_candidate) > GRID_M / 2) or
+                depot_conflict or service_point_conflict or approach_conflict):
             # The nearest pavement cell can be far from its inherited approximate
             # node. Search around that actual attachment, not the off-pavement
             # source point, so a collision cannot silently preserve a duplicate.
@@ -222,6 +243,14 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
                         if is_gse_depot and any(math.dist(position, previous) < GSE_DEPOT_MIN_SEPARATION_M
                                                 for previous in attached_gse_depots):
                             continue
+                        if is_gse_service_point and any(
+                                math.dist(position, previous) < GSE_SERVICE_POINT_MIN_SEPARATION_M
+                                for previous in attached_gse_service_points):
+                            continue
+                        if is_gse_service_point and any(
+                                math.dist(position, approach) < GSE_SERVICE_APPROACH_MIN_SEPARATION_M
+                                for approach in service_approaches):
+                            continue
                         candidates.append(candidate)
                 if candidates:
                     cell = min(candidates, key=lambda item: (
@@ -231,6 +260,9 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
                 if is_gse_depot:
                     raise ValueError(f"GSE depot node {node_id!r} cannot be attached at least "
                                      f"{GSE_DEPOT_MIN_SEPARATION_M:g} m from other depots on eligible pavement")
+                if is_gse_service_point:
+                    raise ValueError(f"GSE service point {node_id!r} cannot be attached at least "
+                                     f"{GSE_SERVICE_POINT_MIN_SEPARATION_M:g} m from other service points on eligible pavement")
         claimed_cells[movement].add(cell)
         attached = grid.pixel_to_world(cell)
         nearest_distance, feature_id = _nearest_area(attached, areas, grid.uses)
@@ -240,6 +272,8 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         node["x_m"], node["y_m"] = round(attached[0], 3), round(attached[1], 3)
         if is_gse_depot:
             attached_gse_depots.append(attached)
+        if is_gse_service_point:
+            attached_gse_service_points.append(attached)
         node_cells[node_id]["aircraft"] = cell if aircraft_grid.open(cell) else aircraft_grid.nearest(attached, GRID_M)
         node_cells[node_id]["ground_vehicle"] = cell if ground_grid.open(cell) else ground_grid.nearest(attached, GRID_M)
         node["surface_attachment"] = {
@@ -344,7 +378,7 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
         if explicit_aircraft_edges:
             route_count["ground_only_by_semantics"] += int(not aircraft_semantic)
     result = {
-        "method": "2 m raster A* paths through classified ALDOT pavement interiors with a 2 m raster inset; 8-connected movement; diagonal corner cutting disallowed",
+        "method": "2 m raster A* paths through classified ALDOT pavement interiors with a 2 m raster inset; 8-connected movement; diagonal corner cutting disallowed; approximate service-point attachments maintain at least 4 m separation",
         "grid_size_m": GRID_M,
         "source_uses": {"aircraft": sorted(AIRCRAFT_USES), "ground_vehicle": sorted(GROUND_USES)},
         "route_counts": route_count,
@@ -355,6 +389,12 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
             "node_count": len(attachments),
             "source_backed_pavement_snap_count": sum(
                 item["classification"] == "SOURCE_BACKED_PAVEMENT_SNAP" for item in attachments),
+            "gse_service_point_count": len(attached_gse_service_points),
+            "gse_service_point_minimum_separation_m": round(min(
+                (math.dist(left, right) for index, left in enumerate(attached_gse_service_points)
+                 for right in attached_gse_service_points[index + 1:]), default=0.0), 3),
+            "gse_service_point_required_separation_m": GSE_SERVICE_POINT_MIN_SEPARATION_M,
+            "gse_service_approach_required_separation_m": GSE_SERVICE_APPROACH_MIN_SEPARATION_M,
             "unverified_approximate_node_snap_count": sum(
                 item["classification"] == "UNVERIFIED_APPROXIMATE_NODE_SNAP" for item in attachments),
             "maximum_displacement_m": round(max(
@@ -367,6 +407,7 @@ def derive_surface_routes(airport: dict[str, Any], maximum_attachment_distance_m
             "ALDOT pavement inventory polygons do not define operational centerlines, legal connectivity, markings, or current status.",
             "Raster routes are deterministic interior paths for simulation, not surveyed or approved airport routes.",
             "Approximate node displacements are recorded per node; current as-built apron geometry remains unverified.",
+            "GSE service-point snaps are illustrative attachment assumptions separated from shared service approaches and other points; they are not surveyed service-bay coordinates.",
         ],
     }
     if aircraft_clearance_m > 0:
