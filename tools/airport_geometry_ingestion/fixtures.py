@@ -32,12 +32,13 @@ def make_fixture(letter: str) -> dict:
         _feature("threshold_09","runway_threshold","Point",[0,0],source_id,source_hash,{"runway_id":"09/27","threshold_id":"09"}),
         _feature("threshold_27","runway_threshold","Point",[0,100],source_id,source_hash,{"runway_id":"09/27","threshold_id":"27"}),
         _feature("taxiway_alpha","taxiway_centerline","LineString",[[0,10],[20,10]],source_id,source_hash,
-                 {"width_m":12.0,"permissions":["aircraft","gse"],"directed":False}),
+                 {"width_m":12.0,"permissions":["aircraft","gse"],"directed":False,
+                  "runway_crossing_permission":"permitted","crossing_permission_source_id":source_id}),
         _feature("service_road_alpha","service_road","LineString",[[20,10],[30,10]],source_id,source_hash,
                  {"width_m":5.0,"permissions":["gse"],"directed":False}),
         _feature("gse_link_alpha","gse_access_link","LineString",[[30,10],[40,10]],source_id,source_hash,
                  {"width_m":4.0,"permissions":["gse"],"directed":False}),
-        _feature("stand_A1","aircraft_stand","Point",[20,10],source_id,source_hash,{"network_node_id":"n0002","stand_id":"A1"}),
+        _feature("stand_A1","aircraft_stand","Point",[20,10],source_id,source_hash,{"network_node_id":"n0002","turnaround_node_id":"n0002","stand_id":"A1"}),
         _feature("gse_depot_1","gse_depot","Point",[30,10],source_id,source_hash,{"network_node_id":"n0003"}),
         _feature("runway_crossing_1","runway_crossing","LineString",[[-2,10],[2,10]],source_id,source_hash,
                  {"permitted":True,"permission_source_id":source_id,"runway_id":"09/27"}),
@@ -46,7 +47,8 @@ def make_fixture(letter: str) -> dict:
         _feature("hold_short_09","hold_short_position","Point",[0,12],source_id,source_hash,{"runway_id":"09/27"}),
     ]
     relations=[{"relation_id":"runway_exit_09","relation_type":"runway_exit","from_node":"n0001","source_id":source_id,"source_feature_ids":["runway_09_27","taxiway_alpha"]},
-               {"relation_id":"runway_entry_27","relation_type":"runway_entry","to_node":"n0001","source_id":source_id,"source_feature_ids":["runway_09_27","taxiway_alpha"]}]
+               {"relation_id":"runway_entry_27","relation_type":"runway_entry","to_node":"n0001","source_id":source_id,"source_feature_ids":["runway_09_27","taxiway_alpha"]},
+               {"relation_id":"turnaround_A1","relation_type":"turnaround_access","feature_id":"stand_A1","from_node":"n0002","to_node":"n0002","source_id":source_id,"source_feature_ids":["stand_A1","taxiway_alpha"]}]
     assessments=[{"assessment_id":"route-aircraft","assessment_type":"aircraft_route","required_clearance_m":2.0,"measured_clearance_m":2.5,
                   "source_id":source_id,"assessment_method":"synthetic fixture known-width calculation","feature_ids":["taxiway_alpha"],"simulation_approved":False},
                  {"assessment_id":"gse-to-aircraft","assessment_type":"aircraft_vs_gse","required_clearance_m":1.0,"measured_clearance_m":1.25,
@@ -68,10 +70,11 @@ def make_fixture(letter: str) -> dict:
         features.append(_feature("taxiway_alpha","taxiway_centerline","LineString",[[1,1],[1,2]],source_id,source_hash))
     elif letter=="G":
         approximate_source="synthetic_goal46_fixture_G_approximate"
-        approximate_hash=hashlib.sha256(b"explicit approximate test intrusion; not airport data").hexdigest()
+        approximate_bytes=b"explicit approximate test intrusion; not airport data"
+        approximate_hash=hashlib.sha256(approximate_bytes).hexdigest()
         features.append(_feature("approx_route_attempt","taxiway_centerline","LineString",[[60,60],[70,60]],approximate_source,approximate_hash,
                                  {"permissions":["aircraft"],"width_m":None},authority="APPROXIMATE"))
-        source_extra={"source_id":approximate_source,"source_type":"synthetic test-only bad input","source_file":"fixture-G-approximate-source.txt",
+        source_extra={"source_id":approximate_source,"source_type":"synthetic test-only bad input","source_file":"approximate-source.txt",
                       "source_sha256":approximate_hash,"publication_date":None,"extraction_method":"fixture bad-authority test",
                       "authority":"APPROXIMATE","notes":"Intentionally invalid for production routing."}
     elif letter=="H":
@@ -103,6 +106,11 @@ def write_fixtures(folder: Path) -> dict[str, dict]:
     results={}
     for letter in "ABCDEFGH":
         dataset=make_fixture(letter)
-        (folder/f"fixture_{letter.lower()}_synthetic.json").write_bytes(canonical_bytes(dataset))
+        fixture_folder=folder/f"fixture_{letter.lower()}"
+        fixture_folder.mkdir(parents=True,exist_ok=True)
+        source_record={"fixture":letter,"label":"SYNTHETIC TEST DATA ONLY","version":1}
+        (fixture_folder/"synthetic-fixture-source.json").write_bytes(canonical_bytes(source_record))
+        if letter=="G": (fixture_folder/"approximate-source.txt").write_bytes(b"explicit approximate test intrusion; not airport data")
+        (fixture_folder/"canonical.json").write_bytes(canonical_bytes(dataset))
         results[letter]=dataset
     return results

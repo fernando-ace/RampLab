@@ -4,14 +4,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 from pathlib import Path
 import sys
 import zipfile
 
 from . import SCHEMA_VERSION
-from .core import (GeometryInputError, audit_clearances, build_graph, canonical_bytes, compare_datasets,
-                   convert_goal45_dataset, import_source, markdown_readiness, readiness, render_svg,
+from .core import (GeometryInputError, build_graph, canonical_bytes, compare_datasets,
+                   convert_goal45_dataset, graph_diagnostics, import_source, markdown_readiness, readiness, render_svg,
                    validate_dataset)
 
 
@@ -90,7 +89,7 @@ def main(argv: list[str] | None = None) -> int:
             errors=validate_dataset(dataset)
             if errors: raise GeometryInputError(f"refusing graph build for invalid dataset ({len(errors)} validation errors)")
             build_graph(dataset,args.snap_tolerance_m)
-            _write_json(args.output,dataset); diagnostics=__import__("tools.airport_geometry_ingestion.core",fromlist=["graph_diagnostics"]).graph_diagnostics(dataset)
+            _write_json(args.output,dataset); diagnostics=graph_diagnostics(dataset)
             print(f"built {len(dataset['operational_graph']['nodes'])} nodes and {len(dataset['operational_graph']['edges'])} edges; {len(diagnostics)} diagnostic(s)")
             return 0
         if args.command == "audit":
@@ -117,6 +116,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "bundle":
             folder=args.directory.resolve(); output=args.output.resolve()
             if not folder.is_dir(): raise GeometryInputError(f"evidence directory does not exist: {folder}")
+            if folder in output.parents: raise GeometryInputError("ZIP output must be outside the evidence directory")
             files=sorted(p for p in folder.rglob("*") if p.is_file() and p.name!="SHA256SUMS.txt")
             ledger="".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(folder).as_posix()}\n" for p in files)
             (folder/"SHA256SUMS.txt").write_text(ledger,encoding="utf-8",newline="\n")
@@ -134,6 +134,18 @@ def main(argv: list[str] | None = None) -> int:
                 digest,rel=line.split("  ",1); expected[rel]=digest
             mismatches=[rel for rel,digest in expected.items() if hashlib.sha256((folder/Path(rel)).read_bytes()).hexdigest()!=digest]
             if mismatches: raise GeometryInputError("checksum verification failed: "+", ".join(mismatches))
+            with zipfile.ZipFile(output) as archive:
+                archive_names=set(archive.namelist())
+                missing=[f"{folder.name}/{rel}" for rel in expected if f"{folder.name}/{rel}" not in archive_names]
+                archive_mismatches=[]
+                for rel,digest in expected.items():
+                    archive_name=f"{folder.name}/{rel}"
+                    if archive_name in archive_names and hashlib.sha256(archive.read(archive_name)).hexdigest()!=digest:
+                        archive_mismatches.append(rel)
+                ledger_name=f"{folder.name}/SHA256SUMS.txt"
+                if ledger_name not in archive_names or archive.read(ledger_name).decode("utf-8")!=ledger:
+                    archive_mismatches.append("SHA256SUMS.txt")
+                if missing or archive_mismatches: raise GeometryInputError("embedded ZIP checksum verification failed: "+", ".join(missing+archive_mismatches))
             digest=hashlib.sha256(output.read_bytes()).hexdigest()
             output.with_suffix(output.suffix+".sha256").write_text(f"{digest}  {output.name}\n",encoding="ascii",newline="\n")
             print(f"ZIP integrity PASS: {output}; SHA-256 {digest}"); return 0

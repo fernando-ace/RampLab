@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import copy
+import contextlib
 import hashlib
+import io
 import json
 import tempfile
 import unittest
@@ -13,6 +15,7 @@ from .core import (GeometryInputError, audit_clearances, build_graph, canonical_
                    compare_datasets, convert_goal45_dataset, import_source, readiness,
                    validate_dataset)
 from .fixtures import make_fixture, write_fixtures
+from .cli import main as cli_main
 
 ROOT=Path(__file__).resolve().parents[2]
 GOAL45=ROOT/"tools/airport_data_ingestion/kauo_operational_geometry.json"
@@ -87,6 +90,51 @@ class Goal46GeometryTests(unittest.TestCase):
             zipped=import_source(kmz,mapping)
             self.assertEqual(single["features"][0]["coordinates"],zipped["features"][0]["coordinates"])
             self.assertNotEqual(single["sources"][0]["source_sha256"],zipped["sources"][0]["source_sha256"])
+            self.assertEqual([0.0,0.0],single["features"][0]["properties"]["source_kml_altitude_m"])
+            self.assertEqual(2,len(single["features"][0]["coordinates"]))
+
+    def test_local_simulator_transform_requires_bearing_and_explicit_units(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp); source=folder/"point.csv"; mapping=folder/"mapping.json"
+            source.write_text("fid,kind,x_ft,y_ft\np1,taxiway_intersection,10,0\n",encoding="utf-8")
+            fields={"id":"fid","feature_type":"kind","coordinate_fields":{"point":{"x":"x_ft","y":"y_ft"}}}
+            write_mapping(mapping,crs="LOCAL_SIMULATOR",units="ft",fields=fields)
+            config=json.loads(mapping.read_text(encoding="utf-8")); config["local_transform"]={"positive_x_true_bearing_degrees":0}
+            mapping.write_bytes(canonical_bytes(config))
+            dataset=import_source(source,mapping)
+            point=dataset["features"][0]["coordinates"]
+            self.assertAlmostEqual(0.0,point[0],places=6)
+            self.assertAlmostEqual(3.048,point[1],places=6)
+            config.pop("local_transform"); mapping.write_bytes(canonical_bytes(config))
+            with self.assertRaisesRegex(GeometryInputError,"positive_x_true_bearing_degrees"):
+                import_source(source,mapping)
+
+    def test_cli_validation_blocked_exit_and_deterministic_evidence_bundle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp); dataset_path=folder/"fixture_A.json"; dataset_path.write_bytes(canonical_bytes(make_fixture("A")))
+            report=folder/"validate.json"
+            self.assertEqual(0,cli_main(["validate",str(dataset_path),"--report",str(report)]))
+            blocked=folder/"blocked.json"
+            self.assertEqual(2,cli_main(["readiness",str(dataset_path),"--json",str(blocked),"--profile","production","--require-ready"]))
+            self.assertEqual("DATA_BLOCKED",json.loads(blocked.read_text(encoding="utf-8"))["decision"])
+            evidence=folder/"evidence"; evidence.mkdir(); (evidence/"artifact.txt").write_text("evidence\n",encoding="utf-8")
+            archive=folder/"bundle.zip"
+            self.assertEqual(0,cli_main(["bundle",str(evidence),"--output",str(archive)]))
+            first=archive.read_bytes()
+            self.assertEqual(0,cli_main(["bundle",str(evidence),"--output",str(archive)]))
+            self.assertEqual(first,archive.read_bytes())
+            with zipfile.ZipFile(archive) as zipped: self.assertIsNone(zipped.testzip())
+
+    def test_shapefile_and_projected_crs_fail_as_actionable_unsupported_inputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp); shp=folder/"roads.shp"; shp.write_bytes(b"unsupported test input")
+            mapping=folder/"mapping.json"; write_mapping(mapping,crs="EPSG:26916")
+            with self.assertRaisesRegex(GeometryInputError,"unsupported source format"):
+                import_source(shp,mapping)
+            source=folder/"projected.geojson"
+            source.write_text(json.dumps({"type":"FeatureCollection","features":[{"type":"Feature","properties":{"fid":"p","kind":"taxiway_intersection"},"geometry":{"type":"Point","coordinates":[500000,3600000]}}]}),encoding="utf-8")
+            with self.assertRaisesRegex(GeometryInputError,"unsupported source CRS"):
+                import_source(source,mapping)
 
     def test_schema_requires_complete_provenance_and_disallows_approximate_approval(self):
         dataset=make_fixture("A")
@@ -115,6 +163,40 @@ class Goal46GeometryTests(unittest.TestCase):
         build_graph(gap,0.15)
         from tools.airport_geometry_ingestion.core import graph_diagnostics
         self.assertTrue(any(x["code"]=="DISCONNECTED_COMPONENTS" for x in graph_diagnostics(gap)))
+
+    def test_intersections_near_misses_self_crossings_and_zero_length_segments_are_diagnosed(self):
+        from tools.airport_geometry_ingestion.core import graph_diagnostics
+        dataset=make_fixture("A")
+        crossing=copy.deepcopy(dataset["features"][4]); crossing["geometry_id"]="taxiway_crossing"
+        crossing["provenance"]["original_feature_id"]="taxiway_crossing"
+        crossing["coordinates"]=[[10,0],[10,20]]
+        dataset["features"].append(crossing); build_graph(dataset,0.01)
+        self.assertTrue(any(r["code"]=="AMBIGUOUS_INTERSECTION" for r in graph_diagnostics(dataset)))
+        near=make_fixture("A")
+        miss=copy.deepcopy(near["features"][4]); miss["geometry_id"]="taxiway_near_miss"
+        miss["provenance"]["original_feature_id"]="taxiway_near_miss"
+        miss["coordinates"]=[[20.5,10],[50,10]]
+        near["features"].append(miss); build_graph(near,0.25)
+        self.assertTrue(any(r["code"]=="SUSPICIOUS_NEAR_MISS" for r in graph_diagnostics(near)))
+        looping=make_fixture("A")
+        loop=copy.deepcopy(looping["features"][4]); loop["geometry_id"]="taxiway_loop"
+        loop["provenance"]["original_feature_id"]="taxiway_loop"
+        loop["coordinates"]=[[50,50],[51,51],[50,51],[51,50]]
+        loop["coordinates"].insert(1,[50,50])
+        looping["features"].append(loop); build_graph(looping,0.01)
+        codes={row["code"] for row in graph_diagnostics(looping)}
+        self.assertIn("SELF_INTERSECTION",codes)
+        self.assertIn("ZERO_LENGTH_SEGMENT",codes)
+
+    def test_directionality_and_vehicle_permissions_are_never_assumed(self):
+        dataset=make_fixture("A")
+        dataset["features"][4]["properties"]["directed"]=True
+        dataset["features"][4]["properties"].pop("permissions")
+        build_graph(dataset,0.01)
+        report=readiness(dataset,profile="test_fixture")
+        self.assertEqual("BLOCKED",next(r["status"] for r in report["requirements"] if r["requirement"]=="STAND_ACCESS"))
+        codes={row["code"] for row in report["graph_diagnostics"]}
+        self.assertIn("EDGE_PERMISSIONS_UNKNOWN",codes)
 
     def test_eight_synthetic_fixture_readiness_outcomes(self):
         expected={"A":"SIMULATOR_READY","B":"DATA_BLOCKED","C":"DATA_BLOCKED","D":"DATA_BLOCKED",
@@ -145,6 +227,12 @@ class Goal46GeometryTests(unittest.TestCase):
         changes={c["change"] for c in taxi["changes"]}
         self.assertIn("moved",changes)
         self.assertIn("properties_permissions_clearances",changes)
+        extra=copy.deepcopy(after)
+        extra["features"].append(copy.deepcopy(extra["features"][0]))
+        extra["features"][-1]["geometry_id"]="added_feature"
+        extra["features"][-1]["provenance"]["original_feature_id"]="added_feature"
+        diff=compare_datasets(before,extra,profile="test_fixture")
+        self.assertIn("added_feature",diff["added_features"])
 
     def test_fixture_generation_and_canonical_serialization_are_byte_deterministic(self):
         one,two=make_fixture("A"),make_fixture("A")
