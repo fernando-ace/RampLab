@@ -1,0 +1,761 @@
+{
+  "airport": {
+    "airport_id": "SYNTHETIC-D",
+    "coordinate_units": "m",
+    "name": "Synthetic Goal46 Fixture D",
+    "normalization_crs": "LOCAL_ENU",
+    "reference_point": {
+      "coordinates_enu_m": [
+        0,
+        0
+      ],
+      "label": "synthetic origin"
+    },
+    "source_crs": "LOCAL_ENU"
+  },
+  "authority_policy": {
+    "policy_version": "1.0",
+    "production_routing": {
+      "allowed_authorities": [
+        "AUTHORITATIVE",
+        "OPERATOR_PROVIDED",
+        "SOURCE_DERIVED",
+        "SURVEYED"
+      ],
+      "derived_geometry_requires_lineage": true,
+      "inferred_geometry_allowed": false,
+      "requires_complete_provenance": true
+    },
+    "safety_claims": {
+      "approximate_or_synthetic_requires_explicit_qualification": true
+    },
+    "testing": {
+      "synthetic_allowed_only_in_test_fixture_scope": true
+    },
+    "visualization": {
+      "allowed_authorities": [
+        "APPROXIMATE",
+        "AUTHORITATIVE",
+        "OPERATOR_PROVIDED",
+        "SOURCE_DERIVED",
+        "SURVEYED",
+        "SYNTHETIC",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "clearance_assessments": [
+    {
+      "assessment_id": "route-aircraft",
+      "assessment_method": "synthetic fixture known-width calculation",
+      "assessment_type": "aircraft_route",
+      "feature_ids": [
+        "taxiway_alpha"
+      ],
+      "measured_clearance_m": 2.5,
+      "required_clearance_m": 2.0,
+      "simulation_approved": false,
+      "source_id": "synthetic_goal46_fixture_D"
+    },
+    {
+      "assessment_id": "gse-to-aircraft",
+      "assessment_method": "synthetic fixture known-clearance record",
+      "assessment_type": "aircraft_vs_gse",
+      "feature_ids": [
+        "gse_depot_1"
+      ],
+      "measured_clearance_m": 1.25,
+      "required_clearance_m": 1.0,
+      "simulation_approved": false,
+      "source_id": "synthetic_goal46_fixture_D"
+    }
+  ],
+  "coordinate_system": {
+    "axes": [
+      "east",
+      "north",
+      "up"
+    ],
+    "normalization_crs": "LOCAL_ENU",
+    "source_crs": "LOCAL_ENU",
+    "tolerance_m": 0.001,
+    "transformation": "Synthetic local coordinates copied as metres; no real location.",
+    "units": "m"
+  },
+  "dataset_id": "synthetic_goal46_fixture_D",
+  "features": [
+    {
+      "coordinates": [
+        0,
+        0
+      ],
+      "feature_type": "airport_reference_point",
+      "geometry_id": "airport_ref",
+      "geometry_type": "Point",
+      "properties": {},
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "airport_ref",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ],
+      "feature_type": "runway",
+      "geometry_id": "runway_09_27",
+      "geometry_type": "LineString",
+      "properties": {
+        "runway_id": "09/27",
+        "width_m": 18.0
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "runway_09_27",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        0,
+        0
+      ],
+      "feature_type": "runway_threshold",
+      "geometry_id": "threshold_09",
+      "geometry_type": "Point",
+      "properties": {
+        "runway_id": "09/27",
+        "threshold_id": "09"
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "threshold_09",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        0,
+        100
+      ],
+      "feature_type": "runway_threshold",
+      "geometry_id": "threshold_27",
+      "geometry_type": "Point",
+      "properties": {
+        "runway_id": "09/27",
+        "threshold_id": "27"
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "threshold_27",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        [
+          0,
+          10
+        ],
+        [
+          20,
+          10
+        ]
+      ],
+      "feature_type": "taxiway_centerline",
+      "geometry_id": "taxiway_alpha",
+      "geometry_type": "LineString",
+      "properties": {
+        "crossing_permission_source_id": "synthetic_goal46_fixture_D",
+        "directed": false,
+        "permissions": [
+          "aircraft",
+          "gse"
+        ],
+        "runway_crossing_permission": "permitted",
+        "width_m": 12.0
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "taxiway_alpha",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        [
+          20,
+          10
+        ],
+        [
+          30,
+          10
+        ]
+      ],
+      "feature_type": "service_road",
+      "geometry_id": "service_road_alpha",
+      "geometry_type": "LineString",
+      "properties": {
+        "directed": false,
+        "permissions": [
+          "gse"
+        ],
+        "width_m": 5.0
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "service_road_alpha",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        [
+          30,
+          10
+        ],
+        [
+          40,
+          10
+        ]
+      ],
+      "feature_type": "gse_access_link",
+      "geometry_id": "gse_link_alpha",
+      "geometry_type": "LineString",
+      "properties": {
+        "directed": false,
+        "permissions": [
+          "gse"
+        ],
+        "width_m": 4.0
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "gse_link_alpha",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        20,
+        10
+      ],
+      "feature_type": "aircraft_stand",
+      "geometry_id": "stand_A1",
+      "geometry_type": "Point",
+      "properties": {
+        "network_node_id": "n0002",
+        "stand_id": "A1",
+        "turnaround_node_id": "n0002"
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "stand_A1",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        30,
+        10
+      ],
+      "feature_type": "gse_depot",
+      "geometry_id": "gse_depot_1",
+      "geometry_type": "Point",
+      "properties": {
+        "network_node_id": "n0003"
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "gse_depot_1",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        [
+          -2,
+          10
+        ],
+        [
+          2,
+          10
+        ]
+      ],
+      "feature_type": "runway_crossing",
+      "geometry_id": "runway_crossing_1",
+      "geometry_type": "LineString",
+      "properties": {
+        "permitted": false,
+        "runway_id": "09/27"
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "runway_crossing_1",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        [
+          [
+            15,
+            5
+          ],
+          [
+            25,
+            5
+          ],
+          [
+            25,
+            15
+          ],
+          [
+            15,
+            15
+          ],
+          [
+            15,
+            5
+          ]
+        ]
+      ],
+      "feature_type": "apron",
+      "geometry_id": "apron_alpha",
+      "geometry_type": "Polygon",
+      "properties": {
+        "classification": "synthetic-test-apron"
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "apron_alpha",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    },
+    {
+      "coordinates": [
+        0,
+        12
+      ],
+      "feature_type": "hold_short_position",
+      "geometry_id": "hold_short_09",
+      "geometry_type": "Point",
+      "properties": {
+        "runway_id": "09/27"
+      },
+      "provenance": {
+        "accuracy_m": 0.0,
+        "authority": "SYNTHETIC",
+        "extraction_method": "deterministic synthetic test fixture generator",
+        "geometry_origin": "direct",
+        "original_feature_id": "hold_short_09",
+        "publication_date": "synthetic-fixture-v1",
+        "simulation_approved": false,
+        "source_file": "synthetic-fixture-source.json",
+        "source_id": "synthetic_goal46_fixture_D",
+        "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+        "source_url": null,
+        "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+      }
+    }
+  ],
+  "fixture_label": "SYNTHETIC TEST DATA ONLY; NOT AN AIRPORT; NEVER USE FOR REAL AIRPORT SAFETY CLAIMS.",
+  "operational_graph": {
+    "construction": {
+      "method": "supplied line endpoints with deterministic endpoint snapping",
+      "no_gap_bridging": true,
+      "snap_tolerance_m": 0.01
+    },
+    "edges": [
+      {
+        "clearance_m": null,
+        "directed": false,
+        "edge_id": "edge:gse_link_alpha:part:0",
+        "from_node": "n0003",
+        "geometry_coordinates": [
+          [
+            30,
+            10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "geometry_id": "gse_link_alpha",
+        "length_m": 10.0,
+        "permissions": [
+          "gse"
+        ],
+        "provenance": {
+          "accuracy_m": 0.0,
+          "authority": "SYNTHETIC",
+          "extraction_method": "deterministic synthetic test fixture generator",
+          "geometry_origin": "direct",
+          "original_feature_id": "gse_link_alpha",
+          "publication_date": "synthetic-fixture-v1",
+          "simulation_approved": false,
+          "source_file": "synthetic-fixture-source.json",
+          "source_id": "synthetic_goal46_fixture_D",
+          "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+          "source_url": null,
+          "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+        },
+        "runway_crossing_permission": "unknown",
+        "source_feature_ids": [
+          "gse_link_alpha"
+        ],
+        "to_node": "n0004",
+        "width_m": 4.0
+      },
+      {
+        "clearance_m": null,
+        "directed": false,
+        "edge_id": "edge:service_road_alpha:part:0",
+        "from_node": "n0002",
+        "geometry_coordinates": [
+          [
+            20,
+            10
+          ],
+          [
+            30,
+            10
+          ]
+        ],
+        "geometry_id": "service_road_alpha",
+        "length_m": 10.0,
+        "permissions": [
+          "gse"
+        ],
+        "provenance": {
+          "accuracy_m": 0.0,
+          "authority": "SYNTHETIC",
+          "extraction_method": "deterministic synthetic test fixture generator",
+          "geometry_origin": "direct",
+          "original_feature_id": "service_road_alpha",
+          "publication_date": "synthetic-fixture-v1",
+          "simulation_approved": false,
+          "source_file": "synthetic-fixture-source.json",
+          "source_id": "synthetic_goal46_fixture_D",
+          "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+          "source_url": null,
+          "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+        },
+        "runway_crossing_permission": "unknown",
+        "source_feature_ids": [
+          "service_road_alpha"
+        ],
+        "to_node": "n0003",
+        "width_m": 5.0
+      },
+      {
+        "clearance_m": null,
+        "directed": false,
+        "edge_id": "edge:taxiway_alpha:part:0",
+        "from_node": "n0001",
+        "geometry_coordinates": [
+          [
+            0,
+            10
+          ],
+          [
+            20,
+            10
+          ]
+        ],
+        "geometry_id": "taxiway_alpha",
+        "length_m": 20.0,
+        "permissions": [
+          "aircraft",
+          "gse"
+        ],
+        "provenance": {
+          "accuracy_m": 0.0,
+          "authority": "SYNTHETIC",
+          "extraction_method": "deterministic synthetic test fixture generator",
+          "geometry_origin": "direct",
+          "original_feature_id": "taxiway_alpha",
+          "publication_date": "synthetic-fixture-v1",
+          "simulation_approved": false,
+          "source_file": "synthetic-fixture-source.json",
+          "source_id": "synthetic_goal46_fixture_D",
+          "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+          "source_url": null,
+          "transformation": "Fixture LOCAL_ENU metres retained; no geodetic claim."
+        },
+        "runway_crossing_permission": "permitted",
+        "source_feature_ids": [
+          "taxiway_alpha"
+        ],
+        "to_node": "n0002",
+        "width_m": 12.0
+      }
+    ],
+    "nodes": [
+      {
+        "coordinates": [
+          0.0,
+          10.0
+        ],
+        "node_id": "n0001",
+        "provenance": {
+          "authority": "SYNTHETIC",
+          "derived_from": [
+            "taxiway_alpha"
+          ],
+          "geometry_origin": "derived",
+          "simulation_approved": false,
+          "source_hashes": [
+            "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58"
+          ],
+          "source_ids": [
+            "synthetic_goal46_fixture_D"
+          ],
+          "transformation": "Deterministic endpoint snap of supplied linework only; no connecting infrastructure added."
+        },
+        "snap_tolerance_m": 0.01,
+        "source_feature_ids": [
+          "taxiway_alpha"
+        ]
+      },
+      {
+        "coordinates": [
+          20.0,
+          10.0
+        ],
+        "node_id": "n0002",
+        "provenance": {
+          "authority": "SYNTHETIC",
+          "derived_from": [
+            "service_road_alpha",
+            "taxiway_alpha"
+          ],
+          "geometry_origin": "derived",
+          "simulation_approved": false,
+          "source_hashes": [
+            "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58"
+          ],
+          "source_ids": [
+            "synthetic_goal46_fixture_D"
+          ],
+          "transformation": "Deterministic endpoint snap of supplied linework only; no connecting infrastructure added."
+        },
+        "snap_tolerance_m": 0.01,
+        "source_feature_ids": [
+          "service_road_alpha",
+          "taxiway_alpha"
+        ]
+      },
+      {
+        "coordinates": [
+          30.0,
+          10.0
+        ],
+        "node_id": "n0003",
+        "provenance": {
+          "authority": "SYNTHETIC",
+          "derived_from": [
+            "gse_link_alpha",
+            "service_road_alpha"
+          ],
+          "geometry_origin": "derived",
+          "simulation_approved": false,
+          "source_hashes": [
+            "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58"
+          ],
+          "source_ids": [
+            "synthetic_goal46_fixture_D"
+          ],
+          "transformation": "Deterministic endpoint snap of supplied linework only; no connecting infrastructure added."
+        },
+        "snap_tolerance_m": 0.01,
+        "source_feature_ids": [
+          "gse_link_alpha",
+          "service_road_alpha"
+        ]
+      },
+      {
+        "coordinates": [
+          40.0,
+          10.0
+        ],
+        "node_id": "n0004",
+        "provenance": {
+          "authority": "SYNTHETIC",
+          "derived_from": [
+            "gse_link_alpha"
+          ],
+          "geometry_origin": "derived",
+          "simulation_approved": false,
+          "source_hashes": [
+            "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58"
+          ],
+          "source_ids": [
+            "synthetic_goal46_fixture_D"
+          ],
+          "transformation": "Deterministic endpoint snap of supplied linework only; no connecting infrastructure added."
+        },
+        "snap_tolerance_m": 0.01,
+        "source_feature_ids": [
+          "gse_link_alpha"
+        ]
+      }
+    ]
+  },
+  "operational_relationships": [
+    {
+      "from_node": "n0001",
+      "relation_id": "runway_exit_09",
+      "relation_type": "runway_exit",
+      "source_feature_ids": [
+        "runway_09_27",
+        "taxiway_alpha"
+      ],
+      "source_id": "synthetic_goal46_fixture_D"
+    },
+    {
+      "relation_id": "runway_entry_27",
+      "relation_type": "runway_entry",
+      "source_feature_ids": [
+        "runway_09_27",
+        "taxiway_alpha"
+      ],
+      "source_id": "synthetic_goal46_fixture_D",
+      "to_node": "n0001"
+    },
+    {
+      "feature_id": "stand_A1",
+      "from_node": "n0002",
+      "relation_id": "turnaround_A1",
+      "relation_type": "turnaround_access",
+      "source_feature_ids": [
+        "stand_A1",
+        "taxiway_alpha"
+      ],
+      "source_id": "synthetic_goal46_fixture_D",
+      "to_node": "n0002"
+    }
+  ],
+  "quarantined_features": [],
+  "schema_version": "2.0.0",
+  "sources": [
+    {
+      "authority": "SYNTHETIC",
+      "extraction_method": "deterministic fixture generator",
+      "notes": "Fixture D; synthetic test geometry only; not an airport dataset.",
+      "publication_date": "synthetic-fixture-v1",
+      "source_file": "synthetic-fixture-source.json",
+      "source_id": "synthetic_goal46_fixture_D",
+      "source_sha256": "706e7eab2cde0a6b9f2c4665e5dfbf986e258dd27ea273b538e8eafa93d5ca58",
+      "source_type": "Synthetic Goal46 readiness fixture"
+    }
+  ]
+}

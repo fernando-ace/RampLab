@@ -1,0 +1,219 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="740" viewBox="0 0 1000 740">
+<rect width="100%" height="100%" fill="#fbfcfe"/>
+<text x="40" y="28" font-family="Arial" font-size="18">KAUO geometry inspection</text>
+<circle cx="260.45" cy="268.74" r="4" fill="#157a52"/>
+<title>airport_reference_point · AUTHORITATIVE</title>
+<polyline points="133.00,67.87 604.64,214.87" fill="none" stroke="#3583bd" stroke-width="3"/>
+<circle cx="133.00" cy="67.87" r="4" fill="#157a52"/>
+<title>runway_11_29_threshold_11 · AUTHORITATIVE</title>
+<circle cx="604.64" cy="214.87" r="4" fill="#157a52"/>
+<title>runway_11_29_threshold_29 · AUTHORITATIVE</title>
+<polyline points="183.03,40.00 171.23,690.00" fill="none" stroke="#3583bd" stroke-width="3"/>
+<circle cx="183.03" cy="40.00" r="4" fill="#157a52"/>
+<title>runway_18_36_threshold_18 · AUTHORITATIVE</title>
+<circle cx="171.23" cy="690.00" r="4" fill="#157a52"/>
+<title>runway_18_36_threshold_36 · AUTHORITATIVE</title>
+<polyline points="248.56,298.06 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 329.33,303.18" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 365.80,335.60" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 40.00,351.77" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 298.20,322.97" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="329.33,303.18 226.63,228.50" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="298.20,322.97 254.92,225.40" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="298.20,322.97 240.62,225.56" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="334.28,297.10 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="336.27,309.90 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="338.84,308.76 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="333.47,309.84 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="341.03,301.18 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="340.69,306.65 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="339.47,298.85 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="337.07,297.40 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="341.47,303.95 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="372.08,330.91 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="370.89,343.81 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="373.66,343.33 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="368.19,343.07 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="377.64,336.51 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="375.97,341.73 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="376.69,333.87 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="374.71,331.88 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="377.38,339.31 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="305.13,319.30 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="301.96,331.87 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="304.77,331.82 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="299.40,330.72 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="309.75,325.70 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="307.29,330.60 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="309.22,322.95 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="307.58,320.67 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="309.06,328.42 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 254.92,225.40" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 213.48,234.12" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 240.62,225.56" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 226.63,228.50" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 201.68,242.19" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 191.68,252.41" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 183.87,264.39" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 178.54,277.65" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="248.56,298.06 175.90,291.71" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="254.92,225.40 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="213.48,234.12 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="240.62,225.56 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="226.63,228.50 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="201.68,242.19 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="191.68,252.41 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="183.87,264.39 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="178.54,277.65 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="175.90,291.71 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 335.00,303.54" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 371.21,337.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 303.27,325.52" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 305.13,319.30" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 301.96,331.87" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 304.77,331.82" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 299.40,330.72" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 309.75,325.70" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 307.29,330.60" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 309.22,322.95" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 307.58,320.67" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="303.27,325.52 309.06,328.42" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 334.28,297.10" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 336.27,309.90" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 338.84,308.76" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 333.47,309.84" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 341.03,301.18" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 340.69,306.65" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 339.47,298.85" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 337.07,297.40" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="335.00,303.54 341.47,303.95" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 372.08,330.91" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 370.89,343.81" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 373.66,343.33" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 368.19,343.07" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 377.64,336.51" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 375.97,341.73" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 376.69,333.87" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 374.71,331.88" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="371.21,337.33 377.38,339.31" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="171.23,690.00 126.76,518.83" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="128.98,317.08 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="128.98,317.08 130.79,86.77" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="130.79,86.77 224.37,91.63" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="126.76,518.83 128.98,317.08" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="224.37,91.63 248.56,298.06" fill="none" stroke="#d97904" stroke-width="3" stroke-dasharray='5 4'/>
+<circle cx="224.37" cy="91.63" r="4" fill="#d97904"/>
+<title>legacy_node_fbo_apron_detour · APPROXIMATE</title>
+<circle cx="248.56" cy="298.06" r="4" fill="#d97904"/>
+<title>legacy_node_fbo_apron_junction · APPROXIMATE</title>
+<circle cx="226.63" cy="228.50" r="4" fill="#d97904"/>
+<title>legacy_node_fbo_service_staging_east · APPROXIMATE</title>
+<circle cx="254.92" cy="225.40" r="4" fill="#d97904"/>
+<title>legacy_node_fbo_service_staging_fuel · APPROXIMATE</title>
+<circle cx="240.62" cy="225.56" r="4" fill="#d97904"/>
+<title>legacy_node_fbo_service_staging_west · APPROXIMATE</title>
+<circle cx="298.20" cy="322.97" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand · APPROXIMATE</title>
+<circle cx="329.33" cy="303.18" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02 · APPROXIMATE</title>
+<circle cx="334.28" cy="297.10" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_airstart_service_point · APPROXIMATE</title>
+<circle cx="336.27" cy="309.90" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_baggage_service_point · APPROXIMATE</title>
+<circle cx="338.84" cy="308.76" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_catering_service_point · APPROXIMATE</title>
+<circle cx="333.47" cy="309.84" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_fuel_service_point · APPROXIMATE</title>
+<circle cx="341.03" cy="301.18" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_gpu_service_point · APPROXIMATE</title>
+<circle cx="340.69" cy="306.65" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_lavatory_service_point · APPROXIMATE</title>
+<circle cx="339.47" cy="298.85" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_pushback_service_point · APPROXIMATE</title>
+<circle cx="337.07" cy="297.40" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_stairs_service_point · APPROXIMATE</title>
+<circle cx="341.47" cy="303.95" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_02_water_service_point · APPROXIMATE</title>
+<circle cx="365.80" cy="335.60" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03 · APPROXIMATE</title>
+<circle cx="372.08" cy="330.91" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_airstart_service_point · APPROXIMATE</title>
+<circle cx="370.89" cy="343.81" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_baggage_service_point · APPROXIMATE</title>
+<circle cx="373.66" cy="343.33" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_catering_service_point · APPROXIMATE</title>
+<circle cx="368.19" cy="343.07" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_fuel_service_point · APPROXIMATE</title>
+<circle cx="377.64" cy="336.51" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_gpu_service_point · APPROXIMATE</title>
+<circle cx="375.97" cy="341.73" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_lavatory_service_point · APPROXIMATE</title>
+<circle cx="376.69" cy="333.87" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_pushback_service_point · APPROXIMATE</title>
+<circle cx="374.71" cy="331.88" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_stairs_service_point · APPROXIMATE</title>
+<circle cx="377.38" cy="339.31" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_03_water_service_point · APPROXIMATE</title>
+<circle cx="305.13" cy="319.30" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_airstart_service_point · APPROXIMATE</title>
+<circle cx="301.96" cy="331.87" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_baggage_service_point · APPROXIMATE</title>
+<circle cx="304.77" cy="331.82" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_catering_service_point · APPROXIMATE</title>
+<circle cx="299.40" cy="330.72" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_fuel_service_point · APPROXIMATE</title>
+<circle cx="309.75" cy="325.70" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_gpu_service_point · APPROXIMATE</title>
+<circle cx="307.29" cy="330.60" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_lavatory_service_point · APPROXIMATE</title>
+<circle cx="309.22" cy="322.95" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_pushback_service_point · APPROXIMATE</title>
+<circle cx="307.58" cy="320.67" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_stairs_service_point · APPROXIMATE</title>
+<circle cx="309.06" cy="328.42" r="4" fill="#d97904"/>
+<title>legacy_node_ga_parking_stand_water_service_point · APPROXIMATE</title>
+<circle cx="201.68" cy="242.19" r="4" fill="#d97904"/>
+<title>legacy_node_gse_catering_depot · APPROXIMATE</title>
+<circle cx="213.48" cy="234.12" r="4" fill="#d97904"/>
+<title>legacy_node_gse_fuel_depot_02 · APPROXIMATE</title>
+<circle cx="178.54" cy="277.65" r="4" fill="#d97904"/>
+<title>legacy_node_gse_gpu_depot · APPROXIMATE</title>
+<circle cx="191.68" cy="252.41" r="4" fill="#d97904"/>
+<title>legacy_node_gse_lavatory_depot · APPROXIMATE</title>
+<circle cx="175.90" cy="291.71" r="4" fill="#d97904"/>
+<title>legacy_node_gse_tug_depot · APPROXIMATE</title>
+<circle cx="183.87" cy="264.39" r="4" fill="#d97904"/>
+<title>legacy_node_gse_water_depot · APPROXIMATE</title>
+<circle cx="303.27" cy="325.52" r="4" fill="#d97904"/>
+<title>legacy_node_kauo_g31_stand_1_service_approach · APPROXIMATE</title>
+<circle cx="335.00" cy="303.54" r="4" fill="#d97904"/>
+<title>legacy_node_kauo_g31_stand_2_service_approach · APPROXIMATE</title>
+<circle cx="371.21" cy="337.33" r="4" fill="#d97904"/>
+<title>legacy_node_kauo_g31_stand_3_service_approach · APPROXIMATE</title>
+<circle cx="182.25" cy="83.22" r="4" fill="#d97904"/>
+<title>legacy_node_runway_intersection · APPROXIMATE</title>
+<circle cx="133.00" cy="67.87" r="4" fill="#d97904"/>
+<title>legacy_node_rwy11_threshold · APPROXIMATE</title>
+<circle cx="177.13" cy="365.00" r="4" fill="#d97904"/>
+<title>legacy_node_rwy18_36_mid · APPROXIMATE</title>
+<circle cx="183.03" cy="40.00" r="4" fill="#d97904"/>
+<title>legacy_node_rwy18_threshold · APPROXIMATE</title>
+<circle cx="604.64" cy="214.87" r="4" fill="#d97904"/>
+<title>legacy_node_rwy29_threshold · APPROXIMATE</title>
+<circle cx="171.23" cy="690.00" r="4" fill="#d97904"/>
+<title>legacy_node_rwy36_hold · APPROXIMATE</title>
+<circle cx="40.00" cy="351.77" r="4" fill="#d97904"/>
+<title>legacy_node_self_serve_fuel_farm · APPROXIMATE</title>
+<circle cx="128.98" cy="317.08" r="4" fill="#d97904"/>
+<title>legacy_node_twy_a_mid · APPROXIMATE</title>
+<circle cx="130.79" cy="86.77" r="4" fill="#d97904"/>
+<title>legacy_node_twy_a_north · APPROXIMATE</title>
+<circle cx="126.76" cy="518.83" r="4" fill="#d97904"/>
+<title>legacy_node_twy_a_south · APPROXIMATE</title>
+<text x="40" y="718" font-family="Arial" font-size="11">Green: authoritative/surveyed; blue: operator/source-derived; orange dashed: approximate/quarantined; purple: synthetic fixture.</text>
+</svg>

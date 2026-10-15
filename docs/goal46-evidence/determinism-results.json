@@ -1,0 +1,42 @@
+{
+  "all_byte_identical": true,
+  "independent_runs": 2,
+  "results": {
+    "fixture_A": {
+      "byte_identical": true,
+      "sha256": "9e8e8a2d220676fce1d32528e9325c8ef1800af7108dece37e15ac811d735c36"
+    },
+    "fixture_B": {
+      "byte_identical": true,
+      "sha256": "30594500943c454cb8d13b53f97d9e96fe7adabfde3fe68fbd291700a6b13577"
+    },
+    "fixture_C": {
+      "byte_identical": true,
+      "sha256": "5918a12c0373892e74605c079acd6bf7056fccd9053c9bec97c4a0c8623ca50c"
+    },
+    "fixture_D": {
+      "byte_identical": true,
+      "sha256": "9272a4a2ca11dd96964950949f4b775bdbf3e961391dca7056adb351f1f131b6"
+    },
+    "fixture_E": {
+      "byte_identical": true,
+      "sha256": "810c923de8b2c4d320d48591d68514dee83453a91ba4d19cca43d307a7367af8"
+    },
+    "fixture_F": {
+      "byte_identical": true,
+      "sha256": "448e472ee12a1f21de3e7a1da38bbd4f23c363b6bb14d9790dcd1556eda3f1b1"
+    },
+    "fixture_G": {
+      "byte_identical": true,
+      "sha256": "c798bcaad804c2a12b21000766b58cf21c24d088ca0546fef6d43271ea974dc7"
+    },
+    "fixture_H": {
+      "byte_identical": true,
+      "sha256": "23746436b1e97e13ee93ef72107dff528856b2727f9c2f98a0e29ef28157351d"
+    },
+    "kauo_migration": {
+      "byte_identical": true,
+      "sha256": "0407d3b532f4fa75469e0f69137ce9966a2887b4f7e8d0fcb0665b22e50140ef"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="740" viewBox="0 0 1000 740">
+<rect width="100%" height="100%" fill="#fbfcfe"/>
+<text x="40" y="28" font-family="Arial" font-size="18">SYNTHETIC-F geometry inspection</text>
+<circle cx="53.00" cy="690.00" r="4" fill="#8b5cf6"/>
+<title>airport_ref · SYNTHETIC</title>
+<polygon points="150.50,657.50 215.50,657.50 215.50,592.50 150.50,592.50 150.50,657.50" fill="#8b5cf6" fill-opacity="0.12" stroke="#8b5cf6" stroke-width="2" stroke-dasharray='5 4'/>
+<circle cx="248.00" cy="625.00" r="4" fill="#8b5cf6"/>
+<title>gse_depot_1 · SYNTHETIC</title>
+<polyline points="248.00,625.00 313.00,625.00" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-dasharray='5 4'/>
+<circle cx="53.00" cy="612.00" r="4" fill="#8b5cf6"/>
+<title>hold_short_09 · SYNTHETIC</title>
+<polyline points="53.00,690.00 53.00,40.00" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="40.00,625.00 66.00,625.00" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="183.00,625.00 248.00,625.00" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-dasharray='5 4'/>
+<circle cx="183.00" cy="625.00" r="4" fill="#8b5cf6"/>
+<title>stand_A1 · SYNTHETIC</title>
+<polyline points="53.00,625.00 183.00,625.00" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-dasharray='5 4'/>
+<polyline points="59.50,683.50 59.50,677.00" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-dasharray='5 4'/>
+<circle cx="53.00" cy="690.00" r="4" fill="#8b5cf6"/>
+<title>threshold_09 · SYNTHETIC</title>
+<circle cx="53.00" cy="40.00" r="4" fill="#8b5cf6"/>
+<title>threshold_27 · SYNTHETIC</title>
+<line x1="248.00" y1="625.00" x2="313.00" y2="625.00" stroke="#202833" stroke-width="1.5" stroke-dasharray="2 3"/>
+<line x1="183.00" y1="625.00" x2="248.00" y2="625.00" stroke="#202833" stroke-width="1.5" stroke-dasharray="2 3"/>
+<line x1="59.50" y1="683.50" x2="183.00" y2="625.00" stroke="#202833" stroke-width="1.5" stroke-dasharray="2 3"/>
+<line x1="59.50" y1="683.50" x2="183.00" y2="625.00" stroke="#202833" stroke-width="1.5" stroke-dasharray="2 3"/>
+<circle cx="53.00" cy="625.00" r="2.5" fill="#202833"/>
+<text x="57.00" y="621.00" font-family="Arial" font-size="8">n0001</text>
+<circle cx="59.50" cy="683.50" r="2.5" fill="#202833"/>
+<text x="63.50" y="679.50" font-family="Arial" font-size="8">n0002</text>
+<circle cx="59.50" cy="677.00" r="2.5" fill="#202833"/>
+<text x="63.50" y="673.00" font-family="Arial" font-size="8">n0003</text>
+<circle cx="183.00" cy="625.00" r="2.5" fill="#202833"/>
+<text x="187.00" y="621.00" font-family="Arial" font-size="8">n0004</text>
+<circle cx="248.00" cy="625.00" r="2.5" fill="#202833"/>
+<text x="252.00" y="621.00" font-family="Arial" font-size="8">n0005</text>
+<circle cx="313.00" cy="625.00" r="2.5" fill="#202833"/>
+<text x="317.00" y="621.00" font-family="Arial" font-size="8">n0006</text>
+<circle cx="53.00" cy="690.00" r="9" fill="none" stroke="#c62828" stroke-width="2"/>
+<circle cx="53.00" cy="690.00" r="9" fill="none" stroke="#c62828" stroke-width="2"/>
+<circle cx="53.00" cy="40.00" r="9" fill="none" stroke="#c62828" stroke-width="2"/>
+<circle cx="183.00" cy="625.00" r="9" fill="none" stroke="#c62828" stroke-width="2"/>
+<circle cx="248.00" cy="625.00" r="9" fill="none" stroke="#c62828" stroke-width="2"/>
+<circle cx="53.00" cy="612.00" r="9" fill="none" stroke="#c62828" stroke-width="2"/>
+<text x="40" y="718" font-family="Arial" font-size="11">Green: authoritative/surveyed; blue: operator/source-derived; orange dashed: approximate/quarantined; purple: synthetic fixture.</text>
+</svg>

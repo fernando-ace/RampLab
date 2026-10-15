@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\Ferna\AppData\Local\Temp\ramplab_goal46_unittest_runner.py", line 11, in <module>
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "C:\Users\Ferna\.codex\worktrees\goal42-authoritative-kauo-digital-twin\tools\airport_scenario_generation\test_goal42_geometry.py", line 11, in <module>
+    from tools.airport_scenario_generation.goal42_geometry import (
+ModuleNotFoundError: No module named 'tools.airport_scenario_generation.goal42_geometry'
