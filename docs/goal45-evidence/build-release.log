@@ -1,0 +1,41 @@
+MSBuild version 18.10.1-1.26427.6+3cd27c13e for .NET Framework
+
+  Checking File Globs
+  1>Checking Build System
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  airside_sim.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_sim.lib
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/build-goal45-release/_deps/yaml-cpp-src/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/build-goal45-release/_deps/googletest-src/googlemock/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/build-goal45-release/_deps/googletest-src/googlemock/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/build-goal45-release/_deps/googletest-src/googletest/CMakeLists.txt
+  airside_autonomy.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_autonomy.lib
+  gmock.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\lib\Release\gmock.lib
+  gmock_main.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\lib\Release\gmock_main.lib
+  yaml-cpp.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\_deps\yaml-cpp-build\Release\yaml-cpp.lib
+  gtest.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\lib\Release\gtest.lib
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  airside_experiment.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_experiment.lib
+  airside_autonomy_experiment.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_autonomy_experiment.lib
+  airside_scenario.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_scenario.lib
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/build-goal45-release/_deps/googletest-src/googletest/CMakeLists.txt
+  airside_experiment_yaml.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_experiment_yaml.lib
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  gtest_main.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\lib\Release\gtest_main.lib
+  airside_autonomy_scenario.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_autonomy_scenario.lib
+  airside_cli.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_cli.exe
+  airside_experiment_cli.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_experiment.exe
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  airside_autonomy_experiment_cli.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_autonomy_experiment.exe
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
+  airside_tests.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_tests.exe
+  airside_fleet_cli.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_fleet.exe
+  airside_autonomy_cli.vcxproj -> C:\Users\Ferna\.codex\worktrees\goal45-authoritative-kauo-operational-geometry\RampLab\build-goal45-release\Release\airside_autonomy.exe
+  Building Custom Rule C:/Users/Ferna/.codex/worktrees/goal45-authoritative-kauo-operational-geometry/RampLab/CMakeLists.txt
