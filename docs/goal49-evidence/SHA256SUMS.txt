@@ -1,0 +1,2 @@
+c5943d25f49da5da7bbdcfd367c6b793d0127d45b63875ddb0ccfc7e5c335cfe  goal49-selective-integrated-recovery.md
+2df6e7da6340254ec41cdc1e96fd11e72b1538897fd8174470ae6d1af6da86ad  validation-results.json

@@ -1,0 +1,13 @@
+{
+  "status": "incomplete",
+  "base_sha": "14d63061ef6884733209de5311e2362d7972bbc2",
+  "release_configure": "passed",
+  "release_build": "passed",
+  "focused_recovery_tests": {"passed": 6, "failed": 0},
+  "ctest": {"passed": 235, "failed": 0},
+  "python_unittest": {"passed": 10, "failed": 0, "suites": ["goal47", "goal44_topology_audit", "goal42_replay"]},
+  "pytest": "not_run: pytest module unavailable in configured interpreters",
+  "integrated_recovery_matrix": "not_run: planner is not connected to Simulation or run modes",
+  "kauo": "DATA_BLOCKED; no production simulation",
+  "remote_push": "pending"
+}
