@@ -9,5 +9,5 @@
   "pytest": "not_run: pytest module unavailable in configured interpreters",
   "integrated_recovery_matrix": "not_run: planner is not connected to Simulation or run modes",
   "kauo": "DATA_BLOCKED; no production simulation",
-  "remote_push": "pending"
+  "remote_push": {"status": "pushed; tracking ref and ls-remote verified", "local_sha": "f75bf20d97bf5bb28e7a549948e121f7ae028ce6", "origin_sha": "f75bf20d97bf5bb28e7a549948e121f7ae028ce6", "match": true}
 }

@@ -50,6 +50,6 @@ KAUO remains `DATA_BLOCKED`. This work does not alter readiness logic, promote G
 5. Add the synthetic scenario family, execute the three-mode 120-run serial/parallel matrix and targeted fixtures, and record outcome/work/safety/prediction evidence.
 6. Complete relevant Python, operator, scenario, and evidence-bundle test suites; classify any environment or unrelated failures.
 7. Produce the complete evidence bundle and integrity-verified ZIP after experiments.
-8. Commit and push the finished work, then verify the remote tip and clean-room visibility.
+8. Finish implementation and experiments, then make a final completion commit and verify it remotely. The current incomplete planner-core commit is pushed and its remote tip matches; this does not satisfy Goal49 completion publication.
 
 No Goal50 recommendation is made because the required experiments have not been completed.
