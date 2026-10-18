@@ -1,34 +1,18 @@
-Goal49 corrective rebuild Git preflight
+Goal49 corrective rebuild initial live remote gate (2026-10-18)
 
-Commands were run in /workspace/RampLab. Prior Goal49 SHAs and branch tips were not used as an implementation base.
-
-$ git remote -v
-origin	https://github.com/fernando-ace/RampLab.git (fetch)
-origin	https://github.com/fernando-ace/RampLab.git (push)
+Literal output from the required initial live checks:
 
 $ git ls-remote origin refs/heads/main
 14d63061ef6884733209de5311e2362d7972bbc2	refs/heads/main
 
-$ git ls-remote origin refs/heads/goal49-selective-integrated-recovery
-4e6bb33e267445ec992aba12270a1b78f8aab0ae	refs/heads/goal49-selective-integrated-recovery
+$ git ls-remote origin refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306
+e0f6bd3c0db7af58144ec5594918d4a50c28e069	refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306
 
-$ git ls-remote origin refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306 (pre-creation)
-(empty stdout)
+The initial workspace was on local branch `work` at the verified main SHA, with staged Goal49 files. Those staged changes were preserved outside the repository, the required remote branch was fetched and checked out, and the staged patch was found to be already represented by the rebuild branch tree. No prior Goal49 branch was used as the implementation base.
 
-$ git rev-parse HEAD
-14d63061ef6884733209de5311e2362d7972bbc2
+Required branch checkout:
 
-$ git merge-base HEAD origin/main
-14d63061ef6884733209de5311e2362d7972bbc2
-
-$ git push -u origin goal49-selective-integrated-recovery-rebuild-14d6306
-remote:
-remote: Create a pull request for 'goal49-selective-integrated-recovery-rebuild-14d6306' on GitHub by visiting:
-remote:      https://github.com/fernando-ace/RampLab/pull/new/goal49-selective-integrated-recovery-rebuild-14d6306
-remote:
-To https://github.com/fernando-ace/RampLab.git
- * [new branch]      goal49-selective-integrated-recovery-rebuild-14d6306 -> goal49-selective-integrated-recovery-rebuild-14d6306
-branch 'goal49-selective-integrated-recovery-rebuild-14d6306' set up to track 'origin/goal49-selective-integrated-recovery-rebuild-14d6306'.
-
-$ git ls-remote origin refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306 (first successful verification)
-14d63061ef6884733209de5311e2362d7972bbc2	refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306
+```text
+HEAD: e0f6bd3c0db7af58144ec5594918d4a50c28e069
+merge-base with origin/main: 14d63061ef6884733209de5311e2362d7972bbc2
+```

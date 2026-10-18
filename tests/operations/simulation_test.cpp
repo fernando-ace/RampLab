@@ -57,6 +57,20 @@ TEST(SimulationTest, SameSeedProducesIdenticalDomainResults) {
     EXPECT_EQ(first_simulation.snapshot(), second_simulation.snapshot());
 }
 
+TEST(SimulationTest, PrivateReplayReconstructsEquivalentBoundaryWithoutChangingParent) {
+    Simulation simulation{test::baseline_scenario(), 42};
+    ASSERT_TRUE(simulation.advance());
+    const auto parent_snapshot = simulation.snapshot();
+    const auto parent_events = simulation.event_history();
+    const auto replay = simulation.replay_to_recovery_boundary();
+    ASSERT_TRUE(replay.equivalent) << replay.reason;
+    ASSERT_NE(replay.simulation, nullptr);
+    EXPECT_EQ(replay.simulation->snapshot(), parent_snapshot);
+    EXPECT_EQ(replay.matched_events, parent_events.size());
+    EXPECT_EQ(simulation.snapshot(), parent_snapshot);
+    EXPECT_EQ(simulation.event_history(), parent_events);
+}
+
 TEST(SimulationTest, RecoveryEpochTracksOnlyProcessedSurfaceClosureInShadowMode) {
     auto scenario = test::baseline_scenario();
     scenario.road_events.clear();

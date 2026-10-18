@@ -102,7 +102,7 @@ std::string fleet_capability(ServiceType type) {
 }  // namespace
 
 Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryPolicy history_policy)
-    : scenario_(std::move(scenario)), seed_(seed), random_(seed),
+    : scenario_(std::move(scenario)), original_scenario_(scenario_), seed_(seed), random_(seed),
       fuel_pool_(make_resource_pool(scenario_, ServiceType::Fueling)),
       baggage_pool_(make_resource_pool(scenario_, ServiceType::Baggage)), history_policy_(history_policy) {
     if (!scenario_.turnaround_orchestration) {
@@ -708,6 +708,48 @@ SimulationResult Simulation::result() const {
 SimTime Simulation::current_time() const noexcept { return now_; }
 const std::vector<SimulationEventRecord>& Simulation::event_history() const noexcept { return event_history_; }
 const std::vector<RecoveryEpochRecord>& Simulation::recovery_epochs() const noexcept { return recovery_epochs_; }
+
+RecoveryReplayResult Simulation::replay_to_recovery_boundary() const {
+    RecoveryReplayResult result;
+    auto replay_scenario = original_scenario_;
+    replay_scenario.recovery_mode = RecoveryMode::Reactive;
+    auto replay = std::make_unique<Simulation>(std::move(replay_scenario), seed_, history_policy_);
+    const auto target_time = now_;
+    const auto target_events = event_history_.size();
+    while (replay->event_history_.size() < target_events || replay->now_ < target_time) {
+        if (replay->finished()) {
+            result.reason = "replay_finished_before_authoritative_boundary";
+            return result;
+        }
+        const auto next = replay->next_event_time();
+        if (!next || *next > target_time) {
+            result.reason = "replay_cannot_reach_authoritative_boundary";
+            return result;
+        }
+        replay->advance();
+        if (replay->event_history_.size() > target_events) {
+            result.reason = "replay_event_prefix_mismatch";
+            return result;
+        }
+    }
+    if (replay->now_ != target_time) {
+        result.reason = "replay_time_mismatch";
+        return result;
+    }
+    if (replay->snapshot() != snapshot()) {
+        result.reason = "replay_operational_snapshot_mismatch";
+        return result;
+    }
+    if (replay->event_history_ != event_history_) {
+        result.reason = "replay_event_history_mismatch";
+        return result;
+    }
+    result.equivalent = true;
+    result.reason = "equivalent";
+    result.matched_events = target_events;
+    result.simulation = std::move(replay);
+    return result;
+}
 
 void Simulation::consider_recovery(std::string trigger, RevealedDisruption disruption) {
     if (std::ranges::find(revealed_disruptions_, disruption) == revealed_disruptions_.end())

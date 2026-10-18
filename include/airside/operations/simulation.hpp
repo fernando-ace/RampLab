@@ -74,6 +74,13 @@ struct Scenario {
     RecoveryMode recovery_mode{RecoveryMode::Reactive};
 };
 
+struct RecoveryReplayResult {
+    bool equivalent{};
+    std::string reason;
+    std::unique_ptr<class Simulation> simulation;
+    std::size_t matched_events{};
+};
+
 struct SimulationResult {
     std::uint64_t seed{0};
     SimTime simulated_duration{};
@@ -112,6 +119,9 @@ public:
     [[nodiscard]] RecoveryActionResult validate_recovery_action(const RecoveryAction& action) const;
     [[nodiscard]] RecoveryActionResult apply_recovery_action(const RecoveryAction& action);
     [[nodiscard]] SimulationSnapshot snapshot() const;
+    // Rebuild the same operational boundary in an isolated simulator. Replay
+    // is deliberately fail-closed: a non-equivalent boundary returns no instance.
+    [[nodiscard]] RecoveryReplayResult replay_to_recovery_boundary() const;
 
 private:
     void process(const Event& event);
@@ -168,6 +178,7 @@ private:
     [[nodiscard]] const Gate& gate(GateId id) const;
 
     Scenario scenario_;
+    Scenario original_scenario_;
     std::uint64_t seed_;
     std::mt19937_64 random_;
     EventQueue events_;
