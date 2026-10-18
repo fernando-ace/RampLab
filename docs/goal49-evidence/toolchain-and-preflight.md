@@ -55,3 +55,14 @@ change. It remains unresolved and is not hidden or rewritten.
 This validation checkpoint does not establish Goal49 completion. The material
 automatic GSE case, additional action implementations, focused fixture gate,
 experiment matrix, safety audit, and final evidence package remain open.
+
+## Published validation checkpoint
+
+Commit `51f4e9e20aef1a2592f42ae34058bf0fe57c97ff` records the assertion fix
+and this validation checkpoint. The required branch was pushed and explicitly
+fetched because the repository's default fetch refspec omits it. At that
+checkpoint, local HEAD, the remote-tracking ref, and live output matched:
+
+```text
+51f4e9e20aef1a2592f42ae34058bf0fe57c97ff	refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306
+```
