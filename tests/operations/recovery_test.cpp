@@ -95,7 +95,7 @@ TEST(RecoveryPlannerTest, StrandedAssignedTaskSurvivesCandidateCapAheadOfDiagnos
     turnaround.aircraft = AircraftId{7};
     turnaround.predicted_late = true;
     ServiceTaskSnapshot task;
-    task.id = TaskId{8}; task.type = ServiceType::Fueling; task.status = TaskStatus::Assigned;
+    task.id = TaskId{8}; task.type = ServiceType::Fueling; task.status = TaskStatus::InProgress;
     task.assigned_vehicle = VehicleId{1};
     turnaround.tasks.push_back(task);
     state.snapshot.turnarounds.push_back(turnaround);

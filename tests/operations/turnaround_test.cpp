@@ -292,6 +292,34 @@ TEST(TurnaroundTest, RecoveryActionAdapterReassignsOutagedTurnaroundTaskThroughF
     EXPECT_EQ(task->state, TaskStatus::Completed);
 }
 
+TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
+    auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
+    scenario.recovery_mode = RecoveryMode::Integrated;
+    Simulation simulation{scenario, 42};
+    const auto result = simulation.run();
+    ASSERT_FALSE(simulation.recovery_epochs().empty());
+    const auto& epoch = simulation.recovery_epochs().front();
+    ASSERT_EQ(epoch.trigger, "vehicle_outage");
+    ASSERT_EQ(epoch.evaluations.size(), 2U);
+    EXPECT_EQ(epoch.evaluations[0].candidate.id, "current_plan");
+    EXPECT_TRUE(epoch.evaluations[0].valid);
+    EXPECT_EQ(epoch.evaluations[0].outcome.completed_objectives, 3U);
+    EXPECT_EQ(epoch.evaluations[0].outcome.objective_failures, 0U);
+    EXPECT_EQ(epoch.evaluations[0].outcome.worst_departure_delay_seconds, 109.0);
+    EXPECT_EQ(epoch.evaluations[1].candidate.id, "vehicle:3:3");
+    EXPECT_TRUE(epoch.evaluations[1].valid);
+    EXPECT_EQ(epoch.evaluations[1].outcome.completed_objectives,
+        epoch.evaluations[0].outcome.completed_objectives);
+    EXPECT_EQ(epoch.evaluations[1].outcome.objective_failures,
+        epoch.evaluations[0].outcome.objective_failures);
+    EXPECT_EQ(epoch.evaluations[1].outcome.worst_departure_delay_seconds,
+        epoch.evaluations[0].outcome.worst_departure_delay_seconds);
+    EXPECT_FALSE(epoch.selected_candidate_id.has_value());
+    EXPECT_EQ(result.metrics.completed_turnarounds, 3U);
+    EXPECT_EQ(result.metrics.failed_or_timed_out_turnarounds, 0U);
+    EXPECT_EQ(result.metrics.fleet_reassignments, 1U);
+}
+
 TEST(TurnaroundTest, RuntimeVehicleOutageEntersDeterministicEventStream) {
     auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
     scenario.vehicle_outages.clear();

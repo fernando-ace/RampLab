@@ -823,6 +823,8 @@ void Simulation::consider_recovery(std::string trigger, RevealedDisruption disru
         });
         epoch.planned = true;
         epoch.candidate_count = decision.candidates.size();
+        epoch.candidates = decision.candidates;
+        epoch.evaluations = decision.evaluations;
         epoch.selected_candidate_id = decision.selected_candidate_id;
         epoch.skip_reason = decision.reason;
         if (epoch.mode == RecoveryMode::Integrated && decision.selected_candidate_id) {

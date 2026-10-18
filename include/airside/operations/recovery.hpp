@@ -102,6 +102,8 @@ struct RecoveryEpochRecord {
     bool planned{};
     std::string skip_reason;
     std::size_t candidate_count{};
+    std::vector<RecoveryCandidate> candidates;
+    std::vector<RecoveryEvaluation> evaluations;
     std::optional<std::string> selected_candidate_id;
     std::string application_result;
 };

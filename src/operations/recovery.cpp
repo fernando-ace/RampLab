@@ -196,12 +196,8 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         std::ranges::sort(tasks, {}, &ServiceTaskSnapshot::id);
         for (const auto& task : tasks) {
             const bool pending = task_is_pending(task.status);
-            const auto assigned = task.assigned_vehicle
-                ? std::ranges::find(vehicles, *task.assigned_vehicle, &ServiceVehicleSnapshot::id)
-                : vehicles.end();
-            const bool stranded = task.status == TaskStatus::Assigned &&
-                task.assigned_vehicle && assigned != vehicles.end() &&
-                assigned->fleet_status == "Unavailable" &&
+            const bool stranded = (task.status == TaskStatus::Assigned || task.status == TaskStatus::InProgress) &&
+                task.assigned_vehicle &&
                 vehicle_outage_revealed(state, *task.assigned_vehicle);
             if ((!pending && !stranded) || !dependencies_complete(task, tasks)) continue;
             for (const auto& vehicle : vehicles) {
