@@ -18,7 +18,6 @@ airport:
     - { id: gate, x_m: 100, y_m: 0 }
   edges:
     - { id: road, from: depot, to: gate, distance_m: 100, traversal_time_seconds: 10 }
-    - { id: backup_road, from: depot, to: gate, distance_m: 110, traversal_time_seconds: 12 }
 gates:
   - { id: A1, node: gate }
 fleet:
@@ -88,7 +87,11 @@ TEST(ScenarioLoaderTest, LoadsRecoveryModeFromScenarioAndDefaultsToReactive) {
 }
 
 TEST(ScenarioLoaderTest, CapturesRevealedDisruptionEpochWithoutChangingReactiveSimulation) {
-    TemporaryScenario reactive_file{std::string{kValidScenario}};
+    const auto with_backup_route = replaced(std::string{kValidScenario},
+        "    - { id: road, from: depot, to: gate, distance_m: 100, traversal_time_seconds: 10 }\n",
+        "    - { id: road, from: depot, to: gate, distance_m: 100, traversal_time_seconds: 10 }\n"
+        "    - { id: backup_road, from: depot, to: gate, distance_m: 110, traversal_time_seconds: 12 }\n");
+    TemporaryScenario reactive_file{with_backup_route};
     auto reactive_scenario = load_scenario(reactive_file.path());
     Simulation reactive{reactive_scenario, 7};
     const auto baseline = reactive.run();
@@ -96,7 +99,7 @@ TEST(ScenarioLoaderTest, CapturesRevealedDisruptionEpochWithoutChangingReactiveS
     EXPECT_TRUE(baseline.recovery_epochs.front().planning_skipped);
     EXPECT_EQ(baseline.recovery_epochs.front().reason, "reactive_mode");
 
-    TemporaryScenario shadow_file{replaced(std::string{kValidScenario}, "name: fixture\n",
+    TemporaryScenario shadow_file{replaced(with_backup_route, "name: fixture\n",
         "name: fixture\nrecovery_mode: RECOVERY_SHADOW\n")};
     auto shadow_scenario = load_scenario(shadow_file.path());
     Simulation shadow{shadow_scenario, 7};
