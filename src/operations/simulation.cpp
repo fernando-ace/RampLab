@@ -768,8 +768,75 @@ void Simulation::consider_recovery(std::string trigger, RevealedDisruption disru
     } else if (epoch.mode == RecoveryMode::Reactive) {
         epoch.skip_reason = "reactive_mode";
     } else {
-        // Keep the decision boundary visible while private simulator replay is being integrated.
-        epoch.skip_reason = "private_replay_evaluator_unavailable";
+        const RecoverySearchConfig config{};
+        const auto decision = plan_recovery(state, config, [&](const RecoveryCandidate& candidate) {
+            RecoveryEvaluation evaluation;
+            evaluation.candidate = candidate;
+            auto replay = replay_to_recovery_boundary();
+            if (!replay.equivalent || !replay.simulation) {
+                evaluation.reason = "replay_invalid:" + replay.reason;
+                evaluation.termination_reason = "replay_failed";
+                return evaluation;
+            }
+            auto& private_simulation = *replay.simulation;
+            for (const auto& action : candidate.actions) {
+                const auto applied = private_simulation.apply_recovery_action(action);
+                if (!applied.accepted) {
+                    evaluation.reason = "candidate_action_rejected:" + applied.reason;
+                    evaluation.termination_reason = "candidate_infeasible";
+                    return evaluation;
+                }
+            }
+            const auto start_time = private_simulation.current_time();
+            while (!private_simulation.finished() &&
+                evaluation.private_events < config.max_private_events &&
+                private_simulation.current_time() - start_time < config.max_future_simulated_time) {
+                if (!private_simulation.advance()) break;
+                ++evaluation.private_events;
+            }
+            evaluation.simulated_horizon = private_simulation.current_time() - start_time;
+            if (private_simulation.finished()) {
+                evaluation.termination_reason = "simulation_finished";
+                const auto outcome = private_simulation.result();
+                evaluation.outcome.completed = outcome.metrics.failed_or_timed_out_turnarounds == 0 &&
+                    outcome.metrics.completed_turnarounds == outcome.metrics.total_turnarounds;
+                evaluation.outcome.objective_failures = static_cast<std::uint32_t>(
+                    outcome.metrics.failed_or_timed_out_turnarounds);
+                evaluation.outcome.timeouts = outcome.metrics.unresolved_service_requests > 0 ? 1U : 0U;
+                evaluation.outcome.turnaround_failures = static_cast<std::uint32_t>(
+                    outcome.metrics.failed_or_timed_out_turnarounds);
+                evaluation.outcome.completed_objectives = static_cast<std::uint32_t>(
+                    outcome.metrics.completed_turnarounds);
+                evaluation.outcome.worst_departure_delay_seconds = static_cast<double>(
+                    outcome.metrics.maximum_departure_delay_seconds);
+                evaluation.outcome.departure_delay_seconds = outcome.metrics.mean_departure_delay_seconds;
+                evaluation.outcome.service_wait_seconds = static_cast<double>(
+                    outcome.metrics.total_service_task_wait_seconds);
+                evaluation.valid = true;
+                evaluation.reason = "evaluated_in_private_simulation";
+            } else {
+                evaluation.termination_reason = evaluation.private_events >= config.max_private_events ?
+                    "private_event_budget_exhausted" : "future_time_budget_exhausted";
+                evaluation.reason = "evaluation_horizon_did_not_reach_terminal_simulation_state";
+            }
+            return evaluation;
+        });
+        epoch.planned = true;
+        epoch.candidate_count = decision.candidates.size();
+        epoch.selected_candidate_id = decision.selected_candidate_id;
+        epoch.skip_reason = decision.reason;
+        if (epoch.mode == RecoveryMode::Integrated && decision.selected_candidate_id) {
+            const auto selected = std::ranges::find(decision.candidates, *decision.selected_candidate_id,
+                &RecoveryCandidate::id);
+            if (selected != decision.candidates.end()) {
+                std::string result = "accepted";
+                for (const auto& action : selected->actions) {
+                    const auto applied = apply_recovery_action(action);
+                    if (!applied.accepted) { result = "rejected:" + applied.reason; break; }
+                }
+                epoch.application_result = std::move(result);
+            }
+        }
     }
     last_recovery_fingerprint_ = fingerprint;
     recovery_epochs_.push_back(std::move(epoch));
