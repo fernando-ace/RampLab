@@ -733,6 +733,66 @@ void Simulation::consider_recovery(std::string trigger, RevealedDisruption disru
     recovery_epochs_.push_back(std::move(epoch));
 }
 
+RecoveryActionResult Simulation::validate_recovery_action(const RecoveryAction& action) const {
+    if (action.kind != RecoveryActionKind::ReassignVehicle)
+        return {false, "recovery_action_kind_not_implemented"};
+    if (!autonomy_fleet_) return {false, "turnaround_fleet_unavailable"};
+    std::uint32_t task_value{};
+    try {
+        std::size_t parsed{};
+        const auto value = std::stoul(action.task_id, &parsed);
+        if (parsed != action.task_id.size() || value > std::numeric_limits<std::uint32_t>::max())
+            return {false, "invalid_task_id"};
+        task_value = static_cast<std::uint32_t>(value);
+    } catch (const std::exception&) {
+        return {false, "invalid_task_id"};
+    }
+    const TaskId task_id{task_value};
+    const auto mapping = std::ranges::find_if(fleet_task_requests_, [&](const auto& item) {
+        return item.second.second == task_id;
+    });
+    if (mapping == fleet_task_requests_.end()) return {false, "service_request_not_found"};
+    const auto owner = std::ranges::find(scenario_.aircraft, mapping->second.first, &Aircraft::id);
+    if (owner == scenario_.aircraft.end()) return {false, "turnaround_not_found"};
+    const auto& task = owner->task(task_id);
+    if (task.status == TaskStatus::Completed || task.status == TaskStatus::Failed)
+        return {false, "turnaround_task_terminal"};
+    const auto requests = autonomy_fleet_->service_requests();
+    const auto live_request = std::ranges::find(requests,
+        autonomy::ServiceRequestId{mapping->first}, [](const auto& value) { return value.request.id; });
+    if (live_request == requests.end()) return {false, "service_request_not_found"};
+    if (live_request->state != autonomy::ServiceTaskState::Queued || live_request->assigned_vehicle)
+        return {false, "service_request_not_reassignable"};
+    const auto vehicles = autonomy_fleet_->snapshots();
+    const auto selected = std::ranges::find(vehicles, autonomy::VehicleId{action.target_id}, &autonomy::FleetVehicleSnapshot::id);
+    if (selected == vehicles.end()) return {false, "vehicle_not_found"};
+    if (selected->dispatch_state == autonomy::DispatchVehicleState::Unavailable)
+        return {false, "vehicle_unavailable"};
+    if (selected->dispatch_state != autonomy::DispatchVehicleState::Idle || selected->current_request)
+        return {false, "vehicle_not_idle"};
+    if (std::ranges::find(selected->capabilities, live_request->request.required_capability) == selected->capabilities.end())
+        return {false, "vehicle_incompatible"};
+    return {true, "validated"};
+}
+
+RecoveryActionResult Simulation::apply_recovery_action(const RecoveryAction& action) {
+    const auto validation = validate_recovery_action(action);
+    if (!validation.accepted) {
+        if (!recovery_epochs_.empty()) recovery_epochs_.back().application_result = validation.reason;
+        return validation;
+    }
+    const auto task_value = static_cast<std::uint32_t>(std::stoul(action.task_id));
+    const auto mapping = std::ranges::find_if(fleet_task_requests_, [&](const auto& item) {
+        return item.second.second == TaskId{task_value};
+    });
+    const auto result = autonomy_fleet_->assign_service_request(
+        autonomy::ServiceRequestId{mapping->first}, autonomy::VehicleId{action.target_id});
+    RecoveryActionResult applied{result.accepted, result.reason};
+    if (applied.accepted) synchronize_fleet_state();
+    if (!recovery_epochs_.empty()) recovery_epochs_.back().application_result = applied.reason;
+    return applied;
+}
+
 void Simulation::schedule_surface_availability(EdgeId edge, bool available) {
     (void)scenario_.graph.edge(edge);
     (void)events_.schedule(now_, EventType::OperatorSurfaceAvailability,

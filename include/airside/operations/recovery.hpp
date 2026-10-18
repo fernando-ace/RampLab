@@ -39,6 +39,11 @@ struct RecoveryAction {
     auto operator<=>(const RecoveryAction&) const = default;
 };
 
+struct RecoveryActionResult {
+    bool accepted{};
+    std::string reason;
+};
+
 struct RecoveryCandidate {
     std::string id;
     std::uint8_t tier{};

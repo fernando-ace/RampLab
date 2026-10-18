@@ -268,6 +268,30 @@ TEST(TurnaroundTest, FlightBankReassignsOutagedVehicleSafelyAndDeterministically
     EXPECT_EQ(outage_delay_delta, 73);
 }
 
+TEST(TurnaroundTest, RecoveryActionAdapterReassignsOutagedTurnaroundTaskThroughFleet) {
+    auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
+    scenario.recovery_mode = RecoveryMode::Integrated;
+    Simulation simulation{scenario, 42};
+    std::size_t steps = 0;
+    while (simulation.recovery_epochs().empty() && simulation.advance() && ++steps < 1000) {}
+    ASSERT_FALSE(simulation.recovery_epochs().empty());
+    const auto action = RecoveryAction{RecoveryActionKind::ReassignVehicle, "3", "3", "test adapter"};
+    const auto validation = simulation.validate_recovery_action(action);
+    ASSERT_TRUE(validation.accepted) << validation.reason;
+    const auto applied = simulation.apply_recovery_action(action);
+    ASSERT_TRUE(applied.accepted) << applied.reason;
+    const auto result = simulation.run();
+    const auto& metrics = result.metrics;
+    EXPECT_EQ(metrics.fleet_requests_completed, 9U);
+    EXPECT_EQ(metrics.fleet_requests_failed, 0U);
+    EXPECT_EQ(metrics.fleet_collisions, 0U);
+    const auto task = std::ranges::find(metrics.aircraft.front().task_timings,
+        TaskId{3}, &AircraftMetrics::TaskTiming::task);
+    ASSERT_NE(task, metrics.aircraft.front().task_timings.end());
+    EXPECT_EQ(task->assigned_resource, "BaggageCart-Backup");
+    EXPECT_EQ(task->state, TaskStatus::Completed);
+}
+
 TEST(TurnaroundTest, RuntimeVehicleOutageEntersDeterministicEventStream) {
     auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
     scenario.vehicle_outages.clear();

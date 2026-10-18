@@ -109,6 +109,8 @@ public:
     [[nodiscard]] SimTime current_time() const noexcept;
     [[nodiscard]] const std::vector<SimulationEventRecord>& event_history() const noexcept;
     [[nodiscard]] const std::vector<RecoveryEpochRecord>& recovery_epochs() const noexcept;
+    [[nodiscard]] RecoveryActionResult validate_recovery_action(const RecoveryAction& action) const;
+    [[nodiscard]] RecoveryActionResult apply_recovery_action(const RecoveryAction& action);
     [[nodiscard]] SimulationSnapshot snapshot() const;
 
 private:
