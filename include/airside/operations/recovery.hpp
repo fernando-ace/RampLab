@@ -3,6 +3,7 @@
 #include "airside/integration/snapshot.hpp"
 
 #include <cstdint>
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -42,10 +43,16 @@ struct RecoveryCandidate {
     std::string id;
     std::uint8_t tier{};
     std::vector<RecoveryAction> actions;
+    auto operator<=>(const RecoveryCandidate&) const = default;
 };
 
 struct RecoveryOutcome {
     std::optional<bool> completed;
+    std::uint32_t objective_failures{};
+    std::uint32_t timeouts{};
+    std::uint32_t turnaround_failures{};
+    std::uint32_t completed_objectives{};
+    std::optional<double> worst_departure_delay_seconds;
     std::optional<double> departure_delay_seconds;
     std::optional<double> service_wait_seconds;
     std::optional<double> gse_travel_seconds;
@@ -67,15 +74,24 @@ struct RecoverySearchConfig {
     std::uint8_t max_search_tier{2};
     std::uint64_t max_private_events{10000};
     SimTime max_future_simulated_time{SimTime{3600}};
+    double minimum_delay_improvement_seconds{300.0};
 };
 
 struct RecoveryDecision {
     RecoveryTriage triage{RecoveryTriage::NoImpact};
     std::uint64_t fingerprint{};
     std::vector<RecoveryCandidate> candidates;
+    std::vector<RecoveryEvaluation> evaluations;
+    std::size_t candidates_pruned{};
     std::optional<std::string> selected_candidate_id;
     std::string reason;
 };
+
+[[nodiscard]] std::vector<RecoveryCandidate> generate_recovery_candidates(
+    const RecoveryState& state, const RecoverySearchConfig& config);
+[[nodiscard]] RecoveryDecision plan_recovery(
+    const RecoveryState& state, const RecoverySearchConfig& config,
+    const std::function<RecoveryEvaluation(const RecoveryCandidate&)>& evaluate);
 
 [[nodiscard]] RecoveryMode recovery_mode_from_string(const std::string& value);
 [[nodiscard]] const char* to_string(RecoveryMode value) noexcept;

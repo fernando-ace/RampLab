@@ -1,6 +1,9 @@
 #include "airside/operations/recovery.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string_view>
 
@@ -108,5 +111,173 @@ RecoveryTriage triage_recovery_state(const RecoveryState& state) noexcept {
         }
     }
     return RecoveryTriage::Monitor;
+}
+
+namespace {
+std::string id_text(std::uint64_t value) { return std::to_string(value); }
+
+bool task_is_pending(TaskStatus status) {
+    return status == TaskStatus::Pending || status == TaskStatus::Waiting;
+}
+
+bool dependencies_complete(const ServiceTaskSnapshot& task,
+    const std::vector<ServiceTaskSnapshot>& tasks) {
+    return std::ranges::all_of(task.prerequisites, [&](TaskId prerequisite) {
+        const auto it = std::ranges::find(tasks, prerequisite, &ServiceTaskSnapshot::id);
+        return it != tasks.end() && it->status == TaskStatus::Completed;
+    });
+}
+
+bool evaluation_better(const RecoveryOutcome& lhs, const RecoveryOutcome& rhs) {
+    if (lhs.objective_failures != rhs.objective_failures)
+        return lhs.objective_failures < rhs.objective_failures;
+    if (lhs.timeouts != rhs.timeouts) return lhs.timeouts < rhs.timeouts;
+    if (lhs.turnaround_failures != rhs.turnaround_failures)
+        return lhs.turnaround_failures < rhs.turnaround_failures;
+    if (lhs.completed_objectives != rhs.completed_objectives)
+        return lhs.completed_objectives > rhs.completed_objectives;
+    const auto delay = [](const auto& value) {
+        return value.value_or(std::numeric_limits<double>::infinity());
+    };
+    if (delay(lhs.worst_departure_delay_seconds) != delay(rhs.worst_departure_delay_seconds))
+        return delay(lhs.worst_departure_delay_seconds) < delay(rhs.worst_departure_delay_seconds);
+    if (delay(lhs.departure_delay_seconds) != delay(rhs.departure_delay_seconds))
+        return delay(lhs.departure_delay_seconds) < delay(rhs.departure_delay_seconds);
+    if (lhs.service_wait_seconds.value_or(std::numeric_limits<double>::infinity()) !=
+        rhs.service_wait_seconds.value_or(std::numeric_limits<double>::infinity()))
+        return lhs.service_wait_seconds.value_or(std::numeric_limits<double>::infinity()) <
+            rhs.service_wait_seconds.value_or(std::numeric_limits<double>::infinity());
+    return lhs.gse_travel_seconds.value_or(std::numeric_limits<double>::infinity()) <
+        rhs.gse_travel_seconds.value_or(std::numeric_limits<double>::infinity());
+}
+
+bool material_improvement(const RecoveryOutcome& candidate, const RecoveryOutcome& baseline,
+    const RecoverySearchConfig& config) {
+    if (candidate.objective_failures < baseline.objective_failures ||
+        candidate.timeouts < baseline.timeouts ||
+        candidate.turnaround_failures < baseline.turnaround_failures ||
+        candidate.completed_objectives > baseline.completed_objectives) return true;
+    const auto candidate_delay = candidate.worst_departure_delay_seconds ?
+        candidate.worst_departure_delay_seconds : candidate.departure_delay_seconds;
+    const auto baseline_delay = baseline.worst_departure_delay_seconds ?
+        baseline.worst_departure_delay_seconds : baseline.departure_delay_seconds;
+    return candidate_delay && baseline_delay &&
+        *baseline_delay - *candidate_delay >= config.minimum_delay_improvement_seconds;
+}
+}  // namespace
+
+std::vector<RecoveryCandidate> generate_recovery_candidates(
+    const RecoveryState& state, const RecoverySearchConfig& config) {
+    std::vector<RecoveryCandidate> result;
+    result.push_back({"current_plan", 0, {}});
+    if (config.max_candidates <= 1 || config.max_plan_depth == 0 || config.max_search_tier == 0)
+        return result;
+
+    std::vector<RecoveryCandidate> singles;
+    auto turnarounds = state.snapshot.turnarounds;
+    std::ranges::sort(turnarounds, {}, &TurnaroundSnapshot::aircraft);
+    auto vehicles = state.snapshot.vehicles;
+    std::ranges::sort(vehicles, {}, &ServiceVehicleSnapshot::id);
+    auto gates = state.snapshot.gates;
+    std::ranges::sort(gates, {}, &GateSnapshot::id);
+
+    for (const auto& turnaround : turnarounds) {
+        auto tasks = turnaround.tasks;
+        std::ranges::sort(tasks, {}, &ServiceTaskSnapshot::id);
+        for (const auto& task : tasks) {
+            if (!task_is_pending(task.status) || !dependencies_complete(task, tasks)) continue;
+            for (const auto& vehicle : vehicles) {
+                if (vehicle.type != task.type || vehicle.state != VehicleState::Idle || vehicle.assigned_aircraft)
+                    continue;
+                const auto task_id = id_text(task.id.value());
+                const auto vehicle_id = id_text(vehicle.id.value());
+                singles.push_back({"vehicle:" + task_id + ":" + vehicle_id, 1,
+                    {{RecoveryActionKind::ReassignVehicle, task_id, vehicle_id, "compatible idle vehicle"}}});
+            }
+        }
+        const auto aircraft = std::ranges::find(state.snapshot.aircraft, turnaround.aircraft,
+            &AircraftSnapshot::id);
+        if (aircraft != state.snapshot.aircraft.end() &&
+            aircraft->state != AircraftState::Departed && aircraft->state != AircraftState::Scheduled) {
+            for (const auto& target : gates) {
+                if (target.id == aircraft->assigned_gate || !target.available || target.occupying_aircraft)
+                    continue;
+                const auto from = std::ranges::find(gates, aircraft->assigned_gate, &GateSnapshot::id);
+                if (from == gates.end()) continue;
+                singles.push_back({"stand:" + id_text(aircraft->id.value()) + ":" +
+                    id_text(target.id.value()), 1, {{RecoveryActionKind::ReassignStand,
+                    id_text(aircraft->id.value()), id_text(target.id.value()), "available target stand"}}});
+            }
+        }
+        std::vector<const ServiceTaskSnapshot*> pending;
+        for (const auto& task : tasks)
+            if (task_is_pending(task.status) && dependencies_complete(task, tasks)) pending.push_back(&task);
+        for (std::size_t i = 1; i < pending.size(); ++i) {
+            singles.push_back({"resequence:" + id_text(pending[i - 1]->id.value()) + ":" +
+                id_text(pending[i]->id.value()), 1, {{RecoveryActionKind::ResequenceTasks,
+                id_text(pending[i]->id.value()), id_text(pending[i - 1]->id.value()),
+                "swap dependency-valid pending tasks"}}});
+        }
+        if (turnaround.predicted_late && turnaround.state != TurnaroundState::Departed &&
+            turnaround.state != TurnaroundState::Failed) {
+            singles.push_back({"hold:" + id_text(turnaround.aircraft.value()), 1,
+                {{RecoveryActionKind::ControlledHold, id_text(turnaround.aircraft.value()), "60",
+                "bounded hold for disrupted turnaround"}}});
+        }
+    }
+
+    std::ranges::sort(singles, {}, &RecoveryCandidate::id);
+    for (auto& candidate : singles) {
+        if (result.size() >= config.max_candidates) break;
+        result.push_back(std::move(candidate));
+    }
+    if (config.max_search_tier >= 2 && config.max_plan_depth >= 2) {
+        const auto singles_end = result.size();
+        for (std::size_t i = 1; i < singles_end && result.size() < config.max_candidates; ++i) {
+            for (std::size_t j = i + 1; j < singles_end && result.size() < config.max_candidates; ++j) {
+                const auto& left = result[i];
+                const auto& right = result[j];
+                if (!left.actions.empty() && !right.actions.empty() &&
+                    left.actions.front().task_id == right.actions.front().task_id) continue;
+                result.push_back({left.id + "+" + right.id, 2,
+                    {left.actions.front(), right.actions.front()}});
+            }
+        }
+    }
+    return result;
+}
+
+RecoveryDecision plan_recovery(const RecoveryState& state, const RecoverySearchConfig& config,
+    const std::function<RecoveryEvaluation(const RecoveryCandidate&)>& evaluate) {
+    RecoveryDecision decision;
+    decision.triage = triage_recovery_state(state);
+    decision.fingerprint = recovery_fingerprint(state);
+    decision.candidates = generate_recovery_candidates(state, config);
+    if (decision.triage == RecoveryTriage::NoImpact || decision.triage == RecoveryTriage::Monitor) {
+        decision.reason = "triage does not request broad recovery planning";
+        decision.candidates.resize(1);
+    }
+    if (decision.candidates.empty()) decision.candidates.push_back({"current_plan", 0, {}});
+    const auto baseline = evaluate(decision.candidates.front());
+    decision.evaluations.push_back(baseline);
+    if (!baseline.valid) {
+        decision.reason = "baseline evaluation invalid: " + baseline.reason;
+        return decision;
+    }
+    std::size_t best_index = 0;
+    for (std::size_t i = 1; i < decision.candidates.size(); ++i) {
+        decision.evaluations.push_back(evaluate(decision.candidates[i]));
+        const auto& candidate = decision.evaluations.back();
+        if (candidate.valid && evaluation_better(candidate.outcome, decision.evaluations[best_index].outcome))
+            best_index = i;
+    }
+    if (best_index != 0 &&
+        material_improvement(decision.evaluations[best_index].outcome, baseline.outcome, config)) {
+        decision.selected_candidate_id = decision.evaluations[best_index].candidate.id;
+        decision.reason = "selected materially better valid outcome";
+    } else {
+        decision.reason = "current plan retained; no material improvement";
+    }
+    return decision;
 }
 }  // namespace airside
