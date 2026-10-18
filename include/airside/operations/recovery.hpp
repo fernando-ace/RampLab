@@ -87,6 +87,20 @@ struct RecoveryDecision {
     std::string reason;
 };
 
+struct RecoveryEpochRecord {
+    SimTime time{};
+    std::string trigger;
+    RecoveryMode mode{RecoveryMode::Reactive};
+    RecoveryTriage triage{RecoveryTriage::NoImpact};
+    std::uint64_t fingerprint{};
+    bool suppressed{};
+    bool planned{};
+    std::string skip_reason;
+    std::size_t candidate_count{};
+    std::optional<std::string> selected_candidate_id;
+    std::string application_result;
+};
+
 [[nodiscard]] std::vector<RecoveryCandidate> generate_recovery_candidates(
     const RecoveryState& state, const RecoverySearchConfig& config);
 [[nodiscard]] RecoveryDecision plan_recovery(

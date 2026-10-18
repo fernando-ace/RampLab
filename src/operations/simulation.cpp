@@ -707,6 +707,31 @@ SimulationResult Simulation::result() const {
 
 SimTime Simulation::current_time() const noexcept { return now_; }
 const std::vector<SimulationEventRecord>& Simulation::event_history() const noexcept { return event_history_; }
+const std::vector<RecoveryEpochRecord>& Simulation::recovery_epochs() const noexcept { return recovery_epochs_; }
+
+void Simulation::consider_recovery(std::string trigger, RevealedDisruption disruption) {
+    if (std::ranges::find(revealed_disruptions_, disruption) == revealed_disruptions_.end())
+        revealed_disruptions_.push_back(std::move(disruption));
+    RecoveryState state{snapshot(), revealed_disruptions_, {}};
+    const auto fingerprint = recovery_fingerprint(state);
+    RecoveryEpochRecord epoch;
+    epoch.time = now_;
+    epoch.trigger = std::move(trigger);
+    epoch.mode = scenario_.recovery_mode;
+    epoch.triage = triage_recovery_state(state);
+    epoch.fingerprint = fingerprint;
+    epoch.suppressed = last_recovery_fingerprint_ && *last_recovery_fingerprint_ == fingerprint;
+    if (epoch.suppressed) {
+        epoch.skip_reason = "duplicate_recovery_fingerprint";
+    } else if (epoch.mode == RecoveryMode::Reactive) {
+        epoch.skip_reason = "reactive_mode";
+    } else {
+        // Keep the decision boundary visible while private simulator replay is being integrated.
+        epoch.skip_reason = "private_replay_evaluator_unavailable";
+    }
+    last_recovery_fingerprint_ = fingerprint;
+    recovery_epochs_.push_back(std::move(epoch));
+}
 
 void Simulation::schedule_surface_availability(EdgeId edge, bool available) {
     (void)scenario_.graph.edge(edge);
@@ -1006,6 +1031,8 @@ void Simulation::handle_road_event(EdgeId id, bool available, bool operator_trig
         available ? SimulationEventType::RoadOpened : SimulationEventType::RoadClosed};
     event.edge = id;
     emit(std::move(event));
+    if (!available) consider_recovery("surface_closure",
+        {now_, "surface_closure", std::to_string(id.value()), "edge_closed"});
 }
 
 void Simulation::handle_vehicle_outage(VehicleId id) {
@@ -1028,6 +1055,8 @@ void Simulation::handle_vehicle_outage(VehicleId id) {
     }
     autonomy_fleet_->mark_vehicle_unavailable(fleet_id);
     schedule_fleet_tick();
+    consider_recovery("vehicle_outage",
+        {now_, "vehicle_outage", std::to_string(id.value()), vehicle(id).name()});
 }
 
 void Simulation::schedule_turnaround_tasks(Aircraft& flight) {
@@ -1405,6 +1434,9 @@ void Simulation::handle_task_duration_change(TaskId task_id, SimTime duration_va
     emit(std::move(event));
     update_turnaround_estimate(*owner);
     for (auto& flight : scenario_.aircraft) schedule_turnaround_tasks(flight);
+    consider_recovery("task_duration_slowdown",
+        {now_, "task_duration_slowdown", std::to_string(task_id.value()),
+         std::to_string(duration_value.count())});
 }
 
 void Simulation::update_turnaround_estimate(const Aircraft& flight) {

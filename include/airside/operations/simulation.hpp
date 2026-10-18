@@ -108,6 +108,7 @@ public:
     [[nodiscard]] SimulationResult result() const;
     [[nodiscard]] SimTime current_time() const noexcept;
     [[nodiscard]] const std::vector<SimulationEventRecord>& event_history() const noexcept;
+    [[nodiscard]] const std::vector<RecoveryEpochRecord>& recovery_epochs() const noexcept;
     [[nodiscard]] SimulationSnapshot snapshot() const;
 
 private:
@@ -124,6 +125,7 @@ private:
     void handle_task_eligibility(AircraftId id, TaskId task);
     void handle_task_duration_change(TaskId task, SimTime duration);
     void handle_vehicle_outage(VehicleId vehicle);
+    void consider_recovery(std::string trigger, RevealedDisruption disruption);
     void handle_surface_tick();
     [[nodiscard]] agents::OperationalAgent& surface_agent(AircraftId id, NodeId destination,
         agents::ObjectiveType objective_type);
@@ -187,6 +189,9 @@ private:
     std::unordered_map<AircraftId, bool> predicted_late_;
     std::uint64_t task_reassignments_{0};
     std::uint64_t disruption_replans_{0};
+    std::vector<RevealedDisruption> revealed_disruptions_;
+    std::vector<RecoveryEpochRecord> recovery_epochs_;
+    std::optional<std::uint64_t> last_recovery_fingerprint_;
     struct SurfaceAircraftState {
         enum class Phase { None, ArrivalQueue, WaitingForGate, WaitingForPushback, Pushback, Taxiing, WaitingForTraffic, WaitingForRunway, Runway, Arrived, Departed, Failed };
         Phase phase{Phase::None};

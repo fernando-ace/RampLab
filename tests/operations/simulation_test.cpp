@@ -57,6 +57,24 @@ TEST(SimulationTest, SameSeedProducesIdenticalDomainResults) {
     EXPECT_EQ(first_simulation.snapshot(), second_simulation.snapshot());
 }
 
+TEST(SimulationTest, RecoveryEpochTracksOnlyProcessedSurfaceClosureInShadowMode) {
+    auto scenario = test::baseline_scenario();
+    scenario.road_events.clear();
+    scenario.recovery_mode = RecoveryMode::Shadow;
+    Simulation simulation{scenario, 42};
+    simulation.schedule_surface_availability(EdgeId{1}, false);
+    simulation.schedule_surface_availability(EdgeId{1}, false);
+    (void)simulation.run();
+    ASSERT_EQ(simulation.recovery_epochs().size(), 2U);
+    const auto& epoch = simulation.recovery_epochs().front();
+    EXPECT_EQ(epoch.mode, RecoveryMode::Shadow);
+    EXPECT_EQ(epoch.trigger, "surface_closure");
+    EXPECT_FALSE(epoch.planned);
+    EXPECT_EQ(epoch.skip_reason, "private_replay_evaluator_unavailable");
+    EXPECT_TRUE(simulation.recovery_epochs().back().suppressed);
+    EXPECT_EQ(epoch.fingerprint, simulation.recovery_epochs().back().fingerprint);
+}
+
 TEST(SimulationTest, ExternalHighCapacityScenarioChangesContentionResults) {
     const auto baseline = Simulation{test::baseline_scenario(), 42}.run();
     const auto high_capacity = Simulation{test::high_capacity_scenario(), 42}.run();
