@@ -18,6 +18,7 @@ airport:
     - { id: gate, x_m: 100, y_m: 0 }
   edges:
     - { id: road, from: depot, to: gate, distance_m: 100, traversal_time_seconds: 10 }
+    - { id: backup_road, from: depot, to: gate, distance_m: 110, traversal_time_seconds: 12 }
 gates:
   - { id: A1, node: gate }
 fleet:
@@ -73,6 +74,44 @@ TEST(ScenarioLoaderTest, LoadsExternalBaselineAndDefaultSeed) {
     EXPECT_EQ(scenario.gates.size(), 3U);
     EXPECT_EQ(scenario.vehicles.size(), 2U);
     EXPECT_EQ(scenario.road_events.size(), 1U);
+}
+
+TEST(ScenarioLoaderTest, LoadsRecoveryModeFromScenarioAndDefaultsToReactive) {
+    TemporaryScenario shadow{replaced(std::string{kValidScenario}, "name: fixture\n",
+        "name: fixture\nrecovery_mode: RECOVERY_SHADOW\n")};
+    EXPECT_EQ(load_scenario(shadow.path()).recovery_mode, RecoveryMode::Shadow);
+    TemporaryScenario integrated{replaced(std::string{kValidScenario}, "name: fixture\n",
+        "name: fixture\nrecovery_mode: INTEGRATED_RECOVERY\n")};
+    EXPECT_EQ(load_scenario(integrated.path()).recovery_mode, RecoveryMode::Integrated);
+    TemporaryScenario reactive{std::string{kValidScenario}};
+    EXPECT_EQ(load_scenario(reactive.path()).recovery_mode, RecoveryMode::Reactive);
+}
+
+TEST(ScenarioLoaderTest, CapturesRevealedDisruptionEpochWithoutChangingReactiveSimulation) {
+    TemporaryScenario reactive_file{std::string{kValidScenario}};
+    auto reactive_scenario = load_scenario(reactive_file.path());
+    Simulation reactive{reactive_scenario, 7};
+    const auto baseline = reactive.run();
+    EXPECT_EQ(baseline.recovery_epochs.size(), 1U);
+    EXPECT_TRUE(baseline.recovery_epochs.front().planning_skipped);
+    EXPECT_EQ(baseline.recovery_epochs.front().reason, "reactive_mode");
+
+    TemporaryScenario shadow_file{replaced(std::string{kValidScenario}, "name: fixture\n",
+        "name: fixture\nrecovery_mode: RECOVERY_SHADOW\n")};
+    auto shadow_scenario = load_scenario(shadow_file.path());
+    Simulation shadow{shadow_scenario, 7};
+    const auto observed = shadow.run();
+    EXPECT_EQ(baseline.events, observed.events);
+    EXPECT_EQ(baseline.metrics, observed.metrics);
+    ASSERT_EQ(baseline.aircraft.size(), observed.aircraft.size());
+    for (std::size_t i = 0; i < baseline.aircraft.size(); ++i) {
+        EXPECT_EQ(baseline.aircraft[i].state(), observed.aircraft[i].state());
+        EXPECT_EQ(baseline.aircraft[i].actual_arrival(), observed.aircraft[i].actual_arrival());
+        EXPECT_EQ(baseline.aircraft[i].actual_departure(), observed.aircraft[i].actual_departure());
+    }
+    ASSERT_EQ(observed.recovery_epochs.size(), 1U);
+    EXPECT_TRUE(observed.recovery_epochs.front().planning_skipped);
+    EXPECT_EQ(observed.recovery_epochs.front().reason, "shadow_evaluator_not_integrated");
 }
 
 TEST(ScenarioLoaderTest, AllowsOnlyCapabilitiesUsedByTheScenario) {

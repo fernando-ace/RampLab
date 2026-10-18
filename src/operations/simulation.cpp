@@ -702,7 +702,7 @@ SimulationResult Simulation::result() const {
         }
     }
     return {seed_, now_, scenario_.aircraft, scenario_.vehicles, log_, event_history_,
-        std::move(metrics), agent_decisions_};
+        std::move(metrics), agent_decisions_, recovery_epochs_};
 }
 
 SimTime Simulation::current_time() const noexcept { return now_; }
@@ -748,19 +748,25 @@ void Simulation::process(const Event& event) {
     case EventType::ServiceCompleted: handle_service_completed(VehicleId{event.entity.value}); break;
     case EventType::VehicleArrivalAtDepot: handle_vehicle_return(VehicleId{event.entity.value}); break;
     case EventType::EdgeAvailabilityChanged:
-        handle_road_event(EdgeId{event.entity.value}, event.data != 0); break;
+        handle_road_event(EdgeId{event.entity.value}, event.data != 0);
+        if (event.data == 0) record_recovery_epoch("surface_closure", std::to_string(event.entity.value));
+        break;
     case EventType::AircraftDeparture: handle_departure(AircraftId{event.entity.value}); break;
     case EventType::AbstractServiceCompleted:
         handle_abstract_service_completed(AircraftId{event.entity.value}, TaskId{static_cast<std::uint32_t>(event.data)}); break;
     case EventType::TurnaroundTaskEligible:
         handle_task_eligibility(AircraftId{event.entity.value}, TaskId{static_cast<std::uint32_t>(event.data)}); break;
     case EventType::TaskDurationChanged:
-        handle_task_duration_change(TaskId{event.entity.value}, SimTime{event.data}); break;
+        handle_task_duration_change(TaskId{event.entity.value}, SimTime{event.data});
+        record_recovery_epoch("task_duration_change", std::to_string(event.entity.value), SimTime{event.data});
+        break;
     case EventType::FleetTick:
         fleet_tick_scheduled_ = false;
         handle_fleet_tick(); break;
     case EventType::VehicleOutage:
-        handle_vehicle_outage(VehicleId{event.entity.value}); break;
+        handle_vehicle_outage(VehicleId{event.entity.value});
+        record_recovery_epoch("vehicle_outage", std::to_string(event.entity.value));
+        break;
     case EventType::OperatorSurfaceAvailability: {
         SimulationEventRecord intervention{SimulationEventType::OperatorIntervention};
         intervention.edge = EdgeId{event.entity.value};
@@ -768,6 +774,7 @@ void Simulation::process(const Event& event) {
             event.entity.value, event.data != 0 ? "true" : "false");
         emit(std::move(intervention));
         handle_road_event(EdgeId{event.entity.value}, event.data != 0, true);
+        if (event.data == 0) record_recovery_epoch("surface_closure", std::to_string(event.entity.value));
         break;
     }
     case EventType::OperatorVehicleOutage: {
@@ -777,11 +784,40 @@ void Simulation::process(const Event& event) {
         intervention.detail = std::format("equipment_outage target=vehicle:{} result=accepted", event.entity.value);
         emit(std::move(intervention));
         handle_vehicle_outage(VehicleId{event.entity.value});
+        record_recovery_epoch("vehicle_outage", std::to_string(event.entity.value));
         break;
     }
     case EventType::SurfaceTick:
         surface_tick_scheduled_ = false; handle_surface_tick(); break;
     }
+}
+
+void Simulation::record_recovery_epoch(std::string trigger, std::string target, SimTime magnitude) {
+    revealed_disruptions_.push_back({trigger, std::move(target), now_, magnitude});
+    RecoveryState state;
+    state.snapshot = snapshot();
+    state.revealed_disruptions = revealed_disruptions_;
+    const auto fingerprint = recovery_fingerprint(state);
+    RecoveryEpochRecord record;
+    record.time = now_;
+    record.trigger = std::move(trigger);
+    record.triage = triage_recovery(state);
+    record.fingerprint = fingerprint;
+    if (scenario_.recovery_mode == RecoveryMode::Reactive) {
+        record.planning_skipped = true;
+        record.reason = "reactive_mode";
+    } else if (fingerprint == last_recovery_fingerprint_) {
+        record.planning_skipped = true;
+        record.reason = "equivalent_fingerprint";
+    } else {
+        // Planning is intentionally not reported as run until an isolated simulator
+        // evaluator and authoritative action adapter are available.
+        record.planning_skipped = true;
+        record.reason = scenario_.recovery_mode == RecoveryMode::Shadow
+            ? "shadow_evaluator_not_integrated" : "integrated_action_adapter_not_integrated";
+    }
+    last_recovery_fingerprint_ = fingerprint;
+    recovery_epochs_.push_back(std::move(record));
 }
 
 void Simulation::handle_aircraft_arrival(AircraftId id) {

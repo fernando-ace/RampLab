@@ -40,6 +40,7 @@ struct AircraftDocument {
 struct RoadEventDocument { std::int64_t time; std::string edge; bool enabled; };
 struct ScenarioDocument {
     std::string name;
+    std::string recovery_mode{"REACTIVE"};
     std::uint64_t default_seed;
     std::vector<NodeDocument> nodes;
     std::vector<EdgeDocument> edges;
@@ -86,6 +87,10 @@ ScenarioDocument parse_document(const YAML::Node& root) {
     if (!root.IsMap()) throw ScenarioLoadError("scenario root must be a mapping");
     ScenarioDocument document;
     document.name = scalar<std::string>(root, "name", "scenario");
+    if (root["recovery_mode"]) document.recovery_mode = scalar<std::string>(root, "recovery_mode", "scenario");
+    if (document.recovery_mode != "REACTIVE" && document.recovery_mode != "RECOVERY_SHADOW" &&
+        document.recovery_mode != "INTEGRATED_RECOVERY")
+        throw ScenarioLoadError("scenario.recovery_mode must be REACTIVE, RECOVERY_SHADOW, or INTEGRATED_RECOVERY");
     document.default_seed = root["default_seed"] ?
         scalar<std::uint64_t>(root, "default_seed", "scenario") : 42U;
 
@@ -335,6 +340,8 @@ Scenario validate_and_build(const ScenarioDocument& document) {
     Scenario scenario;
     scenario.name = document.name;
     scenario.default_seed = document.default_seed;
+    scenario.recovery_mode = document.recovery_mode == "RECOVERY_SHADOW" ? RecoveryMode::Shadow :
+        document.recovery_mode == "INTEGRATED_RECOVERY" ? RecoveryMode::Integrated : RecoveryMode::Reactive;
     scenario.turnaround_orchestration = !document.disruptions.empty() ||
         std::ranges::any_of(document.aircraft, [](const auto& flight) { return !flight.tasks.empty(); });
     std::unordered_map<std::string, NodeId> nodes;

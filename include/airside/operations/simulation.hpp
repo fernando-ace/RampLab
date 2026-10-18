@@ -7,6 +7,7 @@
 #include "airside/core/event_stream.hpp"
 #include "airside/metrics/metrics.hpp"
 #include "airside/integration/snapshot.hpp"
+#include "airside/operations/recovery.hpp"
 #include "airside/operations/resource_pool.hpp"
 #include "airside/world/airport_graph.hpp"
 #include "airside/world/gate.hpp"
@@ -70,6 +71,18 @@ struct Scenario {
     std::vector<TaskDurationDisruption> task_duration_disruptions;
     std::vector<VehicleOutageEvent> vehicle_outages;
     std::optional<SurfaceOperationsConfig> surface_operations;
+    RecoveryMode recovery_mode{RecoveryMode::Reactive};
+};
+
+struct RecoveryEpochRecord {
+    SimTime time{};
+    std::string trigger;
+    RecoveryTriage triage{RecoveryTriage::NoImpact};
+    std::uint64_t fingerprint{};
+    bool planning_ran{};
+    bool planning_skipped{};
+    std::string reason;
+    auto operator<=>(const RecoveryEpochRecord&) const = default;
 };
 
 struct SimulationResult {
@@ -81,6 +94,7 @@ struct SimulationResult {
     std::vector<SimulationEventRecord> events;
     SimulationMetrics metrics;
     std::vector<agents::DecisionEvent> agent_decisions;
+    std::vector<RecoveryEpochRecord> recovery_epochs;
 
 };
 
@@ -151,6 +165,7 @@ private:
     void emit(SimulationEventRecord event);
     void emit_aircraft_state(Aircraft& aircraft, AircraftState previous);
     void emit_vehicle_state(ServiceVehicle& vehicle, VehicleState previous);
+    void record_recovery_epoch(std::string trigger, std::string target, SimTime magnitude = SimTime{});
 
     [[nodiscard]] std::map<EdgeId, VehicleId> stationary_ground_vehicle_blockers() const;
 
@@ -254,6 +269,9 @@ private:
     double minimum_aircraft_ground_separation_m_{std::numeric_limits<double>::infinity()};
     std::size_t surface_aircraft_aircraft_collisions_{};
     std::size_t surface_aircraft_ground_collisions_{};
+    std::vector<RevealedDisruption> revealed_disruptions_;
+    std::vector<RecoveryEpochRecord> recovery_epochs_;
+    std::uint64_t last_recovery_fingerprint_{};
 };
 
 [[nodiscard]] std::string format_sim_time(SimTime time);

@@ -2,14 +2,18 @@
 
 ## Status: INCOMPLETE
 
-This branch contains the first reusable planning core, but Goal49 is not complete. The core is deliberately not reported as productionized: it is not connected to the `Simulation` event loop, has no `REACTIVE`/`RECOVERY_SHADOW`/`INTEGRATED_RECOVERY` run modes, does not execute recovery actions, and has no private simulator fork for counterfactual candidate evaluation. The required 120-run matrix, targeted fleet/hold fixtures, prediction-versus-realized validation, safety audit, and operator recommendation workflow have therefore not been run. There is no experimental evidence that any new recovery action improves operational outcomes.
+This branch contains the reusable planning core and the first runtime integration scaffold, but Goal49 is not complete. Scenario YAML accepts `recovery_mode` values `REACTIVE`, `RECOVERY_SHADOW`, and `INTEGRATED_RECOVERY` (default `REACTIVE`). At revealed vehicle outages, task-duration changes, and surface closures, the simulator now records an out-of-band `RecoveryEpochRecord` containing time, trigger, triage, fingerprint, and suppression reason. This diagnostic record does not alter base operational events or metrics.
+
+The runtime currently records SHADOW and INTEGRATED epochs as skipped (`shadow_evaluator_not_integrated` and `integrated_action_adapter_not_integrated`). It does not run the planner at those epochs, apply recovery actions, or implement a private simulator fork. These mode names are configuration plumbing only and must not be interpreted as operationally enabled modes. The required selected-action fixtures, 120-run matrix, prediction-versus-realized validation, safety audit, and operator recommendation workflow have not been run. No experimental evidence shows recovery actions improving outcomes.
 
 ## Git base
 
-- Starting branch: `work` (clean checkout)
-- Current `origin/main` at fetch: `14d63061ef6884733209de5311e2362d7972bbc2`
+- Initial checkout before Goal49 branch switch: `work` (clean)
+- `origin/main` at initial fetch: `14d63061ef6884733209de5311e2362d7972bbc2`
 - Goal49 branch: `goal49-selective-integrated-recovery`
-- Goal49 base: `14d63061ef6884733209de5311e2362d7972bbc2`
+- Starting Goal49 remote tip: `a8c44dc6a5243192b7847792a975dbef4233019a`
+- Merge base with `origin/main`: `14d63061ef6884733209de5311e2362d7972bbc2`
+- Initial working tree cleanliness: clean
 - Lost Goal48 commits were not used.
 
 ## Implemented planner core
@@ -36,6 +40,14 @@ The planner core currently has no simulator action-application adapter. In parti
 - The build emitted warnings in pre-existing files and one aggregate-initializer warning in `recovery.cpp`; no build errors.
 
 These checks validate the current planner primitives and existing regression suite only. They do not validate integrated recovery behavior.
+
+## Runtime scaffold added after the planner-core checkpoint
+
+- Scenario YAML can select a recovery mode. Reactive remains the default.
+- The simulator retains revealed disruption facts and emits deterministic recovery epoch diagnostics separately from the authoritative event stream.
+- Repeated equivalent fingerprints are explicitly suppressed for non-reactive modes.
+- A regression test compares REACTIVE and SHADOW authoritative event streams, metrics, and aircraft outcome fields for the same scenario and seed. Because no planner runs yet, this establishes diagnostic isolation only, not complete shadow-mode operation.
+- Release build succeeds. The first CTest run found a newly added fixture issue (closing the only return road); the fixture now has a second route. The full suite is being rerun after that correction.
 
 ## KAUO boundary
 
