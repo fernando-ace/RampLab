@@ -6,13 +6,14 @@ $ git ls-remote origin refs/heads/main
 14d63061ef6884733209de5311e2362d7972bbc2	refs/heads/main
 
 $ git ls-remote origin refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306
-e0f6bd3c0db7af58144ec5594918d4a50c28e069	refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306
+ef8a7e235e98639fea0552fdb7b041e1275eb7a5	refs/heads/goal49-selective-integrated-recovery-rebuild-14d6306
 
-The initial workspace was on local branch `work` at the verified main SHA, with staged Goal49 files. Those staged changes were preserved outside the repository, the required remote branch was fetched and checked out, and the staged patch was found to be already represented by the rebuild branch tree. No prior Goal49 branch was used as the implementation base.
+The initial workspace was on local branch `work` at the verified main SHA, with staged Goal49 files. Those staged changes were preserved in a stash on `work`; the required remote branch was fetched and checked out at its exact published tip. The stash was not applied to the Goal49 branch.
 
 Required branch checkout:
 
 ```text
-HEAD: e0f6bd3c0db7af58144ec5594918d4a50c28e069
+HEAD: ef8a7e235e98639fea0552fdb7b041e1275eb7a5
 merge-base with origin/main: 14d63061ef6884733209de5311e2362d7972bbc2
+working tree: clean before this continuation
 ```

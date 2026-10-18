@@ -3,6 +3,27 @@
 **Status: INCOMPLETE.** This report records published recovery work and the
 current evidence. Goal49 is not a completed or approved Goal50 base.
 
+## Corrective continuation checkpoint (2026-10-18)
+
+The required initial live gate for this continuation reported
+`14d63061ef6884733209de5311e2362d7972bbc2` for `main` and
+`ef8a7e235e98639fea0552fdb7b041e1275eb7a5` for the Goal49 branch. The branch
+was checked out at that exact tip with merge-base `14d63061ef6884733209de5311e2362d7972bbc2`.
+Literal output and workspace preservation details are in
+`docs/goal49-evidence/git-preflight.txt`.
+
+A fresh Release configure and complete build succeeded. After correcting a
+stale surface-closure SHADOW assertion, full CTest passed **248/248**. Python
+discovery passed **113/114**; the sole failure is the unchanged Goal42 geometry
+reproducibility test also present on `origin/main`. Exact commands and
+classification are in `docs/goal49-evidence/toolchain-and-preflight.md`.
+
+No Goal49 completion gate was closed by this validation-only checkpoint. In
+particular, the current branch still has no genuinely material automatic GSE
+recovery scenario, and `ReassignStand`, `ResequenceTasks`, and `ControlledHold`
+are candidate kinds without runtime execution support. The eight-family
+240-run matrix, parity, safety audit, and final evidence package remain open.
+
 ## Repository and salvage status
 
 The task began in a clean checkout on local branch `work` at `main` SHA
