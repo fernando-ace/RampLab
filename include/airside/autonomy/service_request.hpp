@@ -23,6 +23,11 @@ enum class ServiceKind { BaggageDelivery, FuelService, AircraftTurnaround, TugCa
 enum class ServiceTaskState { Queued, Assigned, EnRoute, Servicing, Completed, Failed };
 enum class DispatchVehicleState { Idle, Busy, Degraded, Unavailable, Recovering };
 
+struct ServiceAssignmentResult {
+    bool accepted{};
+    std::string reason;
+};
+
 struct ServiceRequest {
     ServiceRequestId id;
     ServiceKind kind{ServiceKind::TugCartMovement};

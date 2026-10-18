@@ -1738,6 +1738,23 @@ void FleetSimulation::add_service_request(ServiceRequest request) {
     impl_->dispatcher->add_request(std::move(request));
     impl_->extend_dispatch_horizon();
 }
+ServiceAssignmentResult FleetSimulation::assign_service_request(
+    const ServiceRequestId& request, const VehicleId& vehicle) {
+    if (!impl_->dispatch_mode || !impl_->dispatcher)
+        return {false, "fleet_not_configured_for_service_dispatch"};
+    const auto assignment = impl_->dispatcher->assign_specific(
+        request, vehicle, impl_->now, impl_->dispatch_vehicle_states(), impl_->current_routing_graph());
+    if (!assignment.accepted) return assignment;
+    const auto tasks = impl_->dispatcher->snapshot();
+    const auto task = std::ranges::find(tasks, request, [](const auto& value) { return value.request.id; });
+    const auto member = std::ranges::find(impl_->members, vehicle, [](const auto& value) { return value.mission.id; });
+    if (task == tasks.end() || member == impl_->members.end())
+        throw std::logic_error("authoritative dispatcher assignment lost its fleet state");
+    impl_->start_request(*member, *task);
+    impl_->rebuild_opposing_route_usage();
+    impl_->extend_dispatch_horizon();
+    return assignment;
+}
 void FleetSimulation::update_service_duration(const ServiceRequestId& request, double duration_s) {
     if (!impl_->dispatch_mode || !impl_->dispatcher)
         throw std::logic_error("fleet simulation is not configured for service dispatch");

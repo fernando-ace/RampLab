@@ -193,6 +193,8 @@ public:
     [[nodiscard]] double time_s() const noexcept;
     [[nodiscard]] bool advance();
     void add_service_request(ServiceRequest request);
+    [[nodiscard]] ServiceAssignmentResult assign_service_request(
+        const ServiceRequestId& request, const VehicleId& vehicle);
     void update_service_duration(const ServiceRequestId& request, double duration_s);
     void add_road_event(RoadAvailabilityEvent event);
     void mark_vehicle_unavailable(const VehicleId& vehicle);

@@ -41,6 +41,7 @@ struct RoadEventDocument { std::int64_t time; std::string edge; bool enabled; };
 struct ScenarioDocument {
     std::string name;
     std::uint64_t default_seed;
+    RecoveryMode recovery_mode{RecoveryMode::Reactive};
     std::vector<NodeDocument> nodes;
     std::vector<EdgeDocument> edges;
     std::vector<GateDocument> gates;
@@ -88,6 +89,14 @@ ScenarioDocument parse_document(const YAML::Node& root) {
     document.name = scalar<std::string>(root, "name", "scenario");
     document.default_seed = root["default_seed"] ?
         scalar<std::uint64_t>(root, "default_seed", "scenario") : 42U;
+    if (root["recovery_mode"]) {
+        try {
+            document.recovery_mode = recovery_mode_from_string(
+                scalar<std::string>(root, "recovery_mode", "scenario"));
+        } catch (const std::invalid_argument& error) {
+            throw ScenarioLoadError(std::format("scenario.recovery_mode: {}", error.what()));
+        }
+    }
 
     const auto airport = required(root, "airport", "scenario");
     const auto nodes = required(airport, "nodes", "airport");
@@ -335,6 +344,7 @@ Scenario validate_and_build(const ScenarioDocument& document) {
     Scenario scenario;
     scenario.name = document.name;
     scenario.default_seed = document.default_seed;
+    scenario.recovery_mode = document.recovery_mode;
     scenario.turnaround_orchestration = !document.disruptions.empty() ||
         std::ranges::any_of(document.aircraft, [](const auto& flight) { return !flight.tasks.empty(); });
     std::unordered_map<std::string, NodeId> nodes;

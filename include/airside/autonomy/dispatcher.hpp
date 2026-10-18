@@ -27,6 +27,9 @@ public:
     [[nodiscard]] std::vector<std::pair<ServiceRequestId, VehicleId>> dispatch(
         double simulation_time_s, const std::vector<DispatchVehicle>& vehicles,
         const AirportGraph& graph);
+    [[nodiscard]] ServiceAssignmentResult assign_specific(
+        const ServiceRequestId& request, const VehicleId& vehicle, double simulation_time_s,
+        const std::vector<DispatchVehicle>& vehicles, const AirportGraph& graph);
     void set_state(const ServiceRequestId& request, ServiceTaskState state, double simulation_time_s);
     void mark_vehicle_unavailable(const VehicleId& vehicle, double simulation_time_s);
     void fail(const ServiceRequestId& request, double simulation_time_s, std::string reason);

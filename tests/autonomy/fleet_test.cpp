@@ -436,6 +436,36 @@ TEST(FleetDispatcherIntegrationTest, DynamicScenarioCompletesWithoutCollisionOrL
     EXPECT_EQ(result.outstanding_reservations,0U);
     EXPECT_EQ(result.deadlocked_vehicles.size(),0U);
 }
+TEST(FleetDispatcherIntegrationTest, ExplicitAssignmentUsesChosenVehicleAndNormalServiceLifecycle){
+    auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_dynamic.yaml");
+    scenario.service_requests={scenario.service_requests.front()};
+    FleetSimulation simulation{scenario,42};
+    const auto assigned=simulation.assign_service_request(ServiceRequestId{"turn_a1"},VehicleId{"baggage_01"});
+    ASSERT_TRUE(assigned.accepted) << assigned.reason;
+    auto requests=simulation.service_requests();
+    ASSERT_EQ(requests.size(),1U);EXPECT_EQ(requests.front().assigned_vehicle->value,"baggage_01");
+    std::size_t steps=0;while(simulation.advance()&&++steps<15000){}
+    const auto result=simulation.result();
+    ASSERT_EQ(result.dispatch.requests.size(),1U);
+    EXPECT_EQ(result.dispatch.requests.front().state,ServiceTaskState::Completed);
+    ASSERT_TRUE(result.dispatch.requests.front().assigned_vehicle);
+    EXPECT_EQ(result.dispatch.requests.front().assigned_vehicle->value,"baggage_01");
+    EXPECT_EQ(result.collisions,0U);EXPECT_EQ(result.outstanding_reservations,0U);
+}
+TEST(FleetDispatcherIntegrationTest, ExplicitAssignmentRejectsMissingIncompatibleUnavailableAndTerminalRequests){
+    auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_dynamic.yaml");
+    scenario.service_requests={scenario.service_requests.front()};
+    FleetSimulation incompatible{scenario,42};
+    EXPECT_FALSE(incompatible.assign_service_request(ServiceRequestId{"turn_a1"},VehicleId{"fuel_01"}).accepted);
+    EXPECT_FALSE(incompatible.assign_service_request(ServiceRequestId{"missing"},VehicleId{"baggage_01"}).accepted);
+    FleetSimulation unavailable{scenario,42};
+    unavailable.mark_vehicle_unavailable(VehicleId{"baggage_01"});
+    EXPECT_FALSE(unavailable.assign_service_request(ServiceRequestId{"turn_a1"},VehicleId{"baggage_01"}).accepted);
+    FleetSimulation completed{scenario,42};
+    ASSERT_TRUE(completed.assign_service_request(ServiceRequestId{"turn_a1"},VehicleId{"baggage_01"}).accepted);
+    while(completed.advance()){}
+    EXPECT_FALSE(completed.assign_service_request(ServiceRequestId{"turn_a1"},VehicleId{"baggage_01"}).accepted);
+}
 TEST(FleetDispatcherIntegrationTest, AgingScenarioServesHighPriorityFirstAndPromotesOldWork){
     const auto scenario=load_fleet_scenario(std::filesystem::path{AIRSIDE_SOURCE_DIR}/"scenarios/autonomy_dispatch_fairness.yaml");
     FleetSimulation simulation{scenario,42};while(simulation.advance()){}const auto result=simulation.result();

@@ -121,6 +121,21 @@ TEST(ScenarioLoaderTest, LoadsIntegratedArrivalTurnaroundOperation) {
     EXPECT_TRUE(scenario.surface_operations.has_value());
 }
 
+TEST(ScenarioLoaderTest, RecoveryModeDefaultsToReactiveAndAcceptsSupportedNames) {
+    const TemporaryScenario default_file{std::string{kValidScenario}};
+    EXPECT_EQ(load_scenario(default_file.path()).recovery_mode, RecoveryMode::Reactive);
+    for (const auto& [name, expected] : std::vector<std::pair<std::string, RecoveryMode>>{
+             {"REACTIVE", RecoveryMode::Reactive}, {"RECOVERY_SHADOW", RecoveryMode::Shadow},
+             {"INTEGRATED_RECOVERY", RecoveryMode::Integrated}}) {
+        const TemporaryScenario file{replaced(std::string{kValidScenario}, "default_seed: 7",
+            "default_seed: 7\nrecovery_mode: " + name)};
+        EXPECT_EQ(load_scenario(file.path()).recovery_mode, expected);
+    }
+    const TemporaryScenario invalid{replaced(std::string{kValidScenario}, "default_seed: 7",
+        "default_seed: 7\nrecovery_mode: GOAL50")};
+    EXPECT_THROW(load_and_discard(invalid.path()), ScenarioLoadError);
+}
+
 TEST(ScenarioLoaderTest, LoadsExtendedGroundServiceEquipmentTypes) {
     auto contents = replaced(std::string{kValidScenario},
         "    - { id: fuel, name: Fuel-1, type: fueling, depot_node: depot, speed_mps: 10 }\n",

@@ -8,6 +8,7 @@
 #include "airside/metrics/metrics.hpp"
 #include "airside/integration/snapshot.hpp"
 #include "airside/operations/resource_pool.hpp"
+#include "airside/operations/recovery.hpp"
 #include "airside/world/airport_graph.hpp"
 #include "airside/world/gate.hpp"
 
@@ -70,6 +71,7 @@ struct Scenario {
     std::vector<TaskDurationDisruption> task_duration_disruptions;
     std::vector<VehicleOutageEvent> vehicle_outages;
     std::optional<SurfaceOperationsConfig> surface_operations;
+    RecoveryMode recovery_mode{RecoveryMode::Reactive};
 };
 
 struct SimulationResult {

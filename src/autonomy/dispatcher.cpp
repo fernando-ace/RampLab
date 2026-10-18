@@ -192,6 +192,45 @@ std::vector<std::pair<ServiceRequestId, VehicleId>> FleetDispatcher::dispatch(
     return assigned;
 }
 
+ServiceAssignmentResult FleetDispatcher::assign_specific(
+    const ServiceRequestId& request_id, const VehicleId& vehicle_id, double simulation_time_s,
+    const std::vector<DispatchVehicle>& vehicles, const AirportGraph& graph) {
+    if (!std::isfinite(simulation_time_s) || simulation_time_s < last_time_s_)
+        return {false, "invalid_or_nonmonotonic_time"};
+    auto task_it = std::ranges::find(tasks_, request_id, [](const auto& task) { return task.request.id; });
+    if (task_it == tasks_.end()) return {false, "request_not_found"};
+    if (terminal(task_it->state)) return {false, "request_terminal"};
+    if (task_it->state != ServiceTaskState::Queued) return {false, "request_not_reassignable"};
+    if (task_it->request.release_time_s > simulation_time_s) return {false, "request_not_released"};
+    const auto vehicle_it = std::ranges::find(vehicles, vehicle_id, &DispatchVehicle::id);
+    if (vehicle_it == vehicles.end()) return {false, "vehicle_not_found"};
+    if (vehicle_it->state == DispatchVehicleState::Unavailable) return {false, "vehicle_unavailable"};
+    if (vehicle_it->state != DispatchVehicleState::Idle || vehicle_it->current_request ||
+        active_assignments_.contains(vehicle_id)) return {false, "vehicle_not_idle"};
+    if (std::ranges::find(vehicle_it->capabilities, task_it->request.required_capability) == vehicle_it->capabilities.end())
+        return {false, "vehicle_incompatible"};
+    const auto current = node_named(graph, vehicle_it->current_node);
+    const auto origin = node_named(graph, task_it->request.origin);
+    const auto destination = node_named(graph, task_it->request.destination);
+    if (!current || !origin || !destination) return {false, "unknown_route_node"};
+    const auto approach = airside::find_route(graph, *current, *origin, airside::MovementClass::GroundVehicle);
+    const auto service = airside::find_route(graph, *origin, *destination, airside::MovementClass::GroundVehicle);
+    if (!approach || !service) return {false, "route_unavailable"};
+
+    release_due(simulation_time_s);
+    const bool reassigned = task_it->reassignments != 0;
+    task_it->state = ServiceTaskState::Assigned;
+    task_it->assigned_vehicle = vehicle_id;
+    task_it->queue_wait_s += std::max(0.0, simulation_time_s - task_it->queued_since_s);
+    task_it->assigned_at_s = simulation_time_s;
+    active_assignments_.emplace(vehicle_id, request_id);
+    ++assignments_;
+    emit(simulation_time_s, reassigned ? DispatchEventKind::Reassigned : DispatchEventKind::Assigned,
+         *task_it, vehicle_id, "explicit_safe_assignment", approach->distance_m);
+    last_time_s_ = simulation_time_s;
+    return {true, "accepted"};
+}
+
 void FleetDispatcher::set_state(const ServiceRequestId& request, ServiceTaskState state, double simulation_time_s) {
     if (!std::isfinite(simulation_time_s) || simulation_time_s < last_time_s_)
         throw std::invalid_argument("dispatcher time must be finite and monotonic");
