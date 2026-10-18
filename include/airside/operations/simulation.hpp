@@ -106,6 +106,16 @@ struct ReplayBoundaryVerification {
     auto operator<=>(const ReplayBoundaryVerification&) const = default;
 };
 
+struct RuntimeInterventionRecord {
+    SimTime scheduled_at{};
+    std::size_t event_prefix_size{};
+    std::uint64_t sequence{};
+    EventType type{};
+    EntityRef entity{};
+    std::int64_t data{};
+    auto operator<=>(const RuntimeInterventionRecord&) const = default;
+};
+
 enum class SimulationHistoryPolicy { Retain, Discard };
 
 class Simulation {
@@ -133,6 +143,7 @@ public:
     // event boundary. Runtime operator interventions cannot be replayed by this
     // scenario-only provenance and are reported as unsupported.
     [[nodiscard]] ReplayBoundaryVerification verify_replay_boundary() const;
+    [[nodiscard]] const std::vector<RuntimeInterventionRecord>& runtime_interventions() const noexcept;
 
 private:
     void process(const Event& event);
@@ -285,6 +296,7 @@ private:
     std::vector<RevealedDisruption> revealed_disruptions_;
     std::vector<RecoveryEpochRecord> recovery_epochs_;
     std::uint64_t last_recovery_fingerprint_{};
+    std::vector<RuntimeInterventionRecord> runtime_interventions_;
 };
 
 [[nodiscard]] std::string format_sim_time(SimTime time);

@@ -72,7 +72,7 @@ TEST(SimulationTest, ScenarioReplayMatchesCurrentEventBoundaryDeterministically)
     EXPECT_EQ(simulation.event_history(), before_events);
 }
 
-TEST(SimulationTest, ScenarioReplayReportsMissingRuntimeInterventionProvenance) {
+TEST(SimulationTest, ScenarioReplayReconstructsRuntimeInterventionProvenance) {
     Simulation simulation{test::baseline_scenario(), 42};
     simulation.schedule_surface_availability(test::baseline_scenario().graph.edges().front().id, false);
     for (int i = 0; i < 16 && simulation.advance(); ++i) {
@@ -81,8 +81,9 @@ TEST(SimulationTest, ScenarioReplayReportsMissingRuntimeInterventionProvenance) 
         })) break;
     }
     const auto verification = simulation.verify_replay_boundary();
-    EXPECT_FALSE(verification.equivalent);
-    EXPECT_EQ(verification.reason, "runtime_intervention_provenance_unavailable");
+    EXPECT_TRUE(verification.equivalent) << verification.reason;
+    ASSERT_EQ(simulation.runtime_interventions().size(), 1U);
+    EXPECT_EQ(simulation.runtime_interventions().front().type, EventType::OperatorSurfaceAvailability);
 }
 
 TEST(SimulationTest, ExternalHighCapacityScenarioChangesContentionResults) {

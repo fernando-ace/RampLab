@@ -710,20 +710,42 @@ const std::vector<SimulationEventRecord>& Simulation::event_history() const noex
 
 ReplayBoundaryVerification Simulation::verify_replay_boundary() const {
     ReplayBoundaryVerification verification;
-    const auto has_operator_intervention = std::ranges::any_of(event_history_, [](const auto& event) {
-        return event.type == SimulationEventType::OperatorIntervention;
-    });
-    if (has_operator_intervention) {
-        verification.reason = "runtime_intervention_provenance_unavailable";
-        return verification;
-    }
-
     Scenario replay_scenario = replay_scenario_;
     replay_scenario.recovery_mode = RecoveryMode::Reactive;
     Simulation replay{std::move(replay_scenario), seed_, SimulationHistoryPolicy::Retain};
+    std::size_t intervention_index = 0;
+    const auto replay_interventions_at_boundary = [&] {
+        while (intervention_index < runtime_interventions_.size() &&
+               runtime_interventions_[intervention_index].event_prefix_size <= replay.event_history().size()) {
+            const auto& intervention = runtime_interventions_[intervention_index++];
+            if (replay.current_time() != intervention.scheduled_at) return false;
+            std::uint64_t sequence{};
+            switch (intervention.type) {
+            case EventType::OperatorSurfaceAvailability:
+                sequence = replay.events_.schedule(intervention.scheduled_at, intervention.type,
+                    intervention.entity, intervention.data);
+                break;
+            case EventType::OperatorVehicleOutage:
+                sequence = replay.events_.schedule(intervention.scheduled_at, intervention.type,
+                    intervention.entity, intervention.data);
+                break;
+            default: return false;
+            }
+            if (sequence != intervention.sequence) return false;
+        }
+        return true;
+    };
+    if (!replay_interventions_at_boundary()) {
+        verification.reason = "runtime_intervention_replay_mismatch";
+        return verification;
+    }
     while (const auto next = replay.next_event_time()) {
         if (*next > now_) break;
         if (!replay.advance()) break;
+        if (!replay_interventions_at_boundary()) {
+            verification.reason = "runtime_intervention_replay_mismatch";
+            return verification;
+        }
     }
     verification.matched_events = std::min(event_history_.size(), replay.event_history().size());
     const bool same_events = event_history_ == replay.event_history();
@@ -737,18 +759,27 @@ ReplayBoundaryVerification Simulation::verify_replay_boundary() const {
     return verification;
 }
 
+const std::vector<RuntimeInterventionRecord>& Simulation::runtime_interventions() const noexcept {
+    return runtime_interventions_;
+}
+
 void Simulation::schedule_surface_availability(EdgeId edge, bool available) {
     (void)scenario_.graph.edge(edge);
-    (void)events_.schedule(now_, EventType::OperatorSurfaceAvailability,
-        {EntityKind::Edge, edge.value()}, available ? 1 : 0);
+    const auto data = available ? 1 : 0;
+    const auto sequence = events_.schedule(now_, EventType::OperatorSurfaceAvailability,
+        {EntityKind::Edge, edge.value()}, data);
+    runtime_interventions_.push_back({now_, event_history_.size(), sequence,
+        EventType::OperatorSurfaceAvailability, {EntityKind::Edge, edge.value()}, data});
 }
 
 void Simulation::schedule_vehicle_outage(VehicleId id) {
     if (!autonomy_fleet_) throw std::logic_error("vehicle outages require turnaround fleet orchestration");
     const auto found = std::ranges::find(scenario_.vehicles, id, &ServiceVehicle::id);
     if (found == scenario_.vehicles.end()) throw std::invalid_argument("operator outage references unknown vehicle");
-    (void)events_.schedule(now_, EventType::OperatorVehicleOutage,
+    const auto sequence = events_.schedule(now_, EventType::OperatorVehicleOutage,
         {EntityKind::Vehicle, id.value()});
+    runtime_interventions_.push_back({now_, event_history_.size(), sequence,
+        EventType::OperatorVehicleOutage, {EntityKind::Vehicle, id.value()}, 0});
 }
 
 std::map<EdgeId, VehicleId> Simulation::stationary_ground_vehicle_blockers() const {

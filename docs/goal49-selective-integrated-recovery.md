@@ -58,6 +58,12 @@ These checks validate the current planner primitives and existing regression sui
 - A regression test compares REACTIVE and SHADOW authoritative event streams, metrics, and aircraft outcome fields for the same scenario and seed. Because no planner runs yet, this establishes diagnostic isolation only, not complete shadow-mode operation.
 - Release build succeeds. The first CTest run found a newly added fixture issue (closing the only return road); the fixture now has a second route. The full suite is being rerun after that correction.
 
+## Corrective follow-up — runtime intervention provenance
+
+The current corrective branch additionally records runtime operator surface-availability and vehicle-outage commands with simulation time, event-prefix position, deterministic queue sequence, action type, target, and parameters. Replay boundary verification reissues these commands at their recorded event boundaries and compares the reconstructed history and snapshot. A focused simulator test confirms an operator surface closure replays equivalently. Focused command: `build/airside_tests --gtest_filter='SimulationTest.ScenarioReplay*'` (2/2 passed); `git diff --check` passed.
+
+This fixes only the operator-command replay gap. The private candidate evaluator, candidate injection, authoritative recovery-action application, active SHADOW/INTEGRATED planning, selected-action fixtures, experiment matrix, safety and prediction evidence, final evidence bundle, and Goal49 completion publication are still outstanding. This branch remains INCOMPLETE and must not be treated as completing Goal49.
+
 ## KAUO boundary
 
 KAUO remains `DATA_BLOCKED`. This work does not alter readiness logic, promote Goal47 taxiway evidence, synthesize stands or routes, or run production KAUO simulation. Goal47/Goal42 evidence files were not modified in this branch.
