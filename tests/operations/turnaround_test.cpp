@@ -322,6 +322,27 @@ TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
     EXPECT_EQ(result.metrics.fleet_reassignments, 1U);
 }
 
+TEST(TurnaroundTest, LaterRecoveryEpochReplaysEarlierAcceptedAction) {
+    auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
+    scenario.recovery_mode = RecoveryMode::Integrated;
+    Simulation simulation{scenario, 42};
+    while (simulation.recovery_epochs().empty() && simulation.advance()) {}
+    ASSERT_FALSE(simulation.recovery_epochs().empty());
+    const RecoveryAction first_action{RecoveryActionKind::ReassignVehicle, "3", "3",
+        "synthetic first-epoch replay fixture"};
+    const auto applied = simulation.apply_recovery_action(first_action);
+    ASSERT_TRUE(applied.accepted) << applied.reason;
+
+    while (simulation.recovery_epochs().size() < 2 && simulation.advance()) {}
+    ASSERT_GE(simulation.recovery_epochs().size(), 2U);
+    const auto replay = simulation.replay_to_recovery_boundary();
+    ASSERT_TRUE(replay.equivalent) << replay.reason;
+    const auto& later_epoch = simulation.recovery_epochs()[1];
+    EXPECT_EQ(later_epoch.trigger, "task_duration_slowdown");
+    ASSERT_FALSE(later_epoch.evaluations.empty());
+    EXPECT_TRUE(later_epoch.evaluations.front().valid) << later_epoch.evaluations.front().reason;
+}
+
 TEST(TurnaroundTest, RuntimeVehicleOutageEntersDeterministicEventStream) {
     auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
     scenario.vehicle_outages.clear();
