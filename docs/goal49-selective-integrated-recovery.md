@@ -11,10 +11,19 @@ The runtime currently records SHADOW and INTEGRATED epochs as skipped (`shadow_e
 - Initial checkout before Goal49 branch switch: `work` (clean)
 - `origin/main` at initial fetch: `14d63061ef6884733209de5311e2362d7972bbc2`
 - Goal49 branch: `goal49-selective-integrated-recovery`
-- Starting Goal49 remote tip: `a8c44dc6a5243192b7847792a975dbef4233019a`
+- Starting Goal49 remote tip: `de4fd29b128b590dbc0613da9d209476d7403e4f`
 - Merge base with `origin/main`: `14d63061ef6884733209de5311e2362d7972bbc2`
 - Initial working tree cleanliness: clean
 - Lost Goal48 commits were not used.
+
+## Corrective execution attempt — replay boundary foundation
+
+- Fresh fetch verified `origin/main` at `14d63061ef6884733209de5311e2362d7972bbc2` and `origin/goal49-selective-integrated-recovery` at `de4fd29b128b590dbc0613da9d209476d7403e4f`.
+- The local branch was checked out from that Goal49 remote tip with a clean starting tree.
+- Added scenario provenance retention and a deterministic replay-boundary verifier. It reconstructs scenario-driven execution to the current event boundary and compares event history and snapshot. It explicitly reports unsupported when operator interventions lack replay provenance.
+- Added tests for replay equivalence/repeatability, event-prefix and snapshot parity, parent isolation, and unsupported runtime intervention provenance.
+- Fresh Release build completed with the configured build tree; full CTest passed 239/239 (the suite now includes two replay tests). `git diff --check` passed.
+- This is only replay infrastructure. It does not evaluate injected candidates, run the planner at epochs, or apply recovery actions. Goal49 remains INCOMPLETE.
 
 ## Implemented planner core
 

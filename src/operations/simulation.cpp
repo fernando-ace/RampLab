@@ -102,7 +102,7 @@ std::string fleet_capability(ServiceType type) {
 }  // namespace
 
 Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryPolicy history_policy)
-    : scenario_(std::move(scenario)), seed_(seed), random_(seed),
+    : scenario_(scenario), replay_scenario_(std::move(scenario)), seed_(seed), random_(seed),
       fuel_pool_(make_resource_pool(scenario_, ServiceType::Fueling)),
       baggage_pool_(make_resource_pool(scenario_, ServiceType::Baggage)), history_policy_(history_policy) {
     if (!scenario_.turnaround_orchestration) {
@@ -707,6 +707,35 @@ SimulationResult Simulation::result() const {
 
 SimTime Simulation::current_time() const noexcept { return now_; }
 const std::vector<SimulationEventRecord>& Simulation::event_history() const noexcept { return event_history_; }
+
+ReplayBoundaryVerification Simulation::verify_replay_boundary() const {
+    ReplayBoundaryVerification verification;
+    const auto has_operator_intervention = std::ranges::any_of(event_history_, [](const auto& event) {
+        return event.type == SimulationEventType::OperatorIntervention;
+    });
+    if (has_operator_intervention) {
+        verification.reason = "runtime_intervention_provenance_unavailable";
+        return verification;
+    }
+
+    Scenario replay_scenario = replay_scenario_;
+    replay_scenario.recovery_mode = RecoveryMode::Reactive;
+    Simulation replay{std::move(replay_scenario), seed_, SimulationHistoryPolicy::Retain};
+    while (const auto next = replay.next_event_time()) {
+        if (*next > now_) break;
+        if (!replay.advance()) break;
+    }
+    verification.matched_events = std::min(event_history_.size(), replay.event_history().size());
+    const bool same_events = event_history_ == replay.event_history();
+    const bool same_snapshot = snapshot() == replay.snapshot();
+    RecoveryState recovery_state;
+    recovery_state.snapshot = snapshot();
+    recovery_state.revealed_disruptions = revealed_disruptions_;
+    verification.recovery_fingerprint = recovery_fingerprint(recovery_state);
+    verification.equivalent = replay.current_time() == now_ && same_events && same_snapshot;
+    verification.reason = verification.equivalent ? "equivalent" : "replay_boundary_mismatch";
+    return verification;
+}
 
 void Simulation::schedule_surface_availability(EdgeId edge, bool available) {
     (void)scenario_.graph.edge(edge);

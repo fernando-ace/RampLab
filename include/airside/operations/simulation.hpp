@@ -98,6 +98,14 @@ struct SimulationResult {
 
 };
 
+struct ReplayBoundaryVerification {
+    bool equivalent{};
+    std::size_t matched_events{};
+    std::uint64_t recovery_fingerprint{};
+    std::string reason;
+    auto operator<=>(const ReplayBoundaryVerification&) const = default;
+};
+
 enum class SimulationHistoryPolicy { Retain, Discard };
 
 class Simulation {
@@ -121,6 +129,10 @@ public:
     [[nodiscard]] SimTime current_time() const noexcept;
     [[nodiscard]] const std::vector<SimulationEventRecord>& event_history() const noexcept;
     [[nodiscard]] SimulationSnapshot snapshot() const;
+    // Deterministically reconstruct the scenario-driven state at the current
+    // event boundary. Runtime operator interventions cannot be replayed by this
+    // scenario-only provenance and are reported as unsupported.
+    [[nodiscard]] ReplayBoundaryVerification verify_replay_boundary() const;
 
 private:
     void process(const Event& event);
@@ -177,6 +189,7 @@ private:
     [[nodiscard]] const Gate& gate(GateId id) const;
 
     Scenario scenario_;
+    Scenario replay_scenario_;
     std::uint64_t seed_;
     std::mt19937_64 random_;
     EventQueue events_;

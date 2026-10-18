@@ -57,6 +57,34 @@ TEST(SimulationTest, SameSeedProducesIdenticalDomainResults) {
     EXPECT_EQ(first_simulation.snapshot(), second_simulation.snapshot());
 }
 
+TEST(SimulationTest, ScenarioReplayMatchesCurrentEventBoundaryDeterministically) {
+    Simulation simulation{test::baseline_scenario(), 4242};
+    for (int i = 0; i < 8 && simulation.advance(); ++i) {}
+    const auto before_snapshot = simulation.snapshot();
+    const auto before_events = simulation.event_history();
+    const auto first = simulation.verify_replay_boundary();
+    const auto second = simulation.verify_replay_boundary();
+    EXPECT_TRUE(first.equivalent) << first.reason;
+    EXPECT_EQ(first.reason, "equivalent");
+    EXPECT_EQ(first, second);
+    EXPECT_EQ(first.matched_events, before_events.size());
+    EXPECT_EQ(simulation.snapshot(), before_snapshot);
+    EXPECT_EQ(simulation.event_history(), before_events);
+}
+
+TEST(SimulationTest, ScenarioReplayReportsMissingRuntimeInterventionProvenance) {
+    Simulation simulation{test::baseline_scenario(), 42};
+    simulation.schedule_surface_availability(test::baseline_scenario().graph.edges().front().id, false);
+    for (int i = 0; i < 16 && simulation.advance(); ++i) {
+        if (std::ranges::any_of(simulation.event_history(), [](const auto& event) {
+            return event.type == SimulationEventType::OperatorIntervention;
+        })) break;
+    }
+    const auto verification = simulation.verify_replay_boundary();
+    EXPECT_FALSE(verification.equivalent);
+    EXPECT_EQ(verification.reason, "runtime_intervention_provenance_unavailable");
+}
+
 TEST(SimulationTest, ExternalHighCapacityScenarioChangesContentionResults) {
     const auto baseline = Simulation{test::baseline_scenario(), 42}.run();
     const auto high_capacity = Simulation{test::high_capacity_scenario(), 42}.run();
