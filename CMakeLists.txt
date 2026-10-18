@@ -41,6 +41,7 @@ add_library(airside_sim STATIC
     src/agents/operational_agent.cpp
     src/operations/resource_pool.cpp
     src/operations/simulation.cpp
+    src/operations/recovery.cpp
     src/metrics/metrics.cpp
 )
 add_library(airside::sim ALIAS airside_sim)
@@ -145,6 +146,7 @@ if(BUILD_TESTING)
         tests/operations/resource_pool_test.cpp
         tests/operations/simulation_test.cpp
         tests/operations/turnaround_test.cpp
+        tests/operations/recovery_test.cpp
         tests/operations/surface_traffic_test.cpp
         tests/metrics/metrics_test.cpp
         tests/experiment/definition_test.cpp
