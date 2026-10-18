@@ -280,6 +280,8 @@ TEST(TurnaroundTest, RecoveryActionAdapterReassignsOutagedTurnaroundTaskThroughF
     ASSERT_TRUE(validation.accepted) << validation.reason;
     const auto applied = simulation.apply_recovery_action(action);
     ASSERT_TRUE(applied.accepted) << applied.reason;
+    const auto accepted_action_replay = simulation.replay_to_recovery_boundary();
+    ASSERT_TRUE(accepted_action_replay.equivalent) << accepted_action_replay.reason;
     const auto result = simulation.run();
     const auto& metrics = result.metrics;
     EXPECT_EQ(metrics.fleet_requests_completed, 9U);
@@ -339,6 +341,49 @@ TEST(TurnaroundTest, RuntimeVehicleOutageEntersDeterministicEventStream) {
     EXPECT_EQ(action->timestamp, SimTime::zero());
     EXPECT_EQ(action->vehicle, vehicle);
     EXPECT_NE(action->detail.find("equipment_outage"), std::string::npos);
+}
+
+TEST(TurnaroundTest, RuntimeVehicleOutageReplaysAtItsRecordedEventBoundary) {
+    auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
+    scenario.vehicle_outages.clear();
+    scenario.recovery_mode = RecoveryMode::Reactive;
+    Simulation simulation{scenario, 42};
+    simulation.schedule_vehicle_outage(scenario.vehicles.front().id());
+    while (!std::ranges::any_of(simulation.event_history(), [](const auto& event) {
+        return event.type == SimulationEventType::OperatorIntervention;
+    }) && simulation.advance()) {}
+    const auto parent_snapshot = simulation.snapshot();
+    const auto parent_events = simulation.event_history();
+    const auto first = simulation.replay_to_recovery_boundary();
+    const auto second = simulation.replay_to_recovery_boundary();
+    ASSERT_TRUE(first.equivalent) << first.reason;
+    ASSERT_TRUE(second.equivalent) << second.reason;
+    EXPECT_EQ(first.matched_events, parent_events.size());
+    EXPECT_EQ(second.matched_events, first.matched_events);
+    EXPECT_EQ(first.simulation->snapshot(), second.simulation->snapshot());
+    EXPECT_EQ(first.simulation->event_history(), second.simulation->event_history());
+    EXPECT_EQ(simulation.snapshot(), parent_snapshot);
+    EXPECT_EQ(simulation.event_history(), parent_events);
+}
+
+TEST(TurnaroundTest, RuntimeSurfaceClosureReplaysAtItsRecordedEventBoundary) {
+    auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
+    scenario.vehicle_outages.clear();
+    scenario.recovery_mode = RecoveryMode::Reactive;
+    const auto edge = scenario.graph.edges().front().id;
+    Simulation simulation{scenario, 42};
+    simulation.schedule_surface_availability(edge, false);
+    while (!std::ranges::any_of(simulation.event_history(), [](const auto& event) {
+        return event.type == SimulationEventType::OperatorIntervention;
+    }) && simulation.advance()) {}
+    const auto parent_snapshot = simulation.snapshot();
+    const auto parent_events = simulation.event_history();
+    const auto replay = simulation.replay_to_recovery_boundary();
+    ASSERT_TRUE(replay.equivalent) << replay.reason;
+    EXPECT_EQ(replay.simulation->snapshot(), parent_snapshot);
+    EXPECT_EQ(replay.simulation->event_history(), parent_events);
+    EXPECT_EQ(simulation.snapshot(), parent_snapshot);
+    EXPECT_EQ(simulation.event_history(), parent_events);
 }
 
 TEST(TurnaroundTest, RuntimeVehicleOutageRejectsUnknownVehicle) {

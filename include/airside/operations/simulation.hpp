@@ -205,6 +205,28 @@ private:
     std::vector<RevealedDisruption> revealed_disruptions_;
     std::vector<RecoveryEpochRecord> recovery_epochs_;
     std::optional<std::uint64_t> last_recovery_fingerprint_;
+    struct RuntimeInterventionRecord {
+        enum class Kind { SurfaceAvailability, VehicleOutage };
+        SimTime time{};
+        std::size_t event_boundary{};
+        std::uint64_t queue_sequence{};
+        Kind kind{Kind::SurfaceAvailability};
+        std::uint32_t target{};
+        bool available{};
+        std::uint64_t order{};
+    };
+    std::vector<RuntimeInterventionRecord> runtime_interventions_;
+    struct AcceptedRecoveryActionRecord {
+        SimTime time{};
+        std::size_t event_boundary{};
+        std::uint64_t order{};
+        std::string plan_id;
+        std::string candidate_id;
+        std::uint64_t next_queue_sequence{};
+        RecoveryAction action;
+    };
+    std::vector<AcceptedRecoveryActionRecord> accepted_recovery_actions_;
+    std::uint64_t next_provenance_order_{};
     struct SurfaceAircraftState {
         enum class Phase { None, ArrivalQueue, WaitingForGate, WaitingForPushback, Pushback, Taxiing, WaitingForTraffic, WaitingForRunway, Runway, Arrived, Departed, Failed };
         Phase phase{Phase::None};

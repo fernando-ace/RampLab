@@ -716,7 +716,64 @@ RecoveryReplayResult Simulation::replay_to_recovery_boundary() const {
     auto replay = std::make_unique<Simulation>(std::move(replay_scenario), seed_, history_policy_);
     const auto target_time = now_;
     const auto target_events = event_history_.size();
-    while (replay->event_history_.size() < target_events || replay->now_ < target_time) {
+    std::size_t intervention_index = 0;
+    std::size_t action_index = 0;
+    while (replay->event_history_.size() < target_events || replay->now_ < target_time ||
+        intervention_index < runtime_interventions_.size() ||
+        action_index < accepted_recovery_actions_.size()) {
+        const bool has_intervention = intervention_index < runtime_interventions_.size();
+        const bool has_action = action_index < accepted_recovery_actions_.size();
+        const auto intervention_boundary = has_intervention
+            ? runtime_interventions_[intervention_index].event_boundary : std::numeric_limits<std::size_t>::max();
+        const auto action_boundary = has_action
+            ? accepted_recovery_actions_[action_index].event_boundary : std::numeric_limits<std::size_t>::max();
+        const auto next_boundary = std::min(intervention_boundary, action_boundary);
+        if (next_boundary < replay->event_history_.size()) {
+            result.reason = "replay_provenance_boundary_mismatch";
+            return result;
+        }
+        if (next_boundary == replay->event_history_.size()) {
+            const bool replay_intervention = intervention_boundary < action_boundary ||
+                (intervention_boundary == action_boundary &&
+                 runtime_interventions_[intervention_index].order < accepted_recovery_actions_[action_index].order);
+            if (replay_intervention) {
+                const auto& intervention = runtime_interventions_[intervention_index];
+                if (replay->now_ != intervention.time) {
+                    result.reason = "runtime_intervention_time_mismatch";
+                    return result;
+                }
+                if (intervention.kind == RuntimeInterventionRecord::Kind::SurfaceAvailability)
+                    replay->schedule_surface_availability(EdgeId{intervention.target}, intervention.available);
+                else
+                    replay->schedule_vehicle_outage(VehicleId{intervention.target});
+                if (replay->runtime_interventions_.back().queue_sequence != intervention.queue_sequence) {
+                    result.reason = "runtime_intervention_sequence_mismatch";
+                    return result;
+                }
+                ++intervention_index;
+            } else {
+                const auto& accepted = accepted_recovery_actions_[action_index];
+                if (replay->now_ != accepted.time) {
+                    result.reason = "accepted_recovery_action_time_mismatch";
+                    return result;
+                }
+                const auto* next_event = replay->events_.peek();
+                const auto next_sequence = next_event ? next_event->sequence :
+                    std::numeric_limits<std::uint64_t>::max();
+                if (next_sequence != accepted.next_queue_sequence) {
+                    result.reason = "accepted_recovery_action_queue_sequence_mismatch";
+                    return result;
+                }
+                const auto applied = replay->apply_recovery_action(accepted.action);
+                if (!applied.accepted) {
+                    result.reason = "accepted_recovery_action_replay_rejected:" + applied.reason;
+                    return result;
+                }
+                ++replay->next_provenance_order_;
+                ++action_index;
+            }
+            continue;
+        }
         if (replay->finished()) {
             result.reason = "replay_finished_before_authoritative_boundary";
             return result;
@@ -873,7 +930,9 @@ RecoveryActionResult Simulation::validate_recovery_action(const RecoveryAction& 
         autonomy::ServiceRequestId{mapping->first}, [](const auto& value) { return value.request.id; });
     if (live_request == requests.end()) return {false, "service_request_not_found"};
     if (live_request->state != autonomy::ServiceTaskState::Queued || live_request->assigned_vehicle)
-        return {false, "service_request_not_reassignable"};
+        return {false, std::format("service_request_not_reassignable:{}:{}",
+            autonomy::to_string(live_request->state),
+            live_request->assigned_vehicle ? live_request->assigned_vehicle->value : "-")};
     const auto vehicles = autonomy_fleet_->snapshots();
     const auto selected = std::ranges::find(vehicles, autonomy::VehicleId{action.target_id}, &autonomy::FleetVehicleSnapshot::id);
     if (selected == vehicles.end()) return {false, "vehicle_not_found"};
@@ -896,26 +955,43 @@ RecoveryActionResult Simulation::apply_recovery_action(const RecoveryAction& act
     const auto mapping = std::ranges::find_if(fleet_task_requests_, [&](const auto& item) {
         return item.second.second == TaskId{task_value};
     });
+    const auto action_boundary = event_history_.size();
+    const auto* next_event = events_.peek();
+    const auto next_queue_sequence = next_event ? next_event->sequence :
+        std::numeric_limits<std::uint64_t>::max();
     const auto result = autonomy_fleet_->assign_service_request(
         autonomy::ServiceRequestId{mapping->first}, autonomy::VehicleId{action.target_id});
     RecoveryActionResult applied{result.accepted, result.reason};
-    if (applied.accepted) synchronize_fleet_state();
+    if (applied.accepted) {
+        synchronize_fleet_state();
+        if (scenario_.recovery_mode == RecoveryMode::Integrated) {
+            const auto epoch = recovery_epochs_.empty() ? nullptr : &recovery_epochs_.back();
+            accepted_recovery_actions_.push_back({now_, action_boundary, next_provenance_order_++,
+                epoch ? std::to_string(epoch->fingerprint) : "manual",
+                epoch && epoch->selected_candidate_id ? *epoch->selected_candidate_id : "manual",
+                next_queue_sequence, action});
+        }
+    }
     if (!recovery_epochs_.empty()) recovery_epochs_.back().application_result = applied.reason;
     return applied;
 }
 
 void Simulation::schedule_surface_availability(EdgeId edge, bool available) {
     (void)scenario_.graph.edge(edge);
-    (void)events_.schedule(now_, EventType::OperatorSurfaceAvailability,
+    const auto sequence = events_.schedule(now_, EventType::OperatorSurfaceAvailability,
         {EntityKind::Edge, edge.value()}, available ? 1 : 0);
+    runtime_interventions_.push_back({now_, event_history_.size(), sequence,
+        RuntimeInterventionRecord::Kind::SurfaceAvailability, edge.value(), available, next_provenance_order_++});
 }
 
 void Simulation::schedule_vehicle_outage(VehicleId id) {
     if (!autonomy_fleet_) throw std::logic_error("vehicle outages require turnaround fleet orchestration");
     const auto found = std::ranges::find(scenario_.vehicles, id, &ServiceVehicle::id);
     if (found == scenario_.vehicles.end()) throw std::invalid_argument("operator outage references unknown vehicle");
-    (void)events_.schedule(now_, EventType::OperatorVehicleOutage,
+    const auto sequence = events_.schedule(now_, EventType::OperatorVehicleOutage,
         {EntityKind::Vehicle, id.value()});
+    runtime_interventions_.push_back({now_, event_history_.size(), sequence,
+        RuntimeInterventionRecord::Kind::VehicleOutage, id.value(), false, next_provenance_order_++});
 }
 
 std::map<EdgeId, VehicleId> Simulation::stationary_ground_vehicle_blockers() const {
