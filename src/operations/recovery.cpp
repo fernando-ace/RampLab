@@ -39,7 +39,7 @@ const char* to_string(RecoveryMode value) noexcept {
 std::uint64_t recovery_fingerprint(const RecoveryState& state) noexcept {
     // FNV-1a over sorted, decision-relevant snapshot content. Diagnostics and
     // display-only metadata are intentionally omitted.
-    auto hash = 14695981039346656037ULL;
+    std::uint64_t hash = 14695981039346656037ULL;
     hash_u64(hash, static_cast<std::uint64_t>(state.snapshot.simulation_time.count()));
     auto aircraft = state.snapshot.aircraft;
     std::ranges::sort(aircraft, {}, &AircraftSnapshot::id);
