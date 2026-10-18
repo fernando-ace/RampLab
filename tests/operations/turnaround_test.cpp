@@ -343,6 +343,24 @@ TEST(TurnaroundTest, LaterRecoveryEpochReplaysEarlierAcceptedAction) {
     EXPECT_TRUE(later_epoch.evaluations.front().valid) << later_epoch.evaluations.front().reason;
 }
 
+TEST(TurnaroundTest, RecoveryShadowPlansWithoutChangingReactiveOperations) {
+    auto reactive_scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
+    reactive_scenario.recovery_mode = RecoveryMode::Reactive;
+    auto shadow_scenario = reactive_scenario;
+    shadow_scenario.recovery_mode = RecoveryMode::Shadow;
+    Simulation reactive{reactive_scenario, 42};
+    Simulation shadow{shadow_scenario, 42};
+    const auto reactive_result = reactive.run();
+    const auto shadow_result = shadow.run();
+    EXPECT_EQ(reactive_result.metrics, shadow_result.metrics);
+    EXPECT_EQ(reactive.event_history(), shadow.event_history());
+    EXPECT_EQ(reactive.snapshot(), shadow.snapshot());
+    ASSERT_FALSE(shadow.recovery_epochs().empty());
+    EXPECT_TRUE(std::ranges::all_of(shadow.recovery_epochs(), [](const auto& epoch) {
+        return epoch.planned && !epoch.evaluations.empty() && !epoch.selected_candidate_id;
+    }));
+}
+
 TEST(TurnaroundTest, RuntimeVehicleOutageEntersDeterministicEventStream) {
     auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
     scenario.vehicle_outages.clear();
