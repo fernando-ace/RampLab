@@ -114,6 +114,46 @@ TEST(FleetDispatcherTest, VehicleUnavailabilityRequeuesAndReassignsWithoutChangi
     EXPECT_TRUE(std::ranges::any_of(dispatcher.events(), [](const auto& event) { return event.kind == DispatchEventKind::Reassigned; }));
 }
 
+TEST(FleetDispatcherTest, ExplicitReassignmentAcceptsOnlyQueuedOrOutageStrandedRequests) {
+    const ServiceRequestId request{"job"};
+    FleetDispatcher dispatcher{{task("job")}};
+    const auto healthy = vehicle("tug_a", "Junction");
+    const auto backup = vehicle("tug_b", "Depot");
+    ASSERT_TRUE(dispatcher.assign_specific(request, healthy.id, 0.0, {healthy, backup}, graph()).accepted);
+    const auto stolen = dispatcher.assign_specific(request, backup.id, 1.0, {healthy, backup}, graph());
+    EXPECT_FALSE(stolen.accepted);
+    EXPECT_EQ(stolen.reason, "assigned_vehicle_still_available");
+
+    auto failed = healthy;
+    failed.state = DispatchVehicleState::Unavailable;
+    const auto accepted = dispatcher.assign_specific(request, backup.id, 2.0, {failed, backup}, graph());
+    ASSERT_TRUE(accepted.accepted) << accepted.reason;
+    const auto snapshot = dispatcher.snapshot();
+    ASSERT_EQ(snapshot.size(), 1U);
+    EXPECT_EQ(snapshot.front().assigned_vehicle, backup.id);
+    EXPECT_EQ(snapshot.front().reassignments, 1U);
+    const auto metrics = dispatcher.metrics();
+    EXPECT_EQ(metrics.reassignments, 1U);
+    ASSERT_EQ(metrics.events.size(), 4U);
+    EXPECT_EQ(metrics.events[2].kind, DispatchEventKind::Unassigned);
+    EXPECT_EQ(metrics.events[2].vehicle, failed.id);
+    EXPECT_EQ(metrics.events[3].kind, DispatchEventKind::Reassigned);
+    EXPECT_EQ(metrics.events[3].vehicle, backup.id);
+}
+
+TEST(FleetDispatcherTest, ExplicitAssignmentRejectsUnavailableAndIncompatibleBackups) {
+    FleetDispatcher dispatcher{{task("job", 0, 0.0, "fuel")}};
+    auto unavailable = vehicle("bad", "Depot", {"fuel"});
+    unavailable.state = DispatchVehicleState::Unavailable;
+    auto incompatible = vehicle("wrong", "Depot", {"tug"});
+    EXPECT_EQ(dispatcher.assign_specific(ServiceRequestId{"job"}, unavailable.id, 0.0,
+        {unavailable}, graph()).reason, "vehicle_unavailable");
+    EXPECT_EQ(dispatcher.assign_specific(ServiceRequestId{"job"}, incompatible.id, 0.0,
+        {incompatible}, graph()).reason, "vehicle_incompatible");
+    EXPECT_EQ(dispatcher.assign_specific(ServiceRequestId{"missing"}, incompatible.id, 0.0,
+        {incompatible}, graph()).reason, "request_not_found");
+}
+
 TEST(FleetDispatcherTest, BusyDegradedUnavailableAndRecoveringVehiclesAreNotCandidates) {
     FleetDispatcher dispatcher{{task("job")}};
     auto unavailable = vehicle("u", "Junction"); unavailable.state = DispatchVehicleState::Unavailable;

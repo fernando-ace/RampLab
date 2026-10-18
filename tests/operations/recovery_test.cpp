@@ -64,7 +64,14 @@ TEST(RecoveryPlannerTest, EvaluatesBaselineFirstAndRequiresMaterialImprovement) 
     state.revealed_disruptions.push_back({SimTime{1}, "vehicle_outage", "vehicle:1", "outage"});
     TurnaroundSnapshot turnaround;
     turnaround.aircraft = AircraftId{1}; turnaround.predicted_late = true;
+    ServiceTaskSnapshot task;
+    task.id = TaskId{3}; task.type = ServiceType::Fueling; task.status = TaskStatus::Waiting;
+    turnaround.tasks.push_back(task);
     state.snapshot.turnarounds.push_back(turnaround);
+    ServiceVehicleSnapshot backup;
+    backup.id = VehicleId{3}; backup.name = "backup"; backup.type = ServiceType::Fueling;
+    backup.state = VehicleState::Idle; backup.current_node = NodeId{1}; backup.destination_node = NodeId{1};
+    state.snapshot.vehicles.push_back(backup);
     RecoverySearchConfig config;
     config.max_candidates = 2;
     std::vector<std::string> evaluation_order;
@@ -78,6 +85,49 @@ TEST(RecoveryPlannerTest, EvaluatesBaselineFirstAndRequiresMaterialImprovement) 
     ASSERT_FALSE(evaluation_order.empty());
     EXPECT_EQ(evaluation_order.front(), "current_plan");
     EXPECT_TRUE(decision.selected_candidate_id.has_value());
+}
+
+TEST(RecoveryPlannerTest, StrandedAssignedTaskSurvivesCandidateCapAheadOfDiagnostics) {
+    RecoveryState state;
+    state.snapshot.simulation_time = SimTime{30};
+    state.revealed_disruptions.push_back({SimTime{20}, "vehicle_outage", "vehicle:1", "failed"});
+    TurnaroundSnapshot turnaround;
+    turnaround.aircraft = AircraftId{7};
+    turnaround.predicted_late = true;
+    ServiceTaskSnapshot task;
+    task.id = TaskId{8}; task.type = ServiceType::Fueling; task.status = TaskStatus::Assigned;
+    task.assigned_vehicle = VehicleId{1};
+    turnaround.tasks.push_back(task);
+    state.snapshot.turnarounds.push_back(turnaround);
+    ServiceVehicleSnapshot failed;
+    failed.id = VehicleId{1}; failed.name = "failed"; failed.type = ServiceType::Fueling;
+    failed.state = VehicleState::Assigned; failed.current_node = NodeId{2}; failed.destination_node = NodeId{2};
+    failed.fleet_status = "Unavailable";
+    state.snapshot.vehicles.push_back(failed);
+    ServiceVehicleSnapshot backup;
+    backup.id = VehicleId{2}; backup.name = "backup"; backup.type = ServiceType::Fueling;
+    backup.state = VehicleState::Idle; backup.current_node = NodeId{3}; backup.destination_node = NodeId{3};
+    state.snapshot.vehicles.push_back(backup);
+    for (std::uint32_t i = 10; i < 20; ++i) {
+        state.snapshot.gates.push_back({GateId{i}, "stand", NodeId{i}, {}, {}, true});
+    }
+    AircraftSnapshot aircraft;
+    aircraft.id = AircraftId{7};
+    aircraft.flight_number = "synthetic";
+    aircraft.state = AircraftState::AtGate;
+    aircraft.assigned_gate = GateId{1};
+    state.snapshot.aircraft.push_back(aircraft);
+    RecoverySearchConfig config;
+    config.max_candidates = 2;
+    config.max_search_tier = 1;
+    const auto first = generate_recovery_candidates(state, config);
+    const auto second = generate_recovery_candidates(state, config);
+    ASSERT_EQ(first.size(), 2U);
+    EXPECT_EQ(first, second);
+    EXPECT_EQ(first[1].id, "vehicle:8:2");
+    ASSERT_EQ(first[1].actions.size(), 1U);
+    EXPECT_EQ(first[1].actions.front().kind, RecoveryActionKind::ReassignVehicle);
+    EXPECT_NE(first[1].actions.front().reason.find("stranded"), std::string::npos);
 }
 
 }  // namespace airside

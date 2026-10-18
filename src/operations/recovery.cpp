@@ -120,6 +120,15 @@ bool task_is_pending(TaskStatus status) {
     return status == TaskStatus::Pending || status == TaskStatus::Waiting;
 }
 
+bool vehicle_outage_revealed(const RecoveryState& state, VehicleId vehicle) {
+    const auto target = "vehicle:" + std::to_string(vehicle.value());
+    return std::ranges::any_of(state.revealed_disruptions, [&](const auto& disruption) {
+        return disruption.revealed_at <= state.snapshot.simulation_time &&
+            disruption.kind == "vehicle_outage" &&
+            (disruption.entity == target || disruption.entity == std::to_string(vehicle.value()));
+    });
+}
+
 bool dependencies_complete(const ServiceTaskSnapshot& task,
     const std::vector<ServiceTaskSnapshot>& tasks) {
     return std::ranges::all_of(task.prerequisites, [&](TaskId prerequisite) {
@@ -173,7 +182,8 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
     if (config.max_candidates <= 1 || config.max_plan_depth == 0 || config.max_search_tier == 0)
         return result;
 
-    std::vector<RecoveryCandidate> singles;
+    std::vector<RecoveryCandidate> executable;
+    std::vector<RecoveryCandidate> diagnostics;
     auto turnarounds = state.snapshot.turnarounds;
     std::ranges::sort(turnarounds, {}, &TurnaroundSnapshot::aircraft);
     auto vehicles = state.snapshot.vehicles;
@@ -185,14 +195,25 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         auto tasks = turnaround.tasks;
         std::ranges::sort(tasks, {}, &ServiceTaskSnapshot::id);
         for (const auto& task : tasks) {
-            if (!task_is_pending(task.status) || !dependencies_complete(task, tasks)) continue;
+            const bool pending = task_is_pending(task.status);
+            const auto assigned = task.assigned_vehicle
+                ? std::ranges::find(vehicles, *task.assigned_vehicle, &ServiceVehicleSnapshot::id)
+                : vehicles.end();
+            const bool stranded = task.status == TaskStatus::Assigned &&
+                task.assigned_vehicle && assigned != vehicles.end() &&
+                assigned->fleet_status == "Unavailable" &&
+                vehicle_outage_revealed(state, *task.assigned_vehicle);
+            if ((!pending && !stranded) || !dependencies_complete(task, tasks)) continue;
             for (const auto& vehicle : vehicles) {
-                if (vehicle.type != task.type || vehicle.state != VehicleState::Idle || vehicle.assigned_aircraft)
+                if ((task.assigned_vehicle && vehicle.id == *task.assigned_vehicle) ||
+                    vehicle.type != task.type || vehicle.state != VehicleState::Idle || vehicle.assigned_aircraft ||
+                    vehicle.fleet_status == "Unavailable")
                     continue;
                 const auto task_id = id_text(task.id.value());
                 const auto vehicle_id = id_text(vehicle.id.value());
-                singles.push_back({"vehicle:" + task_id + ":" + vehicle_id, 1,
-                    {{RecoveryActionKind::ReassignVehicle, task_id, vehicle_id, "compatible idle vehicle"}}});
+                executable.push_back({"vehicle:" + task_id + ":" + vehicle_id, 1,
+                    {{RecoveryActionKind::ReassignVehicle, task_id, vehicle_id,
+                      stranded ? "replace vehicle stranded by revealed outage" : "compatible idle vehicle"}}});
             }
         }
         const auto aircraft = std::ranges::find(state.snapshot.aircraft, turnaround.aircraft,
@@ -204,7 +225,7 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
                     continue;
                 const auto from = std::ranges::find(gates, aircraft->assigned_gate, &GateSnapshot::id);
                 if (from == gates.end()) continue;
-                singles.push_back({"stand:" + id_text(aircraft->id.value()) + ":" +
+                diagnostics.push_back({"stand:" + id_text(aircraft->id.value()) + ":" +
                     id_text(target.id.value()), 1, {{RecoveryActionKind::ReassignStand,
                     id_text(aircraft->id.value()), id_text(target.id.value()), "available target stand"}}});
             }
@@ -213,24 +234,46 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         for (const auto& task : tasks)
             if (task_is_pending(task.status) && dependencies_complete(task, tasks)) pending.push_back(&task);
         for (std::size_t i = 1; i < pending.size(); ++i) {
-            singles.push_back({"resequence:" + id_text(pending[i - 1]->id.value()) + ":" +
+            diagnostics.push_back({"resequence:" + id_text(pending[i - 1]->id.value()) + ":" +
                 id_text(pending[i]->id.value()), 1, {{RecoveryActionKind::ResequenceTasks,
                 id_text(pending[i]->id.value()), id_text(pending[i - 1]->id.value()),
                 "swap dependency-valid pending tasks"}}});
         }
         if (turnaround.predicted_late && turnaround.state != TurnaroundState::Departed &&
             turnaround.state != TurnaroundState::Failed) {
-            singles.push_back({"hold:" + id_text(turnaround.aircraft.value()), 1,
+            diagnostics.push_back({"hold:" + id_text(turnaround.aircraft.value()), 1,
                 {{RecoveryActionKind::ControlledHold, id_text(turnaround.aircraft.value()), "60",
                 "bounded hold for disrupted turnaround"}}});
         }
     }
 
-    std::ranges::sort(singles, {}, &RecoveryCandidate::id);
-    for (auto& candidate : singles) {
+    const auto outage_for_candidate = [&](const RecoveryCandidate& candidate) {
+        if (candidate.actions.empty() || candidate.actions.front().kind != RecoveryActionKind::ReassignVehicle)
+            return false;
+        const auto& action = candidate.actions.front();
+        try {
+            const TaskId task_id{static_cast<std::uint32_t>(std::stoul(action.task_id))};
+            for (const auto& turnaround : state.snapshot.turnarounds) {
+                const auto task = std::ranges::find(turnaround.tasks, task_id, &ServiceTaskSnapshot::id);
+                if (task != turnaround.tasks.end() && task->assigned_vehicle)
+                    return vehicle_outage_revealed(state, *task->assigned_vehicle);
+            }
+        } catch (...) { }
+        return false;
+    };
+    std::ranges::sort(executable, [&](const auto& lhs, const auto& rhs) {
+        const bool left_relevant = outage_for_candidate(lhs);
+        const bool right_relevant = outage_for_candidate(rhs);
+        if (left_relevant != right_relevant) return left_relevant;
+        return lhs.id < rhs.id;
+    });
+    for (auto& candidate : executable) {
         if (result.size() >= config.max_candidates) break;
         result.push_back(std::move(candidate));
     }
+    // Stand, resequence, and hold proposals remain diagnostic only until their
+    // private and authoritative adapters exist; do not spend bounded evaluation
+    // slots on actions that are known to fail closed.
     if (config.max_search_tier >= 2 && config.max_plan_depth >= 2) {
         const auto singles_end = result.size();
         for (std::size_t i = 1; i < singles_end && result.size() < config.max_candidates; ++i) {

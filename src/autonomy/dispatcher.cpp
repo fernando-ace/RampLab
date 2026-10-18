@@ -200,7 +200,14 @@ ServiceAssignmentResult FleetDispatcher::assign_specific(
     auto task_it = std::ranges::find(tasks_, request_id, [](const auto& task) { return task.request.id; });
     if (task_it == tasks_.end()) return {false, "request_not_found"};
     if (terminal(task_it->state)) return {false, "request_terminal"};
-    if (task_it->state != ServiceTaskState::Queued) return {false, "request_not_reassignable"};
+    const bool queued = task_it->state == ServiceTaskState::Queued && !task_it->assigned_vehicle;
+    const bool stranded_assignment = task_it->state == ServiceTaskState::Assigned && task_it->assigned_vehicle;
+    if (!queued && !stranded_assignment) return {false, "request_not_reassignable"};
+    if (stranded_assignment) {
+        const auto old_vehicle = std::ranges::find(vehicles, *task_it->assigned_vehicle, &DispatchVehicle::id);
+        if (old_vehicle == vehicles.end() || old_vehicle->state != DispatchVehicleState::Unavailable)
+            return {false, "assigned_vehicle_still_available"};
+    }
     if (task_it->request.release_time_s > simulation_time_s) return {false, "request_not_released"};
     const auto vehicle_it = std::ranges::find(vehicles, vehicle_id, &DispatchVehicle::id);
     if (vehicle_it == vehicles.end()) return {false, "vehicle_not_found"};
@@ -218,7 +225,15 @@ ServiceAssignmentResult FleetDispatcher::assign_specific(
     if (!approach || !service) return {false, "route_unavailable"};
 
     release_due(simulation_time_s);
-    const bool reassigned = task_it->reassignments != 0;
+    const bool reassigned = task_it->reassignments != 0 || stranded_assignment;
+    if (stranded_assignment) {
+        const auto previous = *task_it->assigned_vehicle;
+        active_assignments_.erase(previous);
+        emit(simulation_time_s, DispatchEventKind::Unassigned, *task_it, previous,
+             "assigned_vehicle_unavailable");
+        ++task_it->reassignments;
+        ++reassignments_;
+    }
     task_it->state = ServiceTaskState::Assigned;
     task_it->assigned_vehicle = vehicle_id;
     task_it->queue_wait_s += std::max(0.0, simulation_time_s - task_it->queued_since_s);
