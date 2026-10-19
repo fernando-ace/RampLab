@@ -1,0 +1,51 @@
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst:SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+ordering aircraft=1 t=7110 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=7140 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=7140 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8740 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7423 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=8740 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=10340 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=10510 event=AircraftDeparted detail=
+material ordering=A-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=10110 mean_delay=4426 aggregate_delay=13278 termination=simulation_finished final_t=13170 separation=13.1 ground_separation=76.0316
+material safety aircraft_collisions=0 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7110 distance=13.100000 aircraft=1:ReadyForPushback pos=(100.000000,-80.000000),2:Taxiing pos=(113.100000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=10510
+material final aircraft=3 state=Departed departure=3398
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst (551 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+ordering aircraft=1 t=7410 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=8841 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=10471 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7241 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=8841 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=9011 event=AircraftDeparted detail=
+/workspace/RampLab/tests/operations/surface_traffic_test.cpp:508: Failure
+Expected: (run.result.metrics.minimum_aircraft_separation_m) >= (12.0), actual: 0 vs 12
+
+material ordering=B-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=8611 mean_delay=3926.33 aggregate_delay=11779 termination=simulation_finished final_t=13170 separation=0 ground_separation=76.0316
+material safety aircraft_collisions=0 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7241 distance=0.000000 aircraft=1:ParkedAtGate pos=(100.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=9011
+material final aircraft=3 state=Departed departure=3398
+[  FAILED  ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst (563 ms)
+[----------] 2 tests from SurfaceTrafficTest (1114 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (1114 ms total)
+[  PASSED  ] 1 test.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+
+ 1 FAILED TEST

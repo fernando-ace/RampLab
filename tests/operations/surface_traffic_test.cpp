@@ -411,7 +411,9 @@ MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering orderin
         config.a_scheduled_departure, a->gate(), a->gate_node(), a->tasks(),
         a->turnaround_id(), a->target_off_block(), a->operation_type(), a->arrival_exit_node()};
     a->mutable_tasks().front().earliest_start = config.a_preparation_start
-        + (ordering == SurfaceOrdering::AFirst ? airside::SimTime{-100} : airside::SimTime{200});
+        // The physical 30 s stand-to-junction pushback needs 20 s more lead
+        // than the old point stand: otherwise it closes on B's stopped nose.
+        + (ordering == SurfaceOrdering::AFirst ? airside::SimTime{-120} : airside::SimTime{200});
     auto b = std::ranges::find(scenario.aircraft, airside::AircraftId{2}, &airside::Aircraft::id);
     for (auto& task : b->mutable_tasks())
         if (task.type == airside::ServiceType::PushbackPreparation)
@@ -431,7 +433,8 @@ MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering orderin
         if (ax101 != observed.aircraft.end() && ax202 != observed.aircraft.end() &&
             ax101->surface_position_m && ax202->surface_position_m) {
             const auto left = *ax101->surface_position_m, right = *ax202->surface_position_m;
-            if (ax101->surface_state == "ParkedAtGate" && ax202->surface_state == "Taxiing" &&
+            if ((ax101->surface_state == "ParkedAtGate" || ax101->surface_state == "ReadyForPushback") &&
+                ax202->surface_state == "Taxiing" &&
                 ax202->surface_next_waypoint == "North Junction") {
                 parked_minimum = std::min(parked_minimum, std::hypot(left.x_m - right.x_m, left.y_m - right.y_m));
                 ++parked_samples;
@@ -505,16 +508,16 @@ void validate_material_surface_run(const MaterialSurfaceRun& run, SurfaceOrderin
     EXPECT_LT(*follower.first_entry, *follower.progression);
     EXPECT_TRUE(a.departure);
     EXPECT_TRUE(b.departure);
-    EXPECT_EQ(a.entry_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 7140 : 8871});
-    EXPECT_EQ(b.entry_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 8740 : 7241});
-    EXPECT_EQ(follower.wait_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 7423 : 7410});
-    EXPECT_EQ(follower.release_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 10340 : 10471});
+    EXPECT_EQ(a.entry_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 7120 : 8871});
+    EXPECT_EQ(b.entry_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 8720 : 7241});
+    EXPECT_EQ(follower.wait_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 7402 : 7410});
+    EXPECT_EQ(follower.release_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 10320 : 10471});
     const auto a_final = std::ranges::find(run.snapshot.aircraft, airside::AircraftId{1}, &airside::AircraftSnapshot::id);
     const auto b_final = std::ranges::find(run.snapshot.aircraft, airside::AircraftId{2}, &airside::AircraftSnapshot::id);
     ASSERT_NE(a_final, run.snapshot.aircraft.end());
     ASSERT_NE(b_final, run.snapshot.aircraft.end());
     EXPECT_EQ(a_final->actual_surface_departure, airside::SimTime{13170});
-    EXPECT_EQ(b_final->actual_surface_departure, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 10510 : 9011});
+    EXPECT_EQ(b_final->actual_surface_departure, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 10490 : 9011});
     // Exact C-11 routes, including no replans onto a topology-dependent detour.
     for (const auto id : {airside::AircraftId{1}, airside::AircraftId{2}}) {
         const auto flight = std::ranges::find(fixture.aircraft, id, &airside::Aircraft::id);
@@ -653,8 +656,8 @@ TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiOutcomeComparison) {
     EXPECT_TRUE(airside::recovery_outcome_materially_improves(b.outcome, a.outcome, comparison));
     EXPECT_FALSE(airside::recovery_outcome_better(a.outcome, b.outcome));
     EXPECT_FALSE(airside::recovery_outcome_materially_improves(a.outcome, b.outcome, comparison));
-    EXPECT_DOUBLE_EQ(*a.outcome.worst_departure_delay_seconds - *b.outcome.worst_departure_delay_seconds, 1499.0);
-    EXPECT_EQ(a.aggregate_departure_delay - b.aggregate_departure_delay, 1499);
+    EXPECT_DOUBLE_EQ(*a.outcome.worst_departure_delay_seconds - *b.outcome.worst_departure_delay_seconds, 1479.0);
+    EXPECT_EQ(a.aggregate_departure_delay - b.aggregate_departure_delay, 1479);
     EXPECT_EQ(a.outcome.objective_failures, b.outcome.objective_failures);
     EXPECT_EQ(a.outcome.timeouts, b.outcome.timeouts);
     EXPECT_EQ(a.outcome.turnaround_failures, b.outcome.turnaround_failures);

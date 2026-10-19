@@ -1,0 +1,189 @@
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+
+Repeating all tests (iteration 1) . . .
+
+Note: Google Test filter = SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering:SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering:SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst:SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst:SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison:SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering
+ordering aircraft=1 t=1011 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1041 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1041 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1201 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1371 event=AircraftDeparted detail=
+ordering aircraft=2 t=1170 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=1201 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1361 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1541 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering (145 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering
+ordering aircraft=1 t=1310 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=1321 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1351 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1351 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1511 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1681 event=AircraftDeparted detail=
+ordering aircraft=2 t=1161 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1321 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1491 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering (141 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+/workspace/RampLab/tests/operations/surface_traffic_test.cpp:271: Failure
+Expected equality of these values:
+  result.metrics.surface_aircraft_aircraft_collisions
+    Which is: 55
+  0U
+    Which is: 0
+
+ordering aircraft=1 t=7110 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=7140 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=7140 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8740 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7416 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=8740 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=10340 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=10510 event=AircraftDeparted detail=
+/workspace/RampLab/tests/operations/surface_traffic_test.cpp:510: Failure
+Expected equality of these values:
+  follower.wait_time
+    Which is: (7416s)
+  airside::SimTime{ordering == SurfaceOrdering::AFirst ? 7423 : 7410}
+    Which is: 7423s
+
+/workspace/RampLab/tests/operations/surface_traffic_test.cpp:547: Failure
+Expected: (run.result.metrics.minimum_aircraft_separation_m) >= (12.0), actual: 10.699999999999989 vs 12
+
+material ordering=A-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=10110 mean_delay=4426 aggregate_delay=13278 termination=simulation_finished final_t=13170 separation=10.7 ground_separation=76.0316
+material safety aircraft_collisions=55 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7140 distance=10.800000 aircraft=1:Taxiing pos=(100.000000,-80.000000),2:WaitingForTraffic pos=(110.800000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=10510
+material final aircraft=3 state=Departed departure=3398
+[  FAILED  ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst (549 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+ordering aircraft=1 t=7410 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=8841 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=10471 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7241 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=8841 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=9011 event=AircraftDeparted detail=
+material ordering=B-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=8611 mean_delay=3926.33 aggregate_delay=11779 termination=simulation_finished final_t=13170 separation=40 ground_separation=76.0316
+material safety aircraft_collisions=0 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7241 distance=40.000000 aircraft=1:ParkedAtGate pos=(60.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=9011
+material final aircraft=3 state=Departed departure=3398
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst (547 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+parked north_south_taxi samples=170 minimum=40 pushback_motion_samples=29
+[       OK ] SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback (271 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison
+original-speed safe stand closest t=1161 distance=40.000000 aircraft=1:ParkedAtGate pos=(60.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000) reported_minimum=40
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison (843 ms)
+[----------] 6 tests from SurfaceTrafficTest (2498 ms total)
+
+[==========] 6 tests from 1 test suite ran. (2498 ms total)
+[  PASSED  ] 5 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 2) . . .
+
+Note: Google Test filter = SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering:SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering:SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst:SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst:SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison:SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+[==========] Running 6 tests from 1 test suite.
+[----------] 6 tests from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering
+ordering aircraft=1 t=1011 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1041 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1041 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1201 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1371 event=AircraftDeparted detail=
+ordering aircraft=2 t=1170 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=1201 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1361 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1541 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering (139 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering
+ordering aircraft=1 t=1310 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=1321 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1351 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1351 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1511 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1681 event=AircraftDeparted detail=
+ordering aircraft=2 t=1161 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1321 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1491 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering (142 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+/workspace/RampLab/tests/operations/surface_traffic_test.cpp:271: Failure
+Expected equality of these values:
+  result.metrics.surface_aircraft_aircraft_collisions
+    Which is: 55
+  0U
+    Which is: 0
+
+ordering aircraft=1 t=7110 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=7140 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=7140 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8740 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7416 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=8740 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=10340 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=10510 event=AircraftDeparted detail=
+/workspace/RampLab/tests/operations/surface_traffic_test.cpp:510: Failure
+Expected equality of these values:
+  follower.wait_time
+    Which is: (7416s)
+  airside::SimTime{ordering == SurfaceOrdering::AFirst ? 7423 : 7410}
+    Which is: 7423s
+
+/workspace/RampLab/tests/operations/surface_traffic_test.cpp:547: Failure
+Expected: (run.result.metrics.minimum_aircraft_separation_m) >= (12.0), actual: 10.699999999999989 vs 12
+
+material ordering=A-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=10110 mean_delay=4426 aggregate_delay=13278 termination=simulation_finished final_t=13170 separation=10.7 ground_separation=76.0316
+material safety aircraft_collisions=55 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7140 distance=10.800000 aircraft=1:Taxiing pos=(100.000000,-80.000000),2:WaitingForTraffic pos=(110.800000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=10510
+material final aircraft=3 state=Departed departure=3398
+[  FAILED  ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst (540 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+ordering aircraft=1 t=7410 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=8841 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=10471 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7241 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=8841 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=9011 event=AircraftDeparted detail=
+material ordering=B-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=8611 mean_delay=3926.33 aggregate_delay=11779 termination=simulation_finished final_t=13170 separation=40 ground_separation=76.0316
+material safety aircraft_collisions=0 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7241 distance=40.000000 aircraft=1:ParkedAtGate pos=(60.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=9011
+material final aircraft=3 state=Departed departure=3398
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst (537 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+parked north_south_taxi samples=170 minimum=40 pushback_motion_samples=29
+[       OK ] SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback (267 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison
+original-speed safe stand closest t=1161 distance=40.000000 aircraft=1:ParkedAtGate pos=(60.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000) reported_minimum=40
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison (824 ms)
+[----------] 6 tests from SurfaceTrafficTest (2452 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (2452 ms total)
+[  PASSED  ] 5 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+
+ 1 FAILED TEST
