@@ -26,6 +26,9 @@ struct TaxiContentionHistory {
     std::optional<std::uint64_t> wait;
     std::optional<std::uint64_t> progression;
     std::optional<std::uint64_t> departure;
+    std::optional<airside::SimTime> entry_time;
+    std::optional<airside::SimTime> wait_time;
+    std::optional<airside::SimTime> release_time;
 };
 
 TaxiContentionHistory taxi_contention_history(const airside::SimulationResult& result,
@@ -34,11 +37,16 @@ TaxiContentionHistory taxi_contention_history(const airside::SimulationResult& r
     for (const auto& event : result.events) {
         if (event.aircraft != aircraft) continue;
         if (event.type == airside::SimulationEventType::SurfaceReservationAcquired && event.edge == shared_edge) {
-            if (!history.first_entry) history.first_entry = event.sequence;
+            if (!history.first_entry) {
+                history.first_entry = event.sequence;
+                history.entry_time = event.timestamp;
+            }
         } else if (event.type == airside::SimulationEventType::SurfaceReservationReleased && event.edge == shared_edge && !history.progression) {
             history.progression = event.sequence;
+            history.release_time = event.timestamp;
         } else if (event.type == airside::SimulationEventType::SurfaceWaitingForTraffic && event.edge == shared_edge && !history.wait) {
             history.wait = event.sequence;
+            history.wait_time = event.timestamp;
         } else if (event.type == airside::SimulationEventType::AircraftDeparted) {
             history.departure = event.sequence;
         }
@@ -66,13 +74,19 @@ airside::Scenario surface_ordering_scenario() {
     auto preparation = a->task(airside::ServiceType::PushbackPreparation);
     preparation.prerequisites.clear();
     a->mutable_tasks() = {preparation};
-    // Release this departure pair after mobile servicing has cleared the south
-    // apron. Different approach lengths need different neutral preparation times.
-    a->mutable_tasks().front().duration = airside::SimTime{1000};
+    // Release this departure pair after mobile servicing has cleared the apron.
+    // Earliest-start times avoid occupying the shared preparation resource during
+    // the delay; the 64 s offset compensates for the different approach lengths.
+    a->mutable_tasks().front().duration = airside::SimTime{10};
+    a->mutable_tasks().front().earliest_start = airside::SimTime{1000};
     const auto b = std::ranges::find(scenario.aircraft, airside::AircraftId{2}, &airside::Aircraft::id);
     if (b == scenario.aircraft.end()) throw std::logic_error("missing AX202");
-    for (auto& task : b->mutable_tasks())
-        if (task.type == airside::ServiceType::PushbackPreparation) task.duration = airside::SimTime{850};
+    for (auto& task : b->mutable_tasks()) {
+        if (task.type == airside::ServiceType::PushbackPreparation) {
+            task.duration = airside::SimTime{10};
+            task.earliest_start = airside::SimTime{1064};
+        }
+    }
     return scenario;
 }
 
@@ -85,7 +99,7 @@ airside::SimulationResult run_surface_ordering_variant(airside::AircraftId delay
         const auto pushback = std::ranges::find_if(delayed->mutable_tasks(), [](const auto& task) {
             return task.type == airside::ServiceType::PushbackPreparation;
         });
-        if (pushback != delayed->mutable_tasks().end()) pushback->duration += airside::SimTime{60};
+        if (pushback != delayed->mutable_tasks().end()) pushback->earliest_start += airside::SimTime{60};
     }
     airside::Simulation simulation(std::move(scenario), 42);
     std::size_t steps = 0;
@@ -309,8 +323,14 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiAFirstOrdering) {
     ASSERT_TRUE(a.first_entry);
     ASSERT_TRUE(b.first_entry);
     EXPECT_LT(*a.first_entry, *b.first_entry);
+    EXPECT_LT(*a.entry_time, *b.entry_time);
     ASSERT_TRUE(b.wait);
     EXPECT_LT(*a.first_entry, *b.wait);
+    ASSERT_TRUE(a.progression);
+    EXPECT_LT(*b.wait, *a.progression);
+    EXPECT_LT(*b.wait_time, *a.release_time);
+    EXPECT_LT(*b.wait, *b.first_entry);
+    EXPECT_LE(*a.release_time, *b.entry_time);
     ASSERT_TRUE(b.progression);
     EXPECT_LT(*b.wait, *b.progression);
     EXPECT_TRUE(a.departure);
@@ -330,8 +350,14 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiBFirstOrdering) {
     ASSERT_TRUE(a.first_entry);
     ASSERT_TRUE(b.first_entry);
     EXPECT_LT(*b.first_entry, *a.first_entry);
+    EXPECT_LT(*b.entry_time, *a.entry_time);
     ASSERT_TRUE(a.wait);
     EXPECT_LT(*b.first_entry, *a.wait);
+    ASSERT_TRUE(b.progression);
+    EXPECT_LT(*a.wait, *b.progression);
+    EXPECT_LT(*a.wait_time, *b.release_time);
+    EXPECT_LT(*a.wait, *a.first_entry);
+    EXPECT_LE(*b.release_time, *a.entry_time);
     ASSERT_TRUE(a.progression);
     EXPECT_LT(*a.wait, *a.progression);
     EXPECT_TRUE(a.departure);
