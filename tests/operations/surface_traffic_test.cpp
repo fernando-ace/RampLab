@@ -66,6 +66,13 @@ airside::Scenario surface_ordering_scenario() {
     auto preparation = a->task(airside::ServiceType::PushbackPreparation);
     preparation.prerequisites.clear();
     a->mutable_tasks() = {preparation};
+    // Release this departure pair after mobile servicing has cleared the south
+    // apron. Different approach lengths need different neutral preparation times.
+    a->mutable_tasks().front().duration = airside::SimTime{1000};
+    const auto b = std::ranges::find(scenario.aircraft, airside::AircraftId{2}, &airside::Aircraft::id);
+    if (b == scenario.aircraft.end()) throw std::logic_error("missing AX202");
+    for (auto& task : b->mutable_tasks())
+        if (task.type == airside::ServiceType::PushbackPreparation) task.duration = airside::SimTime{850};
     return scenario;
 }
 
@@ -78,7 +85,7 @@ airside::SimulationResult run_surface_ordering_variant(airside::AircraftId delay
         const auto pushback = std::ranges::find_if(delayed->mutable_tasks(), [](const auto& task) {
             return task.type == airside::ServiceType::PushbackPreparation;
         });
-        if (pushback != delayed->mutable_tasks().end()) pushback->duration += airside::SimTime{600};
+        if (pushback != delayed->mutable_tasks().end()) pushback->duration += airside::SimTime{60};
     }
     airside::Simulation simulation(std::move(scenario), 42);
     std::size_t steps = 0;
