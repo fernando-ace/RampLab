@@ -567,7 +567,9 @@ TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
     ASSERT_FALSE(simulation.recovery_epochs().empty());
     const auto& epoch = simulation.recovery_epochs().front();
     ASSERT_EQ(epoch.trigger, "vehicle_outage");
-    ASSERT_EQ(epoch.evaluations.size(), 2U);
+    // Other action families may add diagnostic candidates. Tier 0 and the
+    // direct outage repair must retain their existing first two priorities.
+    ASSERT_GE(epoch.evaluations.size(), 2U);
     EXPECT_EQ(epoch.evaluations[0].candidate.id, "current_plan");
     EXPECT_TRUE(epoch.evaluations[0].valid);
     EXPECT_EQ(epoch.evaluations[0].outcome.completed_objectives, 3U);

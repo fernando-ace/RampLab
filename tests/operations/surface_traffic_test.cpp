@@ -691,6 +691,7 @@ void validate_material_recovery_safety(const airside::SimulationResult& result,
     EXPECT_EQ(result.metrics.fleet_deadlock_count, 0U);
     EXPECT_FALSE(result.metrics.fleet_deadlock_unresolved);
     EXPECT_EQ(result.metrics.fleet_outstanding_reservations, 0U);
+    EXPECT_TRUE(result.metrics.fleet_held_reservation_owners.empty());
     EXPECT_EQ(result.metrics.completed_turnarounds, 3U);
     EXPECT_EQ(result.metrics.failed_or_timed_out_turnarounds, 0U);
     std::map<airside::EdgeId, airside::AircraftId> owners;
@@ -827,31 +828,34 @@ TEST(SurfaceTrafficTest, Goal49MaterialControlledHoldAutomaticCandidatesAndPriva
 
 TEST(SurfaceTrafficTest, Goal49MaterialNonBeneficialShortHoldRetainsTierZero) {
     auto scenario = material_surface_scenario(SurfaceOrdering::AFirst, {});
-    const auto shared_edge = north_south_taxi_edge(scenario.graph);
-    scenario.road_events.push_back({airside::SimTime{7000}, shared_edge, false});
-    scenario.road_events.push_back({airside::SimTime{7001}, shared_edge, true});
+    const auto edge = north_south_taxi_edge(scenario.graph);
+    scenario.road_events.push_back({airside::SimTime{6400}, edge, false});
+    scenario.road_events.push_back({airside::SimTime{6401}, edge, true});
+    scenario.recovery_mode = airside::RecoveryMode::Integrated;
+    auto baseline_scenario = scenario;
+    baseline_scenario.recovery_mode = airside::RecoveryMode::Reactive;
     airside::Simulation simulation(std::move(scenario), 42);
-    while (simulation.current_time() < airside::SimTime{7000}) ASSERT_TRUE(simulation.advance());
-    const auto edge = north_south_taxi_edge(material_recovery_scenario(airside::RecoveryMode::Reactive).graph);
-    airside::RecoveryState state{simulation.snapshot(),
-        {{airside::SimTime{7000}, "surface_closure", std::to_string(edge.value()), "edge_closed"}}, {}};
-    // The original 60-second alternative expires before readiness. The same
-    // frozen fixture must retain Tier 0 on this real private-simulation tie.
-    airside::RecoverySearchConfig config; config.max_candidates = 2;
-    const auto decision = airside::plan_recovery(state, config, [&](const auto& candidate) {
-        return simulation.evaluate_recovery_candidate(candidate, config);
-    });
-    ASSERT_EQ(decision.evaluations.size(), 2U);
-    EXPECT_TRUE(decision.evaluations[1].valid);
-    EXPECT_EQ(decision.evaluations[0].outcome, decision.evaluations[1].outcome);
-    EXPECT_EQ(decision.evaluations[1].candidate.actions.front().target_id, "60");
-    EXPECT_FALSE(decision.selected_candidate_id);
-    EXPECT_FALSE(airside::recovery_outcome_materially_improves(decision.evaluations[1].outcome,
-        decision.evaluations[0].outcome, config));
+    airside::Simulation baseline(std::move(baseline_scenario), 42);
     const auto result = simulation.run();
+    const auto reactive = baseline.run();
+    ASSERT_EQ(simulation.recovery_epochs().size(), 1U);
+    const auto& epoch = simulation.recovery_epochs().front();
+    ASSERT_TRUE(epoch.planned);
+    ASSERT_EQ(epoch.evaluations.size(), 5U);
+    EXPECT_FALSE(epoch.selected_candidate_id);
+    // All bounded alternatives expire before unchanged readiness. Normal
+    // Integrated planning privately discovers the tie and retains Tier 0.
+    for (const auto& evaluation : epoch.evaluations) {
+        EXPECT_TRUE(evaluation.valid) << evaluation.reason;
+        EXPECT_EQ(evaluation.outcome, epoch.evaluations.front().outcome);
+    }
     EXPECT_FALSE(std::ranges::any_of(result.events, [](const auto& event) {
-        return event.type == airside::SimulationEventType::RecoveryHoldStarted;
+        return event.type == airside::SimulationEventType::RecoveryHoldStarted ||
+            event.type == airside::SimulationEventType::RecoveryHoldReleased;
     }));
+    EXPECT_EQ(result.events, reactive.events);
+    EXPECT_EQ(result.metrics, reactive.metrics);
+    EXPECT_EQ(simulation.snapshot(), baseline.snapshot());
 }
 
 TEST(SurfaceTrafficTest, Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism) {

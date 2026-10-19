@@ -884,7 +884,9 @@ RecoveryEvaluation Simulation::evaluate_recovery_candidate(const RecoveryCandida
             metrics.surface_aircraft_aircraft_collisions == 0 &&
             metrics.surface_aircraft_ground_collisions == 0 && metrics.fleet_collisions == 0 &&
             !metrics.fleet_deadlock_unresolved && metrics.fleet_deadlock_count == 0 &&
-            metrics.fleet_outstanding_reservations == 0 && metrics.fleet_held_reservation_owners.empty() &&
+            // Fleet metrics distinguish outstanding active reservations from
+            // retained ownership for inactive vehicles at their terminal pose.
+            metrics.fleet_outstanding_reservations == 0 &&
             private_simulation.active_recovery_holds().empty() &&
             private_simulation.surface_edge_reservations_.empty() &&
             private_simulation.surface_node_reservations_.empty();

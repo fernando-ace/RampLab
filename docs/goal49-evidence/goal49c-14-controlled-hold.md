@@ -118,8 +118,52 @@ metrics and final snapshot. Integrated also compares recovery fingerprint,
 full candidate ordering, selected candidate, and every private evaluation field.
 The measured fingerprint is 850552943722534814.
 
-A second trigger timing on the same frozen fixture (closure 7000, reopen 7001)
-is used only for a no-benefit regression: with the candidate cap set to 2, the
-original 60-second alternative expires before readiness, is valid, and ties
-Tier 0. The planner retains the current plan and the parent applies no hold.
-This does not suppress candidates in the main end-to-end proof or production.
+A second trigger timing on the same frozen fixture (closure 6400, reopen 6401)
+is used only for a no-benefit regression. All four bounded hold alternatives
+expire before unchanged readiness. Normal Integrated planning evaluates all
+five candidates, finds every hold valid and tied with Tier 0, retains the
+current plan, and applies no authoritative hold. Its event history, metrics,
+and final snapshot equal the matching Reactive run. No candidate cap or
+production candidate suppression is used in this regression.
+
+## Post-publication regression correction
+
+The first published focused regression run passed 31/32 tests. The accepted-action
+multi-epoch replay regression exposed an overbroad check added in this pass:
+`fleet_held_reservation_owners.empty()` rejects inactive retained fleet ownership,
+even when `fleet_outstanding_reservations` is zero, with no collisions or deadlock.
+`FleetSimulation::metrics()` explicitly counts only active/unresolved-deadlock
+ownership as outstanding. Generic private validity now uses that authoritative
+outstanding-reservation metric. The material fixture separately continues to
+require empty held ownership, valid surface owners, and balanced acquisitions /
+releases; no fixture-specific validity exception is introduced.
+
+The expanded 44-test run then passed 43/44, including the repaired accepted-action
+replay gate. The additional older automatic GSE diagnostic asserted exactly two
+evaluations, but the starting-tip generator already produces seven at the same
+boundary: current_plan, vehicle:3:3, two resequences, and three two-action plans.
+This was verified by linking the original b86377d recovery.cpp generator into a
+scratch diagnostic against the unchanged pre-outage operational boundary.
+The diagnostic now requires at least two evaluations while retaining exact
+assertions for Tier 0 first, direct outage repair second, both predicted outcomes,
+no automatic selection, completion, and fleet reassignment. Production priorities
+and candidate generation are not suppressed to satisfy the stale count.
+
+Final validation: **44/44 focused CTest tests pass**, including all ten Goal49
+ordering/material tests, real no-benefit Integrated selectivity, all recovery
+core/planner tests, ReassignVehicle/Stand/Resequence regressions, hold duration
+and phase validation, accepted-action replay, and Shadow isolation. Raw final
+output is retained in `goal49c-14-final-focused-tests.txt`. No full suite was run.
+The implementation/proof checkpoint was published as
+`5533f54e57d9c002d46a3671dfb14828570eec93`, with HEAD/tracking/live equality verified
+before these regressions. The follow-up validation commit preserves all fixture
+and runtime constraints and records the corrected safety validity semantics.
+
+Status remains **BLOCKED on strict gate 19** pending resolution of the
+clearance-before-release requirement. The measured safe causal sequence releases
+the hold before AX202 clearance and keeps AX101 parked through normal reservation
+gating until clearance. No claim of all-gates Goal49C completion is made.
+Goal49 is still open for material-positive automatic GSE proof, focused recovery
+certification, eight-family matrix, 120 serial / 120 parallel runs, matrix parity,
+full safety certification, prediction analysis, final evidence ZIP and declaration,
+and eventual consolidation/merge. KAUO stays DATA_BLOCKED; Goal50 is untouched.

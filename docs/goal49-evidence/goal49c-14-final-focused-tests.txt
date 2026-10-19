@@ -1,0 +1,94 @@
+Internal ctest changing into directory: /workspace/RampLab/build-goal49c
+Test project /workspace/RampLab/build-goal49c
+      Start  95: TurnaroundTest.AutomaticIntegratedGseRecoveryDiagnostic
+      Start  96: TurnaroundTest.LaterRecoveryEpochReplaysEarlierAcceptedAction
+ 1/44 Test  #96: TurnaroundTest.LaterRecoveryEpochReplaysEarlierAcceptedAction ................................   Passed    9.08 sec
+      Start 128: SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism
+ 2/44 Test  #95: TurnaroundTest.AutomaticIntegratedGseRecoveryDiagnostic ......................................   Passed    9.84 sec
+      Start  97: TurnaroundTest.RecoveryShadowPlansWithoutChangingReactiveOperations
+ 3/44 Test #128: SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism ..........   Passed    7.55 sec
+      Start  87: TurnaroundTest.RecoveryActionAdapterReassignsOutagedTurnaroundTaskThroughFleet
+ 4/44 Test  #97: TurnaroundTest.RecoveryShadowPlansWithoutChangingReactiveOperations ..........................   Passed   10.72 sec
+      Start  86: TurnaroundTest.FlightBankReassignsOutagedVehicleSafelyAndDeterministically
+ 5/44 Test  #86: TurnaroundTest.FlightBankReassignsOutagedVehicleSafelyAndDeterministically ...................   Passed    4.08 sec
+      Start 127: SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero
+ 6/44 Test  #87: TurnaroundTest.RecoveryActionAdapterReassignsOutagedTurnaroundTaskThroughFleet ...............   Passed    9.90 sec
+      Start 126: SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation
+ 7/44 Test #127: SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero .......................   Passed    1.96 sec
+      Start 131: SurfaceTrafficTest.ControlledHoldRejectsEveryUnsupportedOperationalPhase
+ 8/44 Test #131: SurfaceTrafficTest.ControlledHoldRejectsEveryUnsupportedOperationalPhase .....................   Passed    1.45 sec
+      Start 125: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison
+ 9/44 Test #126: SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation ........   Passed    1.69 sec
+      Start 122: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+10/44 Test #122: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst ........................................   Passed    0.70 sec
+      Start 123: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+11/44 Test #125: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison .............................   Passed    1.06 sec
+      Start 141: SurfaceTrafficTest.CounterfactualRolloutsAreIsolatedAndReplayDeterministically
+12/44 Test #123: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst ........................................   Passed    0.69 sec
+      Start 124: SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+13/44 Test #141: SurfaceTrafficTest.CounterfactualRolloutsAreIsolatedAndReplayDeterministically ...............   Passed    0.50 sec
+      Start 120: SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering
+14/44 Test #120: SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering ........................................   Passed    0.20 sec
+      Start 119: SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention
+15/44 Test #124: SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback ................................   Passed    0.36 sec
+      Start 121: SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering
+16/44 Test #119: SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention .....................................   Passed    0.18 sec
+      Start 135: SurfaceTrafficTest.IntegratedStandClosureSelectsAlternateAndShadowOnlyRecommends
+17/44 Test #135: SurfaceTrafficTest.IntegratedStandClosureSelectsAlternateAndShadowOnlyRecommends .............   Passed    0.01 sec
+      Start  99: TurnaroundTest.RuntimeVehicleOutageReplaysAtItsRecordedEventBoundary
+18/44 Test  #99: TurnaroundTest.RuntimeVehicleOutageReplaysAtItsRecordedEventBoundary .........................   Passed    0.00 sec
+      Start 100: TurnaroundTest.RuntimeSurfaceClosureReplaysAtItsRecordedEventBoundary
+19/44 Test #100: TurnaroundTest.RuntimeSurfaceClosureReplaysAtItsRecordedEventBoundary ........................   Passed    0.00 sec
+      Start  77: SimulationTest.RecoveryEpochTracksOnlyProcessedSurfaceClosureInShadowMode
+20/44 Test  #77: SimulationTest.RecoveryEpochTracksOnlyProcessedSurfaceClosureInShadowMode ....................   Passed    0.00 sec
+      Start  76: SimulationTest.PrivateReplayReconstructsEquivalentBoundaryWithoutChangingParent
+21/44 Test  #76: SimulationTest.PrivateReplayReconstructsEquivalentBoundaryWithoutChangingParent ..............   Passed    0.00 sec
+      Start 129: SurfaceTrafficTest.ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves
+22/44 Test #129: SurfaceTrafficTest.ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves .......   Passed    0.00 sec
+      Start  92: TurnaroundTest.IntegratedResequenceSelectsBetterOrderAndShadowOnlyRecommends
+23/44 Test  #92: TurnaroundTest.IntegratedResequenceSelectsBetterOrderAndShadowOnlyRecommends .................   Passed    0.00 sec
+      Start 105: RecoveryCoreTest.ParsesPublicModeNamesAndDefaultsRemainReactiveAtCaller
+24/44 Test #105: RecoveryCoreTest.ParsesPublicModeNamesAndDefaultsRemainReactiveAtCaller ......................   Passed    0.00 sec
+      Start 114: RecoveryPlannerTest.RevealedSurfaceClosurePromotesRelevantHoldAheadOfGenericCandidates
+25/44 Test #114: RecoveryPlannerTest.RevealedSurfaceClosurePromotesRelevantHoldAheadOfGenericCandidates .......   Passed    0.00 sec
+      Start 113: RecoveryPlannerTest.RelevantResequenceIsExecutableAndSurvivesCandidateCapDeterministically
+26/44 Test #113: RecoveryPlannerTest.RelevantResequenceIsExecutableAndSurvivesCandidateCapDeterministically ...   Passed    0.00 sec
+      Start 106: RecoveryCoreTest.FingerprintIsStableAndTracksDecisionFields
+27/44 Test #106: RecoveryCoreTest.FingerprintIsStableAndTracksDecisionFields ..................................   Passed    0.00 sec
+      Start 112: RecoveryPlannerTest.RevealedStandClosureProducesDeterministicExecutableCandidate
+28/44 Test #112: RecoveryPlannerTest.RevealedStandClosureProducesDeterministicExecutableCandidate .............   Passed    0.00 sec
+      Start 107: RecoveryCoreTest.FutureDisruptionsAreIgnoredAtEarlierDecisionBoundary
+29/44 Test #107: RecoveryCoreTest.FutureDisruptionsAreIgnoredAtEarlierDecisionBoundary ........................   Passed    0.00 sec
+      Start 130: SurfaceTrafficTest.ControlledHoldRejectsMalformedAndOutOfBoundsDurations
+30/44 Test #130: SurfaceTrafficTest.ControlledHoldRejectsMalformedAndOutOfBoundsDurations .....................   Passed    0.00 sec
+      Start 108: RecoveryPlannerTest.GeneratesStableTierZeroAndEligibleVehicleCandidates
+31/44 Test #108: RecoveryPlannerTest.GeneratesStableTierZeroAndEligibleVehicleCandidates ......................   Passed    0.00 sec
+      Start 115: RecoveryPlannerTest.LatenessAloneDoesNotGenerateControlledHold
+32/44 Test #115: RecoveryPlannerTest.LatenessAloneDoesNotGenerateControlledHold ...............................   Passed    0.00 sec
+      Start 111: RecoveryPlannerTest.StrandedAssignedTaskSurvivesCandidateCapAheadOfDiagnostics
+33/44 Test #111: RecoveryPlannerTest.StrandedAssignedTaskSurvivesCandidateCapAheadOfDiagnostics ...............   Passed    0.00 sec
+      Start  89: TurnaroundTest.ResequenceRecoveryChangesNormalSchedulerOrderAndReplays
+34/44 Test  #89: TurnaroundTest.ResequenceRecoveryChangesNormalSchedulerOrderAndReplays .......................   Passed    0.00 sec
+      Start 117: RecoveryPlannerTest.NonBeneficialControlledHoldLeavesCurrentPlanSelected
+35/44 Test #117: RecoveryPlannerTest.NonBeneficialControlledHoldLeavesCurrentPlanSelected .....................   Passed    0.00 sec
+      Start 116: RecoveryPlannerTest.DirectGseRepairRemainsAheadOfHoldAtCandidateCap
+36/44 Test #116: RecoveryPlannerTest.DirectGseRepairRemainsAheadOfHoldAtCandidateCap ..........................   Passed    0.00 sec
+      Start  88: TurnaroundTest.StandRecoveryAdapterReassignsScheduledAircraftWithoutTeleporting
+37/44 Test  #88: TurnaroundTest.StandRecoveryAdapterReassignsScheduledAircraftWithoutTeleporting ..............   Passed    0.00 sec
+      Start 109: RecoveryPlannerTest.EvaluatesBaselineFirstAndRequiresMaterialImprovement
+38/44 Test #109: RecoveryPlannerTest.EvaluatesBaselineFirstAndRequiresMaterialImprovement .....................   Passed    0.00 sec
+      Start  91: TurnaroundTest.ResequenceRecoveryRejectsCompletedCommittedAndCrossTurnaroundTasks
+39/44 Test  #91: TurnaroundTest.ResequenceRecoveryRejectsCompletedCommittedAndCrossTurnaroundTasks ............   Passed    0.00 sec
+      Start  93: TurnaroundTest.StandRecoveryAdapterRejectsInvalidAndOccupiedTargets
+40/44 Test  #93: TurnaroundTest.StandRecoveryAdapterRejectsInvalidAndOccupiedTargets ..........................   Passed    0.00 sec
+      Start  94: TurnaroundTest.StandRecoveryAdapterRejectsUnreachableSurfaceTarget
+41/44 Test  #94: TurnaroundTest.StandRecoveryAdapterRejectsUnreachableSurfaceTarget ...........................   Passed    0.00 sec
+      Start 110: RecoveryPlannerTest.NonBeneficialResequenceKeepsCurrentPlanSelected
+42/44 Test #110: RecoveryPlannerTest.NonBeneficialResequenceKeepsCurrentPlanSelected ..........................   Passed    0.00 sec
+      Start  90: TurnaroundTest.ResequenceRecoveryRejectsMissingSameAndDependencyInvalidTasks
+43/44 Test  #90: TurnaroundTest.ResequenceRecoveryRejectsMissingSameAndDependencyInvalidTasks .................   Passed    0.00 sec
+44/44 Test #121: SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering ........................................   Passed    0.20 sec
+
+100% tests passed, 0 tests failed out of 44
+
+Total Test time (real) =  30.18 sec
