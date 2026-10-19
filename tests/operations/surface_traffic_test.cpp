@@ -12,11 +12,62 @@
 #include <filesystem>
 #include <iostream>
 #include <optional>
+#include <ranges>
 
 namespace {
 
 std::filesystem::path scenario_file(const char* name) {
     return std::filesystem::path{AIRSIDE_SOURCE_DIR} / "scenarios" / name;
+}
+
+struct TaxiContentionHistory {
+    std::optional<std::uint64_t> first_entry;
+    std::optional<std::uint64_t> wait;
+    std::optional<std::uint64_t> progression;
+    std::optional<std::uint64_t> departure;
+};
+
+TaxiContentionHistory taxi_contention_history(const airside::SimulationResult& result,
+    airside::AircraftId aircraft, airside::EdgeId shared_edge) {
+    TaxiContentionHistory history;
+    for (const auto& event : result.events) {
+        if (event.aircraft != aircraft) continue;
+        if (event.type == airside::SimulationEventType::SurfaceReservationAcquired && event.edge == shared_edge) {
+            if (!history.first_entry) history.first_entry = event.sequence;
+        } else if (event.type == airside::SimulationEventType::SurfaceReservationReleased && event.edge == shared_edge && !history.progression) {
+            history.progression = event.sequence;
+        } else if (event.type == airside::SimulationEventType::SurfaceWaitingForTraffic && event.edge == shared_edge && !history.wait) {
+            history.wait = event.sequence;
+        } else if (event.type == airside::SimulationEventType::AircraftDeparted) {
+            history.departure = event.sequence;
+        }
+    }
+    return history;
+}
+
+airside::SimulationResult run_surface_ordering_variant(airside::AircraftId delayed_aircraft) {
+    auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
+    const auto delayed = std::ranges::find_if(scenario.aircraft, [delayed_aircraft](const auto& aircraft) {
+        return aircraft.id() == delayed_aircraft;
+    });
+    if (delayed != scenario.aircraft.end()) {
+        const auto pushback = std::ranges::find_if(delayed->mutable_tasks(), [](const auto& task) {
+            return task.type == airside::ServiceType::PushbackPreparation;
+        });
+        if (pushback != delayed->mutable_tasks().end()) pushback->duration += airside::SimTime{600};
+    }
+    airside::Simulation simulation(std::move(scenario), 42);
+    return simulation.run();
+}
+
+airside::EdgeId north_south_taxi_edge(const airside::AirportGraph& graph) {
+    const auto north = std::ranges::find_if(graph.nodes(), [](const auto& node) { return node.name == "North Junction"; });
+    const auto south = std::ranges::find_if(graph.nodes(), [](const auto& node) { return node.name == "South Junction"; });
+    if (north == graph.nodes().end() || south == graph.nodes().end()) return {};
+    const auto edge = std::ranges::find_if(graph.edges(), [&](const auto& candidate) {
+        return candidate.from == north->id && candidate.to == south->id;
+    });
+    return edge == graph.edges().end() ? airside::EdgeId{} : edge->id;
 }
 
 airside::Scenario synthetic_stand_closure(airside::RecoveryMode mode) {
@@ -135,6 +186,46 @@ TEST(SurfaceTrafficTest, ControlCoordinatesPushbackTaxiContentionAndRunwayQueue)
     EXPECT_TRUE(std::ranges::all_of(snapshot.aircraft, [](const auto& item) {
         return item.surface_state == "Departed" && item.taxi_distance_m > 0.0 && item.actual_surface_departure;
     }));
+}
+
+TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiAFirstOrdering) {
+    const auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
+    const auto edge = north_south_taxi_edge(scenario.graph);
+    ASSERT_NE(edge, airside::EdgeId{});
+    constexpr airside::AircraftId aircraft_a{1}; // AX101
+    constexpr airside::AircraftId aircraft_b{3}; // AX303
+    const auto result = run_surface_ordering_variant(aircraft_b);
+    const auto a = taxi_contention_history(result, aircraft_a, edge);
+    const auto b = taxi_contention_history(result, aircraft_b, edge);
+    ASSERT_TRUE(a.first_entry);
+    ASSERT_TRUE(b.first_entry);
+    EXPECT_LT(*a.first_entry, *b.first_entry);
+    ASSERT_TRUE(b.wait);
+    EXPECT_LT(*a.first_entry, *b.wait);
+    ASSERT_TRUE(b.progression);
+    EXPECT_LT(*b.wait, *b.progression);
+    EXPECT_TRUE(a.departure);
+    EXPECT_TRUE(b.departure);
+}
+
+TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiBFirstOrdering) {
+    const auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
+    const auto edge = north_south_taxi_edge(scenario.graph);
+    ASSERT_NE(edge, airside::EdgeId{});
+    constexpr airside::AircraftId aircraft_a{1}; // AX101
+    constexpr airside::AircraftId aircraft_b{3}; // AX303
+    const auto result = run_surface_ordering_variant(aircraft_a);
+    const auto a = taxi_contention_history(result, aircraft_a, edge);
+    const auto b = taxi_contention_history(result, aircraft_b, edge);
+    ASSERT_TRUE(a.first_entry);
+    ASSERT_TRUE(b.first_entry);
+    EXPECT_LT(*b.first_entry, *a.first_entry);
+    ASSERT_TRUE(a.wait);
+    EXPECT_LT(*b.first_entry, *a.wait);
+    ASSERT_TRUE(a.progression);
+    EXPECT_LT(*a.wait, *a.progression);
+    EXPECT_TRUE(a.departure);
+    EXPECT_TRUE(b.departure);
 }
 
 TEST(SurfaceTrafficTest, ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves) {
