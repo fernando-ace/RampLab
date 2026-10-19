@@ -119,7 +119,8 @@ RecoveryTriage triage_recovery_state(const RecoveryState& state) noexcept {
             return disruption.revealed_at <= state.snapshot.simulation_time && disruption.kind == "surface_closure";
         });
     if (surface_closure_revealed && std::ranges::any_of(state.snapshot.aircraft, [](const auto& aircraft) {
-        return aircraft.surface_state == "ReadyForPushback" || aircraft.surface_state == "WaitingForPushback";
+        return aircraft.surface_state == "ReadyForPushback" || aircraft.surface_state == "WaitingForPushback" ||
+            aircraft.surface_state == "ParkedAtGate";
     })) return RecoveryTriage::IntegratedPlanningRequired;
     for (const auto& turnaround : state.snapshot.turnarounds) {
         if (turnaround.predicted_late)
@@ -278,11 +279,18 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
                     disruption.kind == "surface_closure";
             });
         if (departure_disruption_revealed && aircraft != state.snapshot.aircraft.end() &&
-            (aircraft->surface_state == "ReadyForPushback" || aircraft->surface_state == "WaitingForPushback") &&
+            (aircraft->surface_state == "ReadyForPushback" || aircraft->surface_state == "WaitingForPushback" ||
+             aircraft->surface_state == "ParkedAtGate") &&
             turnaround.state != TurnaroundState::Departed && turnaround.state != TurnaroundState::Failed) {
-            executable.push_back({"hold:" + id_text(turnaround.aircraft.value()), 1,
-                {{RecoveryActionKind::ControlledHold, id_text(turnaround.aircraft.value()), "60",
-                "60 second hold while a revealed surface closure affects departure operations"}}});
+            // Fixed bounded alternatives, evaluated privately. No future traffic
+            // arrival or outcome is used to choose the duration.
+            for (const auto seconds : {60, 180, 300, 600}) {
+                const auto duration = std::to_string(seconds);
+                const auto suffix = seconds == 60 ? std::string{} : ":" + duration;
+                executable.push_back({"hold:" + id_text(turnaround.aircraft.value()) + suffix, 1,
+                    {{RecoveryActionKind::ControlledHold, id_text(turnaround.aircraft.value()), duration,
+                    duration + " second hold while a revealed surface closure affects departure operations"}}});
+            }
         }
     }
 

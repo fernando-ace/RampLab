@@ -61,6 +61,7 @@ struct RecoveryOutcome {
     std::optional<double> departure_delay_seconds;
     std::optional<double> service_wait_seconds;
     std::optional<double> gse_travel_seconds;
+    bool operator==(const RecoveryOutcome&) const = default;
 };
 
 struct RecoveryEvaluation {
@@ -71,6 +72,7 @@ struct RecoveryEvaluation {
     std::uint64_t private_events{};
     SimTime simulated_horizon{};
     std::string termination_reason;
+    bool operator==(const RecoveryEvaluation&) const = default;
 };
 
 struct RecoverySearchConfig {
@@ -78,7 +80,7 @@ struct RecoverySearchConfig {
     std::size_t max_plan_depth{2};
     std::uint8_t max_search_tier{2};
     std::uint64_t max_private_events{10000};
-    SimTime max_future_simulated_time{SimTime{3600}};
+    SimTime max_future_simulated_time{SimTime{7200}};
     double minimum_delay_improvement_seconds{300.0};
 };
 

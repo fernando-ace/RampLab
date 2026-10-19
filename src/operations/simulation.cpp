@@ -834,6 +834,78 @@ RecoveryReplayResult Simulation::replay_to_recovery_boundary() const {
     return result;
 }
 
+RecoveryEvaluation Simulation::evaluate_recovery_candidate(const RecoveryCandidate& candidate,
+    const RecoverySearchConfig& config) const {
+    RecoveryEvaluation evaluation;
+    evaluation.candidate = candidate;
+    auto replay = replay_to_recovery_boundary();
+    if (!replay.equivalent || !replay.simulation) {
+        evaluation.reason = "replay_invalid:" + replay.reason;
+        evaluation.termination_reason = "replay_failed";
+        return evaluation;
+    }
+    auto& private_simulation = *replay.simulation;
+    for (const auto& action : candidate.actions) {
+        const auto applied = private_simulation.apply_recovery_action(action);
+        if (!applied.accepted) {
+            evaluation.reason = "candidate_action_rejected:" + applied.reason;
+            evaluation.termination_reason = "candidate_infeasible";
+            return evaluation;
+        }
+    }
+    const auto start_time = private_simulation.current_time();
+    while (!private_simulation.finished() &&
+        evaluation.private_events < config.max_private_events &&
+        private_simulation.current_time() - start_time < config.max_future_simulated_time) {
+        if (!private_simulation.advance()) break;
+        ++evaluation.private_events;
+    }
+    evaluation.simulated_horizon = private_simulation.current_time() - start_time;
+    if (private_simulation.finished()) {
+        evaluation.termination_reason = "simulation_finished";
+        const auto outcome = private_simulation.result();
+        evaluation.outcome.completed = outcome.metrics.failed_or_timed_out_turnarounds == 0 &&
+            outcome.metrics.completed_turnarounds == outcome.metrics.total_turnarounds;
+        evaluation.outcome.objective_failures = static_cast<std::uint32_t>(
+            outcome.metrics.failed_or_timed_out_turnarounds);
+        evaluation.outcome.timeouts = outcome.metrics.unresolved_service_requests > 0 ? 1U : 0U;
+        evaluation.outcome.turnaround_failures = static_cast<std::uint32_t>(
+            outcome.metrics.failed_or_timed_out_turnarounds);
+        evaluation.outcome.completed_objectives = static_cast<std::uint32_t>(
+            outcome.metrics.completed_turnarounds);
+        evaluation.outcome.worst_departure_delay_seconds = static_cast<double>(
+            outcome.metrics.maximum_departure_delay_seconds);
+        evaluation.outcome.departure_delay_seconds = outcome.metrics.mean_departure_delay_seconds;
+        evaluation.outcome.service_wait_seconds = static_cast<double>(
+            outcome.metrics.total_service_task_wait_seconds);
+        const auto& metrics = outcome.metrics;
+        evaluation.valid = !surface_safety::aircraft_separation(private_simulation.minimum_aircraft_separation_m_).collision &&
+            !surface_safety::aircraft_ground_separation(private_simulation.minimum_aircraft_ground_separation_m_).collision &&
+            metrics.surface_aircraft_aircraft_collisions == 0 &&
+            metrics.surface_aircraft_ground_collisions == 0 && metrics.fleet_collisions == 0 &&
+            !metrics.fleet_deadlock_unresolved && metrics.fleet_deadlock_count == 0 &&
+            metrics.fleet_outstanding_reservations == 0 && metrics.fleet_held_reservation_owners.empty() &&
+            private_simulation.active_recovery_holds().empty() &&
+            private_simulation.surface_edge_reservations_.empty() &&
+            private_simulation.surface_node_reservations_.empty();
+        evaluation.reason = evaluation.valid ? "evaluated_in_private_simulation" : "unsafe_private_outcome";
+    } else {
+        evaluation.termination_reason = evaluation.private_events >= config.max_private_events ?
+            "private_event_budget_exhausted" : "future_time_budget_exhausted";
+        if (candidate.id == "current_plan" && candidate.actions.empty()) {
+            evaluation.valid = true;
+            evaluation.reason = "baseline_horizon_recorded_as_operational_timeout";
+            evaluation.outcome.completed = false;
+            evaluation.outcome.objective_failures = 1;
+            evaluation.outcome.timeouts = 1;
+            evaluation.outcome.turnaround_failures = 1;
+        } else {
+            evaluation.reason = "evaluation_horizon_did_not_reach_terminal_simulation_state";
+        }
+    }
+    return evaluation;
+}
+
 void Simulation::consider_recovery(std::string trigger, RevealedDisruption disruption) {
     if (std::ranges::find(revealed_disruptions_, disruption) == revealed_disruptions_.end())
         revealed_disruptions_.push_back(std::move(disruption));
@@ -854,65 +926,7 @@ void Simulation::consider_recovery(std::string trigger, RevealedDisruption disru
     } else {
         const RecoverySearchConfig config{};
         const auto decision = plan_recovery(state, config, [&](const RecoveryCandidate& candidate) {
-            RecoveryEvaluation evaluation;
-            evaluation.candidate = candidate;
-            auto replay = replay_to_recovery_boundary();
-            if (!replay.equivalent || !replay.simulation) {
-                evaluation.reason = "replay_invalid:" + replay.reason;
-                evaluation.termination_reason = "replay_failed";
-                return evaluation;
-            }
-            auto& private_simulation = *replay.simulation;
-            for (const auto& action : candidate.actions) {
-                const auto applied = private_simulation.apply_recovery_action(action);
-                if (!applied.accepted) {
-                    evaluation.reason = "candidate_action_rejected:" + applied.reason;
-                    evaluation.termination_reason = "candidate_infeasible";
-                    return evaluation;
-                }
-            }
-            const auto start_time = private_simulation.current_time();
-            while (!private_simulation.finished() &&
-                evaluation.private_events < config.max_private_events &&
-                private_simulation.current_time() - start_time < config.max_future_simulated_time) {
-                if (!private_simulation.advance()) break;
-                ++evaluation.private_events;
-            }
-            evaluation.simulated_horizon = private_simulation.current_time() - start_time;
-            if (private_simulation.finished()) {
-                evaluation.termination_reason = "simulation_finished";
-                const auto outcome = private_simulation.result();
-                evaluation.outcome.completed = outcome.metrics.failed_or_timed_out_turnarounds == 0 &&
-                    outcome.metrics.completed_turnarounds == outcome.metrics.total_turnarounds;
-                evaluation.outcome.objective_failures = static_cast<std::uint32_t>(
-                    outcome.metrics.failed_or_timed_out_turnarounds);
-                evaluation.outcome.timeouts = outcome.metrics.unresolved_service_requests > 0 ? 1U : 0U;
-                evaluation.outcome.turnaround_failures = static_cast<std::uint32_t>(
-                    outcome.metrics.failed_or_timed_out_turnarounds);
-                evaluation.outcome.completed_objectives = static_cast<std::uint32_t>(
-                    outcome.metrics.completed_turnarounds);
-                evaluation.outcome.worst_departure_delay_seconds = static_cast<double>(
-                    outcome.metrics.maximum_departure_delay_seconds);
-                evaluation.outcome.departure_delay_seconds = outcome.metrics.mean_departure_delay_seconds;
-                evaluation.outcome.service_wait_seconds = static_cast<double>(
-                    outcome.metrics.total_service_task_wait_seconds);
-                evaluation.valid = true;
-                evaluation.reason = "evaluated_in_private_simulation";
-            } else {
-                evaluation.termination_reason = evaluation.private_events >= config.max_private_events ?
-                    "private_event_budget_exhausted" : "future_time_budget_exhausted";
-                if (candidate.id == "current_plan" && candidate.actions.empty()) {
-                    evaluation.valid = true;
-                    evaluation.reason = "baseline_horizon_recorded_as_operational_timeout";
-                    evaluation.outcome.completed = false;
-                    evaluation.outcome.objective_failures = 1;
-                    evaluation.outcome.timeouts = 1;
-                    evaluation.outcome.turnaround_failures = 1;
-                } else {
-                    evaluation.reason = "evaluation_horizon_did_not_reach_terminal_simulation_state";
-                }
-            }
-            return evaluation;
+            return evaluate_recovery_candidate(candidate, config);
         });
         epoch.planned = true;
         epoch.candidate_count = decision.candidates.size();

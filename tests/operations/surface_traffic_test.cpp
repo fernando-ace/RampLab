@@ -401,7 +401,7 @@ struct MaterialSurfaceRun {
     std::size_t pushback_motion_samples{};
 };
 
-MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering ordering,
+airside::Scenario material_surface_scenario(SurfaceOrdering ordering,
     const MaterialScenarioConfig& config) {
     auto scenario = surface_ordering_scenario();
     auto a = std::ranges::find(scenario.aircraft, airside::AircraftId{1}, &airside::Aircraft::id);
@@ -419,6 +419,12 @@ MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering orderin
         if (task.type == airside::ServiceType::PushbackPreparation)
             task.earliest_start = config.b_preparation_start;
     scenario.surface_operations->aircraft_speed_mps = config.aircraft_speed_mps;
+    return scenario;
+}
+
+MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering ordering,
+    const MaterialScenarioConfig& config) {
+    auto scenario = material_surface_scenario(ordering, config);
     airside::Simulation simulation(std::move(scenario), 42);
     std::size_t steps = 0;
     double closest = std::numeric_limits<double>::infinity();
@@ -662,6 +668,273 @@ TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiOutcomeComparison) {
     EXPECT_EQ(a.outcome.timeouts, b.outcome.timeouts);
     EXPECT_EQ(a.outcome.turnaround_failures, b.outcome.turnaround_failures);
     EXPECT_EQ(a.outcome.completed_objectives, b.outcome.completed_objectives);
+}
+
+airside::Scenario material_recovery_scenario(airside::RecoveryMode mode) {
+    auto scenario = material_surface_scenario(SurfaceOrdering::AFirst, {});
+    const auto edge = north_south_taxi_edge(scenario.graph);
+    // A one-second closure of the actual departure resource is revealed while
+    // AX101 is still parked. Reopening precedes its unchanged pushback request.
+    scenario.road_events.push_back({airside::SimTime{7089}, edge, false});
+    scenario.road_events.push_back({airside::SimTime{7090}, edge, true});
+    scenario.recovery_mode = mode;
+    return scenario;
+}
+
+void validate_material_recovery_safety(const airside::SimulationResult& result,
+    const airside::SimulationSnapshot& snapshot) {
+    EXPECT_GE(result.metrics.minimum_aircraft_separation_m, 12.0);
+    EXPECT_GE(result.metrics.minimum_aircraft_ground_separation_m, 8.0);
+    EXPECT_EQ(result.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_aircraft_ground_collisions, 0U);
+    EXPECT_EQ(result.metrics.fleet_collisions, 0U);
+    EXPECT_EQ(result.metrics.fleet_deadlock_count, 0U);
+    EXPECT_FALSE(result.metrics.fleet_deadlock_unresolved);
+    EXPECT_EQ(result.metrics.fleet_outstanding_reservations, 0U);
+    EXPECT_EQ(result.metrics.completed_turnarounds, 3U);
+    EXPECT_EQ(result.metrics.failed_or_timed_out_turnarounds, 0U);
+    std::map<airside::EdgeId, airside::AircraftId> owners;
+    for (const auto& event : result.events) {
+        if (!event.edge || !event.aircraft) continue;
+        if (event.type == airside::SimulationEventType::SurfaceReservationAcquired) {
+            EXPECT_FALSE(owners.contains(*event.edge));
+            owners[*event.edge] = *event.aircraft;
+        } else if (event.type == airside::SimulationEventType::SurfaceReservationReleased) {
+            ASSERT_TRUE(owners.contains(*event.edge));
+            EXPECT_EQ(owners.at(*event.edge), *event.aircraft);
+            owners.erase(*event.edge);
+        }
+    }
+    EXPECT_TRUE(owners.empty());
+    EXPECT_EQ(std::ranges::count(result.events, airside::SimulationEventType::SurfaceReservationAcquired,
+        &airside::SimulationEventRecord::type), 7);
+    EXPECT_EQ(std::ranges::count(result.events, airside::SimulationEventType::SurfaceReservationReleased,
+        &airside::SimulationEventRecord::type), 7);
+    const auto fixture = material_surface_scenario(SurfaceOrdering::AFirst, {});
+    for (const auto id : {airside::AircraftId{1}, airside::AircraftId{2}}) {
+        const auto flight = std::ranges::find(fixture.aircraft, id, &airside::Aircraft::id);
+        const auto route = airside::find_route(fixture.graph, flight->gate_node(),
+            fixture.surface_operations->departure_handoff, airside::MovementClass::Aircraft);
+        ASSERT_TRUE(route);
+        for (const auto& event : result.events) {
+            if (event.aircraft != id || event.type != airside::SimulationEventType::SurfaceTaxiRouteAssigned) continue;
+            ASSERT_TRUE(event.route);
+            EXPECT_EQ(event.route->nodes, route->nodes);
+            EXPECT_EQ(event.route->edges, route->edges);
+        }
+    }
+    for (const auto& aircraft : snapshot.aircraft) EXPECT_EQ(aircraft.surface_state, "Departed");
+}
+
+void print_material_recovery(const airside::Simulation& simulation, const std::string& label) {
+    const auto result = simulation.result();
+    const auto edge = north_south_taxi_edge(material_recovery_scenario(airside::RecoveryMode::Reactive).graph);
+    const auto a = taxi_contention_history(result, airside::AircraftId{1}, edge, true);
+    const auto b = taxi_contention_history(result, airside::AircraftId{2}, edge);
+    std::int64_t aggregate = 0;
+    for (const auto& flight : result.aircraft) aggregate += flight.departure_delay().value_or(airside::SimTime{}).count();
+    std::cout << label << " A_entry=" << a.entry_time.value_or(airside::SimTime{-1}).count()
+        << " B_entry=" << b.entry_time.value_or(airside::SimTime{-1}).count()
+        << " B_clear=" << b.release_time.value_or(airside::SimTime{-1}).count()
+        << " worst=" << result.metrics.maximum_departure_delay_seconds << " aggregate=" << aggregate
+        << " separation=" << result.metrics.minimum_aircraft_separation_m
+        << " acquired=" << std::ranges::count(result.events, airside::SimulationEventType::SurfaceReservationAcquired, &airside::SimulationEventRecord::type)
+        << " released=" << std::ranges::count(result.events, airside::SimulationEventType::SurfaceReservationReleased, &airside::SimulationEventRecord::type) << '\n';
+    for (const auto& event : result.events)
+        if (event.type == airside::SimulationEventType::RecoveryHoldStarted || event.type == airside::SimulationEventType::RecoveryHoldReleased ||
+            (event.aircraft == airside::AircraftId{1} && event.type == airside::SimulationEventType::SurfacePushbackStarted))
+            std::cout << label << " event=" << (event.type == airside::SimulationEventType::RecoveryHoldStarted ? "hold_started" : event.type == airside::SimulationEventType::RecoveryHoldReleased ? "hold_released" : "AX101_pushback") << " time=" << event.timestamp.count() << '\n';
+    for (const auto& epoch : simulation.recovery_epochs()) {
+        std::cout << label << " epoch=" << epoch.time.count() << " fingerprint=" << epoch.fingerprint
+            << " selected=" << epoch.selected_candidate_id.value_or("current_plan") << " application=" << epoch.application_result << '\n';
+        for (const auto& evaluation : epoch.evaluations)
+            std::cout << "  candidate=" << evaluation.candidate.id << " valid=" << evaluation.valid
+                << " completed=" << evaluation.outcome.completed.value_or(false)
+                << " failures=" << evaluation.outcome.objective_failures << " timeouts=" << evaluation.outcome.timeouts
+                << " turnaround_failures=" << evaluation.outcome.turnaround_failures
+                << " completed_objectives=" << evaluation.outcome.completed_objectives
+                << " worst=" << evaluation.outcome.worst_departure_delay_seconds.value_or(-1)
+                << " aggregate=" << evaluation.outcome.departure_delay_seconds.value_or(-1) * 3
+                << " service_wait=" << evaluation.outcome.service_wait_seconds.value_or(-1)
+                << " gse_travel=" << evaluation.outcome.gse_travel_seconds.value_or(-1)
+                << " events=" << evaluation.private_events << " horizon=" << evaluation.simulated_horizon.count()
+                << " termination=" << evaluation.termination_reason << " reason=" << evaluation.reason << '\n';
+    }
+}
+
+TEST(SurfaceTrafficTest, Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation) {
+    airside::Simulation parent(material_recovery_scenario(airside::RecoveryMode::Reactive), 42);
+    while (parent.current_time() < airside::SimTime{7089}) ASSERT_TRUE(parent.advance());
+    ASSERT_EQ(parent.current_time(), airside::SimTime{7089});
+    const auto snapshot = parent.snapshot();
+    const auto history = parent.event_history();
+    const auto holds = parent.active_recovery_holds();
+    const auto next = parent.next_event_time();
+    const auto edge = north_south_taxi_edge(material_recovery_scenario(airside::RecoveryMode::Reactive).graph);
+    airside::RecoveryState state{snapshot, {{airside::SimTime{7089}, "surface_closure", std::to_string(edge.value()), "edge_closed"}}, {}};
+    const airside::RecoverySearchConfig config;
+    const auto candidates = airside::generate_recovery_candidates(state, config);
+    ASSERT_EQ(candidates, airside::generate_recovery_candidates(state, config));
+    ASSERT_EQ(candidates.front().id, "current_plan");
+    ASSERT_EQ(candidates.size(), 5U);
+    EXPECT_EQ(candidates[1].id, "hold:1");
+    EXPECT_EQ(candidates[2].id, "hold:1:180");
+    EXPECT_EQ(candidates[3].id, "hold:1:300");
+    EXPECT_EQ(candidates[4].id, "hold:1:600");
+    const auto hold = std::ranges::find(candidates, "hold:1:180", &airside::RecoveryCandidate::id);
+    ASSERT_NE(hold, candidates.end());
+    ASSERT_EQ(hold->actions.size(), 1U);
+    EXPECT_EQ(hold->actions.front().task_id, "1"); // AX101's existing numeric aircraft ID.
+    EXPECT_EQ(hold->actions.front().target_id, "180");
+    EXPECT_TRUE(parent.validate_recovery_action(hold->actions.front()).accepted);
+    const auto baseline = parent.evaluate_recovery_candidate(candidates.front(), config);
+    const auto held = parent.evaluate_recovery_candidate(*hold, config);
+    const auto unsafe_short_hold = parent.evaluate_recovery_candidate(candidates[1], config);
+    EXPECT_FALSE(unsafe_short_hold.valid);
+    EXPECT_EQ(unsafe_short_hold.reason, "unsafe_private_outcome");
+    ASSERT_TRUE(baseline.valid) << baseline.reason;
+    ASSERT_TRUE(held.valid) << held.reason;
+    EXPECT_EQ(baseline.outcome.worst_departure_delay_seconds, 10090);
+    EXPECT_EQ(held.outcome.worst_departure_delay_seconds, 8611);
+    EXPECT_TRUE(airside::recovery_outcome_materially_improves(held.outcome, baseline.outcome, config));
+    EXPECT_EQ(parent.snapshot(), snapshot);
+    EXPECT_EQ(parent.event_history(), history);
+    EXPECT_EQ(parent.active_recovery_holds(), holds);
+    EXPECT_EQ(parent.next_event_time(), next);
+    auto isolated = parent.replay_to_recovery_boundary();
+    ASSERT_TRUE(isolated.equivalent) << isolated.reason;
+    ASSERT_TRUE(isolated.simulation->apply_recovery_action(hold->actions.front()).accepted);
+    while (isolated.simulation->current_time() < airside::SimTime{7269}) {
+        const auto observed = isolated.simulation->snapshot();
+        const auto a = std::ranges::find(observed.aircraft, airside::AircraftId{1}, &airside::AircraftSnapshot::id);
+        ASSERT_NE(a, observed.aircraft.end());
+        EXPECT_TRUE(a->surface_state == "ParkedAtGate" || a->surface_state == "ReadyForPushback" || a->surface_state == "WaitingForPushback");
+        ASSERT_TRUE(isolated.simulation->advance());
+    }
+    (void)isolated.simulation->run();
+    validate_material_recovery_safety(isolated.simulation->result(), isolated.simulation->snapshot());
+    EXPECT_TRUE(isolated.simulation->active_recovery_holds().empty());
+    print_material_recovery(*isolated.simulation, "private_hold");
+    auto untouched = parent.replay_to_recovery_boundary();
+    ASSERT_TRUE(untouched.equivalent);
+    (void)untouched.simulation->run();
+    const auto actual_parent = parent.run();
+    EXPECT_EQ(actual_parent.events, untouched.simulation->event_history());
+    EXPECT_EQ(actual_parent.metrics, untouched.simulation->result().metrics);
+    EXPECT_EQ(parent.snapshot(), untouched.simulation->snapshot());
+    print_material_recovery(parent, "private_baseline_parent");
+}
+
+TEST(SurfaceTrafficTest, Goal49MaterialNonBeneficialShortHoldRetainsTierZero) {
+    auto scenario = material_surface_scenario(SurfaceOrdering::AFirst, {});
+    const auto shared_edge = north_south_taxi_edge(scenario.graph);
+    scenario.road_events.push_back({airside::SimTime{7000}, shared_edge, false});
+    scenario.road_events.push_back({airside::SimTime{7001}, shared_edge, true});
+    airside::Simulation simulation(std::move(scenario), 42);
+    while (simulation.current_time() < airside::SimTime{7000}) ASSERT_TRUE(simulation.advance());
+    const auto edge = north_south_taxi_edge(material_recovery_scenario(airside::RecoveryMode::Reactive).graph);
+    airside::RecoveryState state{simulation.snapshot(),
+        {{airside::SimTime{7000}, "surface_closure", std::to_string(edge.value()), "edge_closed"}}, {}};
+    // The original 60-second alternative expires before readiness. The same
+    // frozen fixture must retain Tier 0 on this real private-simulation tie.
+    airside::RecoverySearchConfig config; config.max_candidates = 2;
+    const auto decision = airside::plan_recovery(state, config, [&](const auto& candidate) {
+        return simulation.evaluate_recovery_candidate(candidate, config);
+    });
+    ASSERT_EQ(decision.evaluations.size(), 2U);
+    EXPECT_TRUE(decision.evaluations[1].valid);
+    EXPECT_EQ(decision.evaluations[0].outcome, decision.evaluations[1].outcome);
+    EXPECT_EQ(decision.evaluations[1].candidate.actions.front().target_id, "60");
+    EXPECT_FALSE(decision.selected_candidate_id);
+    EXPECT_FALSE(airside::recovery_outcome_materially_improves(decision.evaluations[1].outcome,
+        decision.evaluations[0].outcome, config));
+    const auto result = simulation.run();
+    EXPECT_FALSE(std::ranges::any_of(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RecoveryHoldStarted;
+    }));
+}
+
+TEST(SurfaceTrafficTest, Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism) {
+    airside::Simulation reactive(material_recovery_scenario(airside::RecoveryMode::Reactive), 42);
+    airside::Simulation shadow(material_recovery_scenario(airside::RecoveryMode::Shadow), 42);
+    airside::Simulation integrated(material_recovery_scenario(airside::RecoveryMode::Integrated), 42);
+    while (!reactive.finished()) {
+        ASSERT_FALSE(shadow.finished());
+        EXPECT_EQ(reactive.next_event_time(), shadow.next_event_time());
+        ASSERT_TRUE(reactive.advance());
+        ASSERT_TRUE(shadow.advance());
+        EXPECT_EQ(reactive.snapshot(), shadow.snapshot());
+    }
+    EXPECT_TRUE(shadow.finished());
+    const auto baseline = reactive.result();
+    const auto shadow_result = shadow.result();
+    const auto live = integrated.run();
+    const auto accepted_replay = integrated.replay_to_recovery_boundary();
+    EXPECT_TRUE(accepted_replay.equivalent) << accepted_replay.reason;
+    print_material_recovery(reactive, "reactive");
+    print_material_recovery(shadow, "shadow");
+    print_material_recovery(integrated, "integrated");
+    ASSERT_EQ(integrated.recovery_epochs().size(), 1U);
+    ASSERT_EQ(shadow.recovery_epochs().size(), 1U);
+    const auto& epoch = integrated.recovery_epochs().front();
+    ASSERT_TRUE(epoch.planned);
+    ASSERT_TRUE(epoch.selected_candidate_id);
+    EXPECT_EQ(epoch.selected_candidate_id, "hold:1:180");
+    EXPECT_EQ(epoch.application_result, "accepted");
+    EXPECT_EQ(shadow.recovery_epochs().front().selected_candidate_id, epoch.selected_candidate_id);
+    EXPECT_EQ(baseline.metrics.maximum_departure_delay_seconds, 10090);
+    EXPECT_EQ(live.metrics.maximum_departure_delay_seconds, 8611);
+    EXPECT_EQ(baseline.events, shadow_result.events);
+    EXPECT_EQ(baseline.event_log, shadow_result.event_log);
+    EXPECT_EQ(baseline.metrics, shadow_result.metrics);
+    EXPECT_EQ(reactive.snapshot(), shadow.snapshot());
+    EXPECT_FALSE(std::ranges::any_of(shadow_result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RecoveryHoldStarted || event.type == airside::SimulationEventType::RecoveryHoldReleased;
+    }));
+    EXPECT_GE(baseline.metrics.maximum_departure_delay_seconds - live.metrics.maximum_departure_delay_seconds, 300);
+    const auto selected = std::ranges::find(epoch.evaluations, *epoch.selected_candidate_id,
+        [](const auto& evaluation) { return evaluation.candidate.id; });
+    ASSERT_NE(selected, epoch.evaluations.end());
+    EXPECT_EQ(selected->outcome.worst_departure_delay_seconds, live.metrics.maximum_departure_delay_seconds);
+    EXPECT_EQ(selected->outcome.departure_delay_seconds, live.metrics.mean_departure_delay_seconds);
+    validate_material_recovery_safety(baseline, reactive.snapshot());
+    validate_material_recovery_safety(shadow_result, shadow.snapshot());
+    validate_material_recovery_safety(live, integrated.snapshot());
+    EXPECT_TRUE(integrated.active_recovery_holds().empty());
+    const auto edge = north_south_taxi_edge(material_recovery_scenario(airside::RecoveryMode::Reactive).graph);
+    const auto a = taxi_contention_history(live, airside::AircraftId{1}, edge, true);
+    const auto b = taxi_contention_history(live, airside::AircraftId{2}, edge);
+    ASSERT_TRUE(a.entry_time); ASSERT_TRUE(b.entry_time); ASSERT_TRUE(b.release_time);
+    EXPECT_LT(b.entry_time, a.entry_time);
+    const auto started = std::ranges::find(live.events, airside::SimulationEventType::RecoveryHoldStarted, &airside::SimulationEventRecord::type);
+    const auto released = std::ranges::find(live.events, airside::SimulationEventType::RecoveryHoldReleased, &airside::SimulationEventRecord::type);
+    const auto pushback = std::ranges::find_if(live.events, [](const auto& event) {
+        return event.aircraft == airside::AircraftId{1} && event.type == airside::SimulationEventType::SurfacePushbackStarted;
+    });
+    ASSERT_NE(started, live.events.end()); ASSERT_NE(released, live.events.end()); ASSERT_NE(pushback, live.events.end());
+    EXPECT_EQ(started->timestamp, airside::SimTime{7089});
+    EXPECT_EQ(released->timestamp, airside::SimTime{7269});
+    EXPECT_LT(started->sequence, *b.first_entry);
+    EXPECT_LT(*b.first_entry, released->sequence);
+    EXPECT_LE(*b.release_time, pushback->timestamp);
+    EXPECT_LT(released->sequence, pushback->sequence);
+    EXPECT_LT(pushback->sequence, *a.first_entry);
+    airside::Simulation repeat(material_recovery_scenario(airside::RecoveryMode::Integrated), 42);
+    const auto repeated = repeat.run();
+    EXPECT_EQ(live.events, repeated.events);
+    EXPECT_EQ(live.metrics, repeated.metrics);
+    EXPECT_EQ(integrated.snapshot(), repeat.snapshot());
+    const auto& repeated_epoch = repeat.recovery_epochs().front();
+    EXPECT_EQ(epoch.fingerprint, repeated_epoch.fingerprint);
+    EXPECT_EQ(epoch.candidates, repeated_epoch.candidates);
+    EXPECT_EQ(epoch.selected_candidate_id, repeated_epoch.selected_candidate_id);
+    EXPECT_EQ(epoch.evaluations, repeated_epoch.evaluations);
+    airside::Simulation shadow_repeat(material_recovery_scenario(airside::RecoveryMode::Shadow), 42);
+    const auto shadow_repeated = shadow_repeat.run();
+    EXPECT_EQ(shadow_result.events, shadow_repeated.events);
+    EXPECT_EQ(shadow_result.metrics, shadow_repeated.metrics);
+    EXPECT_EQ(shadow.snapshot(), shadow_repeat.snapshot());
+    EXPECT_EQ(shadow.recovery_epochs().front().evaluations, shadow_repeat.recovery_epochs().front().evaluations);
 }
 
 TEST(SurfaceTrafficTest, ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves) {

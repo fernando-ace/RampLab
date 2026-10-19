@@ -138,6 +138,8 @@ public:
     // Rebuild the same operational boundary in an isolated simulator. Replay
     // is deliberately fail-closed: a non-equivalent boundary returns no instance.
     [[nodiscard]] RecoveryReplayResult replay_to_recovery_boundary() const;
+    [[nodiscard]] RecoveryEvaluation evaluate_recovery_candidate(const RecoveryCandidate& candidate,
+        const RecoverySearchConfig& config) const;
 
 private:
     void process(const Event& event);
