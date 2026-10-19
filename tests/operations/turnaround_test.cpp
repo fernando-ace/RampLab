@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <string>
 
 namespace airside::test {
@@ -576,6 +577,52 @@ Scenario material_gse_scenario() {
     return scenario;
 }
 
+void print_gse_evaluation(const RecoveryEvaluation& evaluation) {
+    const auto& outcome = evaluation.outcome;
+    std::cout << "GSE private " << evaluation.candidate.id
+        << " valid=" << evaluation.valid << " completed=" << outcome.completed.value_or(false)
+        << " objectives=" << outcome.completed_objectives << " failures=" << outcome.objective_failures
+        << " timeouts=" << outcome.timeouts << " turnaround_failures=" << outcome.turnaround_failures
+        << " worst_delay=" << outcome.worst_departure_delay_seconds.value_or(-1)
+        << " mean_delay=" << outcome.departure_delay_seconds.value_or(-1)
+        << " service_wait=" << outcome.service_wait_seconds.value_or(-1)
+        << " gse_travel_mapped=" << outcome.gse_travel_seconds.has_value()
+        << " events=" << evaluation.private_events << " horizon=" << evaluation.simulated_horizon.count()
+        << " termination=" << evaluation.termination_reason << "\n";
+}
+
+void check_gse_safety(const SimulationResult& result) {
+    EXPECT_EQ(result.metrics.fleet_collisions, 0U);
+    EXPECT_EQ(result.metrics.fleet_deadlock_count, 0U);
+    EXPECT_FALSE(result.metrics.fleet_deadlock_unresolved);
+    EXPECT_EQ(result.metrics.fleet_outstanding_reservations, 0U);
+    EXPECT_EQ(result.metrics.fleet_unfinished_requests, 0U);
+    EXPECT_EQ(result.metrics.fleet_requests_failed, 0U);
+    EXPECT_EQ(result.metrics.unresolved_service_requests, 0U);
+    EXPECT_EQ(result.metrics.completed_turnarounds, 1U);
+    EXPECT_EQ(result.metrics.failed_or_timed_out_turnarounds, 0U);
+    EXPECT_EQ(result.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_aircraft_ground_collisions, 0U);
+}
+
+void print_gse_causality(const char* label, const SimulationResult& result) {
+    std::cout << "GSE " << label << " worst_delay=" << result.metrics.maximum_departure_delay_seconds
+        << " aggregate_delay=" << result.metrics.aircraft.front().departure_delay.count()
+        << " service_wait=" << result.metrics.total_service_task_wait_seconds << "\n";
+    for (const auto& event : result.events) {
+        if (event.type == SimulationEventType::TurnaroundVehicleUnavailable ||
+            event.type == SimulationEventType::TurnaroundTaskReassigned ||
+            event.type == SimulationEventType::TurnaroundTaskDispatched ||
+            event.type == SimulationEventType::TurnaroundTaskStarted ||
+            event.type == SimulationEventType::TurnaroundTaskCompleted ||
+            event.type == SimulationEventType::TurnaroundTaskReady ||
+            event.type == SimulationEventType::TurnaroundReadyForDeparture ||
+            event.type == SimulationEventType::AircraftDeparted ||
+            event.type == SimulationEventType::RoadClosed || event.type == SimulationEventType::RoadOpened)
+            std::cout << label << " t=" << event.timestamp.count() << " seq=" << event.sequence << " " << format_event(event) << "\n";
+    }
+}
+
 TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
     auto scenario = material_gse_scenario();
     scenario.recovery_mode = RecoveryMode::Reactive;
@@ -584,15 +631,30 @@ TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
     ASSERT_FALSE(simulation.recovery_epochs().empty());
     const auto before = simulation.snapshot();
     const auto history = simulation.event_history();
+    const auto next_event = simulation.next_event_time();
+    EXPECT_EQ(simulation.current_time(), SimTime{130});
+    ASSERT_EQ(before.turnarounds.size(), 1U);
+    const auto critical = std::ranges::find(before.turnarounds.front().tasks, TaskId{3}, &ServiceTaskSnapshot::id);
+    ASSERT_NE(critical, before.turnarounds.front().tasks.end());
+    EXPECT_EQ(critical->status, TaskStatus::Assigned);
+    EXPECT_EQ(critical->assigned_vehicle, VehicleId{2});
+    for (const auto id : {VehicleId{3}, VehicleId{4}}) {
+        const auto backup = std::ranges::find(before.vehicles, id, &ServiceVehicleSnapshot::id);
+        ASSERT_NE(backup, before.vehicles.end());
+        EXPECT_EQ(backup->type, ServiceType::Baggage);
+        EXPECT_EQ(backup->fleet_status, "Idle");
+        EXPECT_FALSE(backup->assigned_aircraft);
+    }
     const RecoverySearchConfig config{};
     const auto baseline = simulation.evaluate_recovery_candidate({"current_plan", 0, {}}, config);
     const RecoveryCandidate candidate{"vehicle:3:3", 1,
         {{RecoveryActionKind::ReassignVehicle, "3", "3", "replace vehicle stranded by revealed outage"}}};
+    ASSERT_TRUE(simulation.validate_recovery_action(candidate.actions.front()).accepted);
     const auto replacement = simulation.evaluate_recovery_candidate(candidate, config);
     ASSERT_TRUE(baseline.valid) << baseline.reason;
     ASSERT_TRUE(replacement.valid) << replacement.reason;
-    std::cout << "GSE raw baseline delay=" << baseline.outcome.worst_departure_delay_seconds.value_or(-1)
-        << " replacement=" << replacement.outcome.worst_departure_delay_seconds.value_or(-1) << "\n";
+    print_gse_evaluation(baseline);
+    print_gse_evaluation(replacement);
     EXPECT_EQ(config.minimum_delay_improvement_seconds, 300.0);
     EXPECT_EQ(baseline.outcome.completed, true);
     EXPECT_EQ(replacement.outcome.completed, true);
@@ -601,6 +663,198 @@ TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
     EXPECT_TRUE(recovery_outcome_materially_improves(replacement.outcome, baseline.outcome, config));
     EXPECT_EQ(simulation.snapshot(), before);
     EXPECT_EQ(simulation.event_history(), history);
+    EXPECT_EQ(simulation.next_event_time(), next_event);
+    const RecoveryState state{before, {{SimTime{130}, "vehicle_outage", "2", "BaggageCart-1"}}, {}};
+    auto capped = config; capped.max_candidates = 2;
+    const auto candidates = generate_recovery_candidates(state, capped);
+    ASSERT_EQ(candidates.size(), 2U);
+    EXPECT_EQ(candidates[0].id, "current_plan"); EXPECT_EQ(candidates[1], candidate);
+    EXPECT_EQ(candidates, generate_recovery_candidates(state, capped));
+    const auto replay = simulation.replay_to_recovery_boundary();
+    EXPECT_TRUE(replay.equivalent) << replay.reason;
+    // Continue against an untouched control to detect hidden parent mutations in
+    // fleet reservations, queue contents, counters, or task authority.
+    Simulation control{scenario, 42};
+    const auto control_result = control.run();
+    const auto parent_result = simulation.run();
+    EXPECT_EQ(parent_result.events, control_result.events);
+    EXPECT_EQ(parent_result.metrics, control_result.metrics);
+    EXPECT_EQ(simulation.snapshot(), control.snapshot());
+}
+
+TEST(TurnaroundTest, IntegratedGseRecoveryMateriallyRescuesStrandedCriticalTask) {
+    auto facts = material_gse_scenario();
+    auto shadow_facts = facts; shadow_facts.recovery_mode = RecoveryMode::Shadow;
+    auto integrated_facts = facts; integrated_facts.recovery_mode = RecoveryMode::Integrated;
+    Simulation reactive{facts, 42}, shadow{shadow_facts, 42}, shadow_repeat{shadow_facts, 42};
+    Simulation integrated{integrated_facts, 42}, repeat{integrated_facts, 42};
+    // Compare snapshots and history at every event boundary, including movement.
+    // Final metrics also compare reservation counters and safety. Recovery epochs
+    // are the only separate diagnostic stream.
+    std::unique_ptr<Simulation> prediction;
+    while (!reactive.finished()) {
+        ASSERT_EQ(reactive.next_event_time(), shadow.next_event_time());
+        ASSERT_EQ(reactive.next_event_time(), shadow_repeat.next_event_time());
+        ASSERT_TRUE(reactive.advance()); ASSERT_TRUE(shadow.advance()); ASSERT_TRUE(shadow_repeat.advance());
+        EXPECT_EQ(reactive.snapshot(), shadow.snapshot());
+        EXPECT_EQ(reactive.snapshot(), shadow_repeat.snapshot());
+        EXPECT_EQ(reactive.event_history(), shadow.event_history());
+        EXPECT_EQ(reactive.event_history(), shadow_repeat.event_history());
+        if (!prediction && !shadow.recovery_epochs().empty()) {
+            auto replay = shadow.replay_to_recovery_boundary();
+            ASSERT_TRUE(replay.equivalent) << replay.reason;
+            prediction = std::move(replay.simulation);
+            const auto& epoch = shadow.recovery_epochs().front();
+            ASSERT_EQ(epoch.selected_candidate_id, std::optional<std::string>{"vehicle:3:3"});
+            const auto selected = std::ranges::find(epoch.candidates, "vehicle:3:3", &RecoveryCandidate::id);
+            ASSERT_NE(selected, epoch.candidates.end());
+            ASSERT_TRUE(prediction->apply_recovery_action(selected->actions.front()).accepted);
+        }
+    }
+    ASSERT_TRUE(shadow.finished()); ASSERT_TRUE(shadow_repeat.finished()); ASSERT_TRUE(prediction);
+    const auto predicted = prediction->run();
+    std::optional<SimTime> travel_start, first_movement, source_at_refuge;
+    std::optional<Vec2> first_backup_position;
+    bool moved = false;
+    while (!integrated.finished()) {
+        ASSERT_EQ(integrated.next_event_time(), repeat.next_event_time());
+        ASSERT_TRUE(integrated.advance()); ASSERT_TRUE(repeat.advance());
+        const auto snapshot = integrated.snapshot();
+        EXPECT_EQ(snapshot, repeat.snapshot());
+        EXPECT_EQ(integrated.event_history(), repeat.event_history());
+        const auto backup = std::ranges::find(snapshot.vehicles, VehicleId{3}, &ServiceVehicleSnapshot::id);
+        ASSERT_NE(backup, snapshot.vehicles.end());
+        if (!first_backup_position) first_backup_position = backup->observed_position_m;
+        if (backup->fleet_status == "TravelingToAircraft" && !travel_start)
+            travel_start = snapshot.simulation_time;
+        if (backup->fleet_status == "TravelingToAircraft" && backup->observed_position_m != first_backup_position) {
+            moved = true;
+            if (!first_movement) first_movement = snapshot.simulation_time;
+        }
+        std::vector<VehicleId> active_owners;
+        for (const auto& turnaround : snapshot.turnarounds) {
+            for (const auto& task : turnaround.tasks) {
+                if ((task.status != TaskStatus::Assigned && task.status != TaskStatus::InProgress) ||
+                    !task.assigned_vehicle) continue;
+                EXPECT_EQ(std::ranges::find(active_owners, *task.assigned_vehicle), active_owners.end());
+                active_owners.push_back(*task.assigned_vehicle);
+            }
+        }
+        if (snapshot.simulation_time >= SimTime{130}) {
+            const auto source = std::ranges::find(snapshot.vehicles, VehicleId{2}, &ServiceVehicleSnapshot::id);
+            ASSERT_NE(source, snapshot.vehicles.end());
+            // Existing outage semantics evacuate to refuge before the public
+            // snapshot reports Unavailable. The dispatcher already excludes it.
+            EXPECT_TRUE(source->fleet_status == "Idle" || source->fleet_status == "Unavailable");
+            EXPECT_FALSE(source->assigned_aircraft);
+            if (source->fleet_status == "Unavailable" && !source_at_refuge)
+                source_at_refuge = snapshot.simulation_time;
+            const auto unused = std::ranges::find(snapshot.vehicles, VehicleId{4}, &ServiceVehicleSnapshot::id);
+            ASSERT_NE(unused, snapshot.vehicles.end());
+            EXPECT_EQ(unused->fleet_status, "Idle");
+            EXPECT_FALSE(unused->assigned_aircraft);
+        }
+    }
+    ASSERT_TRUE(repeat.finished()); ASSERT_TRUE(travel_start); EXPECT_TRUE(moved);
+    ASSERT_TRUE(first_movement); ASSERT_TRUE(source_at_refuge);
+    std::cout << "GSE integrated backup travel_start=" << travel_start->count()
+        << " first_observed_movement=" << first_movement->count()
+        << " source_unavailable_at_refuge=" << source_at_refuge->count() << "\n";
+    const auto baseline = reactive.result();
+    const auto live = integrated.result();
+    EXPECT_EQ(baseline.metrics, shadow.result().metrics);
+    EXPECT_EQ(baseline.metrics, shadow_repeat.result().metrics);
+    EXPECT_EQ(live.metrics, repeat.result().metrics);
+    EXPECT_EQ(live.events, predicted.events);
+    EXPECT_EQ(live.metrics, predicted.metrics);
+    EXPECT_EQ(integrated.snapshot(), prediction->snapshot());
+    EXPECT_EQ(live.metrics.maximum_departure_delay_seconds, 0);
+    EXPECT_EQ(baseline.metrics.maximum_departure_delay_seconds, 532);
+    EXPECT_GE(baseline.metrics.maximum_departure_delay_seconds - live.metrics.maximum_departure_delay_seconds, 300);
+    for (const auto* result : {&baseline, &live, &predicted}) check_gse_safety(*result);
+    print_gse_causality("reactive", baseline);
+    print_gse_causality("private", predicted);
+    print_gse_causality("integrated", live);
+    const auto compare_epochs = [](const Simulation& first, const Simulation& second) {
+        ASSERT_EQ(first.recovery_epochs().size(), second.recovery_epochs().size());
+        for (std::size_t i = 0; i < first.recovery_epochs().size(); ++i) {
+            const auto& a = first.recovery_epochs()[i]; const auto& b = second.recovery_epochs()[i];
+            EXPECT_EQ(a.time, b.time); EXPECT_EQ(a.trigger, b.trigger); EXPECT_EQ(a.mode, b.mode);
+            EXPECT_EQ(a.fingerprint, b.fingerprint); EXPECT_EQ(a.triage, b.triage);
+            EXPECT_EQ(a.candidates, b.candidates); EXPECT_EQ(a.evaluations, b.evaluations);
+            EXPECT_EQ(a.selected_candidate_id, b.selected_candidate_id);
+            EXPECT_EQ(a.application_result, b.application_result);
+            EXPECT_EQ(a.planned, b.planned); EXPECT_EQ(a.suppressed, b.suppressed);
+            EXPECT_EQ(a.skip_reason, b.skip_reason); EXPECT_EQ(a.candidate_count, b.candidate_count);
+        }
+    };
+    compare_epochs(integrated, repeat); compare_epochs(shadow, shadow_repeat);
+    ASSERT_FALSE(integrated.recovery_epochs().empty());
+    const auto& epoch = integrated.recovery_epochs().front();
+    const auto& shadow_epoch = shadow.recovery_epochs().front();
+    EXPECT_TRUE(epoch.planned); EXPECT_EQ(epoch.trigger, "vehicle_outage"); EXPECT_EQ(epoch.time, SimTime{130});
+    EXPECT_EQ(epoch.selected_candidate_id, std::optional<std::string>{"vehicle:3:3"});
+    EXPECT_EQ(epoch.application_result, "accepted");
+    EXPECT_EQ(shadow_epoch.candidates, epoch.candidates);
+    EXPECT_EQ(shadow_epoch.evaluations, epoch.evaluations);
+    EXPECT_EQ(shadow_epoch.selected_candidate_id, epoch.selected_candidate_id);
+    EXPECT_EQ(shadow_epoch.fingerprint, epoch.fingerprint);
+    EXPECT_TRUE(std::ranges::all_of(shadow.recovery_epochs(), [](const auto& value) {
+        return value.application_result.empty();
+    }));
+    ASSERT_GE(epoch.evaluations.size(), 3U);
+    EXPECT_EQ(epoch.candidates[0].id, "current_plan");
+    EXPECT_EQ(epoch.candidates[1].id, "vehicle:3:3");
+    EXPECT_EQ(epoch.candidates[2].id, "vehicle:3:4");
+    ASSERT_EQ(epoch.candidates[1].actions.size(), 1U);
+    EXPECT_EQ(epoch.candidates[1].actions[0].kind, RecoveryActionKind::ReassignVehicle);
+    EXPECT_EQ(epoch.candidates[1].actions[0].task_id, "3");
+    EXPECT_EQ(epoch.candidates[1].actions[0].target_id, "3");
+    EXPECT_TRUE(epoch.evaluations[1].valid);
+    EXPECT_TRUE(recovery_outcome_materially_improves(epoch.evaluations[1].outcome,
+        epoch.evaluations[0].outcome, RecoverySearchConfig{}));
+    EXPECT_EQ(epoch.evaluations[1].outcome.completed_objectives, live.metrics.completed_turnarounds);
+    EXPECT_EQ(epoch.evaluations[1].outcome.objective_failures, live.metrics.failed_or_timed_out_turnarounds);
+    EXPECT_EQ(epoch.evaluations[1].outcome.worst_departure_delay_seconds, live.metrics.maximum_departure_delay_seconds);
+    EXPECT_EQ(epoch.evaluations[1].outcome.service_wait_seconds, live.metrics.total_service_task_wait_seconds);
+    std::cout << "GSE epoch=" << epoch.time.count() << " fingerprint=" << epoch.fingerprint
+        << " selected=" << *epoch.selected_candidate_id << " candidates=";
+    for (const auto& value : epoch.candidates) std::cout << " " << value.id;
+    std::cout << "\n";
+    for (const auto& value : epoch.evaluations) print_gse_evaluation(value);
+    // Each prerequisite must complete before its dependent starts. Each task
+    // completes once; only the stranded task transfers ownership.
+    for (const auto& task : live.aircraft.front().tasks()) {
+        EXPECT_EQ(task.status, TaskStatus::Completed);
+        EXPECT_EQ(std::ranges::count_if(live.events, [&](const auto& event) {
+            return event.type == SimulationEventType::TurnaroundTaskCompleted && event.task == task.id;
+        }), 1);
+        for (const auto prerequisite : task.prerequisites)
+            EXPECT_LE(live.aircraft.front().task(prerequisite).completed_at, task.started_at);
+    }
+    EXPECT_EQ(std::ranges::count_if(live.events, [](const auto& event) {
+        return event.type == SimulationEventType::TurnaroundTaskReassigned;
+    }), 1);
+    const auto transfer = std::ranges::find_if(live.events, [](const auto& event) {
+        return event.type == SimulationEventType::TurnaroundTaskReassigned;
+    });
+    ASSERT_NE(transfer, live.events.end());
+    EXPECT_EQ(transfer->task, TaskId{3}); EXPECT_EQ(transfer->vehicle, VehicleId{3});
+    EXPECT_EQ(transfer->timestamp, epoch.time);
+    EXPECT_EQ(live.aircraft.front().task(TaskId{3}).assigned_vehicle, VehicleId{3});
+    EXPECT_EQ(baseline.aircraft.front().task(TaskId{3}).assigned_vehicle, VehicleId{4});
+    EXPECT_EQ(integrated.snapshot().vehicles[1].current_node, NodeId{10});
+    EXPECT_EQ(integrated.snapshot().vehicles[1].fleet_status, "Unavailable");
+    EXPECT_FALSE(std::ranges::any_of(live.events, [](const auto& event) {
+        return event.timestamp >= SimTime{130} && event.vehicle == VehicleId{2} &&
+            (event.type == SimulationEventType::TurnaroundTaskDispatched ||
+             event.type == SimulationEventType::TurnaroundTaskStarted ||
+             event.type == SimulationEventType::TurnaroundTaskCompleted);
+    }));
+    EXPECT_EQ(live.aircraft.front().task(TaskId{2}).assigned_vehicle, VehicleId{1});
+    EXPECT_EQ(baseline.aircraft.front().task(TaskId{2}).assigned_vehicle, VehicleId{1});
+    const auto replay = integrated.replay_to_recovery_boundary();
+    EXPECT_TRUE(replay.equivalent) << replay.reason;
 }
 
 TEST(TurnaroundTest, LaterRecoveryEpochReplaysEarlierAcceptedAction) {

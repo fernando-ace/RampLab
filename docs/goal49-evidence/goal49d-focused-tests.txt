@@ -1,13 +1,316 @@
 Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
-Note: Google Test filter = TurnaroundTest.AutomaticIntegratedGseRecoveryDiagnostic
-[==========] Running 1 test from 1 test suite.
+Note: Google Test filter = RecoveryCoreTest.*:RecoveryPlannerTest.*:TurnaroundTest.*Recovery*:TurnaroundTest.*Resequence*:TurnaroundTest.RuntimeVehicleOutage*:TurnaroundTest.RuntimeSurfaceClosureReplays*:TurnaroundTest.FlightBankReassigns*:SurfaceTrafficTest.Goal49*:SurfaceTrafficTest.ControlledHold*:SurfaceTrafficTest.IntegratedStand*:SimulationTest.PrivateReplay*:FleetDispatcherIntegrationTest.Explicit*:FleetDispatcherIntegrationTest.Unavailable*:FleetDispatcherTest.Explicit*:FleetDispatcherTest.VehicleUnavailability*:FleetDispatcherTest.Busy*:FleetDispatcherTest.ClosedRoad*
+[==========] Running 54 tests from 7 test suites.
 [----------] Global test environment set-up.
-[----------] 1 test from TurnaroundTest
+[----------] 1 test from SimulationTest
+[ RUN      ] SimulationTest.PrivateReplayReconstructsEquivalentBoundaryWithoutChangingParent
+[       OK ] SimulationTest.PrivateReplayReconstructsEquivalentBoundaryWithoutChangingParent (0 ms)
+[----------] 1 test from SimulationTest (0 ms total)
+
+[----------] 17 tests from TurnaroundTest
+[ RUN      ] TurnaroundTest.FlightBankReassignsOutagedVehicleSafelyAndDeterministically
+[       OK ] TurnaroundTest.FlightBankReassignsOutagedVehicleSafelyAndDeterministically (2178 ms)
+[ RUN      ] TurnaroundTest.RecoveryActionAdapterReassignsOutagedTurnaroundTaskThroughFleet
+[       OK ] TurnaroundTest.RecoveryActionAdapterReassignsOutagedTurnaroundTaskThroughFleet (5382 ms)
+[ RUN      ] TurnaroundTest.StandRecoveryAdapterReassignsScheduledAircraftWithoutTeleporting
+[       OK ] TurnaroundTest.StandRecoveryAdapterReassignsScheduledAircraftWithoutTeleporting (0 ms)
+[ RUN      ] TurnaroundTest.ResequenceRecoveryChangesNormalSchedulerOrderAndReplays
+[       OK ] TurnaroundTest.ResequenceRecoveryChangesNormalSchedulerOrderAndReplays (0 ms)
+[ RUN      ] TurnaroundTest.ResequenceRecoveryRejectsMissingSameAndDependencyInvalidTasks
+[       OK ] TurnaroundTest.ResequenceRecoveryRejectsMissingSameAndDependencyInvalidTasks (0 ms)
+[ RUN      ] TurnaroundTest.ResequenceRecoveryRejectsCompletedCommittedAndCrossTurnaroundTasks
+[       OK ] TurnaroundTest.ResequenceRecoveryRejectsCompletedCommittedAndCrossTurnaroundTasks (0 ms)
+[ RUN      ] TurnaroundTest.IntegratedResequenceSelectsBetterOrderAndShadowOnlyRecommends
+[       OK ] TurnaroundTest.IntegratedResequenceSelectsBetterOrderAndShadowOnlyRecommends (0 ms)
+[ RUN      ] TurnaroundTest.StandRecoveryAdapterRejectsInvalidAndOccupiedTargets
+[       OK ] TurnaroundTest.StandRecoveryAdapterRejectsInvalidAndOccupiedTargets (0 ms)
+[ RUN      ] TurnaroundTest.StandRecoveryAdapterRejectsUnreachableSurfaceTarget
+[       OK ] TurnaroundTest.StandRecoveryAdapterRejectsUnreachableSurfaceTarget (0 ms)
 [ RUN      ] TurnaroundTest.AutomaticIntegratedGseRecoveryDiagnostic
-GSE raw baseline delay=532 replacement=0
-[       OK ] TurnaroundTest.AutomaticIntegratedGseRecoveryDiagnostic (370 ms)
-[----------] 1 test from TurnaroundTest (371 ms total)
+GSE private current_plan valid=1 completed=1 objectives=1 failures=0 timeouts=0 turnaround_failures=0 worst_delay=532 mean_delay=532 service_wait=745 gse_travel_mapped=0 events=1188 horizon=1302 termination=simulation_finished
+GSE private vehicle:3:3 valid=1 completed=1 objectives=1 failures=0 timeouts=0 turnaround_failures=0 worst_delay=0 mean_delay=0 service_wait=82 gse_travel_mapped=0 events=525 horizon=770 termination=simulation_finished
+[       OK ] TurnaroundTest.AutomaticIntegratedGseRecoveryDiagnostic (812 ms)
+[ RUN      ] TurnaroundTest.IntegratedGseRecoveryMateriallyRescuesStrandedCriticalTask
+GSE integrated backup travel_start=130 first_observed_movement=130 source_unavailable_at_refuge=147
+GSE reactive worst_delay=532 aggregate_delay=532 service_wait=745
+reactive t=0 seq=4 turnaround TO-AX101 task 1 ready (Deboarding)
+reactive t=0 seq=5 turnaround TO-AX101 task 1 started (Deboarding)
+reactive t=0 seq=6 turnaround TO-AX101 task 2 ready (Fueling)
+reactive t=1 seq=8 turnaround TO-AX101 task 2 dispatched to FuelTruck-1
+reactive t=34 seq=9 turnaround TO-AX101 task 2 started (Fueling)
+reactive t=120 seq=10 turnaround TO-AX101 task 1 completed (Deboarding)
+reactive t=120 seq=11 turnaround TO-AX101 task 3 ready (BaggageUnload)
+reactive t=120 seq=13 turnaround TO-AX101 task 4 ready (CabinCleaning)
+reactive t=120 seq=14 turnaround TO-AX101 task 4 started (CabinCleaning)
+reactive t=121 seq=15 turnaround TO-AX101 task 3 dispatched to BaggageCart-1
+reactive t=130 seq=16 turnaround TO-AX101 vehicle BaggageCart-1 unavailable
+reactive t=130 seq=17 turnaround TO-AX101 task 3 dispatched to Near baggage cart
+reactive t=130 seq=18 turnaround TO-AX101 task 3 reassigned to Near baggage cart
+reactive t=131 seq=19 road edge 18 closed
+reactive t=300 seq=20 turnaround TO-AX101 task 4 completed (CabinCleaning)
+reactive t=334 seq=23 turnaround TO-AX101 task 2 completed (Fueling)
+reactive t=800 seq=24 road edge 18 opened
+reactive t=831 seq=25 turnaround TO-AX101 task 3 started (BaggageUnload)
+reactive t=1071 seq=26 turnaround TO-AX101 task 3 completed (BaggageUnload)
+reactive t=1071 seq=27 turnaround TO-AX101 task 5 ready (BaggageLoad)
+reactive t=1312 seq=29 turnaround TO-AX101 task 5 started (BaggageLoad)
+reactive t=1312 seq=30 turnaround TO-AX101 task 5 completed (BaggageLoad)
+reactive t=1312 seq=32 turnaround TO-AX101 task 6 ready (PushbackPreparation)
+reactive t=1312 seq=33 turnaround TO-AX101 task 6 started (PushbackPreparation)
+reactive t=1432 seq=34 turnaround TO-AX101 task 6 completed (PushbackPreparation)
+reactive t=1432 seq=35 turnaround TO-AX101 ready for departure
+reactive t=1432 seq=38 AX101 departed
+GSE private worst_delay=0 aggregate_delay=0 service_wait=82
+private t=0 seq=4 turnaround TO-AX101 task 1 ready (Deboarding)
+private t=0 seq=5 turnaround TO-AX101 task 1 started (Deboarding)
+private t=0 seq=6 turnaround TO-AX101 task 2 ready (Fueling)
+private t=1 seq=8 turnaround TO-AX101 task 2 dispatched to FuelTruck-1
+private t=34 seq=9 turnaround TO-AX101 task 2 started (Fueling)
+private t=120 seq=10 turnaround TO-AX101 task 1 completed (Deboarding)
+private t=120 seq=11 turnaround TO-AX101 task 3 ready (BaggageUnload)
+private t=120 seq=13 turnaround TO-AX101 task 4 ready (CabinCleaning)
+private t=120 seq=14 turnaround TO-AX101 task 4 started (CabinCleaning)
+private t=121 seq=15 turnaround TO-AX101 task 3 dispatched to BaggageCart-1
+private t=130 seq=16 turnaround TO-AX101 vehicle BaggageCart-1 unavailable
+private t=130 seq=17 turnaround TO-AX101 task 3 dispatched to BaggageCart-Backup
+private t=130 seq=18 turnaround TO-AX101 task 3 reassigned to BaggageCart-Backup
+private t=131 seq=19 road edge 18 closed
+private t=168 seq=20 turnaround TO-AX101 task 3 started (BaggageUnload)
+private t=300 seq=21 turnaround TO-AX101 task 4 completed (CabinCleaning)
+private t=334 seq=23 turnaround TO-AX101 task 2 completed (Fueling)
+private t=408 seq=24 turnaround TO-AX101 task 3 completed (BaggageUnload)
+private t=408 seq=25 turnaround TO-AX101 task 5 ready (BaggageLoad)
+private t=649 seq=27 turnaround TO-AX101 task 5 started (BaggageLoad)
+private t=649 seq=28 turnaround TO-AX101 task 5 completed (BaggageLoad)
+private t=649 seq=30 turnaround TO-AX101 task 6 ready (PushbackPreparation)
+private t=649 seq=31 turnaround TO-AX101 task 6 started (PushbackPreparation)
+private t=769 seq=32 turnaround TO-AX101 task 6 completed (PushbackPreparation)
+private t=769 seq=33 turnaround TO-AX101 ready for departure
+private t=800 seq=35 road edge 18 opened
+private t=900 seq=37 AX101 departed
+GSE integrated worst_delay=0 aggregate_delay=0 service_wait=82
+integrated t=0 seq=4 turnaround TO-AX101 task 1 ready (Deboarding)
+integrated t=0 seq=5 turnaround TO-AX101 task 1 started (Deboarding)
+integrated t=0 seq=6 turnaround TO-AX101 task 2 ready (Fueling)
+integrated t=1 seq=8 turnaround TO-AX101 task 2 dispatched to FuelTruck-1
+integrated t=34 seq=9 turnaround TO-AX101 task 2 started (Fueling)
+integrated t=120 seq=10 turnaround TO-AX101 task 1 completed (Deboarding)
+integrated t=120 seq=11 turnaround TO-AX101 task 3 ready (BaggageUnload)
+integrated t=120 seq=13 turnaround TO-AX101 task 4 ready (CabinCleaning)
+integrated t=120 seq=14 turnaround TO-AX101 task 4 started (CabinCleaning)
+integrated t=121 seq=15 turnaround TO-AX101 task 3 dispatched to BaggageCart-1
+integrated t=130 seq=16 turnaround TO-AX101 vehicle BaggageCart-1 unavailable
+integrated t=130 seq=17 turnaround TO-AX101 task 3 dispatched to BaggageCart-Backup
+integrated t=130 seq=18 turnaround TO-AX101 task 3 reassigned to BaggageCart-Backup
+integrated t=131 seq=19 road edge 18 closed
+integrated t=168 seq=20 turnaround TO-AX101 task 3 started (BaggageUnload)
+integrated t=300 seq=21 turnaround TO-AX101 task 4 completed (CabinCleaning)
+integrated t=334 seq=23 turnaround TO-AX101 task 2 completed (Fueling)
+integrated t=408 seq=24 turnaround TO-AX101 task 3 completed (BaggageUnload)
+integrated t=408 seq=25 turnaround TO-AX101 task 5 ready (BaggageLoad)
+integrated t=649 seq=27 turnaround TO-AX101 task 5 started (BaggageLoad)
+integrated t=649 seq=28 turnaround TO-AX101 task 5 completed (BaggageLoad)
+integrated t=649 seq=30 turnaround TO-AX101 task 6 ready (PushbackPreparation)
+integrated t=649 seq=31 turnaround TO-AX101 task 6 started (PushbackPreparation)
+integrated t=769 seq=32 turnaround TO-AX101 task 6 completed (PushbackPreparation)
+integrated t=769 seq=33 turnaround TO-AX101 ready for departure
+integrated t=800 seq=35 road edge 18 opened
+integrated t=900 seq=37 AX101 departed
+GSE epoch=130 fingerprint=11071817376211835091 selected=vehicle:3:3 candidates= current_plan vehicle:3:3 vehicle:3:4
+GSE private current_plan valid=1 completed=1 objectives=1 failures=0 timeouts=0 turnaround_failures=0 worst_delay=532 mean_delay=532 service_wait=745 gse_travel_mapped=0 events=1188 horizon=1302 termination=simulation_finished
+GSE private vehicle:3:3 valid=1 completed=1 objectives=1 failures=0 timeouts=0 turnaround_failures=0 worst_delay=0 mean_delay=0 service_wait=82 gse_travel_mapped=0 events=525 horizon=770 termination=simulation_finished
+GSE private vehicle:3:4 valid=1 completed=1 objectives=1 failures=0 timeouts=0 turnaround_failures=0 worst_delay=532 mean_delay=532 service_wait=745 gse_travel_mapped=0 events=1188 horizon=1302 termination=simulation_finished
+[       OK ] TurnaroundTest.IntegratedGseRecoveryMateriallyRescuesStrandedCriticalTask (4058 ms)
+[ RUN      ] TurnaroundTest.LaterRecoveryEpochReplaysEarlierAcceptedAction
+[       OK ] TurnaroundTest.LaterRecoveryEpochReplaysEarlierAcceptedAction (4819 ms)
+[ RUN      ] TurnaroundTest.RecoveryShadowPlansWithoutChangingReactiveOperations
+[       OK ] TurnaroundTest.RecoveryShadowPlansWithoutChangingReactiveOperations (5680 ms)
+[ RUN      ] TurnaroundTest.RuntimeVehicleOutageEntersDeterministicEventStream
+[       OK ] TurnaroundTest.RuntimeVehicleOutageEntersDeterministicEventStream (11919 ms)
+[ RUN      ] TurnaroundTest.RuntimeVehicleOutageReplaysAtItsRecordedEventBoundary
+[       OK ] TurnaroundTest.RuntimeVehicleOutageReplaysAtItsRecordedEventBoundary (1 ms)
+[ RUN      ] TurnaroundTest.RuntimeSurfaceClosureReplaysAtItsRecordedEventBoundary
+[       OK ] TurnaroundTest.RuntimeSurfaceClosureReplaysAtItsRecordedEventBoundary (0 ms)
+[ RUN      ] TurnaroundTest.RuntimeVehicleOutageRejectsUnknownVehicle
+[       OK ] TurnaroundTest.RuntimeVehicleOutageRejectsUnknownVehicle (0 ms)
+[----------] 17 tests from TurnaroundTest (34855 ms total)
+
+[----------] 3 tests from RecoveryCoreTest
+[ RUN      ] RecoveryCoreTest.ParsesPublicModeNamesAndDefaultsRemainReactiveAtCaller
+[       OK ] RecoveryCoreTest.ParsesPublicModeNamesAndDefaultsRemainReactiveAtCaller (0 ms)
+[ RUN      ] RecoveryCoreTest.FingerprintIsStableAndTracksDecisionFields
+[       OK ] RecoveryCoreTest.FingerprintIsStableAndTracksDecisionFields (0 ms)
+[ RUN      ] RecoveryCoreTest.FutureDisruptionsAreIgnoredAtEarlierDecisionBoundary
+[       OK ] RecoveryCoreTest.FutureDisruptionsAreIgnoredAtEarlierDecisionBoundary (0 ms)
+[----------] 3 tests from RecoveryCoreTest (0 ms total)
+
+[----------] 10 tests from RecoveryPlannerTest
+[ RUN      ] RecoveryPlannerTest.GeneratesStableTierZeroAndEligibleVehicleCandidates
+[       OK ] RecoveryPlannerTest.GeneratesStableTierZeroAndEligibleVehicleCandidates (0 ms)
+[ RUN      ] RecoveryPlannerTest.EvaluatesBaselineFirstAndRequiresMaterialImprovement
+[       OK ] RecoveryPlannerTest.EvaluatesBaselineFirstAndRequiresMaterialImprovement (0 ms)
+[ RUN      ] RecoveryPlannerTest.NonBeneficialResequenceKeepsCurrentPlanSelected
+[       OK ] RecoveryPlannerTest.NonBeneficialResequenceKeepsCurrentPlanSelected (0 ms)
+[ RUN      ] RecoveryPlannerTest.StrandedAssignedTaskSurvivesCandidateCapAheadOfDiagnostics
+[       OK ] RecoveryPlannerTest.StrandedAssignedTaskSurvivesCandidateCapAheadOfDiagnostics (0 ms)
+[ RUN      ] RecoveryPlannerTest.RevealedStandClosureProducesDeterministicExecutableCandidate
+[       OK ] RecoveryPlannerTest.RevealedStandClosureProducesDeterministicExecutableCandidate (0 ms)
+[ RUN      ] RecoveryPlannerTest.RelevantResequenceIsExecutableAndSurvivesCandidateCapDeterministically
+[       OK ] RecoveryPlannerTest.RelevantResequenceIsExecutableAndSurvivesCandidateCapDeterministically (0 ms)
+[ RUN      ] RecoveryPlannerTest.RevealedSurfaceClosurePromotesRelevantHoldAheadOfGenericCandidates
+[       OK ] RecoveryPlannerTest.RevealedSurfaceClosurePromotesRelevantHoldAheadOfGenericCandidates (0 ms)
+[ RUN      ] RecoveryPlannerTest.LatenessAloneDoesNotGenerateControlledHold
+[       OK ] RecoveryPlannerTest.LatenessAloneDoesNotGenerateControlledHold (0 ms)
+[ RUN      ] RecoveryPlannerTest.DirectGseRepairRemainsAheadOfHoldAtCandidateCap
+[       OK ] RecoveryPlannerTest.DirectGseRepairRemainsAheadOfHoldAtCandidateCap (0 ms)
+[ RUN      ] RecoveryPlannerTest.NonBeneficialControlledHoldLeavesCurrentPlanSelected
+[       OK ] RecoveryPlannerTest.NonBeneficialControlledHoldLeavesCurrentPlanSelected (0 ms)
+[----------] 10 tests from RecoveryPlannerTest (0 ms total)
+
+[----------] 15 tests from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention
+ordering aircraft=1 t=1110 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1140 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1140 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1300 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1470 event=AircraftDeparted detail=
+ordering aircraft=2 t=1169 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=1300 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1460 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1640 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention (101 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering
+ordering aircraft=1 t=1011 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1041 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1041 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1201 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1371 event=AircraftDeparted detail=
+ordering aircraft=2 t=1170 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=1201 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1361 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1541 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering (100 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering
+ordering aircraft=1 t=1310 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=1321 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1351 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1351 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1511 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1681 event=AircraftDeparted detail=
+ordering aircraft=2 t=1161 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1321 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1491 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering (101 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+ordering aircraft=1 t=7090 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=7120 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=7120 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8720 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7402 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=8720 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=10320 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=10490 event=AircraftDeparted detail=
+material ordering=A-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=10090 mean_delay=4419.33 aggregate_delay=13258 termination=simulation_finished final_t=13170 separation=12.6 ground_separation=76.0316
+material safety aircraft_collisions=0 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7120 distance=12.700000 aircraft=1:Taxiing pos=(100.000000,-80.000000),2:WaitingForTraffic pos=(112.700000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=10490
+material final aircraft=3 state=Departed departure=3398
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst (376 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+ordering aircraft=1 t=7410 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=8841 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=10471 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7241 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=8841 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=9011 event=AircraftDeparted detail=
+material ordering=B-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=8611 mean_delay=3926.33 aggregate_delay=11779 termination=simulation_finished final_t=13170 separation=40 ground_separation=76.0316
+material safety aircraft_collisions=0 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7241 distance=40.000000 aircraft=1:ParkedAtGate pos=(60.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=9011
+material final aircraft=3 state=Departed departure=3398
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst (373 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+parked north_south_taxi samples=1602 minimum=40 pushback_motion_samples=29
+[       OK ] SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback (187 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison
+original-speed safe stand closest t=1161 distance=40.000000 aircraft=1:ParkedAtGate pos=(60.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000) reported_minimum=40
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison (588 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation
+private_hold A_entry=8871 B_entry=7241 B_clear=8841 worst=8611 aggregate=11779 separation=40 acquired=7 released=7
+private_hold event=hold_started time=7089
+private_hold event=hold_released time=7269
+private_hold event=AX101_pushback time=8841
+private_hold epoch=7089 fingerprint=850552943722534814 selected=current_plan application=accepted
+private_baseline_parent A_entry=7120 B_entry=8720 B_clear=10320 worst=10090 aggregate=13258 separation=12.6 acquired=7 released=7
+private_baseline_parent event=AX101_pushback time=7090
+private_baseline_parent epoch=7089 fingerprint=850552943722534814 selected=current_plan application=
+[       OK ] SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation (933 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero
+[       OK ] SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero (1087 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism
+reactive A_entry=7120 B_entry=8720 B_clear=10320 worst=10090 aggregate=13258 separation=12.6 acquired=7 released=7
+reactive event=AX101_pushback time=7090
+reactive epoch=7089 fingerprint=850552943722534814 selected=current_plan application=
+shadow A_entry=7120 B_entry=8720 B_clear=10320 worst=10090 aggregate=13258 separation=12.6 acquired=7 released=7
+shadow event=AX101_pushback time=7090
+shadow epoch=7089 fingerprint=850552943722534814 selected=hold:1:180 application=
+  candidate=current_plan valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=10090 aggregate=13258 service_wait=905 gse_travel=-1 events=3575 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1 valid=0 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=10149 aggregate=13317 service_wait=905 gse_travel=-1 events=3635 horizon=6081 termination=simulation_finished reason=unsafe_private_outcome
+  candidate=hold:1:180 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1:300 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1:600 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+integrated A_entry=8871 B_entry=7241 B_clear=8841 worst=8611 aggregate=11779 separation=40 acquired=7 released=7
+integrated event=hold_started time=7089
+integrated event=hold_released time=7269
+integrated event=AX101_pushback time=8841
+integrated epoch=7089 fingerprint=850552943722534814 selected=hold:1:180 application=accepted
+  candidate=current_plan valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=10090 aggregate=13258 service_wait=905 gse_travel=-1 events=3575 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1 valid=0 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=10149 aggregate=13317 service_wait=905 gse_travel=-1 events=3635 horizon=6081 termination=simulation_finished reason=unsafe_private_outcome
+  candidate=hold:1:180 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1:300 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1:600 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+[       OK ] SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism (4103 ms)
+[ RUN      ] SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation
+handoff hold_start=7089 B_acquire=7241 hold_release=7269 B_release=8841 A_pushback=8841 A_taxi_acquire=8871 B_intervals=1 inactive_hold_reserved_wait_samples=1573 interval_minimum_separation=40.0979 wait_reason=pushback_area_reserved reservations=7/7 terminal_holds=0
+[       OK ] SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation (1132 ms)
+[ RUN      ] SurfaceTrafficTest.ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves
+[       OK ] SurfaceTrafficTest.ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves (0 ms)
+[ RUN      ] SurfaceTrafficTest.ControlledHoldRejectsMalformedAndOutOfBoundsDurations
+[       OK ] SurfaceTrafficTest.ControlledHoldRejectsMalformedAndOutOfBoundsDurations (0 ms)
+[ RUN      ] SurfaceTrafficTest.ControlledHoldRejectsEveryUnsupportedOperationalPhase
+[       OK ] SurfaceTrafficTest.ControlledHoldRejectsEveryUnsupportedOperationalPhase (776 ms)
+[ RUN      ] SurfaceTrafficTest.IntegratedStandClosureSelectsAlternateAndShadowOnlyRecommends
+[       OK ] SurfaceTrafficTest.IntegratedStandClosureSelectsAlternateAndShadowOnlyRecommends (5 ms)
+[----------] 15 tests from SurfaceTrafficTest (9870 ms total)
+
+[----------] 3 tests from FleetDispatcherIntegrationTest
+[ RUN      ] FleetDispatcherIntegrationTest.ExplicitAssignmentUsesChosenVehicleAndNormalServiceLifecycle
+[       OK ] FleetDispatcherIntegrationTest.ExplicitAssignmentUsesChosenVehicleAndNormalServiceLifecycle (19 ms)
+[ RUN      ] FleetDispatcherIntegrationTest.ExplicitAssignmentRejectsMissingIncompatibleUnavailableAndTerminalRequests
+[       OK ] FleetDispatcherIntegrationTest.ExplicitAssignmentRejectsMissingIncompatibleUnavailableAndTerminalRequests (19 ms)
+[ RUN      ] FleetDispatcherIntegrationTest.UnavailableVehicleReassignsTaskAndBackupCompletesSafely
+[       OK ] FleetDispatcherIntegrationTest.UnavailableVehicleReassignsTaskAndBackupCompletesSafely (34 ms)
+[----------] 3 tests from FleetDispatcherIntegrationTest (74 ms total)
+
+[----------] 5 tests from FleetDispatcherTest
+[ RUN      ] FleetDispatcherTest.VehicleUnavailabilityRequeuesAndReassignsWithoutChangingProgress
+[       OK ] FleetDispatcherTest.VehicleUnavailabilityRequeuesAndReassignsWithoutChangingProgress (0 ms)
+[ RUN      ] FleetDispatcherTest.ExplicitReassignmentAcceptsOnlyQueuedOrOutageStrandedRequests
+[       OK ] FleetDispatcherTest.ExplicitReassignmentAcceptsOnlyQueuedOrOutageStrandedRequests (0 ms)
+[ RUN      ] FleetDispatcherTest.ExplicitAssignmentRejectsUnavailableAndIncompatibleBackups
+[       OK ] FleetDispatcherTest.ExplicitAssignmentRejectsUnavailableAndIncompatibleBackups (0 ms)
+[ RUN      ] FleetDispatcherTest.BusyDegradedUnavailableAndRecoveringVehiclesAreNotCandidates
+[       OK ] FleetDispatcherTest.BusyDegradedUnavailableAndRecoveringVehiclesAreNotCandidates (0 ms)
+[ RUN      ] FleetDispatcherTest.ClosedRoadMakesCandidateRouteUnavailableAndTerminalStatesAreValidated
+[       OK ] FleetDispatcherTest.ClosedRoadMakesCandidateRouteUnavailableAndTerminalStatesAreValidated (0 ms)
+[----------] 5 tests from FleetDispatcherTest (0 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (371 ms total)
-[  PASSED  ] 1 test.
+[==========] 54 tests from 7 test suites ran. (44801 ms total)
+[  PASSED  ] 54 tests.
