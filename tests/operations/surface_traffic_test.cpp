@@ -32,20 +32,28 @@ struct TaxiContentionHistory {
 };
 
 TaxiContentionHistory taxi_contention_history(const airside::SimulationResult& result,
-    airside::AircraftId aircraft, airside::EdgeId shared_edge) {
+    airside::AircraftId aircraft, airside::EdgeId shared_edge, bool pushback_uses_shared_edge = false) {
     TaxiContentionHistory history;
+    bool pushback_completed = false;
     for (const auto& event : result.events) {
         if (event.aircraft != aircraft) continue;
-        if (event.type == airside::SimulationEventType::SurfaceReservationAcquired && event.edge == shared_edge) {
+        if (event.type == airside::SimulationEventType::SurfacePushbackCompleted) pushback_completed = true;
+        // A pushback reservation is released and reacquired before taxi motion.
+        // Report the taxi entry, and the final traversal release, separately.
+        if (event.type == airside::SimulationEventType::SurfaceReservationAcquired
+            && event.edge == shared_edge && pushback_completed) {
             if (!history.first_entry) {
                 history.first_entry = event.sequence;
                 history.entry_time = event.timestamp;
             }
-        } else if (event.type == airside::SimulationEventType::SurfaceReservationReleased && event.edge == shared_edge && !history.progression) {
+        } else if (event.type == airside::SimulationEventType::SurfaceReservationReleased && event.edge == shared_edge) {
             history.progression = event.sequence;
             history.release_time = event.timestamp;
-        } else if ((event.type == airside::SimulationEventType::SurfaceWaitingForTraffic
-            || event.type == airside::SimulationEventType::SurfaceWaitingForPushback) && event.edge == shared_edge && !history.wait) {
+        } else if (!history.wait && ((event.type == airside::SimulationEventType::SurfaceWaitingForTraffic
+            && event.edge == shared_edge) || (event.type == airside::SimulationEventType::SurfaceWaitingForPushback
+            && pushback_uses_shared_edge && !event.vehicle && (!event.edge || event.edge == shared_edge)))) {
+            // Aircraft-blocked pushback events omit edge. The focused fixture's
+            // validated one-edge A route identifies the requested edge exactly.
             history.wait = event.sequence;
             history.wait_time = event.timestamp;
         } else if (event.type == airside::SimulationEventType::AircraftDeparted) {
@@ -271,6 +279,7 @@ void validate_surface_ordering_run(const airside::SimulationResult& result, airs
                 || event.type == airside::SimulationEventType::SurfaceWaitingForPushback;
             if ((event.edge == edge && (event.type == airside::SimulationEventType::SurfaceReservationAcquired
                 || event.type == airside::SimulationEventType::SurfaceReservationReleased || (wait && !printed_wait)))
+                || (id == airside::AircraftId{1} && event.type == airside::SimulationEventType::SurfaceWaitingForPushback)
                 || event.type == airside::SimulationEventType::AircraftDeparted) {
                 std::cout << "ordering aircraft=" << id.value() << " t=" << event.timestamp.count()
                     << " event=" << airside::to_string(event.type) << " detail=" << event.detail << '\n';
@@ -292,10 +301,11 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiNeutralContention) {
             scenario.surface_operations->departure_handoff, airside::MovementClass::Aircraft);
         ASSERT_TRUE(route);
         ASSERT_NE(std::ranges::find(route->edges, edge), route->edges.end());
+        if (id == airside::AircraftId{1}) ASSERT_EQ(route->edges, (std::vector<airside::EdgeId>{edge}));
     }
     const auto result = run_surface_ordering_variant(airside::SimTime{0});
     validate_surface_ordering_run(result, edge);
-    const auto a = taxi_contention_history(result, airside::AircraftId{1}, edge);
+    const auto a = taxi_contention_history(result, airside::AircraftId{1}, edge, true);
     const auto b = taxi_contention_history(result, airside::AircraftId{2}, edge);
     EXPECT_TRUE(a.first_entry);
     EXPECT_TRUE(b.first_entry);
@@ -313,7 +323,7 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiAFirstOrdering) {
     constexpr airside::AircraftId aircraft_b{2}; // AX202
     const auto result = run_surface_ordering_variant(airside::SimTime{-100});
     validate_surface_ordering_run(result, edge);
-    const auto a = taxi_contention_history(result, aircraft_a, edge);
+    const auto a = taxi_contention_history(result, aircraft_a, edge, true);
     const auto b = taxi_contention_history(result, aircraft_b, edge);
     ASSERT_TRUE(a.first_entry);
     ASSERT_TRUE(b.first_entry);
@@ -340,7 +350,7 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiBFirstOrdering) {
     constexpr airside::AircraftId aircraft_b{2}; // AX202
     const auto result = run_surface_ordering_variant(airside::SimTime{200});
     validate_surface_ordering_run(result, edge);
-    const auto a = taxi_contention_history(result, aircraft_a, edge);
+    const auto a = taxi_contention_history(result, aircraft_a, edge, true);
     const auto b = taxi_contention_history(result, aircraft_b, edge);
     ASSERT_TRUE(a.first_entry);
     ASSERT_TRUE(b.first_entry);
