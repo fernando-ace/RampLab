@@ -44,7 +44,8 @@ TaxiContentionHistory taxi_contention_history(const airside::SimulationResult& r
         } else if (event.type == airside::SimulationEventType::SurfaceReservationReleased && event.edge == shared_edge && !history.progression) {
             history.progression = event.sequence;
             history.release_time = event.timestamp;
-        } else if (event.type == airside::SimulationEventType::SurfaceWaitingForTraffic && event.edge == shared_edge && !history.wait) {
+        } else if ((event.type == airside::SimulationEventType::SurfaceWaitingForTraffic
+            || event.type == airside::SimulationEventType::SurfaceWaitingForPushback) && event.edge == shared_edge && !history.wait) {
             history.wait = event.sequence;
             history.wait_time = event.timestamp;
         } else if (event.type == airside::SimulationEventType::AircraftDeparted) {
@@ -56,11 +57,11 @@ TaxiContentionHistory taxi_contention_history(const airside::SimulationResult& r
 
 airside::Scenario surface_ordering_scenario() {
     auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
-    // Reuse the existing, unoccupied south-side service stand as synthetic A1.
-    // Unlike the south baggage stand, this is not a vehicle's home/depot node.
-    // A1 and A2 retain distinct gate IDs and distinct physical nodes.
+    // Stage the already-serviced synthetic A1 departure at South Junction.
+    // A1 and A2 retain distinct gate IDs and distinct physical start nodes;
+    // neither aircraft starts at a vehicle depot. No graph data changes.
     const auto stand = std::ranges::find(scenario.graph.nodes(),
-        std::string{"Gate A2 Fuel Stand"}, &airside::AirportNode::name);
+        std::string{"South Junction"}, &airside::AirportNode::name);
     const auto a = std::ranges::find(scenario.aircraft, airside::AircraftId{1}, &airside::Aircraft::id);
     if (stand == scenario.graph.nodes().end() || a == scenario.aircraft.end())
         throw std::logic_error("missing synthetic ordering aircraft or stand");
@@ -76,31 +77,24 @@ airside::Scenario surface_ordering_scenario() {
     a->mutable_tasks() = {preparation};
     // Release this departure pair after mobile servicing has cleared the apron.
     // Earliest-start times avoid occupying the shared preparation resource during
-    // the delay; the 64 s offset compensates for the different approach lengths.
+    // the delay. Only A's preparation release changes between ordering variants.
     a->mutable_tasks().front().duration = airside::SimTime{10};
-    a->mutable_tasks().front().earliest_start = airside::SimTime{1000};
+    a->mutable_tasks().front().earliest_start = airside::SimTime{1100};
     const auto b = std::ranges::find(scenario.aircraft, airside::AircraftId{2}, &airside::Aircraft::id);
     if (b == scenario.aircraft.end()) throw std::logic_error("missing AX202");
     for (auto& task : b->mutable_tasks()) {
         if (task.type == airside::ServiceType::PushbackPreparation) {
             task.duration = airside::SimTime{10};
-            task.earliest_start = airside::SimTime{1064};
+            task.earliest_start = airside::SimTime{1000};
         }
     }
     return scenario;
 }
 
-airside::SimulationResult run_surface_ordering_variant(airside::AircraftId delayed_aircraft) {
+airside::SimulationResult run_surface_ordering_variant(airside::SimTime a_preparation_offset) {
     auto scenario = surface_ordering_scenario();
-    const auto delayed = std::ranges::find_if(scenario.aircraft, [delayed_aircraft](const auto& aircraft) {
-        return aircraft.id() == delayed_aircraft;
-    });
-    if (delayed != scenario.aircraft.end()) {
-        const auto pushback = std::ranges::find_if(delayed->mutable_tasks(), [](const auto& task) {
-            return task.type == airside::ServiceType::PushbackPreparation;
-        });
-        if (pushback != delayed->mutable_tasks().end()) pushback->earliest_start += airside::SimTime{60};
-    }
+    const auto a = std::ranges::find(scenario.aircraft, airside::AircraftId{1}, &airside::Aircraft::id);
+    a->mutable_tasks().front().earliest_start += a_preparation_offset;
     airside::Simulation simulation(std::move(scenario), 42);
     std::size_t steps = 0;
     while (!simulation.finished() && steps < 20000) {
@@ -273,7 +267,8 @@ void validate_surface_ordering_run(const airside::SimulationResult& result, airs
         bool printed_wait = false;
         for (const auto& event : result.events) {
             if (event.aircraft != id) continue;
-            const bool wait = event.type == airside::SimulationEventType::SurfaceWaitingForTraffic;
+            const bool wait = event.type == airside::SimulationEventType::SurfaceWaitingForTraffic
+                || event.type == airside::SimulationEventType::SurfaceWaitingForPushback;
             if ((event.edge == edge && (event.type == airside::SimulationEventType::SurfaceReservationAcquired
                 || event.type == airside::SimulationEventType::SurfaceReservationReleased || (wait && !printed_wait)))
                 || event.type == airside::SimulationEventType::AircraftDeparted) {
@@ -298,7 +293,7 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiNeutralContention) {
         ASSERT_TRUE(route);
         ASSERT_NE(std::ranges::find(route->edges, edge), route->edges.end());
     }
-    const auto result = run_surface_ordering_variant(airside::AircraftId{});
+    const auto result = run_surface_ordering_variant(airside::SimTime{0});
     validate_surface_ordering_run(result, edge);
     const auto a = taxi_contention_history(result, airside::AircraftId{1}, edge);
     const auto b = taxi_contention_history(result, airside::AircraftId{2}, edge);
@@ -316,7 +311,7 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiAFirstOrdering) {
     ASSERT_NE(edge, airside::EdgeId{});
     constexpr airside::AircraftId aircraft_a{1}; // AX101
     constexpr airside::AircraftId aircraft_b{2}; // AX202
-    const auto result = run_surface_ordering_variant(aircraft_b);
+    const auto result = run_surface_ordering_variant(airside::SimTime{-100});
     validate_surface_ordering_run(result, edge);
     const auto a = taxi_contention_history(result, aircraft_a, edge);
     const auto b = taxi_contention_history(result, aircraft_b, edge);
@@ -343,7 +338,7 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiBFirstOrdering) {
     ASSERT_NE(edge, airside::EdgeId{});
     constexpr airside::AircraftId aircraft_a{1}; // AX101
     constexpr airside::AircraftId aircraft_b{2}; // AX202
-    const auto result = run_surface_ordering_variant(aircraft_a);
+    const auto result = run_surface_ordering_variant(airside::SimTime{200});
     validate_surface_ordering_run(result, edge);
     const auto a = taxi_contention_history(result, aircraft_a, edge);
     const auto b = taxi_contention_history(result, aircraft_b, edge);
