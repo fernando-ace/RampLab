@@ -13,6 +13,7 @@
 #include <iostream>
 #include <optional>
 #include <ranges>
+#include <stdexcept>
 
 namespace {
 
@@ -45,8 +46,25 @@ TaxiContentionHistory taxi_contention_history(const airside::SimulationResult& r
     return history;
 }
 
-airside::SimulationResult run_surface_ordering_variant(airside::AircraftId delayed_aircraft) {
+airside::Scenario surface_ordering_scenario() {
     auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
+    // Reuse the existing, unoccupied south-side service stand as synthetic A1.
+    // Unlike the south baggage stand, this is not a vehicle's home/depot node.
+    // A1 and A2 retain distinct gate IDs and distinct physical nodes.
+    const auto stand = std::ranges::find(scenario.graph.nodes(),
+        std::string{"Gate A2 Fuel Stand"}, &airside::AirportNode::name);
+    const auto a = std::ranges::find(scenario.aircraft, airside::AircraftId{1}, &airside::Aircraft::id);
+    if (stand == scenario.graph.nodes().end() || a == scenario.aircraft.end())
+        throw std::logic_error("missing synthetic ordering aircraft or stand");
+    const auto gate = std::ranges::find(scenario.gates, a->gate(), &airside::Gate::id);
+    if (gate == scenario.gates.end()) throw std::logic_error("missing synthetic A1 gate");
+    gate->node = stand->id;
+    a->reassign_gate(gate->id, stand->id);
+    return scenario;
+}
+
+airside::SimulationResult run_surface_ordering_variant(airside::AircraftId delayed_aircraft) {
+    auto scenario = surface_ordering_scenario();
     const auto delayed = std::ranges::find_if(scenario.aircraft, [delayed_aircraft](const auto& aircraft) {
         return aircraft.id() == delayed_aircraft;
     });
@@ -57,7 +75,13 @@ airside::SimulationResult run_surface_ordering_variant(airside::AircraftId delay
         if (pushback != delayed->mutable_tasks().end()) pushback->duration += airside::SimTime{600};
     }
     airside::Simulation simulation(std::move(scenario), 42);
-    return simulation.run();
+    std::size_t steps = 0;
+    while (!simulation.finished() && steps < 20000) {
+        (void)simulation.advance();
+        ++steps;
+    }
+    if (!simulation.finished()) throw std::runtime_error("ordering fixture did not terminate");
+    return simulation.result();
 }
 
 airside::EdgeId north_south_taxi_edge(const airside::AirportGraph& graph) {
@@ -188,13 +212,85 @@ TEST(SurfaceTrafficTest, ControlCoordinatesPushbackTaxiContentionAndRunwayQueue)
     }));
 }
 
+void validate_surface_ordering_run(const airside::SimulationResult& result, airside::EdgeId edge) {
+    // Prove actual assigned routes before any order assertions.
+    for (const auto id : {airside::AircraftId{1}, airside::AircraftId{2}}) {
+        EXPECT_TRUE(std::ranges::any_of(result.events, [&](const auto& event) {
+            return event.aircraft == id && event.type == airside::SimulationEventType::SurfaceTaxiRouteAssigned
+                && event.route && std::ranges::find(event.route->edges, edge) != event.route->edges.end();
+        })) << "aircraft " << id.value() << " did not receive the shared-edge route";
+    }
+    std::optional<airside::AircraftId> owner;
+    for (const auto& event : result.events) {
+        if (event.edge != edge) continue;
+        if (event.type == airside::SimulationEventType::SurfaceReservationAcquired) {
+            EXPECT_FALSE(owner);
+            owner = event.aircraft;
+        } else if (event.type == airside::SimulationEventType::SurfaceReservationReleased) {
+            EXPECT_EQ(owner, event.aircraft);
+            owner.reset();
+        }
+    }
+    EXPECT_FALSE(owner);
+    EXPECT_EQ(result.metrics.surface_departed_aircraft, 3U);
+    EXPECT_EQ(result.metrics.surface_safe_failures, 0U);
+    EXPECT_EQ(result.metrics.fleet_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_aircraft_aircraft_collisions, 0U);
+    EXPECT_EQ(result.metrics.surface_aircraft_ground_collisions, 0U);
+    EXPECT_EQ(result.metrics.fleet_outstanding_reservations, 0U);
+    EXPECT_EQ(std::ranges::count(result.events, airside::SimulationEventType::SurfaceReservationAcquired,
+        &airside::SimulationEventRecord::type),
+        std::ranges::count(result.events, airside::SimulationEventType::SurfaceReservationReleased,
+            &airside::SimulationEventRecord::type));
+    for (const auto id : {airside::AircraftId{1}, airside::AircraftId{2}}) {
+        bool printed_wait = false;
+        for (const auto& event : result.events) {
+            if (event.aircraft != id) continue;
+            const bool wait = event.type == airside::SimulationEventType::SurfaceWaitingForTraffic;
+            if ((event.edge == edge && (event.type == airside::SimulationEventType::SurfaceReservationAcquired
+                || event.type == airside::SimulationEventType::SurfaceReservationReleased || (wait && !printed_wait)))
+                || event.type == airside::SimulationEventType::AircraftDeparted) {
+                std::cout << "ordering aircraft=" << id.value() << " t=" << event.timestamp.count()
+                    << " event=" << airside::to_string(event.type) << " detail=" << event.detail << '\n';
+                if (wait) printed_wait = true;
+            }
+        }
+    }
+}
+
+TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiNeutralContention) {
+    const auto scenario = surface_ordering_scenario();
+    const auto edge = north_south_taxi_edge(scenario.graph);
+    ASSERT_NE(edge, airside::EdgeId{});
+    // Route validity gate uses the same aircraft routing API as the simulation.
+    for (const auto id : {airside::AircraftId{1}, airside::AircraftId{2}}) {
+        const auto aircraft = std::ranges::find(scenario.aircraft, id, &airside::Aircraft::id);
+        ASSERT_NE(aircraft, scenario.aircraft.end());
+        const auto route = airside::find_route(scenario.graph, aircraft->gate_node(),
+            scenario.surface_operations->departure_handoff, airside::MovementClass::Aircraft);
+        ASSERT_TRUE(route);
+        ASSERT_NE(std::ranges::find(route->edges, edge), route->edges.end());
+    }
+    const auto result = run_surface_ordering_variant(airside::AircraftId{});
+    validate_surface_ordering_run(result, edge);
+    const auto a = taxi_contention_history(result, airside::AircraftId{1}, edge);
+    const auto b = taxi_contention_history(result, airside::AircraftId{2}, edge);
+    EXPECT_TRUE(a.first_entry);
+    EXPECT_TRUE(b.first_entry);
+    EXPECT_TRUE(a.progression);
+    EXPECT_TRUE(b.progression);
+    EXPECT_TRUE(a.departure);
+    EXPECT_TRUE(b.departure);
+}
+
 TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiAFirstOrdering) {
     const auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
     const auto edge = north_south_taxi_edge(scenario.graph);
     ASSERT_NE(edge, airside::EdgeId{});
     constexpr airside::AircraftId aircraft_a{1}; // AX101
-    constexpr airside::AircraftId aircraft_b{3}; // AX303
+    constexpr airside::AircraftId aircraft_b{2}; // AX202
     const auto result = run_surface_ordering_variant(aircraft_b);
+    validate_surface_ordering_run(result, edge);
     const auto a = taxi_contention_history(result, aircraft_a, edge);
     const auto b = taxi_contention_history(result, aircraft_b, edge);
     ASSERT_TRUE(a.first_entry);
@@ -213,8 +309,9 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiBFirstOrdering) {
     const auto edge = north_south_taxi_edge(scenario.graph);
     ASSERT_NE(edge, airside::EdgeId{});
     constexpr airside::AircraftId aircraft_a{1}; // AX101
-    constexpr airside::AircraftId aircraft_b{3}; // AX303
+    constexpr airside::AircraftId aircraft_b{2}; // AX202
     const auto result = run_surface_ordering_variant(aircraft_a);
+    validate_surface_ordering_run(result, edge);
     const auto a = taxi_contention_history(result, aircraft_a, edge);
     const auto b = taxi_contention_history(result, aircraft_b, edge);
     ASSERT_TRUE(a.first_entry);
