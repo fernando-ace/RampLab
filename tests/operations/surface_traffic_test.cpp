@@ -209,7 +209,10 @@ TEST(SurfaceTrafficTest, ControlledHoldRejectsMalformedAndOutOfBoundsDurations) 
             "1", std::move(target), "test"});
     };
     EXPECT_EQ(validate("bad").reason, "invalid_hold_duration");
+    EXPECT_EQ(validate("-1").reason, "hold_duration_must_be_positive");
     EXPECT_EQ(validate("0").reason, "hold_duration_must_be_positive");
+    EXPECT_TRUE(validate("1").accepted);
+    EXPECT_TRUE(validate("600").accepted);
     EXPECT_EQ(validate("601").reason, "hold_duration_exceeds_600_seconds");
     EXPECT_EQ(simulation.validate_recovery_action({airside::RecoveryActionKind::ControlledHold,
         "999", "60", "test"}).reason, "aircraft_not_found");
@@ -234,6 +237,40 @@ TEST(SurfaceTrafficTest, ControlledHoldRejectsMalformedAndOutOfBoundsDurations) 
     EXPECT_TRUE(has_pushback());
     EXPECT_EQ(moving.validate_recovery_action({airside::RecoveryActionKind::ControlledHold,
         "1", "60", "test"}).reason, "aircraft_in_unsupported_surface_phase");
+}
+
+TEST(SurfaceTrafficTest, ControlledHoldRejectsEveryUnsupportedOperationalPhase) {
+    const auto rejects_in_phase = [](std::string_view phase_name, std::string_view expected_state) {
+        airside::Simulation simulation(airside::load_scenario(scenario_file("surface_traffic.yaml")), 42);
+        for (std::size_t step = 0; step < 20000 && !simulation.finished(); ++step) {
+            const auto snapshot = simulation.snapshot();
+            const auto aircraft = std::ranges::find_if(snapshot.aircraft, [expected_state](const auto& item) {
+                return item.surface_state == expected_state;
+            });
+            if (aircraft != snapshot.aircraft.end()) {
+                const auto result = simulation.validate_recovery_action({
+                    airside::RecoveryActionKind::ControlledHold, std::to_string(aircraft->id.value()), "60", "phase test"});
+                EXPECT_EQ(result.reason, "aircraft_in_unsupported_surface_phase") << phase_name;
+                return true;
+            }
+            (void)simulation.advance();
+        }
+        ADD_FAILURE() << "surface_traffic.yaml did not expose phase " << phase_name;
+        return false;
+    };
+    EXPECT_TRUE(rejects_in_phase("Pushback", "Pushback"));
+    EXPECT_TRUE(rejects_in_phase("Taxiing", "Taxiing"));
+    EXPECT_TRUE(rejects_in_phase("WaitingForTraffic", "WaitingForTraffic"));
+    EXPECT_TRUE(rejects_in_phase("WaitingForRunway", "WaitingForRunway"));
+    EXPECT_TRUE(rejects_in_phase("Runway", "RunwayOccupied"));
+
+    airside::Simulation departed(airside::load_scenario(scenario_file("surface_traffic.yaml")), 42);
+    const auto ids = departed.snapshot().aircraft;
+    ASSERT_FALSE(ids.empty());
+    const auto target = ids.front().id;
+    (void)departed.run();
+    EXPECT_EQ(departed.validate_recovery_action({airside::RecoveryActionKind::ControlledHold,
+        std::to_string(target.value()), "60", "departed test"}).reason, "aircraft_departed");
 }
 
 TEST(SurfaceTrafficTest, MovementEventsCarryAuthoritativePoseAndStableEntityIdentity) {
