@@ -108,6 +108,11 @@ struct RecoveryEpochRecord {
     std::string application_result;
 };
 
+// Read-only access to the exact outcome criteria used by plan_recovery.
+[[nodiscard]] bool recovery_outcome_better(const RecoveryOutcome& candidate, const RecoveryOutcome& baseline);
+[[nodiscard]] bool recovery_outcome_materially_improves(const RecoveryOutcome& candidate,
+    const RecoveryOutcome& baseline, const RecoverySearchConfig& config);
+
 [[nodiscard]] std::vector<RecoveryCandidate> generate_recovery_candidates(
     const RecoveryState& state, const RecoverySearchConfig& config);
 [[nodiscard]] RecoveryDecision plan_recovery(

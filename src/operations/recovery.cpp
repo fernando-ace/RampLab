@@ -197,6 +197,15 @@ bool material_improvement(const RecoveryOutcome& candidate, const RecoveryOutcom
 }
 }  // namespace
 
+bool recovery_outcome_better(const RecoveryOutcome& candidate, const RecoveryOutcome& baseline) {
+    return evaluation_better(candidate, baseline);
+}
+
+bool recovery_outcome_materially_improves(const RecoveryOutcome& candidate,
+    const RecoveryOutcome& baseline, const RecoverySearchConfig& config) {
+    return material_improvement(candidate, baseline, config);
+}
+
 std::vector<RecoveryCandidate> generate_recovery_candidates(
     const RecoveryState& state, const RecoverySearchConfig& config) {
     std::vector<RecoveryCandidate> result;

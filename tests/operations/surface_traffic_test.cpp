@@ -369,6 +369,146 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiBFirstOrdering) {
     EXPECT_TRUE(b.departure);
 }
 
+enum class SurfaceOrdering { AFirst, BFirst };
+
+struct MaterialScenarioConfig {
+    // Uniform low-visibility towing pace, not a per-variant speed penalty.
+    double aircraft_speed_mps{0.1};
+    // Let the earlier AX303 operation and mobile servicing clear first. Align
+    // the departure pair with B's longer gate-to-junction travel time. These
+    // release facts are identical in both runs; the sole ordering variable is
+    // still A's validated -100/+200 preparation offset.
+    airside::SimTime a_preparation_start{7200};
+    airside::SimTime b_preparation_start{6000};
+    // A has ample schedule slack; its later B-first taxi does not manufacture
+    // a compensating departure failure/delay on the less urgent operation.
+    airside::SimTime a_scheduled_departure{13000};
+};
+
+struct MaterialSurfaceRun {
+    airside::SimulationResult result;
+    airside::SimulationSnapshot snapshot;
+    airside::RecoveryOutcome outcome;
+    std::int64_t aggregate_departure_delay{};
+    std::string termination;
+};
+
+MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering ordering,
+    const MaterialScenarioConfig& config) {
+    auto scenario = surface_ordering_scenario();
+    auto a = std::ranges::find(scenario.aircraft, airside::AircraftId{1}, &airside::Aircraft::id);
+    // Change only the schedule of the existing aircraft, preserving all route,
+    // gate, task, operation and turnaround identity facts from C-11.
+    *a = airside::Aircraft{a->id(), a->flight_number(), a->scheduled_arrival(),
+        config.a_scheduled_departure, a->gate(), a->gate_node(), a->tasks(),
+        a->turnaround_id(), a->target_off_block(), a->operation_type(), a->arrival_exit_node()};
+    a->mutable_tasks().front().earliest_start = config.a_preparation_start
+        + (ordering == SurfaceOrdering::AFirst ? airside::SimTime{-100} : airside::SimTime{200});
+    auto b = std::ranges::find(scenario.aircraft, airside::AircraftId{2}, &airside::Aircraft::id);
+    for (auto& task : b->mutable_tasks())
+        if (task.type == airside::ServiceType::PushbackPreparation)
+            task.earliest_start = config.b_preparation_start;
+    scenario.surface_operations->aircraft_speed_mps = config.aircraft_speed_mps;
+    airside::Simulation simulation(std::move(scenario), 42);
+    std::size_t steps = 0;
+    while (!simulation.finished() && steps++ < 50000) (void)simulation.advance();
+    if (!simulation.finished()) throw std::runtime_error("material ordering fixture did not terminate");
+    MaterialSurfaceRun run;
+    run.result = simulation.result();
+    run.snapshot = simulation.snapshot();
+    run.termination = "simulation_finished";
+    // Match Simulation's existing terminal RecoveryOutcome mapping exactly.
+    const auto& metrics = run.result.metrics;
+    run.outcome.completed = metrics.failed_or_timed_out_turnarounds == 0
+        && metrics.completed_turnarounds == metrics.total_turnarounds;
+    run.outcome.objective_failures = static_cast<std::uint32_t>(metrics.failed_or_timed_out_turnarounds);
+    run.outcome.timeouts = metrics.unresolved_service_requests > 0 ? 1U : 0U;
+    run.outcome.turnaround_failures = static_cast<std::uint32_t>(metrics.failed_or_timed_out_turnarounds);
+    run.outcome.completed_objectives = static_cast<std::uint32_t>(metrics.completed_turnarounds);
+    run.outcome.worst_departure_delay_seconds = static_cast<double>(metrics.maximum_departure_delay_seconds);
+    run.outcome.departure_delay_seconds = metrics.mean_departure_delay_seconds;
+    run.outcome.service_wait_seconds = static_cast<double>(metrics.total_service_task_wait_seconds);
+    for (const auto& flight : run.result.aircraft)
+        run.aggregate_departure_delay += flight.departure_delay().value_or(airside::SimTime{}).count();
+    return run;
+}
+
+void validate_material_surface_run(const MaterialSurfaceRun& run, SurfaceOrdering ordering) {
+    const auto fixture = surface_ordering_scenario();
+    const auto edge = north_south_taxi_edge(fixture.graph);
+    validate_surface_ordering_run(run.result, edge);
+    const auto a = taxi_contention_history(run.result, airside::AircraftId{1}, edge, true);
+    const auto b = taxi_contention_history(run.result, airside::AircraftId{2}, edge);
+    const auto& leader = ordering == SurfaceOrdering::AFirst ? a : b;
+    const auto& follower = ordering == SurfaceOrdering::AFirst ? b : a;
+    ASSERT_TRUE(leader.first_entry);
+    ASSERT_TRUE(follower.first_entry);
+    ASSERT_TRUE(follower.wait);
+    ASSERT_TRUE(leader.progression);
+    ASSERT_TRUE(follower.progression);
+    EXPECT_LT(*leader.first_entry, *follower.wait);
+    EXPECT_LT(*follower.wait, *leader.progression);
+    EXPECT_LT(*leader.progression, *follower.first_entry);
+    EXPECT_LT(*follower.first_entry, *follower.progression);
+    EXPECT_TRUE(a.departure);
+    EXPECT_TRUE(b.departure);
+    // Exact C-11 routes, including no replans onto a topology-dependent detour.
+    for (const auto id : {airside::AircraftId{1}, airside::AircraftId{2}}) {
+        const auto flight = std::ranges::find(fixture.aircraft, id, &airside::Aircraft::id);
+        const auto expected = airside::find_route(fixture.graph, flight->gate_node(),
+            fixture.surface_operations->departure_handoff, airside::MovementClass::Aircraft);
+        ASSERT_TRUE(expected);
+        for (const auto& event : run.result.events) {
+            if (event.aircraft == id && event.type == airside::SimulationEventType::SurfaceTaxiRouteAssigned) {
+                ASSERT_TRUE(event.route);
+                EXPECT_EQ(event.route->nodes, expected->nodes);
+                EXPECT_EQ(event.route->edges, expected->edges);
+            }
+        }
+    }
+    EXPECT_EQ(run.result.metrics.agent_replans, 0U);
+    EXPECT_EQ(run.result.metrics.agent_objectives_failed, 0U);
+    EXPECT_GE(run.result.metrics.minimum_aircraft_separation_m, 12.0);
+    EXPECT_GE(run.result.metrics.minimum_aircraft_ground_separation_m, 8.0);
+    EXPECT_FALSE(run.result.metrics.fleet_deadlock_unresolved);
+    EXPECT_EQ(run.result.metrics.fleet_deadlock_count, 0U);
+    for (std::size_t i = 1; i < run.result.events.size(); ++i) {
+        EXPECT_LT(run.result.events[i - 1].sequence, run.result.events[i].sequence);
+        EXPECT_LE(run.result.events[i - 1].timestamp, run.result.events[i].timestamp);
+    }
+    EXPECT_TRUE(run.outcome.completed.value_or(false));
+    EXPECT_EQ(run.outcome.completed_objectives, 3U);
+    EXPECT_EQ(run.outcome.objective_failures, 0U);
+    EXPECT_EQ(run.outcome.turnaround_failures, 0U);
+    EXPECT_EQ(run.outcome.timeouts, 0U);
+    EXPECT_TRUE(std::ranges::all_of(run.snapshot.aircraft, [](const auto& item) {
+        return item.surface_state == "Departed" && item.actual_surface_departure;
+    }));
+    std::cout << "material ordering=" << (ordering == SurfaceOrdering::AFirst ? "A-first" : "B-first")
+        << " completed=" << *run.outcome.completed << " completed_objectives=" << run.outcome.completed_objectives
+        << " objective_failures=" << run.outcome.objective_failures << " timeouts=" << run.outcome.timeouts
+        << " turnaround_failures=" << run.outcome.turnaround_failures
+        << " worst_delay=" << *run.outcome.worst_departure_delay_seconds
+        << " mean_delay=" << *run.outcome.departure_delay_seconds
+        << " aggregate_delay=" << run.aggregate_departure_delay
+        << " termination=" << run.termination << " final_t=" << run.snapshot.simulation_time.count()
+        << " separation=" << run.result.metrics.minimum_aircraft_separation_m
+        << " ground_separation=" << run.result.metrics.minimum_aircraft_ground_separation_m << '\n';
+    for (const auto& item : run.snapshot.aircraft)
+        std::cout << "material final aircraft=" << item.id.value() << " state=" << item.surface_state
+            << " departure=" << item.actual_surface_departure->count() << '\n';
+}
+
+TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiAFirst) {
+    const auto run = run_material_surface_ordering_variant(SurfaceOrdering::AFirst, {});
+    validate_material_surface_run(run, SurfaceOrdering::AFirst);
+}
+
+TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiBFirst) {
+    const auto run = run_material_surface_ordering_variant(SurfaceOrdering::BFirst, {});
+    validate_material_surface_run(run, SurfaceOrdering::BFirst);
+}
+
 TEST(SurfaceTrafficTest, ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves) {
     auto scenario = synthetic_stand_closure(airside::RecoveryMode::Integrated);
     scenario.gate_events.clear();
