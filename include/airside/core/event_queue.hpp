@@ -25,6 +25,7 @@ enum class EventType {
     OperatorSurfaceAvailability,
     OperatorVehicleOutage,
     SurfaceTick,
+    RecoveryHoldReleased,
 };
 
 enum class EntityKind { None, Aircraft, Vehicle, Edge, Task, Gate };

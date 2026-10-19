@@ -100,6 +100,14 @@ struct SimulationResult {
 
 };
 
+struct RecoveryHold {
+    AircraftId aircraft;
+    SimTime started_at{};
+    SimTime release_at{};
+    std::string reason;
+    auto operator<=>(const RecoveryHold&) const = default;
+};
+
 enum class SimulationHistoryPolicy { Retain, Discard };
 
 class Simulation {
@@ -123,6 +131,7 @@ public:
     [[nodiscard]] SimTime current_time() const noexcept;
     [[nodiscard]] const std::vector<SimulationEventRecord>& event_history() const noexcept;
     [[nodiscard]] const std::vector<RecoveryEpochRecord>& recovery_epochs() const noexcept;
+    [[nodiscard]] const std::map<AircraftId, RecoveryHold>& active_recovery_holds() const noexcept;
     [[nodiscard]] RecoveryActionResult validate_recovery_action(const RecoveryAction& action) const;
     [[nodiscard]] RecoveryActionResult apply_recovery_action(const RecoveryAction& action);
     [[nodiscard]] SimulationSnapshot snapshot() const;
@@ -139,6 +148,7 @@ private:
     void handle_road_event(EdgeId id, bool available, bool operator_triggered = false);
     void handle_gate_event(GateId id, bool available);
     void handle_departure(AircraftId id);
+    void release_recovery_hold(AircraftId id, SimTime scheduled_release);
     void complete_arrival_at_gate(AircraftId id);
     void start_arrival_taxi_in(AircraftId id);
     void handle_abstract_service_completed(AircraftId id, TaskId task);
@@ -290,6 +300,7 @@ private:
         std::size_t reroutes{};
     };
     std::map<AircraftId, SurfaceAircraftState> surface_aircraft_;
+    std::map<AircraftId, RecoveryHold> active_recovery_holds_;
     std::map<AircraftId, agents::OperationalAgent> surface_agents_;
     std::vector<agents::DecisionEvent> agent_decisions_;
     std::map<EdgeId, AircraftId> surface_edge_reservations_;

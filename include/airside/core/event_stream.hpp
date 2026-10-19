@@ -29,6 +29,7 @@ enum class SimulationEventType {
     ArrivalRunwayExit, ArrivalTaxiInStarted, ArrivalAtGate,
     GateWaitStarted, GateAssigned, GateAvailabilityChanged, AircraftLanded, TurnaroundStarted, PushbackTaxiOutStarted,
     OperatorIntervention, AgentDecision,
+    RecoveryHoldStarted, RecoveryHoldReleased,
 };
 
 struct SimulationEventRecord {

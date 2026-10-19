@@ -61,6 +61,8 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::PushbackTaxiOutStarted: return "PushbackTaxiOutStarted";
     case SimulationEventType::OperatorIntervention: return "OperatorIntervention";
     case SimulationEventType::AgentDecision: return "AgentDecision";
+    case SimulationEventType::RecoveryHoldStarted: return "RecoveryHoldStarted";
+    case SimulationEventType::RecoveryHoldReleased: return "RecoveryHoldReleased";
     }
     return "Unknown";
 }
@@ -243,6 +245,10 @@ std::string format_event(const SimulationEventRecord& event) {
     case SimulationEventType::SurfaceWaitingForPushback: return std::format("{} waiting for a safe pushback window", aircraft);
     case SimulationEventType::AgentDecision:
         return std::format("{} {}: {}", event.agent_id, event.decision, event.reason_code);
+    case SimulationEventType::RecoveryHoldStarted:
+        return std::format("{} controlled hold started ({})", aircraft, event.detail);
+    case SimulationEventType::RecoveryHoldReleased:
+        return std::format("{} controlled hold released ({})", aircraft, event.detail);
     }
     return "unknown simulation event";
 }

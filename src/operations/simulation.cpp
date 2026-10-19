@@ -5,6 +5,7 @@
 #include "airside/operations/surface_safety.hpp"
 
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <format>
 #include <functional>
@@ -713,6 +714,9 @@ SimulationResult Simulation::result() const {
 SimTime Simulation::current_time() const noexcept { return now_; }
 const std::vector<SimulationEventRecord>& Simulation::event_history() const noexcept { return event_history_; }
 const std::vector<RecoveryEpochRecord>& Simulation::recovery_epochs() const noexcept { return recovery_epochs_; }
+const std::map<AircraftId, RecoveryHold>& Simulation::active_recovery_holds() const noexcept {
+    return active_recovery_holds_;
+}
 
 RecoveryReplayResult Simulation::replay_to_recovery_boundary() const {
     RecoveryReplayResult result;
@@ -920,6 +924,34 @@ void Simulation::consider_recovery(std::string trigger, RevealedDisruption disru
 }
 
 RecoveryActionResult Simulation::validate_recovery_action(const RecoveryAction& action) const {
+    if (action.kind == RecoveryActionKind::ControlledHold) {
+        std::uint32_t aircraft_value{};
+        const auto id_parse = std::from_chars(action.task_id.data(), action.task_id.data() + action.task_id.size(), aircraft_value);
+        if (action.task_id.empty() || id_parse.ec != std::errc{} || id_parse.ptr != action.task_id.data() + action.task_id.size())
+            return {false, "invalid_aircraft_id"};
+        std::int64_t seconds{};
+        const auto duration_parse = std::from_chars(action.target_id.data(), action.target_id.data() + action.target_id.size(), seconds);
+        if (action.target_id.empty() || duration_parse.ec != std::errc{} ||
+            duration_parse.ptr != action.target_id.data() + action.target_id.size())
+            return {false, "invalid_hold_duration"};
+        if (seconds <= 0) return {false, "hold_duration_must_be_positive"};
+        if (seconds > 600) return {false, "hold_duration_exceeds_600_seconds"};
+        const auto flight = std::ranges::find(scenario_.aircraft, AircraftId{aircraft_value}, &Aircraft::id);
+        if (flight == scenario_.aircraft.end()) return {false, "aircraft_not_found"};
+        if (flight->state() == AircraftState::Departed) return {false, "aircraft_departed"};
+        if (flight->turnaround_state() == TurnaroundState::Failed) return {false, "aircraft_failed"};
+        if (active_recovery_holds_.contains(flight->id())) return {false, "recovery_hold_already_active"};
+        if (scenario_.surface_operations) {
+            const auto surface = surface_aircraft_.find(flight->id());
+            if (surface != surface_aircraft_.end()) {
+                using Phase = SurfaceAircraftState::Phase;
+                const auto phase = surface->second.phase;
+                if (phase != Phase::None && phase != Phase::Arrived && phase != Phase::WaitingForPushback)
+                    return {false, "aircraft_in_unsupported_surface_phase"};
+            }
+        }
+        return {true, "validated"};
+    }
     if (action.kind == RecoveryActionKind::ReassignStand) {
         std::uint32_t aircraft_value{};
         try {
@@ -1073,6 +1105,29 @@ RecoveryActionResult Simulation::apply_recovery_action(const RecoveryAction& act
     if (!validation.accepted) {
         if (!recovery_epochs_.empty()) recovery_epochs_.back().application_result = validation.reason;
         return validation;
+    }
+    if (action.kind == RecoveryActionKind::ControlledHold) {
+        const AircraftId id{static_cast<std::uint32_t>(std::stoul(action.task_id))};
+        const auto release_at = now_ + SimTime{std::stoll(action.target_id)};
+        active_recovery_holds_.emplace(id, RecoveryHold{id, now_, release_at, action.reason});
+        const auto action_boundary = event_history_.size();
+        const auto* next_event = events_.peek();
+        const auto next_queue_sequence = next_event ? next_event->sequence : std::numeric_limits<std::uint64_t>::max();
+        const auto* epoch = recovery_epochs_.empty() ? nullptr : &recovery_epochs_.back();
+        if (scenario_.recovery_mode == RecoveryMode::Integrated) {
+            accepted_recovery_actions_.push_back({now_, action_boundary, next_provenance_order_++,
+                epoch ? std::to_string(epoch->fingerprint) : "manual",
+                epoch && epoch->selected_candidate_id ? *epoch->selected_candidate_id : "manual",
+                next_queue_sequence, action});
+        }
+        SimulationEventRecord event{SimulationEventType::RecoveryHoldStarted};
+        event.aircraft = id;
+        event.detail = std::format("release_at={} duration_seconds={} reason={}", release_at.count(), action.target_id, action.reason);
+        emit(std::move(event));
+        (void)events_.schedule(release_at, EventType::RecoveryHoldReleased,
+            {EntityKind::Aircraft, id.value()}, release_at.count());
+        if (!recovery_epochs_.empty()) recovery_epochs_.back().application_result = "accepted";
+        return {true, "accepted"};
     }
     if (action.kind == RecoveryActionKind::ReassignStand) {
         const AircraftId id{static_cast<std::uint32_t>(std::stoul(action.task_id))};
@@ -1234,6 +1289,27 @@ void Simulation::process(const Event& event) {
     }
     case EventType::SurfaceTick:
         surface_tick_scheduled_ = false; handle_surface_tick(); break;
+    case EventType::RecoveryHoldReleased:
+        release_recovery_hold(AircraftId{event.entity.value}, SimTime{event.data}); break;
+    }
+}
+
+void Simulation::release_recovery_hold(AircraftId id, SimTime scheduled_release) {
+    const auto hold = active_recovery_holds_.find(id);
+    if (hold == active_recovery_holds_.end() || hold->second.release_at != scheduled_release || now_ != scheduled_release)
+        return;
+    active_recovery_holds_.erase(hold);
+    SimulationEventRecord event{SimulationEventType::RecoveryHoldReleased};
+    event.aircraft = id;
+    event.detail = std::format("scheduled_release={}", scheduled_release.count());
+    emit(std::move(event));
+    if (scenario_.surface_operations && !surface_tick_scheduled_) {
+        surface_tick_scheduled_ = true;
+        (void)events_.schedule(now_, EventType::SurfaceTick);
+    } else if (!scenario_.surface_operations) {
+        const auto& flight = aircraft(id);
+        (void)events_.schedule(std::max(now_, flight.scheduled_departure()), EventType::AircraftDeparture,
+            {EntityKind::Aircraft, id.value()});
     }
 }
 
@@ -1990,6 +2066,8 @@ void Simulation::update_turnaround_estimate(const Aircraft& flight) {
 
 void Simulation::handle_departure(AircraftId id) {
     auto& flight = aircraft(id);
+    if (const auto hold = active_recovery_holds_.find(id); hold != active_recovery_holds_.end() && now_ < hold->second.release_at)
+        return;
     const auto previous = flight.state();
     flight.depart(now_);
     auto& assigned_gate = gate(flight.gate());
@@ -2857,6 +2935,9 @@ void Simulation::handle_surface_tick() {
             continue;
         }
         if (state.phase == Phase::WaitingForPushback) {
+            if (const auto hold = active_recovery_holds_.find(id);
+                hold != active_recovery_holds_.end() && now_ < hold->second.release_at)
+                continue;
             if (state.route_edges.empty()) {
                 state.phase = Phase::WaitingForRunway;
                 state.queued_at = now_;

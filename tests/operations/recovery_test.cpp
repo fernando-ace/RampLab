@@ -199,4 +199,78 @@ TEST(RecoveryPlannerTest, RelevantResequenceIsExecutableAndSurvivesCandidateCapD
     EXPECT_EQ(a[1].actions.front().target_id, "1");
 }
 
+TEST(RecoveryPlannerTest, RevealedSurfaceClosurePromotesRelevantHoldAheadOfGenericCandidates) {
+    RecoveryState state;
+    state.snapshot.simulation_time = SimTime{20};
+    state.revealed_disruptions.push_back({SimTime{10}, "surface_closure", "edge:4", "synthetic closure"});
+    TurnaroundSnapshot turnaround; turnaround.aircraft = AircraftId{7}; turnaround.state = TurnaroundState::ReadyForDeparture;
+    state.snapshot.turnarounds.push_back(turnaround);
+    AircraftSnapshot aircraft; aircraft.id = AircraftId{7}; aircraft.state = AircraftState::ReadyForPushback;
+    aircraft.surface_state = "WaitingForPushback"; state.snapshot.aircraft.push_back(aircraft);
+    EXPECT_EQ(triage_recovery_state(state), RecoveryTriage::IntegratedPlanningRequired);
+    RecoverySearchConfig config; config.max_candidates = 2; config.max_search_tier = 1;
+    const auto first = generate_recovery_candidates(state, config);
+    const auto second = generate_recovery_candidates(state, config);
+    ASSERT_EQ(first, second);
+    ASSERT_EQ(first.size(), 2U);
+    ASSERT_EQ(first[1].actions.size(), 1U);
+    EXPECT_EQ(first[1].actions.front(), (RecoveryAction{RecoveryActionKind::ControlledHold,
+        "7", "60", "60 second hold while a revealed surface closure affects departure operations"}));
+}
+
+TEST(RecoveryPlannerTest, LatenessAloneDoesNotGenerateControlledHold) {
+    RecoveryState state;
+    state.snapshot.simulation_time = SimTime{20};
+    TurnaroundSnapshot turnaround; turnaround.aircraft = AircraftId{7}; turnaround.predicted_late = true;
+    state.snapshot.turnarounds.push_back(turnaround);
+    AircraftSnapshot aircraft; aircraft.id = AircraftId{7}; aircraft.state = AircraftState::ReadyForPushback;
+    aircraft.surface_state = "ReadyForPushback"; state.snapshot.aircraft.push_back(aircraft);
+    const auto candidates = generate_recovery_candidates(state, RecoverySearchConfig{});
+    EXPECT_FALSE(std::ranges::any_of(candidates, [](const auto& candidate) {
+        return !candidate.actions.empty() && candidate.actions.front().kind == RecoveryActionKind::ControlledHold;
+    }));
+}
+
+TEST(RecoveryPlannerTest, DirectGseRepairRemainsAheadOfHoldAtCandidateCap) {
+    RecoveryState state;
+    state.snapshot.simulation_time = SimTime{20};
+    state.revealed_disruptions.push_back({SimTime{10}, "surface_closure", "edge:4", "closure"});
+    state.revealed_disruptions.push_back({SimTime{10}, "vehicle_outage", "vehicle:1", "outage"});
+    TurnaroundSnapshot turnaround; turnaround.aircraft = AircraftId{7};
+    ServiceTaskSnapshot task; task.id = TaskId{8}; task.type = ServiceType::Fueling;
+    task.status = TaskStatus::InProgress; task.assigned_vehicle = VehicleId{1};
+    turnaround.tasks.push_back(task); state.snapshot.turnarounds.push_back(turnaround);
+    AircraftSnapshot aircraft; aircraft.id = AircraftId{7}; aircraft.state = AircraftState::ReadyForPushback;
+    aircraft.surface_state = "WaitingForPushback"; state.snapshot.aircraft.push_back(aircraft);
+    ServiceVehicleSnapshot failed; failed.id = VehicleId{1}; failed.type = ServiceType::Fueling;
+    failed.state = VehicleState::Assigned; failed.fleet_status = "Unavailable";
+    ServiceVehicleSnapshot backup; backup.id = VehicleId{2}; backup.type = ServiceType::Fueling;
+    backup.state = VehicleState::Idle; backup.fleet_status = "Idle";
+    state.snapshot.vehicles = {failed, backup};
+    RecoverySearchConfig config; config.max_candidates = 2; config.max_search_tier = 1;
+    const auto candidates = generate_recovery_candidates(state, config);
+    ASSERT_EQ(candidates.size(), 2U);
+    EXPECT_EQ(candidates[1].actions.front().kind, RecoveryActionKind::ReassignVehicle);
+    EXPECT_EQ(candidates[1].id, "vehicle:8:2");
+}
+
+TEST(RecoveryPlannerTest, NonBeneficialControlledHoldLeavesCurrentPlanSelected) {
+    RecoveryState state;
+    state.snapshot.simulation_time = SimTime{20};
+    state.revealed_disruptions.push_back({SimTime{10}, "surface_closure", "edge:4", "closure"});
+    TurnaroundSnapshot turnaround; turnaround.aircraft = AircraftId{7};
+    state.snapshot.turnarounds.push_back(turnaround);
+    AircraftSnapshot aircraft; aircraft.id = AircraftId{7}; aircraft.state = AircraftState::ReadyForPushback;
+    aircraft.surface_state = "ReadyForPushback"; state.snapshot.aircraft.push_back(aircraft);
+    RecoverySearchConfig config; config.max_candidates = 2; config.max_search_tier = 1;
+    const auto decision = plan_recovery(state, config, [](const auto& candidate) {
+        RecoveryEvaluation evaluation; evaluation.candidate = candidate; evaluation.valid = true;
+        evaluation.outcome.worst_departure_delay_seconds = candidate.actions.empty() ? 100.0 : 160.0;
+        evaluation.outcome.departure_delay_seconds = evaluation.outcome.worst_departure_delay_seconds;
+        return evaluation;
+    });
+    EXPECT_FALSE(decision.selected_candidate_id.has_value());
+    EXPECT_EQ(decision.candidates.front().id, "current_plan");
+}
+
 }  // namespace airside

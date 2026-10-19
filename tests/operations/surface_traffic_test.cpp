@@ -137,6 +137,105 @@ TEST(SurfaceTrafficTest, ControlCoordinatesPushbackTaxiContentionAndRunwayQueue)
     }));
 }
 
+TEST(SurfaceTrafficTest, ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves) {
+    auto scenario = synthetic_stand_closure(airside::RecoveryMode::Integrated);
+    scenario.gate_events.clear();
+    const airside::NodeId exit{2}, gate_b_node{4};
+    scenario.aircraft.emplace_back(airside::AircraftId{2}, "SYN002", airside::SimTime{0},
+        airside::SimTime{100}, airside::GateId{2}, gate_b_node, std::vector<airside::ServiceTask>{},
+        "", std::nullopt, airside::AircraftOperationType::ArrivalOnly, exit);
+    scenario.gates.emplace_back(airside::GateId{2}, "B", gate_b_node);
+    scenario.recovery_mode = airside::RecoveryMode::Integrated;
+    airside::Simulation simulation(std::move(scenario), 42);
+    const airside::RecoveryAction hold{airside::RecoveryActionKind::ControlledHold,
+        "1", "60", "synthetic surface contention"};
+    EXPECT_TRUE(simulation.validate_recovery_action(hold).accepted);
+    EXPECT_TRUE(simulation.apply_recovery_action(hold).accepted);
+    ASSERT_TRUE(simulation.active_recovery_holds().contains(airside::AircraftId{1}));
+    const auto parent_time = simulation.current_time();
+    const auto parent_history = simulation.event_history();
+    const auto replay = simulation.replay_to_recovery_boundary();
+    EXPECT_TRUE(replay.equivalent) << replay.reason;
+    ASSERT_NE(replay.simulation, nullptr);
+    ASSERT_TRUE(replay.simulation->active_recovery_holds().contains(airside::AircraftId{1}));
+    while (!replay.simulation->active_recovery_holds().empty() && !replay.simulation->finished())
+        (void)replay.simulation->advance();
+    EXPECT_TRUE(replay.simulation->active_recovery_holds().empty());
+    EXPECT_TRUE(std::ranges::any_of(replay.simulation->event_history(), [](const auto& event) {
+        return event.type == airside::SimulationEventType::RecoveryHoldReleased &&
+            event.aircraft == airside::AircraftId{1} && event.timestamp == airside::SimTime{60};
+    }));
+    EXPECT_EQ(simulation.current_time(), parent_time);
+    EXPECT_EQ(simulation.event_history(), parent_history);
+    EXPECT_EQ(simulation.validate_recovery_action(hold).reason, "recovery_hold_already_active");
+    const auto events = [&] { return simulation.event_history(); };
+    while (simulation.current_time() < airside::SimTime{60} && !simulation.finished()) (void)simulation.advance();
+    EXPECT_EQ(simulation.current_time(), airside::SimTime{60});
+    EXPECT_TRUE(simulation.active_recovery_holds().empty());
+    const auto history_at_release = events();
+    const auto release = std::ranges::find_if(history_at_release, [](const auto& event) {
+        return event.type == airside::SimulationEventType::RecoveryHoldReleased &&
+            event.aircraft == airside::AircraftId{1};
+    });
+    ASSERT_NE(release, history_at_release.end());
+    EXPECT_EQ(release->timestamp, airside::SimTime{60});
+    EXPECT_TRUE(std::ranges::any_of(history_at_release, [](const auto& event) {
+        return event.type == airside::SimulationEventType::ArrivalTaxiInStarted &&
+            event.aircraft == airside::AircraftId{2} && event.timestamp < airside::SimTime{60};
+    }));
+    ASSERT_FALSE(std::ranges::any_of(history_at_release, [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfacePushbackStarted &&
+            event.aircraft == airside::AircraftId{1};
+    }));
+    while (!simulation.finished() && !std::ranges::any_of(simulation.event_history(), [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfacePushbackStarted &&
+            event.aircraft == airside::AircraftId{1};
+    })) (void)simulation.advance();
+    const auto pushback = std::ranges::find_if(simulation.event_history(), [](const auto& event) {
+        return event.type == airside::SimulationEventType::SurfacePushbackStarted &&
+            event.aircraft == airside::AircraftId{1};
+    });
+    ASSERT_NE(pushback, simulation.event_history().end());
+    EXPECT_GE(pushback->timestamp, airside::SimTime{60});
+    EXPECT_TRUE(simulation.active_recovery_holds().empty());
+}
+
+TEST(SurfaceTrafficTest, ControlledHoldRejectsMalformedAndOutOfBoundsDurations) {
+    auto scenario = synthetic_stand_closure(airside::RecoveryMode::Reactive);
+    scenario.gate_events.clear();
+    airside::Simulation simulation(std::move(scenario), 42);
+    const auto validate = [&](std::string target) {
+        return simulation.validate_recovery_action({airside::RecoveryActionKind::ControlledHold,
+            "1", std::move(target), "test"});
+    };
+    EXPECT_EQ(validate("bad").reason, "invalid_hold_duration");
+    EXPECT_EQ(validate("0").reason, "hold_duration_must_be_positive");
+    EXPECT_EQ(validate("601").reason, "hold_duration_exceeds_600_seconds");
+    EXPECT_EQ(simulation.validate_recovery_action({airside::RecoveryActionKind::ControlledHold,
+        "999", "60", "test"}).reason, "aircraft_not_found");
+
+    auto failed_scenario = synthetic_stand_closure(airside::RecoveryMode::Reactive);
+    failed_scenario.gate_events.clear();
+    failed_scenario.aircraft.front().fail_turnaround("synthetic failed state");
+    airside::Simulation failed(std::move(failed_scenario), 42);
+    EXPECT_EQ(failed.validate_recovery_action({airside::RecoveryActionKind::ControlledHold,
+        "1", "60", "test"}).reason, "aircraft_failed");
+
+    auto moving_scenario = synthetic_stand_closure(airside::RecoveryMode::Reactive);
+    moving_scenario.gate_events.clear();
+    airside::Simulation moving(std::move(moving_scenario), 42);
+    auto has_pushback = [&] {
+        return std::ranges::any_of(moving.event_history(), [](const auto& event) {
+            return event.type == airside::SimulationEventType::SurfacePushbackStarted &&
+                event.aircraft == airside::AircraftId{1};
+        });
+    };
+    while (!moving.finished() && !has_pushback()) (void)moving.advance();
+    EXPECT_TRUE(has_pushback());
+    EXPECT_EQ(moving.validate_recovery_action({airside::RecoveryActionKind::ControlledHold,
+        "1", "60", "test"}).reason, "aircraft_in_unsupported_surface_phase");
+}
+
 TEST(SurfaceTrafficTest, MovementEventsCarryAuthoritativePoseAndStableEntityIdentity) {
     airside::Simulation simulation(airside::load_scenario(scenario_file("surface_traffic.yaml")), 42);
     const auto result = simulation.run();

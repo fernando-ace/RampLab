@@ -114,6 +114,13 @@ RecoveryTriage triage_recovery_state(const RecoveryState& state) noexcept {
                 aircraft.surface_state != "Arrived";
         })) return RecoveryTriage::IntegratedPlanningRequired;
     }
+    const bool surface_closure_revealed = std::ranges::any_of(state.revealed_disruptions,
+        [&](const auto& disruption) {
+            return disruption.revealed_at <= state.snapshot.simulation_time && disruption.kind == "surface_closure";
+        });
+    if (surface_closure_revealed && std::ranges::any_of(state.snapshot.aircraft, [](const auto& aircraft) {
+        return aircraft.surface_state == "ReadyForPushback" || aircraft.surface_state == "WaitingForPushback";
+    })) return RecoveryTriage::IntegratedPlanningRequired;
     for (const auto& turnaround : state.snapshot.turnarounds) {
         if (turnaround.predicted_late)
             return RecoveryTriage::IntegratedPlanningRequired;
@@ -198,7 +205,6 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         return result;
 
     std::vector<RecoveryCandidate> executable;
-    std::vector<RecoveryCandidate> diagnostics;
     auto turnarounds = state.snapshot.turnarounds;
     std::ranges::sort(turnarounds, {}, &TurnaroundSnapshot::aircraft);
     auto vehicles = state.snapshot.vehicles;
@@ -257,11 +263,17 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
                     "prefer dependency-valid task before target"}}});
             }
         }
-        if (turnaround.predicted_late && turnaround.state != TurnaroundState::Departed &&
-            turnaround.state != TurnaroundState::Failed) {
-            diagnostics.push_back({"hold:" + id_text(turnaround.aircraft.value()), 1,
+        const bool departure_disruption_revealed = std::ranges::any_of(state.revealed_disruptions,
+            [&](const auto& disruption) {
+                return disruption.revealed_at <= state.snapshot.simulation_time &&
+                    disruption.kind == "surface_closure";
+            });
+        if (departure_disruption_revealed && aircraft != state.snapshot.aircraft.end() &&
+            (aircraft->surface_state == "ReadyForPushback" || aircraft->surface_state == "WaitingForPushback") &&
+            turnaround.state != TurnaroundState::Departed && turnaround.state != TurnaroundState::Failed) {
+            executable.push_back({"hold:" + id_text(turnaround.aircraft.value()), 1,
                 {{RecoveryActionKind::ControlledHold, id_text(turnaround.aircraft.value()), "60",
-                "bounded hold for disrupted turnaround"}}});
+                "60 second hold while a revealed surface closure affects departure operations"}}});
         }
     }
 
@@ -306,14 +318,21 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         }
         return slowed_task ? 2 : late ? 1 : 0;
     };
+    const auto hold_relevance = [&](const RecoveryCandidate& candidate) {
+        if (candidate.actions.empty() || candidate.actions.front().kind != RecoveryActionKind::ControlledHold) return false;
+        return std::ranges::any_of(state.revealed_disruptions, [&](const auto& disruption) {
+            return disruption.revealed_at <= state.snapshot.simulation_time && disruption.kind == "surface_closure";
+        });
+    };
     const auto priority = [&](const RecoveryCandidate& candidate) {
         if (outage_for_candidate(candidate)) return 0;
         if (stand_relevant(candidate)) return 1;
         const auto relevant = resequence_relevance(candidate);
         if (relevant > 0) return 2;
+        if (hold_relevance(candidate)) return 3;
         const bool is_resequence = !candidate.actions.empty() &&
             candidate.actions.front().kind == RecoveryActionKind::ResequenceTasks;
-        return is_resequence ? 4 : 3;
+        return is_resequence ? 5 : 4;
     };
     std::ranges::sort(executable, [&](const auto& lhs, const auto& rhs) {
         const auto left_priority = priority(lhs);
@@ -328,7 +347,6 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         if (result.size() >= config.max_candidates) break;
         result.push_back(std::move(candidate));
     }
-    // Hold proposals remain diagnostic until their adapter exists.
     if (config.max_search_tier >= 2 && config.max_plan_depth >= 2) {
         const auto singles_end = result.size();
         for (std::size_t i = 1; i < singles_end && result.size() < config.max_candidates; ++i) {
