@@ -60,6 +60,12 @@ airside::Scenario surface_ordering_scenario() {
     if (gate == scenario.gates.end()) throw std::logic_error("missing synthetic A1 gate");
     gate->node = stand->id;
     a->reassign_gate(gate->id, stand->id);
+    // A1 is already serviced in this focused departure fixture. Dispatching its
+    // fuel and baggage vehicles to the same repurposed node would create an
+    // unrelated GSE experiment. Retain its legitimate preparation timing task.
+    auto preparation = a->task(airside::ServiceType::PushbackPreparation);
+    preparation.prerequisites.clear();
+    a->mutable_tasks() = {preparation};
     return scenario;
 }
 
