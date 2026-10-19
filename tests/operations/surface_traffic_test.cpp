@@ -11,6 +11,7 @@
 #include <cmath>
 #include <filesystem>
 #include <iostream>
+#include <limits>
 #include <optional>
 #include <ranges>
 #include <stdexcept>
@@ -372,7 +373,7 @@ TEST(SurfaceTrafficTest, Goal49NorthSouthTaxiBFirstOrdering) {
 enum class SurfaceOrdering { AFirst, BFirst };
 
 struct MaterialScenarioConfig {
-    // Uniform low-visibility towing pace, not a per-variant speed penalty.
+    // Uniform synthetic reduced surface speed, identical in both variants.
     double aircraft_speed_mps{0.1};
     // Let the earlier AX303 operation and mobile servicing clear first. Align
     // the departure pair with B's longer gate-to-junction travel time. These
@@ -391,6 +392,7 @@ struct MaterialSurfaceRun {
     airside::RecoveryOutcome outcome;
     std::int64_t aggregate_departure_delay{};
     std::string termination;
+    std::string closest_pair_observation;
 };
 
 MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering ordering,
@@ -411,12 +413,35 @@ MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering orderin
     scenario.surface_operations->aircraft_speed_mps = config.aircraft_speed_mps;
     airside::Simulation simulation(std::move(scenario), 42);
     std::size_t steps = 0;
-    while (!simulation.finished() && steps++ < 50000) (void)simulation.advance();
+    double closest = std::numeric_limits<double>::infinity();
+    std::string closest_pair;
+    while (!simulation.finished() && steps++ < 50000) {
+        (void)simulation.advance();
+        const auto observed = simulation.snapshot();
+        for (std::size_t i = 0; i < observed.aircraft.size(); ++i) {
+            const auto& left = observed.aircraft[i];
+            if (!left.surface_position_m) continue;
+            for (std::size_t j = i + 1; j < observed.aircraft.size(); ++j) {
+                const auto& right = observed.aircraft[j];
+                if (!right.surface_position_m) continue;
+                const auto distance = std::hypot(left.surface_position_m->x_m - right.surface_position_m->x_m,
+                    left.surface_position_m->y_m - right.surface_position_m->y_m);
+                if (distance < closest) {
+                    closest = distance;
+                    closest_pair = "t=" + std::to_string(observed.simulation_time.count())
+                        + " distance=" + std::to_string(distance)
+                        + " aircraft=" + std::to_string(left.id.value()) + ":" + left.surface_state
+                        + "," + std::to_string(right.id.value()) + ":" + right.surface_state;
+                }
+            }
+        }
+    }
     if (!simulation.finished()) throw std::runtime_error("material ordering fixture did not terminate");
     MaterialSurfaceRun run;
     run.result = simulation.result();
     run.snapshot = simulation.snapshot();
     run.termination = "simulation_finished";
+    run.closest_pair_observation = closest_pair;
     // Match Simulation's existing terminal RecoveryOutcome mapping exactly.
     const auto& metrics = run.result.metrics;
     run.outcome.completed = metrics.failed_or_timed_out_turnarounds == 0
@@ -452,6 +477,16 @@ void validate_material_surface_run(const MaterialSurfaceRun& run, SurfaceOrderin
     EXPECT_LT(*follower.first_entry, *follower.progression);
     EXPECT_TRUE(a.departure);
     EXPECT_TRUE(b.departure);
+    EXPECT_EQ(a.entry_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 7140 : 8871});
+    EXPECT_EQ(b.entry_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 8740 : 7241});
+    EXPECT_EQ(follower.wait_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 7423 : 7410});
+    EXPECT_EQ(follower.release_time, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 10340 : 10471});
+    const auto a_final = std::ranges::find(run.snapshot.aircraft, airside::AircraftId{1}, &airside::AircraftSnapshot::id);
+    const auto b_final = std::ranges::find(run.snapshot.aircraft, airside::AircraftId{2}, &airside::AircraftSnapshot::id);
+    ASSERT_NE(a_final, run.snapshot.aircraft.end());
+    ASSERT_NE(b_final, run.snapshot.aircraft.end());
+    EXPECT_EQ(a_final->actual_surface_departure, airside::SimTime{13170});
+    EXPECT_EQ(b_final->actual_surface_departure, airside::SimTime{ordering == SurfaceOrdering::AFirst ? 10510 : 9011});
     // Exact C-11 routes, including no replans onto a topology-dependent detour.
     for (const auto id : {airside::AircraftId{1}, airside::AircraftId{2}}) {
         const auto flight = std::ranges::find(fixture.aircraft, id, &airside::Aircraft::id);
@@ -472,6 +507,10 @@ void validate_material_surface_run(const MaterialSurfaceRun& run, SurfaceOrderin
     EXPECT_GE(run.result.metrics.minimum_aircraft_ground_separation_m, 8.0);
     EXPECT_FALSE(run.result.metrics.fleet_deadlock_unresolved);
     EXPECT_EQ(run.result.metrics.fleet_deadlock_count, 0U);
+    EXPECT_TRUE(run.result.metrics.fleet_held_reservation_owners.empty());
+    EXPECT_EQ(run.result.metrics.fleet_unfinished_requests, 0U);
+    EXPECT_FALSE(run.snapshot.runway_owner);
+    EXPECT_TRUE(run.snapshot.runway_queue.empty());
     for (std::size_t i = 1; i < run.result.events.size(); ++i) {
         EXPECT_LT(run.result.events[i - 1].sequence, run.result.events[i].sequence);
         EXPECT_LE(run.result.events[i - 1].timestamp, run.result.events[i].timestamp);
@@ -494,19 +533,68 @@ void validate_material_surface_run(const MaterialSurfaceRun& run, SurfaceOrderin
         << " termination=" << run.termination << " final_t=" << run.snapshot.simulation_time.count()
         << " separation=" << run.result.metrics.minimum_aircraft_separation_m
         << " ground_separation=" << run.result.metrics.minimum_aircraft_ground_separation_m << '\n';
+    std::cout << "material safety aircraft_collisions=" << run.result.metrics.surface_aircraft_aircraft_collisions
+        << " ground_collisions=" << run.result.metrics.surface_aircraft_ground_collisions
+        << " fleet_collisions=" << run.result.metrics.fleet_collisions
+        << " acquired=" << std::ranges::count(run.result.events, airside::SimulationEventType::SurfaceReservationAcquired,
+            &airside::SimulationEventRecord::type)
+        << " released=" << std::ranges::count(run.result.events, airside::SimulationEventType::SurfaceReservationReleased,
+            &airside::SimulationEventRecord::type)
+        << " fleet_outstanding=" << run.result.metrics.fleet_outstanding_reservations
+        << " deadlocks=" << run.result.metrics.fleet_deadlock_count << '\n';
+    std::cout << "material closest " << run.closest_pair_observation << '\n';
     for (const auto& item : run.snapshot.aircraft)
         std::cout << "material final aircraft=" << item.id.value() << " state=" << item.surface_state
             << " departure=" << item.actual_surface_departure->count() << '\n';
 }
 
+void validate_material_determinism(const MaterialSurfaceRun& first, const MaterialSurfaceRun& repeat) {
+    EXPECT_EQ(first.result.events, repeat.result.events);
+    EXPECT_EQ(first.result.metrics, repeat.result.metrics);
+    EXPECT_EQ(first.snapshot, repeat.snapshot);
+    EXPECT_EQ(first.aggregate_departure_delay, repeat.aggregate_departure_delay);
+    EXPECT_EQ(first.termination, repeat.termination);
+    EXPECT_EQ(first.closest_pair_observation, repeat.closest_pair_observation);
+}
+
 TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiAFirst) {
     const auto run = run_material_surface_ordering_variant(SurfaceOrdering::AFirst, {});
     validate_material_surface_run(run, SurfaceOrdering::AFirst);
+    validate_material_determinism(run, run_material_surface_ordering_variant(SurfaceOrdering::AFirst, {}));
 }
 
 TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiBFirst) {
     const auto run = run_material_surface_ordering_variant(SurfaceOrdering::BFirst, {});
     validate_material_surface_run(run, SurfaceOrdering::BFirst);
+    validate_material_determinism(run, run_material_surface_ordering_variant(SurfaceOrdering::BFirst, {}));
+}
+
+TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiOutcomeComparison) {
+    // Reproduce the untouched C-11 B-first run to locate the inherited parked
+    // stand observation. Do not exclude it or relax the material safety gate.
+    const MaterialScenarioConfig baseline_facts{1.0, airside::SimTime{1100},
+        airside::SimTime{1000}, airside::SimTime{400}};
+    const auto baseline = run_material_surface_ordering_variant(SurfaceOrdering::BFirst, baseline_facts);
+    const auto original = run_surface_ordering_variant(airside::SimTime{200});
+    EXPECT_EQ(baseline.result.events, original.events);
+    EXPECT_EQ(baseline.result.metrics, original.metrics);
+    std::cout << "frozen baseline closest " << baseline.closest_pair_observation
+        << " reported_minimum=" << baseline.result.metrics.minimum_aircraft_separation_m << '\n';
+    const MaterialScenarioConfig common_facts;
+    const auto a = run_material_surface_ordering_variant(SurfaceOrdering::AFirst, common_facts);
+    const auto b = run_material_surface_ordering_variant(SurfaceOrdering::BFirst, common_facts);
+    const airside::RecoverySearchConfig comparison;
+    EXPECT_DOUBLE_EQ(comparison.minimum_delay_improvement_seconds, 300.0);
+    EXPECT_TRUE(airside::recovery_outcome_better(b.outcome, a.outcome));
+    EXPECT_TRUE(airside::recovery_outcome_materially_improves(b.outcome, a.outcome, comparison));
+    EXPECT_FALSE(airside::recovery_outcome_better(a.outcome, b.outcome));
+    EXPECT_FALSE(airside::recovery_outcome_materially_improves(a.outcome, b.outcome, comparison));
+    EXPECT_DOUBLE_EQ(*a.outcome.worst_departure_delay_seconds - *b.outcome.worst_departure_delay_seconds, 1499.0);
+    EXPECT_EQ(a.aggregate_departure_delay - b.aggregate_departure_delay, 1499);
+    EXPECT_EQ(a.outcome.objective_failures, b.outcome.objective_failures);
+    EXPECT_EQ(a.outcome.timeouts, b.outcome.timeouts);
+    EXPECT_EQ(a.outcome.turnaround_failures, b.outcome.turnaround_failures);
+    EXPECT_EQ(a.outcome.completed_objectives, b.outcome.completed_objectives);
 }
 
 TEST(SurfaceTrafficTest, ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves) {
