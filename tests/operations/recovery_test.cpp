@@ -130,4 +130,31 @@ TEST(RecoveryPlannerTest, StrandedAssignedTaskSurvivesCandidateCapAheadOfDiagnos
     EXPECT_NE(first[1].actions.front().reason.find("stranded"), std::string::npos);
 }
 
+TEST(RecoveryPlannerTest, RevealedStandClosureProducesDeterministicExecutableCandidate) {
+    RecoveryState state;
+    state.snapshot.simulation_time = SimTime{20};
+    state.revealed_disruptions.push_back({SimTime{10}, "stand_closure", "1", "synthetic closure"});
+    TurnaroundSnapshot turnaround;
+    turnaround.aircraft = AircraftId{7};
+    state.snapshot.turnarounds.push_back(turnaround);
+    AircraftSnapshot aircraft;
+    aircraft.id = AircraftId{7};
+    aircraft.state = AircraftState::Arriving;
+    aircraft.assigned_gate = GateId{1};
+    aircraft.surface_state = "WaitingForGate";
+    state.snapshot.aircraft.push_back(aircraft);
+    state.snapshot.gates.push_back({GateId{1}, "closed", NodeId{1}, {}, {}, false});
+    state.snapshot.gates.push_back({GateId{2}, "alternate", NodeId{2}, {}, {}, true});
+    RecoverySearchConfig config;
+    const auto first = generate_recovery_candidates(state, config);
+    const auto second = generate_recovery_candidates(state, config);
+    EXPECT_EQ(first, second);
+    ASSERT_GE(first.size(), 2U);
+    const auto candidate = std::ranges::find(first, "stand:7:2", &RecoveryCandidate::id);
+    ASSERT_NE(candidate, first.end());
+    ASSERT_EQ(candidate->actions.size(), 1U);
+    EXPECT_EQ(candidate->actions.front(), (RecoveryAction{RecoveryActionKind::ReassignStand,
+        "7", "2", "available target stand"}));
+}
+
 }  // namespace airside

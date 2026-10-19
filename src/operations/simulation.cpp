@@ -125,6 +125,11 @@ Simulation::Simulation(Scenario scenario, std::uint64_t seed, SimulationHistoryP
             road_event.time, EventType::EdgeAvailabilityChanged,
             {EntityKind::Edge, road_event.edge.value()}, road_event.available ? 1 : 0);
     }
+    for (const auto& gate_event : scenario_.gate_events) {
+        [[maybe_unused]] const auto sequence = events_.schedule(gate_event.time,
+            EventType::GateAvailabilityChanged, {EntityKind::Gate, gate_event.gate.value()},
+            gate_event.available ? 1 : 0);
+    }
     for (const auto& disruption : scenario_.task_duration_disruptions) {
         [[maybe_unused]] const auto sequence = events_.schedule(disruption.time, EventType::TaskDurationChanged,
             {EntityKind::Task, disruption.task.value()}, disruption.duration.count());
@@ -814,6 +819,7 @@ void Simulation::consider_recovery(std::string trigger, RevealedDisruption disru
     RecoveryState state{snapshot(), revealed_disruptions_, {}};
     const auto fingerprint = recovery_fingerprint(state);
     RecoveryEpochRecord epoch;
+    std::vector<RecoveryAction> selected_actions;
     epoch.time = now_;
     epoch.trigger = std::move(trigger);
     epoch.mode = scenario_.recovery_mode;
@@ -874,7 +880,16 @@ void Simulation::consider_recovery(std::string trigger, RevealedDisruption disru
             } else {
                 evaluation.termination_reason = evaluation.private_events >= config.max_private_events ?
                     "private_event_budget_exhausted" : "future_time_budget_exhausted";
-                evaluation.reason = "evaluation_horizon_did_not_reach_terminal_simulation_state";
+                if (candidate.id == "current_plan" && candidate.actions.empty()) {
+                    evaluation.valid = true;
+                    evaluation.reason = "baseline_horizon_recorded_as_operational_timeout";
+                    evaluation.outcome.completed = false;
+                    evaluation.outcome.objective_failures = 1;
+                    evaluation.outcome.timeouts = 1;
+                    evaluation.outcome.turnaround_failures = 1;
+                } else {
+                    evaluation.reason = "evaluation_horizon_did_not_reach_terminal_simulation_state";
+                }
             }
             return evaluation;
         });
@@ -887,21 +902,73 @@ void Simulation::consider_recovery(std::string trigger, RevealedDisruption disru
         if (epoch.mode == RecoveryMode::Integrated && decision.selected_candidate_id) {
             const auto selected = std::ranges::find(decision.candidates, *decision.selected_candidate_id,
                 &RecoveryCandidate::id);
-            if (selected != decision.candidates.end()) {
-                std::string result = "accepted";
-                for (const auto& action : selected->actions) {
-                    const auto applied = apply_recovery_action(action);
-                    if (!applied.accepted) { result = "rejected:" + applied.reason; break; }
-                }
-                epoch.application_result = std::move(result);
-            }
+            if (selected != decision.candidates.end()) selected_actions = selected->actions;
         }
     }
     last_recovery_fingerprint_ = fingerprint;
     recovery_epochs_.push_back(std::move(epoch));
+    if (!selected_actions.empty()) {
+        recovery_epochs_.back().application_result = "accepted";
+        for (const auto& action : selected_actions) {
+            const auto applied = apply_recovery_action(action);
+            if (!applied.accepted) {
+                recovery_epochs_.back().application_result = "rejected:" + applied.reason;
+                break;
+            }
+        }
+    }
 }
 
 RecoveryActionResult Simulation::validate_recovery_action(const RecoveryAction& action) const {
+    if (action.kind == RecoveryActionKind::ReassignStand) {
+        std::uint32_t aircraft_value{};
+        try {
+            std::size_t parsed{};
+            const auto value = std::stoul(action.task_id, &parsed);
+            if (parsed != action.task_id.size() || value > std::numeric_limits<std::uint32_t>::max())
+                return {false, "invalid_aircraft_id"};
+            aircraft_value = static_cast<std::uint32_t>(value);
+        } catch (const std::exception&) { return {false, "invalid_aircraft_id"}; }
+        std::uint32_t gate_value{};
+        try {
+            std::size_t parsed{};
+            const auto value = std::stoul(action.target_id, &parsed);
+            if (parsed != action.target_id.size() || value > std::numeric_limits<std::uint32_t>::max())
+                return {false, "invalid_gate_id"};
+            gate_value = static_cast<std::uint32_t>(value);
+        } catch (const std::exception&) { return {false, "invalid_gate_id"}; }
+        const auto found = std::ranges::find(scenario_.aircraft, AircraftId{aircraft_value}, &Aircraft::id);
+        if (found == scenario_.aircraft.end()) return {false, "aircraft_not_found"};
+        if (found->state() == AircraftState::Departed) return {false, "aircraft_departed"};
+        if (found->turnaround_state() == TurnaroundState::Failed) return {false, "aircraft_failed"};
+        if (found->gate() == GateId{gate_value}) return {false, "target_is_current_gate"};
+        const auto target = std::ranges::find(scenario_.gates, GateId{gate_value}, &Gate::id);
+        if (target == scenario_.gates.end()) return {false, "gate_not_found"};
+        if (!target->enabled) return {false, "gate_unavailable"};
+        if (target->occupying_aircraft && target->occupying_aircraft != found->id())
+            return {false, "gate_occupied"};
+        const auto reservation = gate_arrival_reservations_.find(target->id);
+        if (reservation != gate_arrival_reservations_.end() && reservation->second != found->id())
+            return {false, "gate_reserved"};
+        if (found->state() != AircraftState::Scheduled) {
+            const auto surface = surface_aircraft_.find(found->id());
+            if (!scenario_.surface_operations || surface == surface_aircraft_.end())
+                return {false, "stand_reassignment_requires_unparked_aircraft"};
+            const auto phase = surface->second.phase;
+            if (phase != SurfaceAircraftState::Phase::ArrivalQueue &&
+                phase != SurfaceAircraftState::Phase::Runway &&
+                phase != SurfaceAircraftState::Phase::WaitingForGate)
+                return {false, "stand_reassignment_requires_preparking_phase"};
+            const auto start = found->arrival_exit_node();
+            const auto route = find_route(scenario_.graph, start, target->node, {}, MovementClass::Aircraft);
+            if (!route) return {false, "stand_route_unreachable"};
+        } else if (scenario_.surface_operations && found->operation_type() != AircraftOperationType::Turnaround) {
+            const auto route = find_route(scenario_.graph, found->arrival_exit_node(), target->node,
+                {}, MovementClass::Aircraft);
+            if (!route) return {false, "stand_route_unreachable"};
+        }
+        return {true, "validated"};
+    }
     if (action.kind != RecoveryActionKind::ReassignVehicle)
         return {false, "recovery_action_kind_not_implemented"};
     if (!autonomy_fleet_) return {false, "turnaround_fleet_unavailable"};
@@ -950,6 +1017,40 @@ RecoveryActionResult Simulation::apply_recovery_action(const RecoveryAction& act
     if (!validation.accepted) {
         if (!recovery_epochs_.empty()) recovery_epochs_.back().application_result = validation.reason;
         return validation;
+    }
+    if (action.kind == RecoveryActionKind::ReassignStand) {
+        const AircraftId id{static_cast<std::uint32_t>(std::stoul(action.task_id))};
+        const GateId target_id{static_cast<std::uint32_t>(std::stoul(action.target_id))};
+        auto& flight = aircraft(id);
+        const auto old_gate = flight.gate();
+        if (const auto old_reservation = gate_arrival_reservations_.find(old_gate);
+            old_reservation != gate_arrival_reservations_.end() && old_reservation->second == id)
+            gate_arrival_reservations_.erase(old_reservation);
+        flight.reassign_gate(target_id, gate(target_id).node);
+        if (const auto surface = surface_aircraft_.find(id); surface != surface_aircraft_.end()) {
+            auto& state = surface->second;
+            if (state.arrival_operation && state.phase == SurfaceAircraftState::Phase::WaitingForGate) {
+                state.gate_assigned_at.reset();
+                state.route_nodes.clear();
+                state.route_edges.clear();
+                state.edge_index = 0;
+                state.phase_end.reset();
+                state.phase_started.reset();
+            }
+        }
+        const auto action_boundary = event_history_.size();
+        const auto* next_event = events_.peek();
+        const auto next_queue_sequence = next_event ? next_event->sequence :
+            std::numeric_limits<std::uint64_t>::max();
+        const auto* epoch = recovery_epochs_.empty() ? nullptr : &recovery_epochs_.back();
+        if (scenario_.recovery_mode == RecoveryMode::Integrated) {
+            accepted_recovery_actions_.push_back({now_, action_boundary, next_provenance_order_++,
+                epoch ? std::to_string(epoch->fingerprint) : "manual",
+                epoch && epoch->selected_candidate_id ? *epoch->selected_candidate_id : "manual",
+                next_queue_sequence, action});
+        }
+        if (!recovery_epochs_.empty()) recovery_epochs_.back().application_result = "accepted";
+        return {true, "accepted"};
     }
     const auto task_value = static_cast<std::uint32_t>(std::stoul(action.task_id));
     const auto mapping = std::ranges::find_if(fleet_task_requests_, [&](const auto& item) {
@@ -1021,6 +1122,8 @@ void Simulation::process(const Event& event) {
     case EventType::VehicleArrivalAtDepot: handle_vehicle_return(VehicleId{event.entity.value}); break;
     case EventType::EdgeAvailabilityChanged:
         handle_road_event(EdgeId{event.entity.value}, event.data != 0); break;
+    case EventType::GateAvailabilityChanged:
+        handle_gate_event(GateId{event.entity.value}, event.data != 0); break;
     case EventType::AircraftDeparture: handle_departure(AircraftId{event.entity.value}); break;
     case EventType::AbstractServiceCompleted:
         handle_abstract_service_completed(AircraftId{event.entity.value}, TaskId{static_cast<std::uint32_t>(event.data)}); break;
@@ -1280,6 +1383,18 @@ void Simulation::handle_road_event(EdgeId id, bool available, bool operator_trig
     emit(std::move(event));
     if (!available) consider_recovery("surface_closure",
         {now_, "surface_closure", std::to_string(id.value()), "edge_closed"});
+}
+
+void Simulation::handle_gate_event(GateId id, bool available) {
+    auto& changed = gate(id);
+    changed.enabled = available;
+    SimulationEventRecord event{SimulationEventType::GateAvailabilityChanged};
+    event.gate = id;
+    event.detail = available ? "available" : "unavailable";
+    emit(std::move(event));
+    if (available) return;
+    consider_recovery("stand_closure", {now_, "stand_closure", std::to_string(id.value()),
+        "assigned stand became unavailable"});
 }
 
 void Simulation::handle_vehicle_outage(VehicleId id) {

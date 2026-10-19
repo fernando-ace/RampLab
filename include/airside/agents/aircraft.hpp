@@ -85,6 +85,7 @@ public:
     void transition_to(AircraftState next);
     void arrive(SimTime now);
     void begin_surface_arrival();
+    void reassign_gate(GateId gate, NodeId gate_node);
     void mark_landed(SimTime now);
     void mark_task_waiting(ServiceType type, SimTime now);
     void mark_task_waiting(TaskId id, SimTime now);

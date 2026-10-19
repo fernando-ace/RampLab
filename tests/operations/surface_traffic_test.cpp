@@ -19,6 +19,37 @@ std::filesystem::path scenario_file(const char* name) {
     return std::filesystem::path{AIRSIDE_SOURCE_DIR} / "scenarios" / name;
 }
 
+airside::Scenario synthetic_stand_closure(airside::RecoveryMode mode) {
+    airside::Scenario scenario;
+    scenario.name = "synthetic_stand_closure";
+    scenario.turnaround_orchestration = true;
+    const airside::NodeId runway{1}, exit{2}, gate_a_node{3}, gate_b_node{4}, handoff{5};
+    scenario.graph.add_node({runway, "runway", {0.0, 0.0}});
+    scenario.graph.add_node({exit, "exit", {10.0, 0.0}});
+    scenario.graph.add_node({gate_a_node, "stand-a", {20.0, 0.0}});
+    scenario.graph.add_node({gate_b_node, "stand-b", {20.0, 10.0}});
+    scenario.graph.add_node({handoff, "handoff", {30.0, 0.0}});
+    scenario.graph.add_edge({airside::EdgeId{1}, exit, gate_a_node, 10.0, airside::SimTime{1}, true, false});
+    scenario.graph.add_edge({airside::EdgeId{2}, exit, gate_b_node, 15.0, airside::SimTime{1}, true, false});
+    scenario.graph.add_edge({airside::EdgeId{3}, gate_a_node, handoff, 10.0, airside::SimTime{1}, true, false});
+    scenario.graph.add_edge({airside::EdgeId{4}, gate_b_node, handoff, 15.0, airside::SimTime{1}, true, false});
+    scenario.gates.emplace_back(airside::GateId{1}, "A", gate_a_node);
+    scenario.gates.emplace_back(airside::GateId{2}, "B", gate_b_node);
+    airside::ServiceTask task{airside::TaskId{1}, airside::ServiceType::Deboarding};
+    task.duration = airside::SimTime{1};
+    scenario.abstract_resource_capacity.emplace(airside::ServiceType::Deboarding, 1U);
+    scenario.aircraft.emplace_back(airside::AircraftId{1}, "SYN001", airside::SimTime{0},
+        airside::SimTime{100}, airside::GateId{1}, gate_a_node,
+        std::vector<airside::ServiceTask>{task}, "SYN001", airside::SimTime{80},
+        airside::AircraftOperationType::ArrivalTurnaround, exit);
+    scenario.surface_operations = airside::SurfaceOperationsConfig{
+        handoff, runway, exit, airside::SimTime{1}, airside::SimTime{2}, airside::SimTime{1},
+        100.0, 100.0};
+    scenario.gate_events.push_back({airside::SimTime{1}, airside::GateId{1}, false});
+    scenario.recovery_mode = mode;
+    return scenario;
+}
+
 TEST(SurfaceTrafficTest, ControlCoordinatesPushbackTaxiContentionAndRunwayQueue) {
     airside::Simulation simulation(airside::load_scenario(scenario_file("surface_traffic.yaml")), 42);
     std::size_t steps = 0;
@@ -315,6 +346,60 @@ TEST(SurfaceTrafficTest, ArrivalTurnaroundContinuesThroughPushbackAndDeparture) 
     EXPECT_EQ(std::ranges::count_if(result.events, [](const auto& event) {
         return event.type == airside::SimulationEventType::AircraftDeparted;
     }), 2);
+}
+
+TEST(SurfaceTrafficTest, IntegratedStandClosureSelectsAlternateAndShadowOnlyRecommends) {
+    airside::Simulation integrated{synthetic_stand_closure(airside::RecoveryMode::Integrated), 42};
+    const auto result = integrated.run();
+    ASSERT_FALSE(integrated.recovery_epochs().empty());
+    const auto& epoch = integrated.recovery_epochs().front();
+    EXPECT_EQ(epoch.trigger, "stand_closure");
+    const auto baseline = std::ranges::find(epoch.evaluations, "current_plan",
+        [](const auto& evaluation) { return evaluation.candidate.id; });
+    ASSERT_NE(baseline, epoch.evaluations.end());
+    EXPECT_TRUE(baseline->valid);
+    EXPECT_EQ(baseline->outcome.timeouts, 1U);
+    const auto stand_prediction = std::ranges::find(epoch.evaluations, "stand:1:2",
+        [](const auto& evaluation) { return evaluation.candidate.id; });
+    ASSERT_NE(stand_prediction, epoch.evaluations.end());
+    EXPECT_TRUE(stand_prediction->valid);
+    EXPECT_GT(stand_prediction->private_events, 0U);
+    ASSERT_TRUE(std::ranges::any_of(epoch.candidates, [](const auto& candidate) {
+        return candidate.id == "stand:1:2" && candidate.actions.front().kind ==
+            airside::RecoveryActionKind::ReassignStand;
+    }));
+    ASSERT_TRUE(std::ranges::any_of(epoch.evaluations, [](const auto& evaluation) {
+        return evaluation.candidate.id == "stand:1:2" && evaluation.valid;
+    }));
+    ASSERT_EQ(epoch.selected_candidate_id, std::optional<std::string>{"stand:1:2"});
+    EXPECT_EQ(epoch.application_result, "accepted");
+    EXPECT_EQ(result.aircraft.front().gate(), airside::GateId{2});
+    EXPECT_EQ(result.aircraft.front().state(), airside::AircraftState::Departed);
+    EXPECT_TRUE(std::ranges::any_of(result.events, [](const auto& event) {
+        return event.type == airside::SimulationEventType::ArrivalAtGate && event.gate == airside::GateId{2};
+    }));
+    const auto replay = integrated.replay_to_recovery_boundary();
+    EXPECT_TRUE(replay.equivalent) << replay.reason;
+
+    airside::Simulation reactive{synthetic_stand_closure(airside::RecoveryMode::Reactive), 42};
+    airside::Simulation shadow{synthetic_stand_closure(airside::RecoveryMode::Shadow), 42};
+    for (std::size_t step = 0; step < 20 && shadow.recovery_epochs().empty(); ++step) {
+        ASSERT_TRUE(reactive.advance());
+        ASSERT_TRUE(shadow.advance());
+    }
+    ASSERT_FALSE(shadow.recovery_epochs().empty());
+    const auto& shadow_epoch = shadow.recovery_epochs().front();
+    EXPECT_TRUE(std::ranges::any_of(shadow_epoch.evaluations, [](const auto& evaluation) {
+        return evaluation.candidate.id == "stand:1:2" && evaluation.valid;
+    }));
+    EXPECT_EQ(shadow_epoch.selected_candidate_id, std::optional<std::string>{"stand:1:2"});
+    EXPECT_TRUE(shadow_epoch.application_result.empty());
+    for (std::size_t step = 0; step < 20; ++step) {
+        ASSERT_TRUE(reactive.advance());
+        ASSERT_TRUE(shadow.advance());
+    }
+    EXPECT_EQ(reactive.event_history(), shadow.event_history());
+    EXPECT_EQ(reactive.snapshot(), shadow.snapshot());
 }
 
 TEST(SurfaceTrafficTest, StationaryDepartureQueueSkipsToNextScheduledOperation) {

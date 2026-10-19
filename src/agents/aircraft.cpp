@@ -109,6 +109,11 @@ void Aircraft::begin_surface_arrival() {
     transition_to(AircraftState::Arriving);
 }
 
+void Aircraft::reassign_gate(GateId gate, NodeId gate_node) {
+    gate_ = gate;
+    gate_node_ = gate_node;
+}
+
 void Aircraft::mark_landed(SimTime now) {
     if (now < scheduled_arrival_ || state_ != AircraftState::Arriving || actual_arrival_)
         throw std::logic_error("aircraft can only be marked landed once during its arrival operation");

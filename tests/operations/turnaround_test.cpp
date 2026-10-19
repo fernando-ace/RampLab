@@ -294,6 +294,101 @@ TEST(TurnaroundTest, RecoveryActionAdapterReassignsOutagedTurnaroundTaskThroughF
     EXPECT_EQ(task->state, TaskStatus::Completed);
 }
 
+TEST(TurnaroundTest, StandRecoveryAdapterReassignsScheduledAircraftWithoutTeleporting) {
+    Scenario scenario;
+    scenario.name = "synthetic_stand_reassignment";
+    scenario.turnaround_orchestration = true;
+    const NodeId stand_a_node{1}, stand_b_node{2};
+    scenario.graph.add_node({stand_a_node, "stand-a", {0.0, 0.0}});
+    scenario.graph.add_node({stand_b_node, "stand-b", {10.0, 0.0}});
+    scenario.gates.emplace_back(GateId{1}, "A", stand_a_node);
+    scenario.gates.emplace_back(GateId{2}, "B", stand_b_node);
+    ServiceTask service{TaskId{1}, ServiceType::Deboarding};
+    service.duration = SimTime{1};
+    scenario.abstract_resource_capacity.emplace(ServiceType::Deboarding, 1U);
+    scenario.aircraft.emplace_back(AircraftId{1}, "SYN001", SimTime{0}, SimTime{20}, GateId{1},
+        stand_a_node, std::vector<ServiceTask>{service});
+    scenario.recovery_mode = RecoveryMode::Integrated;
+    Simulation simulation{scenario, 42};
+    const RecoveryAction action{RecoveryActionKind::ReassignStand, "1", "2", "synthetic test"};
+    EXPECT_TRUE(simulation.validate_recovery_action(action).accepted);
+    const auto applied = simulation.apply_recovery_action(action);
+    ASSERT_TRUE(applied.accepted) << applied.reason;
+    const auto replay = simulation.replay_to_recovery_boundary();
+    ASSERT_TRUE(replay.equivalent) << replay.reason;
+    EXPECT_EQ(simulation.snapshot().aircraft.front().assigned_gate, GateId{2});
+    EXPECT_EQ(simulation.snapshot().aircraft.front().state, AircraftState::Scheduled);
+    const auto result = simulation.run();
+    EXPECT_EQ(result.aircraft.front().gate(), GateId{2});
+    EXPECT_EQ(result.aircraft.front().state(), AircraftState::Departed);
+    EXPECT_EQ(simulation.snapshot().gates[1].occupying_aircraft, std::nullopt);
+}
+
+TEST(TurnaroundTest, StandRecoveryAdapterRejectsInvalidAndOccupiedTargets) {
+    Scenario scenario;
+    scenario.name = "synthetic_stand_rejections";
+    scenario.turnaround_orchestration = true;
+    const NodeId a{1}, b{2}, c{3}, d{4};
+    scenario.graph.add_node({a, "a", {0.0, 0.0}});
+    scenario.graph.add_node({b, "b", {10.0, 0.0}});
+    scenario.graph.add_node({c, "c", {20.0, 0.0}});
+    scenario.graph.add_node({d, "d", {30.0, 0.0}});
+    scenario.gates.emplace_back(GateId{1}, "A", a);
+    scenario.gates.emplace_back(GateId{2}, "B", b, false);
+    scenario.gates.emplace_back(GateId{3}, "C", c);
+    scenario.gates.emplace_back(GateId{4}, "D", d);
+    ServiceTask task_a{TaskId{1}, ServiceType::Deboarding};
+    task_a.duration = SimTime{1};
+    ServiceTask task_b{TaskId{2}, ServiceType::Deboarding};
+    task_b.duration = SimTime{1};
+    scenario.abstract_resource_capacity.emplace(ServiceType::Deboarding, 2U);
+    scenario.aircraft.emplace_back(AircraftId{1}, "SYN001", SimTime{0}, SimTime{20}, GateId{1}, a,
+        std::vector<ServiceTask>{task_a});
+    scenario.aircraft.emplace_back(AircraftId{2}, "SYN002", SimTime{0}, SimTime{20}, GateId{3}, c,
+        std::vector<ServiceTask>{task_b});
+    Simulation simulation{scenario, 42};
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ReassignStand, "99", "2", {}}).reason,
+        "aircraft_not_found");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ReassignStand, "1", "99", {}}).reason,
+        "gate_not_found");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ReassignStand, "1", "1", {}}).reason,
+        "target_is_current_gate");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ReassignStand, "1", "2", {}}).reason,
+        "gate_unavailable");
+    ASSERT_TRUE(simulation.advance());
+    ASSERT_TRUE(simulation.advance());
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ReassignStand, "1", "3", {}}).reason,
+        "gate_occupied");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ReassignStand, "1", "4", {}}).reason,
+        "stand_reassignment_requires_unparked_aircraft");
+}
+
+TEST(TurnaroundTest, StandRecoveryAdapterRejectsUnreachableSurfaceTarget) {
+    Scenario scenario;
+    scenario.name = "synthetic_stand_route_rejection";
+    scenario.turnaround_orchestration = true;
+    const NodeId runway{1}, exit{2}, a{3}, b{4}, handoff{5}, depot{6};
+    scenario.graph.add_node({runway, "runway", {0.0, 0.0}});
+    scenario.graph.add_node({exit, "exit", {10.0, 0.0}});
+    scenario.graph.add_node({a, "a", {20.0, 0.0}});
+    scenario.graph.add_node({b, "b", {20.0, 10.0}});
+    scenario.graph.add_node({handoff, "handoff", {30.0, 0.0}});
+    scenario.graph.add_node({depot, "depot", {100.0, 100.0}});
+    scenario.graph.add_edge({EdgeId{1}, exit, a, 10.0, SimTime{1}, true, false});
+    scenario.gates.emplace_back(GateId{1}, "A", a);
+    scenario.gates.emplace_back(GateId{2}, "B", b);
+    ServiceTask task{TaskId{1}, ServiceType::Deboarding};
+    task.duration = SimTime{1};
+    scenario.aircraft.emplace_back(AircraftId{1}, "SYN001", SimTime{0}, SimTime{20}, GateId{1}, a,
+        std::vector<ServiceTask>{task}, "SYN001", std::nullopt,
+        AircraftOperationType::ArrivalTurnaround, exit);
+    scenario.abstract_resource_capacity.emplace(ServiceType::Deboarding, 1U);
+    scenario.surface_operations = SurfaceOperationsConfig{handoff, runway, exit};
+    Simulation simulation{scenario, 42};
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ReassignStand, "1", "2", {}}).reason,
+        "stand_route_unreachable");
+}
+
 TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
     auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
     scenario.recovery_mode = RecoveryMode::Integrated;

@@ -102,6 +102,15 @@ RecoveryTriage triage_recovery_state(const RecoveryState& state) noexcept {
             disruption.kind == "task_slowdown") threatened = true;
     }
     if (!relevant || !threatened) return RecoveryTriage::NoImpact;
+    for (const auto& disruption : state.revealed_disruptions) {
+        if (disruption.revealed_at > state.snapshot.simulation_time || disruption.kind != "stand_closure")
+            continue;
+        if (std::ranges::any_of(state.snapshot.aircraft, [&](const auto& aircraft) {
+            return std::to_string(aircraft.assigned_gate.value()) == disruption.entity &&
+                aircraft.state != AircraftState::Departed && aircraft.surface_state != "ParkedAtGate" &&
+                aircraft.surface_state != "Arrived";
+        })) return RecoveryTriage::IntegratedPlanningRequired;
+    }
     for (const auto& turnaround : state.snapshot.turnarounds) {
         if (turnaround.predicted_late)
             return RecoveryTriage::IntegratedPlanningRequired;
@@ -214,14 +223,19 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         }
         const auto aircraft = std::ranges::find(state.snapshot.aircraft, turnaround.aircraft,
             &AircraftSnapshot::id);
-        if (aircraft != state.snapshot.aircraft.end() &&
-            aircraft->state != AircraftState::Departed && aircraft->state != AircraftState::Scheduled) {
+        const bool affected_by_stand_closure = aircraft != state.snapshot.aircraft.end() &&
+            std::ranges::any_of(state.revealed_disruptions, [&](const auto& disruption) {
+                return disruption.kind == "stand_closure" &&
+                    disruption.entity == id_text(aircraft->assigned_gate.value());
+            });
+        if (affected_by_stand_closure && aircraft->state != AircraftState::Departed &&
+            aircraft->surface_state != "ParkedAtGate" && aircraft->surface_state != "Arrived") {
             for (const auto& target : gates) {
                 if (target.id == aircraft->assigned_gate || !target.available || target.occupying_aircraft)
                     continue;
                 const auto from = std::ranges::find(gates, aircraft->assigned_gate, &GateSnapshot::id);
                 if (from == gates.end()) continue;
-                diagnostics.push_back({"stand:" + id_text(aircraft->id.value()) + ":" +
+                executable.push_back({"stand:" + id_text(aircraft->id.value()) + ":" +
                     id_text(target.id.value()), 1, {{RecoveryActionKind::ReassignStand,
                     id_text(aircraft->id.value()), id_text(target.id.value()), "available target stand"}}});
             }
@@ -257,19 +271,27 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         } catch (...) { }
         return false;
     };
+    const auto stand_relevant = [&](const RecoveryCandidate& candidate) {
+        if (candidate.actions.empty() || candidate.actions.front().kind != RecoveryActionKind::ReassignStand)
+            return false;
+        return std::ranges::any_of(state.revealed_disruptions, [&](const auto& disruption) {
+            return disruption.kind == "stand_closure";
+        });
+    };
     std::ranges::sort(executable, [&](const auto& lhs, const auto& rhs) {
         const bool left_relevant = outage_for_candidate(lhs);
         const bool right_relevant = outage_for_candidate(rhs);
         if (left_relevant != right_relevant) return left_relevant;
+        const bool left_stand = stand_relevant(lhs);
+        const bool right_stand = stand_relevant(rhs);
+        if (left_stand != right_stand) return left_stand;
         return lhs.id < rhs.id;
     });
     for (auto& candidate : executable) {
         if (result.size() >= config.max_candidates) break;
         result.push_back(std::move(candidate));
     }
-    // Stand, resequence, and hold proposals remain diagnostic only until their
-    // private and authoritative adapters exist; do not spend bounded evaluation
-    // slots on actions that are known to fail closed.
+    // Resequence and hold proposals remain diagnostic until their adapters exist.
     if (config.max_search_tier >= 2 && config.max_plan_depth >= 2) {
         const auto singles_end = result.size();
         for (std::size_t i = 1; i < singles_end && result.size() < config.max_candidates; ++i) {

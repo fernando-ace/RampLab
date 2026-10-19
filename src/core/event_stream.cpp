@@ -55,6 +55,7 @@ std::string_view to_string(SimulationEventType type) noexcept {
     case SimulationEventType::ArrivalAtGate: return "ArrivalAtGate";
     case SimulationEventType::GateWaitStarted: return "GateWaitStarted";
     case SimulationEventType::GateAssigned: return "GateAssigned";
+    case SimulationEventType::GateAvailabilityChanged: return "GateAvailabilityChanged";
     case SimulationEventType::AircraftLanded: return "AircraftLanded";
     case SimulationEventType::TurnaroundStarted: return "TurnaroundStarted";
     case SimulationEventType::PushbackTaxiOutStarted: return "PushbackTaxiOutStarted";
@@ -153,6 +154,9 @@ std::string format_event(const SimulationEventRecord& event) {
     case SimulationEventType::GateAssigned:
         return event.gate ? std::format("{} assigned Gate A{}", aircraft, event.gate->value()) :
             std::format("{} assigned an arrival gate", aircraft);
+    case SimulationEventType::GateAvailabilityChanged:
+        return std::format("Gate A{} availability changed ({})", event.gate ? event.gate->value() : 0U,
+            event.detail);
     case SimulationEventType::TurnaroundStarted: return std::format("{} turnaround started", aircraft);
     case SimulationEventType::PushbackTaxiOutStarted: return std::format("{} started pushback and taxi-out", aircraft);
     case SimulationEventType::AircraftArrived:

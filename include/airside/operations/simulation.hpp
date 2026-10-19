@@ -33,6 +33,12 @@ struct RoadAvailabilityEvent {
     bool available;
 };
 
+struct GateAvailabilityEvent {
+    SimTime time;
+    GateId gate;
+    bool available;
+};
+
 struct TaskDurationDisruption {
     SimTime time;
     TaskId task;
@@ -68,6 +74,7 @@ struct Scenario {
     std::unordered_map<ServiceType, std::size_t> abstract_resource_capacity;
     bool turnaround_orchestration{false};
     std::vector<RoadAvailabilityEvent> road_events;
+    std::vector<GateAvailabilityEvent> gate_events;
     std::vector<TaskDurationDisruption> task_duration_disruptions;
     std::vector<VehicleOutageEvent> vehicle_outages;
     std::optional<SurfaceOperationsConfig> surface_operations;
@@ -130,6 +137,7 @@ private:
     void handle_service_completed(VehicleId id);
     void handle_vehicle_return(VehicleId id);
     void handle_road_event(EdgeId id, bool available, bool operator_triggered = false);
+    void handle_gate_event(GateId id, bool available);
     void handle_departure(AircraftId id);
     void complete_arrival_at_gate(AircraftId id);
     void start_arrival_taxi_in(AircraftId id);
