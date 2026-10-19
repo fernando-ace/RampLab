@@ -292,6 +292,22 @@ SimulationSnapshot Simulation::snapshot() const {
                         static_cast<double>(state.queue_slot + 1U);
                 }
             }
+            const auto& assigned_gate = gate(flight.gate());
+            if (assigned_gate.stand_position_m && item.surface_position_m &&
+                (state.phase == SurfaceAircraftState::Phase::WaitingForPushback ||
+                 state.phase == SurfaceAircraftState::Phase::Pushback)) {
+                const auto stand = *assigned_gate.stand_position_m;
+                double fraction = 0.0;
+                if (state.phase == SurfaceAircraftState::Phase::Pushback && state.phase_started && state.phase_end) {
+                    const auto duration = (*state.phase_end - *state.phase_started).count();
+                    fraction = duration > 0 ? std::clamp(static_cast<double>((now_ - *state.phase_started).count()) /
+                        static_cast<double>(duration), 0.0, 1.0) : 1.0;
+                }
+                const auto attachment = scenario_.graph.node(state.node).position;
+                item.surface_position_m = Vec2{stand.x_m + fraction * (attachment.x_m - stand.x_m),
+                    stand.y_m + fraction * (attachment.y_m - stand.y_m)};
+                item.surface_heading_rad = std::atan2(attachment.y_m - stand.y_m, attachment.x_m - stand.x_m);
+            }
             if (state.phase_end && state.phase_started && state.phase == SurfaceAircraftState::Phase::Taxiing &&
                 state.edge_index < state.route_edges.size()) {
                 const auto duration = (*state.phase_end - *state.phase_started).count();
@@ -312,7 +328,8 @@ SimulationSnapshot Simulation::snapshot() const {
                 flight.state() == AircraftState::Departed ? "Departed" : "ParkedAtGate";
             item.surface_node = flight.gate_node();
             if (flight.state() != AircraftState::Scheduled && flight.state() != AircraftState::Departed)
-                item.surface_position_m = scenario_.graph.node(flight.gate_node()).position;
+                item.surface_position_m = gate(flight.gate()).stand_position_m.value_or(
+                    scenario_.graph.node(flight.gate_node()).position);
         }
         item.services.reserve(flight.tasks().size());
         for (const auto& task : flight.tasks()) {
@@ -389,7 +406,7 @@ SimulationSnapshot Simulation::snapshot() const {
     result.gates.reserve(scenario_.gates.size());
     for (const auto& gate_value : scenario_.gates) {
         result.gates.push_back({gate_value.id, gate_value.name, gate_value.node,
-            scenario_.graph.node(gate_value.node).position, gate_value.occupying_aircraft,
+            gate_value.stand_position_m.value_or(scenario_.graph.node(gate_value.node).position), gate_value.occupying_aircraft,
             gate_value.enabled && !gate_value.occupying_aircraft.has_value()});
     }
     for (const auto& node : scenario_.graph.nodes()) {

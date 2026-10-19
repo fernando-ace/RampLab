@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <optional>
 #include <ranges>
 #include <stdexcept>
@@ -66,9 +67,10 @@ TaxiContentionHistory taxi_contention_history(const airside::SimulationResult& r
 
 airside::Scenario surface_ordering_scenario() {
     auto scenario = airside::load_scenario(scenario_file("surface_traffic.yaml"));
-    // Stage the already-serviced synthetic A1 departure at South Junction.
-    // A1 and A2 retain distinct gate IDs and distinct physical start nodes;
-    // neither aircraft starts at a vehicle depot. No graph data changes.
+    // Attach A1's departure route at South Junction, with a physical stand
+    // 40 m west of the active taxiway (the normal apron scale is 120 m).
+    // The stand is not a routing node or edge. Normal reserved pushback
+    // connects it to South Junction without changing either taxi route.
     const auto stand = std::ranges::find(scenario.graph.nodes(),
         std::string{"South Junction"}, &airside::AirportNode::name);
     const auto a = std::ranges::find(scenario.aircraft, airside::AircraftId{1}, &airside::Aircraft::id);
@@ -76,6 +78,7 @@ airside::Scenario surface_ordering_scenario() {
         throw std::logic_error("missing synthetic ordering aircraft or stand");
     const auto gate = std::ranges::find(scenario.gates, a->gate(), &airside::Gate::id);
     if (gate == scenario.gates.end()) throw std::logic_error("missing synthetic A1 gate");
+    gate->stand_position_m = airside::Vec2{stand->position.x_m - 40.0, stand->position.y_m};
     gate->node = stand->id;
     a->reassign_gate(gate->id, stand->id);
     // A1 is already serviced in this focused departure fixture. Dispatching its
@@ -393,6 +396,9 @@ struct MaterialSurfaceRun {
     std::int64_t aggregate_departure_delay{};
     std::string termination;
     std::string closest_pair_observation;
+    double parked_traversal_minimum{std::numeric_limits<double>::infinity()};
+    std::size_t parked_traversal_samples{};
+    std::size_t pushback_motion_samples{};
 };
 
 MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering ordering,
@@ -415,9 +421,26 @@ MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering orderin
     std::size_t steps = 0;
     double closest = std::numeric_limits<double>::infinity();
     std::string closest_pair;
+    double parked_minimum = std::numeric_limits<double>::infinity();
+    std::size_t parked_samples = 0, pushback_samples = 0;
     while (!simulation.finished() && steps++ < 50000) {
         (void)simulation.advance();
         const auto observed = simulation.snapshot();
+        const auto ax101 = std::ranges::find(observed.aircraft, airside::AircraftId{1}, &airside::AircraftSnapshot::id);
+        const auto ax202 = std::ranges::find(observed.aircraft, airside::AircraftId{2}, &airside::AircraftSnapshot::id);
+        if (ax101 != observed.aircraft.end() && ax202 != observed.aircraft.end() &&
+            ax101->surface_position_m && ax202->surface_position_m) {
+            const auto left = *ax101->surface_position_m, right = *ax202->surface_position_m;
+            if (ax101->surface_state == "ParkedAtGate" && ax202->surface_state == "Taxiing" &&
+                ax202->surface_next_waypoint == "North Junction") {
+                parked_minimum = std::min(parked_minimum, std::hypot(left.x_m - right.x_m, left.y_m - right.y_m));
+                ++parked_samples;
+            }
+            if (ax101->surface_state == "Pushback" && left.x_m > 60.0 && left.x_m < 100.0) {
+                EXPECT_DOUBLE_EQ(left.y_m, -80.0);
+                ++pushback_samples;
+            }
+        }
         for (std::size_t i = 0; i < observed.aircraft.size(); ++i) {
             const auto& left = observed.aircraft[i];
             if (!left.surface_position_m) continue;
@@ -431,7 +454,9 @@ MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering orderin
                     closest_pair = "t=" + std::to_string(observed.simulation_time.count())
                         + " distance=" + std::to_string(distance)
                         + " aircraft=" + std::to_string(left.id.value()) + ":" + left.surface_state
-                        + "," + std::to_string(right.id.value()) + ":" + right.surface_state;
+                        + " pos=(" + std::to_string(left.surface_position_m->x_m) + "," + std::to_string(left.surface_position_m->y_m) + ")"
+                        + "," + std::to_string(right.id.value()) + ":" + right.surface_state
+                        + " pos=(" + std::to_string(right.surface_position_m->x_m) + "," + std::to_string(right.surface_position_m->y_m) + ")";
                 }
             }
         }
@@ -442,6 +467,9 @@ MaterialSurfaceRun run_material_surface_ordering_variant(SurfaceOrdering orderin
     run.snapshot = simulation.snapshot();
     run.termination = "simulation_finished";
     run.closest_pair_observation = closest_pair;
+    run.parked_traversal_minimum = parked_minimum;
+    run.parked_traversal_samples = parked_samples;
+    run.pushback_motion_samples = pushback_samples;
     // Match Simulation's existing terminal RecoveryOutcome mapping exactly.
     const auto& metrics = run.result.metrics;
     run.outcome.completed = metrics.failed_or_timed_out_turnarounds == 0
@@ -501,6 +529,19 @@ void validate_material_surface_run(const MaterialSurfaceRun& run, SurfaceOrderin
             }
         }
     }
+    std::map<airside::EdgeId, airside::AircraftId> owners;
+    for (const auto& event : run.result.events) {
+        if (!event.edge || !event.aircraft) continue;
+        if (event.type == airside::SimulationEventType::SurfaceReservationAcquired) {
+            EXPECT_FALSE(owners.contains(*event.edge));
+            owners[*event.edge] = *event.aircraft;
+        } else if (event.type == airside::SimulationEventType::SurfaceReservationReleased) {
+            ASSERT_TRUE(owners.contains(*event.edge));
+            EXPECT_EQ(owners.at(*event.edge), *event.aircraft);
+            owners.erase(*event.edge);
+        }
+    }
+    EXPECT_TRUE(owners.empty());
     EXPECT_EQ(run.result.metrics.agent_replans, 0U);
     EXPECT_EQ(run.result.metrics.agent_objectives_failed, 0U);
     EXPECT_GE(run.result.metrics.minimum_aircraft_separation_m, 12.0);
@@ -555,6 +596,18 @@ void validate_material_determinism(const MaterialSurfaceRun& first, const Materi
     EXPECT_EQ(first.aggregate_departure_delay, repeat.aggregate_departure_delay);
     EXPECT_EQ(first.termination, repeat.termination);
     EXPECT_EQ(first.closest_pair_observation, repeat.closest_pair_observation);
+    EXPECT_EQ(first.parked_traversal_minimum, repeat.parked_traversal_minimum);
+    EXPECT_EQ(first.parked_traversal_samples, repeat.parked_traversal_samples);
+    EXPECT_EQ(first.pushback_motion_samples, repeat.pushback_motion_samples);
+    EXPECT_EQ(first.outcome.completed, repeat.outcome.completed);
+    EXPECT_EQ(first.outcome.objective_failures, repeat.outcome.objective_failures);
+    EXPECT_EQ(first.outcome.timeouts, repeat.outcome.timeouts);
+    EXPECT_EQ(first.outcome.turnaround_failures, repeat.outcome.turnaround_failures);
+    EXPECT_EQ(first.outcome.completed_objectives, repeat.outcome.completed_objectives);
+    EXPECT_EQ(first.outcome.worst_departure_delay_seconds, repeat.outcome.worst_departure_delay_seconds);
+    EXPECT_EQ(first.outcome.departure_delay_seconds, repeat.outcome.departure_delay_seconds);
+    EXPECT_EQ(first.outcome.service_wait_seconds, repeat.outcome.service_wait_seconds);
+    EXPECT_EQ(first.outcome.gse_travel_seconds, repeat.outcome.gse_travel_seconds);
 }
 
 TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiAFirst) {
@@ -569,16 +622,27 @@ TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiBFirst) {
     validate_material_determinism(run, run_material_surface_ordering_variant(SurfaceOrdering::BFirst, {}));
 }
 
+TEST(SurfaceTrafficTest, Goal49MaterialSafeStandAndReservedPushback) {
+    const auto run = run_material_surface_ordering_variant(SurfaceOrdering::BFirst, {});
+    ASSERT_GT(run.parked_traversal_samples, 0U);
+    EXPECT_GE(run.parked_traversal_minimum, 12.0); // Existing aircraft safety gate.
+    EXPECT_GE(run.parked_traversal_minimum, 40.0); // Stand margin from active path.
+    EXPECT_GT(run.pushback_motion_samples, 0U); // Continuous stand-to-attachment motion.
+    std::cout << "parked north_south_taxi samples=" << run.parked_traversal_samples
+        << " minimum=" << run.parked_traversal_minimum
+        << " pushback_motion_samples=" << run.pushback_motion_samples << '\n';
+}
+
 TEST(SurfaceTrafficTest, Goal49MaterialNorthSouthTaxiOutcomeComparison) {
-    // Reproduce the untouched C-11 B-first run to locate the inherited parked
-    // stand observation. Do not exclude it or relax the material safety gate.
+    // Keep the original-speed ordering helper and material helper equivalent
+    // under identical configuration, including the corrected stand staging.
     const MaterialScenarioConfig baseline_facts{1.0, airside::SimTime{1100},
         airside::SimTime{1000}, airside::SimTime{400}};
     const auto baseline = run_material_surface_ordering_variant(SurfaceOrdering::BFirst, baseline_facts);
     const auto original = run_surface_ordering_variant(airside::SimTime{200});
     EXPECT_EQ(baseline.result.events, original.events);
     EXPECT_EQ(baseline.result.metrics, original.metrics);
-    std::cout << "frozen baseline closest " << baseline.closest_pair_observation
+    std::cout << "original-speed safe stand closest " << baseline.closest_pair_observation
         << " reported_minimum=" << baseline.result.metrics.minimum_aircraft_separation_m << '\n';
     const MaterialScenarioConfig common_facts;
     const auto a = run_material_surface_ordering_variant(SurfaceOrdering::AFirst, common_facts);
