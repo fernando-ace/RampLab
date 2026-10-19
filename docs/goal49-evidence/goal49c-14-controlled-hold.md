@@ -1,5 +1,10 @@
 # Goal49C-14 — automatic ControlledHold on the frozen safe material fixture
 
+Historical checkpoint: the clearance-before-hold-release requirement and BLOCKED
+status below are superseded by the explicitly authorized two-phase certification
+in [Goal49C-15](goal49c-15-controlled-hold-reservation-handoff.md). The C14 results
+and runtime implementation are preserved.
+
 ## Initial remote reality
 
 ```

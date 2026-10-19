@@ -1,0 +1,389 @@
+Raw CTest LastTest.log sections from the same 45-test focused run.
+
+9/277 Testing: SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention
+119/277 Test: SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention
+ordering aircraft=1 t=1110 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1140 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1140 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1300 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1470 event=AircraftDeparted detail=
+ordering aircraft=2 t=1169 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=1300 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1460 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1640 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention (178 ms)
+[----------] 1 test from SurfaceTrafficTest (178 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (178 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.18 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49NorthSouthTaxiNeutralContention" time elapsed: 00:00:00
+----------------------------------------------------------
+
+0/277 Testing: SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering
+120/277 Test: SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering
+ordering aircraft=1 t=1011 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1041 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1041 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1201 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1371 event=AircraftDeparted detail=
+ordering aircraft=2 t=1170 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=1201 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1361 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1541 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering (208 ms)
+[----------] 1 test from SurfaceTrafficTest (209 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (209 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.21 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49NorthSouthTaxiAFirstOrdering" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1/277 Testing: SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering
+121/277 Test: SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering
+ordering aircraft=1 t=1310 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=1321 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1351 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1351 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=1511 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=1681 event=AircraftDeparted detail=
+ordering aircraft=2 t=1161 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=1321 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=1491 event=AircraftDeparted detail=
+[       OK ] SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering (178 ms)
+[----------] 1 test from SurfaceTrafficTest (179 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (179 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.18 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49NorthSouthTaxiBFirstOrdering" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/277 Testing: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+122/277 Test: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst
+ordering aircraft=1 t=7090 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=7120 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=7120 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8720 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7402 event=SurfaceWaitingForTraffic detail=
+ordering aircraft=2 t=8720 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=10320 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=10490 event=AircraftDeparted detail=
+material ordering=A-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=10090 mean_delay=4419.33 aggregate_delay=13258 termination=simulation_finished final_t=13170 separation=12.6 ground_separation=76.0316
+material safety aircraft_collisions=0 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7120 distance=12.700000 aircraft=1:Taxiing pos=(100.000000,-80.000000),2:WaitingForTraffic pos=(112.700000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=10490
+material final aircraft=3 state=Departed departure=3398
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst (610 ms)
+[----------] 1 test from SurfaceTrafficTest (610 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (610 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.61 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiAFirst" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/277 Testing: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+123/277 Test: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst
+ordering aircraft=1 t=7410 event=SurfaceWaitingForPushback detail=
+ordering aircraft=1 t=8841 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=8871 event=SurfaceReservationAcquired detail=
+ordering aircraft=1 t=10471 event=SurfaceReservationReleased detail=
+ordering aircraft=1 t=13170 event=AircraftDeparted detail=
+ordering aircraft=2 t=7241 event=SurfaceReservationAcquired detail=
+ordering aircraft=2 t=8841 event=SurfaceReservationReleased detail=
+ordering aircraft=2 t=9011 event=AircraftDeparted detail=
+material ordering=B-first completed=1 completed_objectives=3 objective_failures=0 timeouts=0 turnaround_failures=0 worst_delay=8611 mean_delay=3926.33 aggregate_delay=11779 termination=simulation_finished final_t=13170 separation=40 ground_separation=76.0316
+material safety aircraft_collisions=0 ground_collisions=0 fleet_collisions=0 acquired=7 released=7 fleet_outstanding=0 deadlocks=0
+material closest t=7241 distance=40.000000 aircraft=1:ParkedAtGate pos=(60.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000)
+material final aircraft=1 state=Departed departure=13170
+material final aircraft=2 state=Departed departure=9011
+material final aircraft=3 state=Departed departure=3398
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst (724 ms)
+[----------] 1 test from SurfaceTrafficTest (724 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (724 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.73 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiBFirst" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/277 Testing: SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+124/277 Test: SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback
+parked north_south_taxi samples=1602 minimum=40 pushback_motion_samples=29
+[       OK ] SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback (274 ms)
+[----------] 1 test from SurfaceTrafficTest (274 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (274 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.28 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49MaterialSafeStandAndReservedPushback" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/277 Testing: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison
+125/277 Test: SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison
+original-speed safe stand closest t=1161 distance=40.000000 aircraft=1:ParkedAtGate pos=(60.000000,-80.000000),2:Taxiing pos=(100.000000,-80.000000) reported_minimum=40
+[       OK ] SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison (1013 ms)
+[----------] 1 test from SurfaceTrafficTest (1013 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1013 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   1.02 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49MaterialNorthSouthTaxiOutcomeComparison" time elapsed: 00:00:01
+----------------------------------------------------------
+
+6/277 Testing: SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation
+126/277 Test: SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation
+private_hold A_entry=8871 B_entry=7241 B_clear=8841 worst=8611 aggregate=11779 separation=40 acquired=7 released=7
+private_hold event=hold_started time=7089
+private_hold event=hold_released time=7269
+private_hold event=AX101_pushback time=8841
+private_hold epoch=7089 fingerprint=850552943722534814 selected=current_plan application=accepted
+private_baseline_parent A_entry=7120 B_entry=8720 B_clear=10320 worst=10090 aggregate=13258 separation=12.6 acquired=7 released=7
+private_baseline_parent event=AX101_pushback time=7090
+private_baseline_parent epoch=7089 fingerprint=850552943722534814 selected=current_plan application=
+[       OK ] SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation (1529 ms)
+[----------] 1 test from SurfaceTrafficTest (1530 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1530 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   1.53 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49MaterialControlledHoldAutomaticCandidatesAndPrivateIsolation" time elapsed: 00:00:01
+----------------------------------------------------------
+
+7/277 Testing: SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero
+127/277 Test: SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero
+[       OK ] SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero (1948 ms)
+[----------] 1 test from SurfaceTrafficTest (1949 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1949 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   1.95 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49MaterialNonBeneficialShortHoldRetainsTierZero" time elapsed: 00:00:01
+----------------------------------------------------------
+
+9/277 Testing: SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation
+129/277 Test: SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation
+handoff hold_start=7089 B_acquire=7241 hold_release=7269 B_release=8841 A_pushback=8841 A_taxi_acquire=8871 B_intervals=1 inactive_hold_reserved_wait_samples=1573 interval_minimum_separation=40.0979 wait_reason=pushback_area_reserved reservations=7/7 terminal_holds=0
+[       OK ] SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation (1783 ms)
+[----------] 1 test from SurfaceTrafficTest (1784 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1784 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   1.79 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation" end time: Oct 19 11:31 UTC
+"SurfaceTrafficTest.Goal49ControlledHoldHandsOffToSurfaceReservation" time elapsed: 00:00:01
+----------------------------------------------------------
+
+8/277 Testing: SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism
+128/277 Test: SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism
+Command: "/workspace/RampLab/build-goal49c/airside_tests" "--gtest_filter=SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism" "--gtest_also_run_disabled_tests"
+Directory: /workspace/RampLab/build-goal49c
+"SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism" start time: Oct 19 11:31 UTC
+Output:
+----------------------------------------------------------
+Running main() from /workspace/RampLab/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SurfaceTrafficTest
+[ RUN      ] SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism
+reactive A_entry=7120 B_entry=8720 B_clear=10320 worst=10090 aggregate=13258 separation=12.6 acquired=7 released=7
+reactive event=AX101_pushback time=7090
+reactive epoch=7089 fingerprint=850552943722534814 selected=current_plan application=
+shadow A_entry=7120 B_entry=8720 B_clear=10320 worst=10090 aggregate=13258 separation=12.6 acquired=7 released=7
+shadow event=AX101_pushback time=7090
+shadow epoch=7089 fingerprint=850552943722534814 selected=hold:1:180 application=
+  candidate=current_plan valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=10090 aggregate=13258 service_wait=905 gse_travel=-1 events=3575 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1 valid=0 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=10149 aggregate=13317 service_wait=905 gse_travel=-1 events=3635 horizon=6081 termination=simulation_finished reason=unsafe_private_outcome
+  candidate=hold:1:180 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1:300 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1:600 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+integrated A_entry=8871 B_entry=7241 B_clear=8841 worst=8611 aggregate=11779 separation=40 acquired=7 released=7
+integrated event=hold_started time=7089
+integrated event=hold_released time=7269
+integrated event=AX101_pushback time=8841
+integrated epoch=7089 fingerprint=850552943722534814 selected=hold:1:180 application=accepted
+  candidate=current_plan valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=10090 aggregate=13258 service_wait=905 gse_travel=-1 events=3575 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1 valid=0 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=10149 aggregate=13317 service_wait=905 gse_travel=-1 events=3635 horizon=6081 termination=simulation_finished reason=unsafe_private_outcome
+  candidate=hold:1:180 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1:300 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+  candidate=hold:1:600 valid=1 completed=1 failures=0 timeouts=0 turnaround_failures=0 completed_objectives=3 worst=8611 aggregate=11779 service_wait=905 gse_travel=-1 events=3557 horizon=6081 termination=simulation_finished reason=evaluated_in_private_simulation
+[       OK ] SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism (6421 ms)
+[----------] 1 test from SurfaceTrafficTest (6421 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (6421 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   6.43 sec
+----------------------------------------------------------
+Test Passed.
+"SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism" end time: Oct 19 11:32 UTC
+"SurfaceTrafficTest.Goal49MaterialControlledHoldIntegratedShadowParityAndDeterminism" time elapsed: 00:00:06
+----------------------------------------------------------
+
+End testing: Oct 19 11:32 UTC

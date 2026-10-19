@@ -941,6 +941,145 @@ TEST(SurfaceTrafficTest, Goal49MaterialControlledHoldIntegratedShadowParityAndDe
     EXPECT_EQ(shadow.recovery_epochs().front().evaluations, shadow_repeat.recovery_epochs().front().evaluations);
 }
 
+// Phase 1 changes acquisition order; phase 2 keeps that order safe after
+// the bounded recovery action ends. Observe the normal Integrated path only.
+TEST(SurfaceTrafficTest, Goal49ControlledHoldHandsOffToSurfaceReservation) {
+    using Type = airside::SimulationEventType;
+    const airside::AircraftId a_id{1}, b_id{2};
+    auto scenario = material_recovery_scenario(airside::RecoveryMode::Integrated);
+    const auto edge = north_south_taxi_edge(scenario.graph);
+    airside::Simulation simulation(std::move(scenario), 42);
+    std::map<airside::EdgeId, airside::AircraftId> owners;
+    std::optional<airside::SimulationEventRecord> started, released, b_acquired, b_released, a_pushback;
+    bool hold_active = false;
+    std::size_t cursor = 0, steps = 0, handoff_samples = 0, b_intervals = 0;
+    double interval_minimum = std::numeric_limits<double>::infinity();
+    while (!simulation.finished() && steps++ < 50000) {
+        ASSERT_TRUE(simulation.advance());
+        const auto& events = simulation.event_history();
+        for (; cursor < events.size(); ++cursor) {
+            const auto& event = events[cursor];
+            if (event.aircraft == a_id && event.type == Type::RecoveryHoldStarted) {
+                EXPECT_FALSE(started);
+                started = event;
+                hold_active = true;
+            }
+            if (event.aircraft == a_id && event.type == Type::RecoveryHoldReleased) {
+                ASSERT_TRUE(b_acquired);
+                ASSERT_TRUE(owners.contains(edge));
+                EXPECT_EQ(owners.at(edge), b_id);
+                EXPECT_FALSE(a_pushback);
+                released = event;
+                hold_active = false;
+            }
+            if (event.aircraft == a_id && event.type == Type::SurfacePushbackStarted) {
+                ASSERT_TRUE(b_released); // Includes same-time release-before-pushback order.
+                EXPECT_FALSE(hold_active);
+                EXPECT_LT(b_released->sequence, event.sequence);
+                EXPECT_LE(b_released->timestamp, event.timestamp);
+                EXPECT_FALSE(a_pushback);
+                a_pushback = event;
+            }
+            if (!event.edge || !event.aircraft) continue;
+            if (event.type == Type::SurfaceReservationAcquired) {
+                EXPECT_FALSE(owners.contains(*event.edge)); // No double ownership anywhere.
+                owners[*event.edge] = *event.aircraft;
+                if (*event.edge == edge && *event.aircraft == b_id) {
+                    ++b_intervals;
+                    EXPECT_TRUE(hold_active);
+                    EXPECT_FALSE(a_pushback);
+                    b_acquired = event;
+                }
+                if (*event.edge == edge && *event.aircraft == a_id) {
+                    ASSERT_TRUE(b_released); // Also checks the earlier pushback acquisition.
+                    EXPECT_LT(b_released->sequence, event.sequence);
+                }
+            } else if (event.type == Type::SurfaceReservationReleased) {
+                ASSERT_TRUE(owners.contains(*event.edge));
+                EXPECT_EQ(owners.at(*event.edge), *event.aircraft);
+                owners.erase(*event.edge);
+                if (*event.edge == edge && *event.aircraft == b_id) b_released = event;
+            }
+        }
+        const auto snapshot = simulation.snapshot();
+        const auto now = snapshot.simulation_time;
+        if (now >= airside::SimTime{7241} && now < airside::SimTime{8841}) {
+            SCOPED_TRACE(now.count());
+            ASSERT_TRUE(owners.contains(edge));
+            EXPECT_EQ(owners.at(edge), b_id);
+            EXPECT_EQ(simulation.active_recovery_holds().contains(a_id), now < airside::SimTime{7269});
+            const auto a = std::ranges::find(snapshot.aircraft, a_id, &airside::AircraftSnapshot::id);
+            ASSERT_NE(a, snapshot.aircraft.end());
+            EXPECT_FALSE(a->pushback_started_at);
+            ASSERT_TRUE(a->surface_position_m);
+            EXPECT_DOUBLE_EQ(a->surface_position_m->x_m, 60.0);
+            EXPECT_DOUBLE_EQ(a->surface_position_m->y_m, -80.0);
+            if (now >= airside::SimTime{7269}) {
+                ++handoff_samples;
+                EXPECT_TRUE(simulation.active_recovery_holds().empty());
+                EXPECT_EQ(a->surface_wait_reason, "pushback_area_reserved");
+                EXPECT_FALSE(a_pushback);
+                // Check every observed aircraft pair through the entire handoff interval.
+                for (std::size_t i = 0; i < snapshot.aircraft.size(); ++i) {
+                    const auto& left = snapshot.aircraft[i].surface_position_m;
+                    if (!left) continue;
+                    for (std::size_t j = i + 1; j < snapshot.aircraft.size(); ++j) {
+                        const auto& right = snapshot.aircraft[j].surface_position_m;
+                        if (!right) continue;
+                        const double distance = std::hypot(left->x_m - right->x_m, left->y_m - right->y_m);
+                        EXPECT_GE(distance, 12.0);
+                        interval_minimum = std::min(interval_minimum, distance);
+                    }
+                }
+            }
+        }
+    }
+    ASSERT_TRUE(simulation.finished());
+    ASSERT_TRUE(started); ASSERT_TRUE(released);
+    ASSERT_TRUE(b_acquired); ASSERT_TRUE(b_released); ASSERT_TRUE(a_pushback);
+    EXPECT_EQ(started->timestamp, airside::SimTime{7089});
+    EXPECT_EQ(b_acquired->timestamp, airside::SimTime{7241});
+    EXPECT_EQ(released->timestamp, airside::SimTime{7269});
+    EXPECT_EQ(b_released->timestamp, airside::SimTime{8841});
+    EXPECT_EQ(a_pushback->timestamp, airside::SimTime{8841});
+    EXPECT_LT(started->sequence, b_acquired->sequence);
+    EXPECT_LT(b_acquired->sequence, released->sequence);
+    EXPECT_LT(released->sequence, b_released->sequence);
+    EXPECT_EQ(b_intervals, 1U);
+    EXPECT_GT(handoff_samples, 0U);
+    EXPECT_GE(interval_minimum, 12.0);
+    EXPECT_TRUE(owners.empty());
+    EXPECT_TRUE(simulation.active_recovery_holds().empty());
+    const auto result = simulation.result();
+    validate_material_recovery_safety(result, simulation.snapshot());
+    const auto a = taxi_contention_history(result, a_id, edge, true);
+    ASSERT_TRUE(a.first_entry);
+    EXPECT_EQ(a.entry_time, airside::SimTime{8871});
+    EXPECT_LT(a_pushback->sequence, *a.first_entry);
+    ASSERT_EQ(simulation.recovery_epochs().size(), 1U);
+    const auto& epoch = simulation.recovery_epochs().front();
+    EXPECT_EQ(epoch.selected_candidate_id, "hold:1:180");
+    EXPECT_EQ(epoch.application_result, "accepted");
+    ASSERT_FALSE(epoch.evaluations.empty());
+    EXPECT_EQ(epoch.evaluations.front().candidate.id, "current_plan");
+    EXPECT_TRUE(epoch.evaluations.front().valid);
+    EXPECT_EQ(epoch.evaluations.front().outcome.worst_departure_delay_seconds, 10090);
+    EXPECT_EQ(result.metrics.maximum_departure_delay_seconds, 8611);
+    // Identical trigger without the hold: normal reservations alone preserve A-first.
+    airside::Simulation tier_zero(material_recovery_scenario(airside::RecoveryMode::Reactive), 42);
+    const auto baseline = tier_zero.run();
+    const auto baseline_a = taxi_contention_history(baseline, a_id, edge, true);
+    const auto baseline_b = taxi_contention_history(baseline, b_id, edge);
+    EXPECT_EQ(baseline_a.entry_time, airside::SimTime{7120});
+    EXPECT_EQ(baseline_b.entry_time, airside::SimTime{8720});
+    EXPECT_EQ(baseline.metrics.maximum_departure_delay_seconds - result.metrics.maximum_departure_delay_seconds, 1479);
+    std::cout << "handoff hold_start=7089 B_acquire=7241 hold_release=7269 B_release=8841"
+        << " A_pushback=8841 A_taxi_acquire=8871 B_intervals=" << b_intervals
+        << " inactive_hold_reserved_wait_samples=" << handoff_samples
+        << " interval_minimum_separation=" << interval_minimum
+        << " wait_reason=pushback_area_reserved reservations=7/7 terminal_holds=0\n";
+}
+
 TEST(SurfaceTrafficTest, ControlledHoldGatesPushbackUntilExactReleaseWhileOtherAircraftMoves) {
     auto scenario = synthetic_stand_closure(airside::RecoveryMode::Integrated);
     scenario.gate_events.clear();
