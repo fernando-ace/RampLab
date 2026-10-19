@@ -559,34 +559,48 @@ TEST(TurnaroundTest, StandRecoveryAdapterRejectsUnreachableSurfaceTarget) {
         "stand_route_unreachable");
 }
 
-TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
+// Same outage diagnostic, with two idle recovery choices. The ordinary dispatcher
+// minimizes route distance; the nearer cart encounters a timed access closure
+// while the existing backup has an unaffected route. All modes share the facts.
+Scenario material_gse_scenario() {
     auto scenario = load_scenario(scenario_path("turnaround_flight_bank_outage.yaml"));
-    scenario.recovery_mode = RecoveryMode::Integrated;
+    scenario.aircraft.erase(scenario.aircraft.begin() + 1, scenario.aircraft.end());
+    scenario.task_duration_disruptions.clear();
+    const NodeId near_depot{12};
+    scenario.graph.add_node({near_depot, "Near cart depot", {100.0, 180.0}});
+    scenario.graph.add_edge({EdgeId{18}, near_depot, NodeId{2}, 100.0, SimTime{200}, true, false});
+    scenario.vehicles.emplace_back(VehicleId{4}, "Near baggage cart", ServiceType::Baggage,
+        near_depot, 8.0);
+    scenario.road_events.push_back({SimTime{131}, EdgeId{18}, false});
+    scenario.road_events.push_back({SimTime{800}, EdgeId{18}, true});
+    return scenario;
+}
+
+TEST(TurnaroundTest, AutomaticIntegratedGseRecoveryDiagnostic) {
+    auto scenario = material_gse_scenario();
+    scenario.recovery_mode = RecoveryMode::Reactive;
     Simulation simulation{scenario, 42};
-    const auto result = simulation.run();
+    while (simulation.recovery_epochs().empty() && simulation.advance()) {}
     ASSERT_FALSE(simulation.recovery_epochs().empty());
-    const auto& epoch = simulation.recovery_epochs().front();
-    ASSERT_EQ(epoch.trigger, "vehicle_outage");
-    // Other action families may add diagnostic candidates. Tier 0 and the
-    // direct outage repair must retain their existing first two priorities.
-    ASSERT_GE(epoch.evaluations.size(), 2U);
-    EXPECT_EQ(epoch.evaluations[0].candidate.id, "current_plan");
-    EXPECT_TRUE(epoch.evaluations[0].valid);
-    EXPECT_EQ(epoch.evaluations[0].outcome.completed_objectives, 3U);
-    EXPECT_EQ(epoch.evaluations[0].outcome.objective_failures, 0U);
-    EXPECT_EQ(epoch.evaluations[0].outcome.worst_departure_delay_seconds, 109.0);
-    EXPECT_EQ(epoch.evaluations[1].candidate.id, "vehicle:3:3");
-    EXPECT_TRUE(epoch.evaluations[1].valid);
-    EXPECT_EQ(epoch.evaluations[1].outcome.completed_objectives,
-        epoch.evaluations[0].outcome.completed_objectives);
-    EXPECT_EQ(epoch.evaluations[1].outcome.objective_failures,
-        epoch.evaluations[0].outcome.objective_failures);
-    EXPECT_EQ(epoch.evaluations[1].outcome.worst_departure_delay_seconds,
-        epoch.evaluations[0].outcome.worst_departure_delay_seconds);
-    EXPECT_FALSE(epoch.selected_candidate_id.has_value());
-    EXPECT_EQ(result.metrics.completed_turnarounds, 3U);
-    EXPECT_EQ(result.metrics.failed_or_timed_out_turnarounds, 0U);
-    EXPECT_EQ(result.metrics.fleet_reassignments, 1U);
+    const auto before = simulation.snapshot();
+    const auto history = simulation.event_history();
+    const RecoverySearchConfig config{};
+    const auto baseline = simulation.evaluate_recovery_candidate({"current_plan", 0, {}}, config);
+    const RecoveryCandidate candidate{"vehicle:3:3", 1,
+        {{RecoveryActionKind::ReassignVehicle, "3", "3", "replace vehicle stranded by revealed outage"}}};
+    const auto replacement = simulation.evaluate_recovery_candidate(candidate, config);
+    ASSERT_TRUE(baseline.valid) << baseline.reason;
+    ASSERT_TRUE(replacement.valid) << replacement.reason;
+    std::cout << "GSE raw baseline delay=" << baseline.outcome.worst_departure_delay_seconds.value_or(-1)
+        << " replacement=" << replacement.outcome.worst_departure_delay_seconds.value_or(-1) << "\n";
+    EXPECT_EQ(config.minimum_delay_improvement_seconds, 300.0);
+    EXPECT_EQ(baseline.outcome.completed, true);
+    EXPECT_EQ(replacement.outcome.completed, true);
+    EXPECT_EQ(baseline.outcome.worst_departure_delay_seconds, 532.0);
+    EXPECT_EQ(replacement.outcome.worst_departure_delay_seconds, 0.0);
+    EXPECT_TRUE(recovery_outcome_materially_improves(replacement.outcome, baseline.outcome, config));
+    EXPECT_EQ(simulation.snapshot(), before);
+    EXPECT_EQ(simulation.event_history(), history);
 }
 
 TEST(TurnaroundTest, LaterRecoveryEpochReplaysEarlierAcceptedAction) {
