@@ -234,6 +234,8 @@ private:
         RecoveryAction action;
     };
     std::vector<AcceptedRecoveryActionRecord> accepted_recovery_actions_;
+    struct TaskPrecedenceOverride { TaskId promoted; TaskId target; };
+    std::map<AircraftId, std::vector<TaskPrecedenceOverride>> recovery_task_precedence_;
     std::uint64_t next_provenance_order_{};
     struct SurfaceAircraftState {
         enum class Phase { None, ArrivalQueue, WaitingForGate, WaitingForPushback, Pushback, Taxiing, WaitingForTraffic, WaitingForRunway, Runway, Arrived, Departed, Failed };

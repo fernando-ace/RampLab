@@ -969,6 +969,62 @@ RecoveryActionResult Simulation::validate_recovery_action(const RecoveryAction& 
         }
         return {true, "validated"};
     }
+    if (action.kind == RecoveryActionKind::ResequenceTasks) {
+        const auto parse_task = [](const std::string& text, TaskId& result) {
+            try {
+                std::size_t parsed{};
+                const auto value = std::stoul(text, &parsed);
+                if (parsed != text.size() || value > std::numeric_limits<std::uint32_t>::max()) return false;
+                result = TaskId{static_cast<std::uint32_t>(value)};
+                return true;
+            } catch (const std::exception&) { return false; }
+        };
+        TaskId promoted_id{}, target_id{};
+        if (!parse_task(action.task_id, promoted_id)) return {false, "invalid_promoted_task_id"};
+        if (!parse_task(action.target_id, target_id)) return {false, "invalid_target_task_id"};
+        if (promoted_id == target_id) return {false, "same_task_cannot_be_resequenced"};
+        const Aircraft* promoted_owner = nullptr;
+        const Aircraft* target_owner = nullptr;
+        const ServiceTask* promoted = nullptr;
+        const ServiceTask* target = nullptr;
+        for (const auto& flight : scenario_.aircraft) {
+            const auto p = std::ranges::find(flight.tasks(), promoted_id, &ServiceTask::id);
+            const auto t = std::ranges::find(flight.tasks(), target_id, &ServiceTask::id);
+            if (p != flight.tasks().end()) { promoted_owner = &flight; promoted = &*p; }
+            if (t != flight.tasks().end()) { target_owner = &flight; target = &*t; }
+        }
+        if (!promoted) return {false, "promoted_task_not_found"};
+        if (!target) return {false, "target_task_not_found"};
+        if (promoted_owner != target_owner) return {false, "tasks_in_different_turnarounds"};
+        if (promoted->status == TaskStatus::Completed) return {false, "promoted_task_completed"};
+        if (promoted->status == TaskStatus::Failed) return {false, "promoted_task_failed"};
+        if (promoted->status == TaskStatus::Assigned || promoted->status == TaskStatus::InProgress)
+            return {false, "promoted_task_already_committed"};
+        if (promoted->status != TaskStatus::Pending && promoted->status != TaskStatus::Waiting &&
+            promoted->status != TaskStatus::Blocked) return {false, "promoted_task_not_reorderable"};
+        if (target->status == TaskStatus::Completed) return {false, "target_task_completed"};
+        if (target->status == TaskStatus::Failed) return {false, "target_task_failed"};
+        if (target->status == TaskStatus::Assigned || target->status == TaskStatus::InProgress)
+            return {false, "target_task_order_already_committed"};
+        if (target->status != TaskStatus::Pending && target->status != TaskStatus::Waiting &&
+            target->status != TaskStatus::Blocked) return {false, "target_task_not_reorderable"};
+        // Walk the full prerequisite graph: moving a dependent ahead of its target is unsafe
+        // even when the dependency is currently hidden behind another blocked task.
+        std::vector<TaskId> frontier{promoted_id};
+        std::vector<TaskId> seen;
+        while (!frontier.empty()) {
+            const auto current = frontier.back(); frontier.pop_back();
+            if (std::ranges::find(seen, current) != seen.end()) continue;
+            seen.push_back(current);
+            const auto task = std::ranges::find(promoted_owner->tasks(), current, &ServiceTask::id);
+            if (task == promoted_owner->tasks().end()) return {false, "resequence_dependency_not_found"};
+            for (const auto prerequisite : task->prerequisites) {
+                if (prerequisite == target_id) return {false, "resequence_violates_prerequisite"};
+                frontier.push_back(prerequisite);
+            }
+        }
+        return {true, "validated"};
+    }
     if (action.kind != RecoveryActionKind::ReassignVehicle)
         return {false, "recovery_action_kind_not_implemented"};
     if (!autonomy_fleet_) return {false, "turnaround_fleet_unavailable"};
@@ -1044,6 +1100,28 @@ RecoveryActionResult Simulation::apply_recovery_action(const RecoveryAction& act
             std::numeric_limits<std::uint64_t>::max();
         const auto* epoch = recovery_epochs_.empty() ? nullptr : &recovery_epochs_.back();
         if (scenario_.recovery_mode == RecoveryMode::Integrated) {
+            accepted_recovery_actions_.push_back({now_, action_boundary, next_provenance_order_++,
+                epoch ? std::to_string(epoch->fingerprint) : "manual",
+                epoch && epoch->selected_candidate_id ? *epoch->selected_candidate_id : "manual",
+                next_queue_sequence, action});
+        }
+        if (!recovery_epochs_.empty()) recovery_epochs_.back().application_result = "accepted";
+        return {true, "accepted"};
+    }
+    if (action.kind == RecoveryActionKind::ResequenceTasks) {
+        const TaskId promoted{static_cast<std::uint32_t>(std::stoul(action.task_id))};
+        const TaskId target{static_cast<std::uint32_t>(std::stoul(action.target_id))};
+        const auto owner = std::ranges::find_if(scenario_.aircraft, [&](const auto& flight) {
+            return std::ranges::any_of(flight.tasks(), [&](const auto& task) { return task.id == promoted; });
+        });
+        auto& overrides = recovery_task_precedence_[owner->id()];
+        std::erase_if(overrides, [&](const auto& value) { return value.promoted == promoted || value.target == target; });
+        overrides.push_back({promoted, target});
+        const auto action_boundary = event_history_.size();
+        const auto* next_event = events_.peek();
+        const auto next_queue_sequence = next_event ? next_event->sequence : std::numeric_limits<std::uint64_t>::max();
+        if (scenario_.recovery_mode == RecoveryMode::Integrated) {
+            const auto* epoch = recovery_epochs_.empty() ? nullptr : &recovery_epochs_.back();
             accepted_recovery_actions_.push_back({now_, action_boundary, next_provenance_order_++,
                 epoch ? std::to_string(epoch->fingerprint) : "manual",
                 epoch && epoch->selected_candidate_id ? *epoch->selected_candidate_id : "manual",
@@ -1426,7 +1504,33 @@ void Simulation::schedule_turnaround_tasks(Aircraft& flight) {
         flight.state() == AircraftState::Scheduled || flight.state() == AircraftState::Arriving ||
         flight.state() == AircraftState::Departed) return;
     update_turnaround_estimate(flight);
-    for (auto& task_value : flight.mutable_tasks()) {
+    auto& task_values = flight.mutable_tasks();
+    auto& overrides = recovery_task_precedence_[flight.id()];
+    std::erase_if(overrides, [&](const auto& override_value) {
+        const auto promoted = std::ranges::find(task_values, override_value.promoted, &ServiceTask::id);
+        const auto target = std::ranges::find(task_values, override_value.target, &ServiceTask::id);
+        return promoted == task_values.end() || target == task_values.end() ||
+            promoted->status == TaskStatus::Assigned || promoted->status == TaskStatus::InProgress ||
+            target->status == TaskStatus::Assigned || target->status == TaskStatus::InProgress ||
+            promoted->status == TaskStatus::Completed || promoted->status == TaskStatus::Failed ||
+            target->status == TaskStatus::Completed || target->status == TaskStatus::Failed;
+    });
+    std::vector<ServiceTask*> ordered;
+    for (auto& task_value : task_values) ordered.push_back(&task_value);
+    for (const auto& override_value : overrides) {
+        const auto promoted = std::ranges::find(ordered, override_value.promoted,
+            [](const auto* task) { return task->id; });
+        const auto target = std::ranges::find(ordered, override_value.target,
+            [](const auto* task) { return task->id; });
+        if (promoted == ordered.end() || target == ordered.end() || promoted < target) continue;
+        auto* preferred = *promoted;
+        ordered.erase(promoted);
+        const auto insertion = std::ranges::find(ordered, override_value.target,
+            [](const auto* task) { return task->id; });
+        ordered.insert(insertion, preferred);
+    }
+    for (auto* task_ptr : ordered) {
+        auto& task_value = *task_ptr;
         if (task_value.status == TaskStatus::Blocked) {
             const bool dependencies_complete = std::ranges::all_of(task_value.prerequisites, [&](TaskId prerequisite) {
                 return flight.task(prerequisite).status == TaskStatus::Completed;
@@ -1462,6 +1566,9 @@ void Simulation::schedule_turnaround_tasks(Aircraft& flight) {
 
         if (uses_mobile_fleet(task_value.type)) {
             std::int64_t priority = 0;
+            if (const auto precedence = std::ranges::find_if(overrides, [&](const auto& value) {
+                    return value.promoted == task_value.id;
+                }); precedence != overrides.end()) priority += 10000;
             if (const auto path = critical_paths_.find(flight.id()); path != critical_paths_.end() &&
                 std::ranges::find(path->second, task_value.id) != path->second.end()) priority += 10;
             if (const auto slack = schedule_slacks_.find(flight.id()); slack != schedule_slacks_.end()) {
@@ -1514,6 +1621,7 @@ void Simulation::schedule_turnaround_tasks(Aircraft& flight) {
         emit(std::move(started));
         [[maybe_unused]] const auto sequence = events_.schedule(now_ + task_value.duration,
             EventType::AbstractServiceCompleted, {EntityKind::Aircraft, flight.id().value()}, task_value.id.value());
+        std::erase_if(overrides, [&](const auto& value) { return value.promoted == task_value.id; });
     }
     update_turnaround_estimate(flight);
 }

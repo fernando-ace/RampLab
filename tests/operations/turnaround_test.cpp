@@ -324,6 +324,176 @@ TEST(TurnaroundTest, StandRecoveryAdapterReassignsScheduledAircraftWithoutTelepo
     EXPECT_EQ(simulation.snapshot().gates[1].occupying_aircraft, std::nullopt);
 }
 
+TEST(TurnaroundTest, ResequenceRecoveryChangesNormalSchedulerOrderAndReplays) {
+    Scenario scenario;
+    scenario.name = "synthetic_task_resequence";
+    scenario.turnaround_orchestration = true;
+    const NodeId stand{1};
+    scenario.graph.add_node({stand, "stand", {0.0, 0.0}});
+    scenario.gates.emplace_back(GateId{1}, "A", stand);
+    ServiceTask task_a{TaskId{1}, ServiceType::Deboarding}; task_a.duration = SimTime{2};
+    ServiceTask task_b{TaskId{2}, ServiceType::Deboarding}; task_b.duration = SimTime{2};
+    scenario.abstract_resource_capacity.emplace(ServiceType::Deboarding, 1U);
+    scenario.aircraft.emplace_back(AircraftId{1}, "SYN001", SimTime{0}, SimTime{20}, GateId{1}, stand,
+        std::vector<ServiceTask>{task_a, task_b});
+    scenario.recovery_mode = RecoveryMode::Integrated;
+    Simulation ordinary{scenario, 42};
+    const auto ordinary_result = ordinary.run();
+    std::vector<TaskId> ordinary_started;
+    for (const auto& event : ordinary_result.events)
+        if (event.type == SimulationEventType::TurnaroundTaskStarted) ordinary_started.push_back(*event.task);
+    EXPECT_EQ(ordinary_started, (std::vector<TaskId>{TaskId{1}, TaskId{2}}));
+    Simulation simulation{scenario, 42};
+    const RecoveryAction action{RecoveryActionKind::ResequenceTasks, "2", "1", "promote task 2"};
+    ASSERT_TRUE(simulation.validate_recovery_action(action).accepted);
+    ASSERT_TRUE(simulation.apply_recovery_action(action).accepted);
+    const auto replay = simulation.replay_to_recovery_boundary();
+    ASSERT_TRUE(replay.equivalent) << replay.reason;
+    const auto result = simulation.run();
+    std::vector<TaskId> started;
+    for (const auto& event : result.events)
+        if (event.type == SimulationEventType::TurnaroundTaskStarted) started.push_back(*event.task);
+    ASSERT_EQ(started.size(), 2U);
+    EXPECT_EQ(started, (std::vector<TaskId>{TaskId{2}, TaskId{1}}));
+    EXPECT_TRUE(std::ranges::all_of(result.aircraft.front().tasks(), [](const auto& task) {
+        return task.status == TaskStatus::Completed && task.completed_at.has_value();
+    }));
+    EXPECT_LE(result.aircraft.front().task(TaskId{2}).started_at.value(),
+        result.aircraft.front().task(TaskId{2}).completed_at.value());
+}
+
+TEST(TurnaroundTest, ResequenceRecoveryRejectsMissingSameAndDependencyInvalidTasks) {
+    Scenario scenario;
+    scenario.turnaround_orchestration = true;
+    const NodeId stand{1}; scenario.graph.add_node({stand, "stand", {0.0, 0.0}});
+    scenario.gates.emplace_back(GateId{1}, "A", stand);
+    ServiceTask task_a{TaskId{1}, ServiceType::Deboarding};
+    ServiceTask task_b{TaskId{2}, ServiceType::Fueling}; task_b.prerequisites = {TaskId{1}};
+    ServiceTask task_c{TaskId{3}, ServiceType::Catering}; task_c.prerequisites = {TaskId{2}};
+    scenario.aircraft.emplace_back(AircraftId{1}, "SYN001", SimTime{10}, SimTime{30}, GateId{1}, stand,
+        std::vector<ServiceTask>{task_a, task_b, task_c});
+    Simulation simulation{scenario, 42};
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "99", "1", {}}).reason,
+        "promoted_task_not_found");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "1", "99", {}}).reason,
+        "target_task_not_found");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "1", "1", {}}).reason,
+        "same_task_cannot_be_resequenced");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "2", "1", {}}).reason,
+        "resequence_violates_prerequisite");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "3", "1", {}}).reason,
+        "resequence_violates_prerequisite");
+}
+
+TEST(TurnaroundTest, ResequenceRecoveryRejectsCompletedCommittedAndCrossTurnaroundTasks) {
+    Scenario scenario; scenario.turnaround_orchestration = true;
+    const NodeId stand{1}; scenario.graph.add_node({stand, "stand", {0.0, 0.0}});
+    scenario.gates.emplace_back(GateId{1}, "A", stand);
+    ServiceTask a{TaskId{1}, ServiceType::Deboarding}; a.status = TaskStatus::Completed;
+    ServiceTask b{TaskId{2}, ServiceType::Fueling};
+    ServiceTask c{TaskId{3}, ServiceType::Catering}; c.status = TaskStatus::InProgress;
+    ServiceTask d{TaskId{4}, ServiceType::LavatoryService};
+    scenario.aircraft.emplace_back(AircraftId{1}, "SYN001", SimTime{10}, SimTime{30}, GateId{1}, stand,
+        std::vector<ServiceTask>{a, b, c});
+    scenario.aircraft.emplace_back(AircraftId{2}, "SYN002", SimTime{20}, SimTime{40}, GateId{1}, stand,
+        std::vector<ServiceTask>{d});
+    Simulation simulation{scenario, 42};
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "1", "2", {}}).reason,
+        "promoted_task_completed");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "2", "1", {}}).reason,
+        "target_task_completed");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "3", "2", {}}).reason,
+        "promoted_task_already_committed");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "2", "3", {}}).reason,
+        "target_task_order_already_committed");
+    EXPECT_EQ(simulation.validate_recovery_action({RecoveryActionKind::ResequenceTasks, "4", "2", {}}).reason,
+        "tasks_in_different_turnarounds");
+}
+
+TEST(TurnaroundTest, IntegratedResequenceSelectsBetterOrderAndShadowOnlyRecommends) {
+    const auto make_scenario = [] {
+        Scenario scenario; scenario.name = "integrated_resequence";
+        scenario.turnaround_orchestration = true;
+        const NodeId stand{1}; scenario.graph.add_node({stand, "stand", {0.0, 0.0}});
+        scenario.gates.emplace_back(GateId{1}, "A", stand);
+        ServiceTask slow{TaskId{1}, ServiceType::Deboarding}; slow.duration = SimTime{100};
+        ServiceTask parallel{TaskId{2}, ServiceType::Deboarding}; parallel.duration = SimTime{1000};
+        ServiceTask dependent{TaskId{3}, ServiceType::CabinCleaning}; dependent.duration = SimTime{1000};
+        dependent.status = TaskStatus::Blocked;
+        dependent.prerequisites = {TaskId{2}};
+        scenario.abstract_resource_capacity[ServiceType::Deboarding] = 1;
+        scenario.abstract_resource_capacity[ServiceType::CabinCleaning] = 1;
+        scenario.aircraft.emplace_back(AircraftId{1}, "SYN001", SimTime{10}, SimTime{1500}, GateId{1}, stand,
+            std::vector<ServiceTask>{slow, parallel, dependent});
+        scenario.task_duration_disruptions.push_back({SimTime{0}, TaskId{1}, SimTime{1000}});
+        return scenario;
+    };
+    const auto started = [](const SimulationResult& result) {
+        std::vector<TaskId> order;
+        for (const auto& event : result.events)
+            if (event.type == SimulationEventType::TurnaroundTaskStarted) order.push_back(*event.task);
+        return order;
+    };
+    auto reactive_scenario = make_scenario(); reactive_scenario.recovery_mode = RecoveryMode::Reactive;
+    auto shadow_scenario = make_scenario(); shadow_scenario.recovery_mode = RecoveryMode::Shadow;
+    auto integrated_scenario = make_scenario(); integrated_scenario.recovery_mode = RecoveryMode::Integrated;
+    auto repeated_integrated_scenario = make_scenario(); repeated_integrated_scenario.recovery_mode = RecoveryMode::Integrated;
+    Simulation reactive{reactive_scenario, 42};
+    Simulation shadow{shadow_scenario, 42};
+    Simulation integrated{integrated_scenario, 42};
+    Simulation repeated_integrated{repeated_integrated_scenario, 42};
+    const auto reactive_result = reactive.run();
+    const auto shadow_result = shadow.run();
+    const auto integrated_result = integrated.run();
+    const auto repeated_result = repeated_integrated.run();
+    EXPECT_EQ(reactive_result.events, shadow_result.events);
+    EXPECT_EQ(reactive.snapshot(), shadow.snapshot());
+    EXPECT_EQ(reactive_result.metrics, shadow_result.metrics);
+    EXPECT_EQ(started(reactive_result), (std::vector<TaskId>{TaskId{1}, TaskId{2}, TaskId{3}}));
+    ASSERT_FALSE(shadow.recovery_epochs().empty());
+    const auto& shadow_epoch = shadow.recovery_epochs().front();
+    EXPECT_EQ(shadow_epoch.trigger, "task_duration_slowdown");
+    EXPECT_EQ(shadow_epoch.selected_candidate_id, std::optional<std::string>{"resequence:2:1"});
+    EXPECT_TRUE(std::ranges::all_of(shadow.recovery_epochs(), [](const auto& epoch) {
+        return epoch.application_result != "accepted";
+    }));
+    EXPECT_EQ(started(shadow_result), started(reactive_result));
+    ASSERT_FALSE(integrated.recovery_epochs().empty());
+    const auto& epoch = integrated.recovery_epochs().front();
+    EXPECT_EQ(epoch.selected_candidate_id, std::optional<std::string>{"resequence:2:1"});
+    const auto evaluated = std::ranges::find_if(epoch.evaluations, [](const auto& evaluation) {
+        return evaluation.candidate.id == "resequence:2:1";
+    });
+    ASSERT_NE(evaluated, epoch.evaluations.end());
+    EXPECT_TRUE(evaluated->valid) << evaluated->reason;
+    EXPECT_LT(evaluated->outcome.worst_departure_delay_seconds.value(),
+        epoch.evaluations.front().outcome.worst_departure_delay_seconds.value());
+    EXPECT_EQ(epoch.application_result, "accepted");
+    EXPECT_EQ(started(integrated_result), (std::vector<TaskId>{TaskId{2}, TaskId{1}, TaskId{3}}));
+    EXPECT_LT(integrated_result.metrics.maximum_departure_delay_seconds,
+        reactive_result.metrics.maximum_departure_delay_seconds);
+    EXPECT_TRUE(std::ranges::all_of(integrated_result.aircraft.front().tasks(), [](const auto& task) {
+        return task.status == TaskStatus::Completed;
+    }));
+    const auto dependent_task = std::ranges::find(integrated_result.aircraft.front().tasks(), TaskId{3}, &ServiceTask::id);
+    const auto prerequisite = std::ranges::find(integrated_result.aircraft.front().tasks(), TaskId{2}, &ServiceTask::id);
+    ASSERT_NE(dependent_task, integrated_result.aircraft.front().tasks().end());
+    ASSERT_NE(prerequisite, integrated_result.aircraft.front().tasks().end());
+    EXPECT_GE(*dependent_task->started_at, *prerequisite->completed_at);
+    EXPECT_EQ(integrated_result.events, repeated_result.events);
+    ASSERT_FALSE(repeated_integrated.recovery_epochs().empty());
+    EXPECT_EQ(repeated_integrated.recovery_epochs().front().candidates, epoch.candidates);
+    EXPECT_EQ(repeated_integrated.recovery_epochs().front().selected_candidate_id, epoch.selected_candidate_id);
+    ASSERT_EQ(repeated_integrated.recovery_epochs().front().evaluations.size(), epoch.evaluations.size());
+    for (std::size_t i = 0; i < epoch.evaluations.size(); ++i) {
+        EXPECT_EQ(repeated_integrated.recovery_epochs().front().evaluations[i].candidate,
+            epoch.evaluations[i].candidate);
+        EXPECT_EQ(repeated_integrated.recovery_epochs().front().evaluations[i].valid, epoch.evaluations[i].valid);
+        EXPECT_EQ(repeated_integrated.recovery_epochs().front().evaluations[i].outcome.worst_departure_delay_seconds,
+            epoch.evaluations[i].outcome.worst_departure_delay_seconds);
+    }
+}
+
 TEST(TurnaroundTest, StandRecoveryAdapterRejectsInvalidAndOccupiedTargets) {
     Scenario scenario;
     scenario.name = "synthetic_stand_rejections";

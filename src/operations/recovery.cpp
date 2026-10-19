@@ -94,12 +94,15 @@ std::uint64_t recovery_fingerprint(const RecoveryState& state) noexcept {
 RecoveryTriage triage_recovery_state(const RecoveryState& state) noexcept {
     bool threatened = false;
     bool relevant = false;
+    bool task_slowdown_revealed = false;
     for (const auto& disruption : state.revealed_disruptions) {
         if (disruption.revealed_at > state.snapshot.simulation_time) continue;
         relevant = true;
         if (disruption.kind == "vehicle_outage" || disruption.kind == "stand_closure" ||
             disruption.kind == "surface_closure" || disruption.kind == "late_inbound" ||
-            disruption.kind == "task_slowdown") threatened = true;
+            disruption.kind == "task_slowdown" || disruption.kind == "task_duration_slowdown") threatened = true;
+        if (disruption.kind == "task_slowdown" || disruption.kind == "task_duration_slowdown")
+            task_slowdown_revealed = true;
     }
     if (!relevant || !threatened) return RecoveryTriage::NoImpact;
     for (const auto& disruption : state.revealed_disruptions) {
@@ -114,6 +117,9 @@ RecoveryTriage triage_recovery_state(const RecoveryState& state) noexcept {
     for (const auto& turnaround : state.snapshot.turnarounds) {
         if (turnaround.predicted_late)
             return RecoveryTriage::IntegratedPlanningRequired;
+        if (task_slowdown_revealed && std::ranges::count_if(turnaround.tasks, [](const auto& task) {
+                return task.status == TaskStatus::Pending || task.status == TaskStatus::Waiting;
+            }) >= 2) return RecoveryTriage::IntegratedPlanningRequired;
         for (const auto& task : turnaround.tasks) {
             if (task.status == TaskStatus::InProgress || task.status == TaskStatus::Waiting)
                 return RecoveryTriage::LocalRecoveryAvailable;
@@ -243,11 +249,13 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
         std::vector<const ServiceTaskSnapshot*> pending;
         for (const auto& task : tasks)
             if (task_is_pending(task.status) && dependencies_complete(task, tasks)) pending.push_back(&task);
-        for (std::size_t i = 1; i < pending.size(); ++i) {
-            diagnostics.push_back({"resequence:" + id_text(pending[i - 1]->id.value()) + ":" +
-                id_text(pending[i]->id.value()), 1, {{RecoveryActionKind::ResequenceTasks,
-                id_text(pending[i]->id.value()), id_text(pending[i - 1]->id.value()),
-                "swap dependency-valid pending tasks"}}});
+        for (std::size_t target = 0; target < pending.size(); ++target) {
+            for (std::size_t promoted = target + 1; promoted < pending.size(); ++promoted) {
+                executable.push_back({"resequence:" + id_text(pending[promoted]->id.value()) + ":" +
+                    id_text(pending[target]->id.value()), 1, {{RecoveryActionKind::ResequenceTasks,
+                    id_text(pending[promoted]->id.value()), id_text(pending[target]->id.value()),
+                    "prefer dependency-valid task before target"}}});
+            }
         }
         if (turnaround.predicted_late && turnaround.state != TurnaroundState::Departed &&
             turnaround.state != TurnaroundState::Failed) {
@@ -278,20 +286,49 @@ std::vector<RecoveryCandidate> generate_recovery_candidates(
             return disruption.kind == "stand_closure";
         });
     };
+    const auto resequence_relevance = [&](const RecoveryCandidate& candidate) {
+        if (candidate.actions.empty() || candidate.actions.front().kind != RecoveryActionKind::ResequenceTasks)
+            return 0;
+        const auto& action = candidate.actions.front();
+        const bool slowed_task = std::ranges::any_of(state.revealed_disruptions, [&](const auto& disruption) {
+            return disruption.revealed_at <= state.snapshot.simulation_time &&
+                (disruption.kind == "task_slowdown" || disruption.kind == "task_duration_slowdown") &&
+                (disruption.entity == action.task_id || disruption.entity == action.target_id);
+        });
+        bool late = false;
+        for (const auto& turnaround : state.snapshot.turnarounds) {
+            const auto involved = [&](const std::string& id) {
+                return std::ranges::any_of(turnaround.tasks, [&](const auto& task) {
+                    return id_text(task.id.value()) == id;
+                });
+            };
+            if ((involved(action.task_id) || involved(action.target_id)) && turnaround.predicted_late) late = true;
+        }
+        return slowed_task ? 2 : late ? 1 : 0;
+    };
+    const auto priority = [&](const RecoveryCandidate& candidate) {
+        if (outage_for_candidate(candidate)) return 0;
+        if (stand_relevant(candidate)) return 1;
+        const auto relevant = resequence_relevance(candidate);
+        if (relevant > 0) return 2;
+        const bool is_resequence = !candidate.actions.empty() &&
+            candidate.actions.front().kind == RecoveryActionKind::ResequenceTasks;
+        return is_resequence ? 4 : 3;
+    };
     std::ranges::sort(executable, [&](const auto& lhs, const auto& rhs) {
-        const bool left_relevant = outage_for_candidate(lhs);
-        const bool right_relevant = outage_for_candidate(rhs);
-        if (left_relevant != right_relevant) return left_relevant;
-        const bool left_stand = stand_relevant(lhs);
-        const bool right_stand = stand_relevant(rhs);
-        if (left_stand != right_stand) return left_stand;
+        const auto left_priority = priority(lhs);
+        const auto right_priority = priority(rhs);
+        if (left_priority != right_priority) return left_priority < right_priority;
+        const auto left_relevance = resequence_relevance(lhs);
+        const auto right_relevance = resequence_relevance(rhs);
+        if (left_relevance != right_relevance) return left_relevance > right_relevance;
         return lhs.id < rhs.id;
     });
     for (auto& candidate : executable) {
         if (result.size() >= config.max_candidates) break;
         result.push_back(std::move(candidate));
     }
-    // Resequence and hold proposals remain diagnostic until their adapters exist.
+    // Hold proposals remain diagnostic until their adapter exists.
     if (config.max_search_tier >= 2 && config.max_plan_depth >= 2) {
         const auto singles_end = result.size();
         for (std::size_t i = 1; i < singles_end && result.size() < config.max_candidates; ++i) {

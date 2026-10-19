@@ -87,6 +87,27 @@ TEST(RecoveryPlannerTest, EvaluatesBaselineFirstAndRequiresMaterialImprovement) 
     EXPECT_TRUE(decision.selected_candidate_id.has_value());
 }
 
+TEST(RecoveryPlannerTest, NonBeneficialResequenceKeepsCurrentPlanSelected) {
+    RecoveryState state;
+    state.snapshot.simulation_time = SimTime{10};
+    state.revealed_disruptions.push_back({SimTime{1}, "task_duration_slowdown", "2", "slow"});
+    TurnaroundSnapshot turnaround; turnaround.aircraft = AircraftId{1}; turnaround.predicted_late = true;
+    ServiceTaskSnapshot a; a.id = TaskId{1}; a.status = TaskStatus::Waiting;
+    ServiceTaskSnapshot b; b.id = TaskId{2}; b.status = TaskStatus::Pending;
+    turnaround.tasks = {a, b}; state.snapshot.turnarounds.push_back(turnaround);
+    RecoverySearchConfig config; config.max_search_tier = 1;
+    const auto decision = plan_recovery(state, config, [](const RecoveryCandidate& candidate) {
+        RecoveryEvaluation evaluation; evaluation.candidate = candidate; evaluation.valid = true;
+        evaluation.outcome.completed = true; evaluation.outcome.completed_objectives = 1;
+        evaluation.outcome.worst_departure_delay_seconds = 120.0;
+        evaluation.outcome.departure_delay_seconds = 120.0;
+        return evaluation;
+    });
+    ASSERT_FALSE(decision.candidates.empty());
+    EXPECT_FALSE(decision.selected_candidate_id.has_value());
+    EXPECT_EQ(decision.candidates.front().id, "current_plan");
+}
+
 TEST(RecoveryPlannerTest, StrandedAssignedTaskSurvivesCandidateCapAheadOfDiagnostics) {
     RecoveryState state;
     state.snapshot.simulation_time = SimTime{30};
@@ -155,6 +176,27 @@ TEST(RecoveryPlannerTest, RevealedStandClosureProducesDeterministicExecutableCan
     ASSERT_EQ(candidate->actions.size(), 1U);
     EXPECT_EQ(candidate->actions.front(), (RecoveryAction{RecoveryActionKind::ReassignStand,
         "7", "2", "available target stand"}));
+}
+
+TEST(RecoveryPlannerTest, RelevantResequenceIsExecutableAndSurvivesCandidateCapDeterministically) {
+    RecoveryState state;
+    state.snapshot.simulation_time = SimTime{20};
+    state.revealed_disruptions.push_back({SimTime{10}, "task_slowdown", "2", "slowed task"});
+    TurnaroundSnapshot turnaround; turnaround.aircraft = AircraftId{7}; turnaround.predicted_late = true;
+    ServiceTaskSnapshot first; first.id = TaskId{1}; first.status = TaskStatus::Waiting;
+    ServiceTaskSnapshot second; second.id = TaskId{2}; second.status = TaskStatus::Pending;
+    turnaround.tasks = {first, second};
+    state.snapshot.turnarounds.push_back(turnaround);
+    RecoverySearchConfig config; config.max_candidates = 2; config.max_search_tier = 1;
+    const auto a = generate_recovery_candidates(state, config);
+    const auto b = generate_recovery_candidates(state, config);
+    ASSERT_EQ(a, b);
+    ASSERT_EQ(a.size(), 2U);
+    EXPECT_EQ(a[1].id, "resequence:2:1");
+    ASSERT_EQ(a[1].actions.size(), 1U);
+    EXPECT_EQ(a[1].actions.front().kind, RecoveryActionKind::ResequenceTasks);
+    EXPECT_EQ(a[1].actions.front().task_id, "2");
+    EXPECT_EQ(a[1].actions.front().target_id, "1");
 }
 
 }  // namespace airside
