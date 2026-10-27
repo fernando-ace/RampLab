@@ -37,6 +37,9 @@ struct RoadEdge {
     bool ground_vehicle_allowed{true};
     bool crosses_runway{false};
     double centerline_length_m{0.0};
+    std::string surface_type{"unclassified"};
+    double width_m{0.0};
+    double minimum_clearance_m{0.0};
 };
 
 enum class MovementClass { Any, Aircraft, GroundVehicle };

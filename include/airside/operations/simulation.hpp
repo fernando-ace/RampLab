@@ -9,6 +9,7 @@
 #include "airside/integration/snapshot.hpp"
 #include "airside/operations/resource_pool.hpp"
 #include "airside/world/airport_graph.hpp"
+#include "airside/world/airport_design.hpp"
 #include "airside/world/gate.hpp"
 
 #include <cstdint>
@@ -60,6 +61,7 @@ struct Scenario {
     std::string name{"unnamed"};
     std::uint64_t default_seed{42};
     AirportGraph graph;
+    std::optional<AirportDesign> airport_design;
     std::vector<Gate> gates;
     std::vector<Aircraft> aircraft;
     std::vector<ServiceVehicle> vehicles;

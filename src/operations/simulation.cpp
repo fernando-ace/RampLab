@@ -196,6 +196,7 @@ bool Simulation::advance() {
 SimulationSnapshot Simulation::snapshot() const {
     SimulationSnapshot result;
     result.simulation_time = now_;
+    result.airport_design = scenario_.airport_design;
     for (const auto& [id, state] : surface_aircraft_) {
         if (state.phase == SurfaceAircraftState::Phase::Runway) result.runway_owner = id;
         if (state.phase == SurfaceAircraftState::Phase::ArrivalQueue ||
@@ -391,7 +392,9 @@ SimulationSnapshot Simulation::snapshot() const {
     }
     for (const auto& edge : scenario_.graph.edges()) {
         result.roads.push_back({edge.id, edge.from, edge.to, edge.distance_m,
-            edge.traversal_cost, edge.available});
+            edge.traversal_cost, edge.available, edge.centerline, edge.surface_type,
+            edge.width_m, edge.minimum_clearance_m, edge.aircraft_allowed,
+            edge.ground_vehicle_allowed, edge.crosses_runway});
     }
     for (const auto& flight : scenario_.aircraft) {
         if (!scenario_.turnaround_orchestration) break;
