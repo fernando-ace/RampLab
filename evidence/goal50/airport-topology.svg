@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="850" viewBox="0 0 1120 850">
+<rect width="1120" height="850" fill="#f4f6f8"/>
+<text x="50" y="42" font-family="Segoe UI, sans-serif" font-size="25" font-weight="700" fill="#182b3a">RampLab Demo Airport</text>
+<text x="50" y="68" font-family="Segoe UI, sans-serif" font-size="14" fill="#536675">Operational graph topology • local meters • schematic, not to scale</text>
+<rect x="900" y="95" width="190" height="104" rx="8" fill="#fff" stroke="#aab7c1"/>
+<text x="915" y="120" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#182b3a">Runway 09/27</text>
+<text x="915" y="143" font-family="Segoe UI, sans-serif" font-size="12" fill="#536675">1,400 × 30 m authored</text>
+<text x="915" y="163" font-family="Segoe UI, sans-serif" font-size="12" fill="#536675">timed resource in engine</text>
+<text x="915" y="183" font-family="Segoe UI, sans-serif" font-size="12" fill="#536675">pavement not in route graph</text>
+<line x1="105.0" y1="425.0" x2="205.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="105.0" y1="425.0" x2="205.0" y2="505.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="325.0" y2="345.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="505.0" x2="325.0" y2="505.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="105.0" y2="425.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="205.0" y2="505.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="505.0" x2="105.0" y2="425.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="325.0" y1="345.0" x2="205.0" y2="345.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="325.0" y1="505.0" x2="205.0" y2="505.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="325.0" y2="265.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="505.0" x2="325.0" y2="585.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="445.0" y2="425.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="445.0" y1="425.0" x2="205.0" y2="345.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="445.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="325.0" y2="205.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="505.0" x2="325.0" y2="645.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="505.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="665.0" y2="695.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="505.0" x2="725.0" y2="105.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="605.0" y1="645.0" x2="665.0" y2="695.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="665.0" y1="695.0" x2="725.0" y2="745.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="725.0" y1="745.0" x2="665.0" y2="695.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="665.0" y1="695.0" x2="205.0" y2="345.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="665.0" y1="695.0" x2="805.0" y2="645.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="805.0" y1="645.0" x2="725.0" y2="745.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="605.0" y1="205.0" x2="725.0" y2="105.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="725.0" y1="105.0" x2="205.0" y2="505.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="205.0" y2="125.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="345.0" x2="365.0" y2="125.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="505.0" x2="205.0" y2="725.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="505.0" x2="365.0" y2="725.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="325.0" y1="265.0" x2="325.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="325.0" y1="585.0" x2="325.0" y2="505.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="445.0" y1="345.0" x2="445.0" y2="425.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="125.0" x2="725.0" y2="745.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="205.0" y1="725.0" x2="725.0" y2="105.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="325.0" y1="205.0" x2="325.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="325.0" y1="645.0" x2="325.0" y2="505.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="505.0" y1="345.0" x2="445.0" y2="425.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="365.0" y1="125.0" x2="725.0" y2="745.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<line x1="365.0" y1="725.0" x2="725.0" y2="105.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<circle cx="105.0" cy="425.0" r="8" fill="#2f855a" stroke="#fff" stroke-width="2"/>
+<text x="115.0" y="416.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">depot</text>
+<circle cx="205.0" cy="345.0" r="6" fill="#263746" stroke="#fff" stroke-width="2"/>
+<text x="215.0" y="336.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">north</text>
+<circle cx="205.0" cy="505.0" r="6" fill="#263746" stroke="#fff" stroke-width="2"/>
+<text x="215.0" y="496.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">south</text>
+<circle cx="325.0" cy="345.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
+<text x="335.0" y="336.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">gate a1</text>
+<circle cx="325.0" cy="505.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
+<text x="335.0" y="496.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">gate a2</text>
+<circle cx="445.0" cy="425.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
+<text x="455.0" y="416.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">gate a3</text>
+<circle cx="325.0" cy="265.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="335.0" y="256.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a1</text>
+<circle cx="325.0" cy="585.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="335.0" y="576.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a2</text>
+<circle cx="445.0" cy="345.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="455.0" y="336.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a3</text>
+<circle cx="325.0" cy="205.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="335.0" y="196.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a1</text>
+<circle cx="325.0" cy="645.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="335.0" y="636.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a2</text>
+<circle cx="505.0" cy="345.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="515.0" y="336.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a3</text>
+<circle cx="725.0" cy="745.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
+<text x="735.0" y="736.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">arrival gate a4</text>
+<circle cx="725.0" cy="105.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
+<text x="735.0" y="96.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">arrival gate a5</text>
+<circle cx="205.0" cy="125.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="215.0" y="116.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a4</text>
+<circle cx="365.0" cy="125.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="375.0" y="116.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a4</text>
+<circle cx="205.0" cy="725.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="215.0" y="716.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a5</text>
+<circle cx="365.0" cy="725.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
+<text x="375.0" y="716.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a5</text>
+<circle cx="605.0" cy="645.0" r="7" fill="#c53030" stroke="#fff" stroke-width="2"/>
+<text x="615.0" y="636.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">arrival exit a4</text>
+<circle cx="605.0" cy="205.0" r="7" fill="#c53030" stroke="#fff" stroke-width="2"/>
+<text x="615.0" y="196.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">arrival exit a5</text>
+<circle cx="665.0" cy="695.0" r="6" fill="#263746" stroke="#fff" stroke-width="2"/>
+<text x="675.0" y="686.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">a4 taxi merge</text>
+<circle cx="805.0" cy="645.0" r="6" fill="#263746" stroke="#fff" stroke-width="2"/>
+<text x="815.0" y="636.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">a4 taxi detour</text>
+<path d="M 62 785 L 62 735 M 62 735 L 56 746 M 62 735 L 68 746" fill="none" stroke="#263746" stroke-width="2"/>
+<text x="52" y="720" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">N</text>
+<text x="78" y="780" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">+X east</text>
+<line x1="875" y1="760" x2="915" y2="760" stroke="#597b96" stroke-width="3"/><text x="925" y="765" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">aircraft / shared taxiway</text>
+<line x1="875" y1="785" x2="915" y2="785" stroke="#2f855a" stroke-width="3" stroke-dasharray="6 4"/><text x="925" y="790" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">GSE-only service link</text>
+<text x="50" y="825" font-family="Segoe UI, sans-serif" font-size="12" fill="#536675">Runway thresholds and pavement are authored metadata; this view shows only graph nodes and links consumed by routing.</text>
+</svg>
