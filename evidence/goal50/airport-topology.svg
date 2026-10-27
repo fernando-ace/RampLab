@@ -1,101 +1,128 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="850" viewBox="0 0 1120 850">
 <rect width="1120" height="850" fill="#f4f6f8"/>
 <text x="50" y="42" font-family="Segoe UI, sans-serif" font-size="25" font-weight="700" fill="#182b3a">RampLab Demo Airport</text>
-<text x="50" y="68" font-family="Segoe UI, sans-serif" font-size="14" fill="#536675">Operational graph topology • local meters • schematic, not to scale</text>
-<rect x="900" y="95" width="190" height="104" rx="8" fill="#fff" stroke="#aab7c1"/>
-<text x="915" y="120" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#182b3a">Runway 09/27</text>
-<text x="915" y="143" font-family="Segoe UI, sans-serif" font-size="12" fill="#536675">1,400 × 30 m authored</text>
-<text x="915" y="163" font-family="Segoe UI, sans-serif" font-size="12" fill="#536675">timed resource in engine</text>
-<text x="915" y="183" font-family="Segoe UI, sans-serif" font-size="12" fill="#536675">pavement not in route graph</text>
-<line x1="105.0" y1="425.0" x2="205.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="105.0" y1="425.0" x2="205.0" y2="505.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="325.0" y2="345.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="505.0" x2="325.0" y2="505.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="105.0" y2="425.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="205.0" y2="505.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="505.0" x2="105.0" y2="425.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="325.0" y1="345.0" x2="205.0" y2="345.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="325.0" y1="505.0" x2="205.0" y2="505.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="325.0" y2="265.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="505.0" x2="325.0" y2="585.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="445.0" y2="425.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="445.0" y1="425.0" x2="205.0" y2="345.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="445.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="325.0" y2="205.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="505.0" x2="325.0" y2="645.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="505.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="665.0" y2="695.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="505.0" x2="725.0" y2="105.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="605.0" y1="645.0" x2="665.0" y2="695.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="665.0" y1="695.0" x2="725.0" y2="745.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="725.0" y1="745.0" x2="665.0" y2="695.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="665.0" y1="695.0" x2="205.0" y2="345.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="665.0" y1="695.0" x2="805.0" y2="645.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="805.0" y1="645.0" x2="725.0" y2="745.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="605.0" y1="205.0" x2="725.0" y2="105.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="725.0" y1="105.0" x2="205.0" y2="505.0" stroke="#597b96" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="205.0" y2="125.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="345.0" x2="365.0" y2="125.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="505.0" x2="205.0" y2="725.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="505.0" x2="365.0" y2="725.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="325.0" y1="265.0" x2="325.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="325.0" y1="585.0" x2="325.0" y2="505.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="445.0" y1="345.0" x2="445.0" y2="425.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="125.0" x2="725.0" y2="745.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="205.0" y1="725.0" x2="725.0" y2="105.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="325.0" y1="205.0" x2="325.0" y2="345.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="325.0" y1="645.0" x2="325.0" y2="505.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="505.0" y1="345.0" x2="445.0" y2="425.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="365.0" y1="125.0" x2="725.0" y2="745.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<line x1="365.0" y1="725.0" x2="725.0" y2="105.0" stroke="#2f855a" stroke-width="3.4" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
-<circle cx="105.0" cy="425.0" r="8" fill="#2f855a" stroke="#fff" stroke-width="2"/>
-<text x="115.0" y="416.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">depot</text>
-<circle cx="205.0" cy="345.0" r="6" fill="#263746" stroke="#fff" stroke-width="2"/>
-<text x="215.0" y="336.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">north</text>
-<circle cx="205.0" cy="505.0" r="6" fill="#263746" stroke="#fff" stroke-width="2"/>
-<text x="215.0" y="496.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">south</text>
-<circle cx="325.0" cy="345.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
-<text x="335.0" y="336.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">gate a1</text>
-<circle cx="325.0" cy="505.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
-<text x="335.0" y="496.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">gate a2</text>
-<circle cx="445.0" cy="425.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
-<text x="455.0" y="416.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">gate a3</text>
-<circle cx="325.0" cy="265.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="335.0" y="256.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a1</text>
-<circle cx="325.0" cy="585.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="335.0" y="576.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a2</text>
-<circle cx="445.0" cy="345.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="455.0" y="336.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a3</text>
-<circle cx="325.0" cy="205.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="335.0" y="196.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a1</text>
-<circle cx="325.0" cy="645.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="335.0" y="636.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a2</text>
-<circle cx="505.0" cy="345.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="515.0" y="336.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a3</text>
-<circle cx="725.0" cy="745.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
-<text x="735.0" y="736.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">arrival gate a4</text>
-<circle cx="725.0" cy="105.0" r="8" fill="#805ad5" stroke="#fff" stroke-width="2"/>
-<text x="735.0" y="96.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">arrival gate a5</text>
-<circle cx="205.0" cy="125.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="215.0" y="116.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a4</text>
-<circle cx="365.0" cy="125.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="375.0" y="116.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a4</text>
-<circle cx="205.0" cy="725.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="215.0" y="716.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">baggage stand a5</text>
-<circle cx="365.0" cy="725.0" r="6" fill="#dd6b20" stroke="#fff" stroke-width="2"/>
-<text x="375.0" y="716.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">fuel stand a5</text>
-<circle cx="605.0" cy="645.0" r="7" fill="#c53030" stroke="#fff" stroke-width="2"/>
-<text x="615.0" y="636.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">arrival exit a4</text>
-<circle cx="605.0" cy="205.0" r="7" fill="#c53030" stroke="#fff" stroke-width="2"/>
-<text x="615.0" y="196.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">arrival exit a5</text>
-<circle cx="665.0" cy="695.0" r="6" fill="#263746" stroke="#fff" stroke-width="2"/>
-<text x="675.0" y="686.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">a4 taxi merge</text>
-<circle cx="805.0" cy="645.0" r="6" fill="#263746" stroke="#fff" stroke-width="2"/>
-<text x="815.0" y="636.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#263746">a4 taxi detour</text>
-<path d="M 62 785 L 62 735 M 62 735 L 56 746 M 62 735 L 68 746" fill="none" stroke="#263746" stroke-width="2"/>
-<text x="52" y="720" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">N</text>
-<text x="78" y="780" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">+X east</text>
-<line x1="875" y1="760" x2="915" y2="760" stroke="#597b96" stroke-width="3"/><text x="925" y="765" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">aircraft / shared taxiway</text>
-<line x1="875" y1="785" x2="915" y2="785" stroke="#2f855a" stroke-width="3" stroke-dasharray="6 4"/><text x="925" y="790" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">GSE-only service link</text>
-<text x="50" y="825" font-family="Segoe UI, sans-serif" font-size="12" fill="#536675">Runway thresholds and pavement are authored metadata; this view shows only graph nodes and links consumed by routing.</text>
+<text x="50" y="68" font-family="Segoe UI, sans-serif" font-size="14" fill="#536675">Dimensioned local-meter plan view • fictional • +X east / +Y north</text>
+<polygon points="60.0,731.1 1060.0,731.1 1060.0,709.6 60.0,709.6" fill="#4b5563" stroke="#59636e" stroke-width="1.2" opacity="0.9"/>
+<text x="560.0" y="715.4" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" fill="#fff">09/27 · 1,400 × 30 m</text>
+<polygon points="131.4,655.4 988.6,655.4 988.6,642.5 131.4,642.5" fill="#718096" stroke="#59636e" stroke-width="1.2" opacity="0.9"/>
+<polygon points="202.9,591.8 917.1,591.8 917.1,491.8 202.9,491.8" fill="#d9d5c8" stroke="#59636e" stroke-width="1.2" opacity="0.9"/>
+<polygon points="131.4,415.7 988.6,415.7 988.6,410.7 131.4,410.7" fill="#9ac2a7" stroke="#59636e" stroke-width="1.2" opacity="0.9"/>
+<polygon points="99.3,434.6 163.6,434.6 163.6,391.8 99.3,391.8" fill="#f6e7a8" stroke="#a7791f" stroke-width="1.5"/>
+<polygon points="960.0,431.1 1017.1,431.1 1017.1,395.4 960.0,395.4" fill="#f6e7a8" stroke="#a7791f" stroke-width="1.5"/>
+<polygon points="952.9,373.9 1024.3,373.9 1024.3,323.9 952.9,323.9" fill="#f6e7a8" stroke="#a7791f" stroke-width="1.5"/>
+<polygon points="474.3,395.4 645.7,395.4 645.7,331.1 474.3,331.1" fill="#f6e7a8" stroke="#a7791f" stroke-width="1.5"/>
+<polygon points="255.7,543.6 292.9,543.6 292.9,511.4 255.7,511.4" fill="#c4b5fd" stroke="#6b46c1" stroke-width="1.5"/>
+<text x="274.3" y="531.5" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#35215f">A1</text>
+<polygon points="398.6,543.6 435.7,543.6 435.7,511.4 398.6,511.4" fill="#c4b5fd" stroke="#6b46c1" stroke-width="1.5"/>
+<text x="417.1" y="531.5" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#35215f">A2</text>
+<polygon points="541.4,543.6 578.6,543.6 578.6,511.4 541.4,511.4" fill="#c4b5fd" stroke="#6b46c1" stroke-width="1.5"/>
+<text x="560.0" y="531.5" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#35215f">A3</text>
+<polygon points="684.3,543.6 721.4,543.6 721.4,511.4 684.3,511.4" fill="#c4b5fd" stroke="#6b46c1" stroke-width="1.5"/>
+<text x="702.9" y="531.5" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#35215f">A4</text>
+<polygon points="827.1,543.6 864.3,543.6 864.3,511.4 827.1,511.4" fill="#c4b5fd" stroke="#6b46c1" stroke-width="1.5"/>
+<text x="845.7" y="531.5" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#35215f">A5</text>
+<line x1="131.4" y1="648.9" x2="202.9" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="202.9" y1="648.9" x2="274.3" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="274.3" y1="648.9" x2="381.4" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="381.4" y1="648.9" x2="417.1" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="417.1" y1="648.9" x2="560.0" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="648.9" x2="702.9" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="702.9" y1="648.9" x2="738.6" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="738.6" y1="648.9" x2="845.7" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="845.7" y1="648.9" x2="917.1" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="917.1" y1="648.9" x2="988.6" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="274.3" y1="648.9" x2="274.3" y2="527.5" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="417.1" y1="648.9" x2="417.1" y2="527.5" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="648.9" x2="560.0" y2="527.5" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="702.9" y1="648.9" x2="702.9" y2="527.5" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="845.7" y1="648.9" x2="845.7" y2="527.5" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="381.4" y1="720.4" x2="381.4" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="738.6" y1="720.4" x2="738.6" y2="648.9" stroke="#d7e6f2" stroke-width="12.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="131.4" y1="413.2" x2="274.3" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="274.3" y1="413.2" x2="131.4" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="274.3" y1="413.2" x2="417.1" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="417.1" y1="413.2" x2="274.3" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="417.1" y1="413.2" x2="560.0" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="413.2" x2="417.1" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="413.2" x2="702.9" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="702.9" y1="413.2" x2="560.0" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="702.9" y1="413.2" x2="845.7" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="845.7" y1="413.2" x2="702.9" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="845.7" y1="413.2" x2="988.6" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="988.6" y1="413.2" x2="845.7" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="274.3" y1="527.5" x2="274.3" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="274.3" y1="470.4" x2="274.3" y2="527.5" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="274.3" y1="470.4" x2="274.3" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="274.3" y1="413.2" x2="274.3" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="417.1" y1="527.5" x2="417.1" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="417.1" y1="470.4" x2="417.1" y2="527.5" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="417.1" y1="470.4" x2="417.1" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="417.1" y1="413.2" x2="417.1" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="527.5" x2="560.0" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="470.4" x2="560.0" y2="527.5" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="470.4" x2="560.0" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="413.2" x2="560.0" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="702.9" y1="527.5" x2="702.9" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="702.9" y1="470.4" x2="702.9" y2="527.5" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="702.9" y1="470.4" x2="702.9" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="702.9" y1="413.2" x2="702.9" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="845.7" y1="527.5" x2="845.7" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="845.7" y1="470.4" x2="845.7" y2="527.5" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="845.7" y1="470.4" x2="845.7" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="845.7" y1="413.2" x2="845.7" y2="470.4" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="988.6" y1="413.2" x2="988.6" y2="348.9" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="988.6" y1="348.9" x2="988.6" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="413.2" x2="560.0" y2="363.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="560.0" y1="363.2" x2="560.0" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="131.4" y1="413.2" x2="95.7" y2="441.8" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="95.7" y1="441.8" x2="131.4" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="131.4" y1="413.2" x2="95.7" y2="384.6" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<line x1="95.7" y1="384.6" x2="131.4" y2="413.2" stroke="#23824e" stroke-width="5.0" stroke-linecap="round" opacity="0.9"/>
+<circle cx="60.0" cy="720.4" r="4" fill="#fff" stroke="#111827" stroke-width="2"/><text x="60.0" y="711.4" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#111827">09</text>
+<circle cx="1060.0" cy="720.4" r="4" fill="#fff" stroke="#111827" stroke-width="2"/><text x="1060.0" y="711.4" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#111827">27</text>
+<circle cx="560.0" cy="720.4" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="131.4" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="202.9" cy="648.9" r="6" fill="#f59e0b" stroke="#fff" stroke-width="1.2"/>
+<text x="209.9" y="642.9" font-family="Segoe UI, sans-serif" font-size="10" fill="#263746">hold 09</text>
+<circle cx="274.3" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="381.4" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="417.1" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="560.0" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="702.9" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="738.6" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="845.7" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="917.1" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="988.6" cy="648.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="381.4" cy="720.4" r="4" fill="#c53030" stroke="#fff" stroke-width="1.2"/>
+<text x="388.4" y="714.4" font-family="Segoe UI, sans-serif" font-size="10" fill="#263746">exit -250</text>
+<circle cx="738.6" cy="720.4" r="4" fill="#c53030" stroke="#fff" stroke-width="1.2"/>
+<text x="745.6" y="714.4" font-family="Segoe UI, sans-serif" font-size="10" fill="#263746">exit 250</text>
+<circle cx="274.3" cy="527.5" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="274.3" cy="470.4" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="417.1" cy="527.5" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="417.1" cy="470.4" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="560.0" cy="527.5" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="560.0" cy="470.4" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="702.9" cy="527.5" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="702.9" cy="470.4" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="845.7" cy="527.5" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="845.7" cy="470.4" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="131.4" cy="413.2" r="6" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<text x="138.4" y="407.2" font-family="Segoe UI, sans-serif" font-size="10" fill="#263746">depot</text>
+<circle cx="274.3" cy="413.2" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="417.1" cy="413.2" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="560.0" cy="413.2" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="702.9" cy="413.2" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="845.7" cy="413.2" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="988.6" cy="413.2" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<circle cx="988.6" cy="348.9" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<text x="995.6" y="342.9" font-family="Segoe UI, sans-serif" font-size="10" fill="#263746">maintenance</text>
+<circle cx="560.0" cy="363.2" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<text x="567.0" y="357.2" font-family="Segoe UI, sans-serif" font-size="10" fill="#263746">terminal</text>
+<circle cx="95.7" cy="441.8" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<text x="102.7" y="435.8" font-family="Segoe UI, sans-serif" font-size="10" fill="#263746">fuel depot</text>
+<circle cx="95.7" cy="384.6" r="4" fill="#17324d" stroke="#fff" stroke-width="1.2"/>
+<text x="102.7" y="378.6" font-family="Segoe UI, sans-serif" font-size="10" fill="#263746">baggage depot</text>
+<rect x="42" y="785" width="1036" height="42" rx="7" fill="#fff" stroke="#ccd4dc"/>
+<text x="58" y="811" font-family="Segoe UI, sans-serif" font-size="12" fill="#263746">Runway / taxiway / apron / service-road and support-area footprints are authored geometry. The engine models runway occupancy as a timed resource, not a pavement route.</text>
 </svg>

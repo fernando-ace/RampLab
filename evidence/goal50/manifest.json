@@ -9,28 +9,28 @@
     "runs": 2,
     "metrics_byte_identical": true,
     "events_byte_identical": true,
-    "metrics_sha256": "8D90098F97006D7019AE9D11CB1EB03565F73284C4C5D781E9AD233E3B5C28A2",
-    "events_sha256": "4CAC59A97FA7C5C878D4B2818CE62103518EB753C5785FB6A0727DF4F59F6B8F"
+    "metrics_sha256": "FD8C2D6C2761E85E389960771F6217BCDDB205441F7C412FCC4646B0BD0A6E5C",
+    "events_sha256": "A4F4E22519BAB7139D4394F511DDE757D91896E01AAACBB8696C7825C9FD8C90"
   },
-  "scenario_sha256": "4410053FB1D24F4EACE3B4CC37F221987CDAF76C5017159E33A2400F4E8B7809",
+  "scenario_sha256": "DD7B945686295F32E963E1E33D3DBAC2F22B26E3E0636CB30BC6F48E0163F31C",
   "results": {
     "aircraft": 5,
     "completed_turnarounds": 5,
     "arrivals_completed": 2,
     "departures_completed": 5,
-    "required_mobile_service_requests": 15,
-    "completed_mobile_service_requests": 15,
+    "required_mobile_service_requests": 30,
+    "completed_mobile_service_requests": 30,
     "fleet_collisions": 0,
     "unresolved_deadlocks": false,
     "route_objectives_failed": 0,
     "safe_failures": 0,
     "aircraft_aircraft_collisions": 0,
     "aircraft_ground_collisions": 0,
-    "simulated_duration_seconds": 11507,
-    "mean_departure_delay_seconds": 2834.8,
-    "runway_queue_seconds": 551,
+    "simulated_duration_seconds": 12747,
+    "mean_departure_delay_seconds": 3133.4,
+    "runway_queue_seconds": 516,
     "maximum_runway_queue_depth": 2
   },
-  "diagram_sha256": "0E4A1A0FBB231989214DB6EE9D311A8F4E8596881F4DAB3C55B887FAA4336F38",
+  "diagram_sha256": "9921EE8ED8B13807693E208B85C9F95F941B23129808B6E2E41ED34F1A62BA5E",
   "diagram_generator": "python tools/goal50/render_demo_airport.py"
 }
