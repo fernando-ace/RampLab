@@ -44,7 +44,9 @@ void ARampLabDemoGameMode::BeginPlay()
         Sky->GetLightComponent()->SetRealTimeCapture(true);
     }
     if (auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>()) {
-        if (!FParse::Param(FCommandLine::Get(), TEXT("RampLabHideControlPanel")))
+        if (FParse::Param(FCommandLine::Get(), TEXT("RampLabHideControlPanel")))
+            Subsystem->InitializeViewer();
+        else
             Subsystem->AttachControlPanel();
     }
 

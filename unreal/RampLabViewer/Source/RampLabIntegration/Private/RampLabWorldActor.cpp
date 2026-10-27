@@ -65,6 +65,13 @@ FString AircraftStateText(airside::AircraftState State)
     return TEXT("Unknown");
 }
 
+bool IsDemoAirport(const URampLabSimulationSubsystem* Subsystem)
+{
+    const auto* Snapshot = Subsystem == nullptr ? nullptr : Subsystem->GetSnapshot();
+    return Snapshot != nullptr && Snapshot->airport_design.has_value()
+        && Snapshot->airport_design->name == "RampLab Demo Airport";
+}
+
 }  // namespace
 
 ARampLabWorldActor::ARampLabWorldActor()
@@ -87,6 +94,8 @@ ARampLabWorldActor::ARampLabWorldActor()
     CubeMesh = Cube.Object;
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Cylinder(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
     CylinderMesh = Cylinder.Object;
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> Cone(TEXT("/Engine/BasicShapes/Cone.Cone"));
+    ConeMesh = Cone.Object;
     static ConstructorHelpers::FObjectFinder<UMaterialInterface> BasicMaterial(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
     BaseMaterial = BasicMaterial.Object;
 }
@@ -98,18 +107,25 @@ void ARampLabWorldActor::BeginPlay()
     RoadOpenMaterial = CreateMaterial(FLinearColor(0.015f, 0.020f, 0.024f));
     RoadClosedMaterial = CreateMaterial(FLinearColor(0.36f, 0.008f, 0.004f));
     ActiveRouteMaterial = CreateMaterial(FLinearColor(0.008f, 0.18f, 0.34f));
+    AircraftRouteMaterial = CreateMaterial(FLinearColor(0.95f, 0.62f, 0.08f));
+    GroundVehicleRouteMaterial = CreateMaterial(FLinearColor(0.08f, 0.58f, 0.84f));
+    SharedRouteMaterial = CreateMaterial(FLinearColor(0.83f, 0.86f, 0.80f));
+    RunwayCrossingRouteMaterial = CreateMaterial(FLinearColor(0.96f, 0.20f, 0.08f));
     GateOpenMaterial = CreateMaterial(FLinearColor(0.010f, 0.13f, 0.045f));
     GateOccupiedMaterial = CreateMaterial(FLinearColor(0.34f, 0.16f, 0.008f));
     AutonomyMaterial = CreateMaterial(FLinearColor(0.92f, 0.37f, 0.035f));
     GnssMaterial = CreateMaterial(FLinearColor(0.02f, 0.76f, 0.94f));
     ObstacleMaterial = CreateMaterial(FLinearColor(0.62f, 0.045f, 0.025f));
-    AircraftMaterial = CreateMaterial(FLinearColor(0.26f, 0.30f, 0.34f));
-    AircraftWaitingMaterial = CreateMaterial(FLinearColor(0.38f, 0.18f, 0.012f));
+    AircraftMaterial = CreateMaterial(FLinearColor(0.72f, 0.77f, 0.82f));
+    AircraftGearMaterial = CreateMaterial(FLinearColor(0.022f, 0.025f, 0.026f));
+    AircraftWaitingMaterial = CreateMaterial(FLinearColor(0.76f, 0.80f, 0.84f));
     AircraftReadyMaterial = CreateMaterial(FLinearColor(0.025f, 0.24f, 0.055f));
     FuelMaterial = CreateMaterial(FLinearColor(0.42f, 0.075f, 0.004f));
     BaggageMaterial = CreateMaterial(FLinearColor(0.005f, 0.16f, 0.30f));
     bCaptureRun = FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
-    ApplyCameraPreset(TEXT("KAUO Overview"));
+    const auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>();
+    const bool bDemoAirport = IsDemoAirport(Subsystem);
+    ApplyCameraPreset(bDemoAirport ? TEXT("Airport Overview") : TEXT("KAUO Overview"));
 }
 
 void ARampLabWorldActor::Tick(float DeltaSeconds)
@@ -253,7 +269,10 @@ void ARampLabWorldActor::CalcCamera(float DeltaTime, FMinimalViewInfo& OutResult
 
 void ARampLabWorldActor::BuildTopology(const airside::SimulationSnapshot& Snapshot)
 {
+    const bool bDemoAirport = Snapshot.airport_design.has_value() && Snapshot.airport_design->name == "RampLab Demo Airport";
+    const bool bShowRoutes = FParse::Param(FCommandLine::Get(), TEXT("RampLabShowRoutes"));
     for (const auto& Road : Snapshot.roads) {
+        if (bDemoAirport && !bShowRoutes) continue;
         if (RoadMeshes.Contains(Road.id.value())) continue;
         const auto* Source = FindNode(Snapshot, Road.source);
         const auto* Destination = FindNode(Snapshot, Road.destination);
@@ -265,8 +284,12 @@ void ARampLabWorldActor::BuildTopology(const airside::SimulationSnapshot& Snapsh
         const FVector Delta = End - Start;
         Mesh->SetWorldLocation((Start + End) * 0.5f);
         Mesh->SetWorldRotation(FRotator(0.0f, FMath::RadiansToDegrees(FMath::Atan2(Delta.Y, Delta.X)), 0.0f));
-        Mesh->SetWorldScale3D(FVector(Delta.Size2D() / 100.0f, 4.5f, 0.10f));
-        Mesh->SetMaterial(0, Road.enabled ? RoadOpenMaterial : RoadClosedMaterial);
+        Mesh->SetWorldScale3D(FVector(Delta.Size2D() / 100.0f,
+            bDemoAirport && Road.width_m > 0.0 ? Road.width_m : 4.5, 0.10f));
+        UMaterialInstanceDynamic* PermissionMaterial = Road.crosses_runway ? RunwayCrossingRouteMaterial.Get()
+            : Road.aircraft_allowed && !Road.ground_vehicle_allowed ? AircraftRouteMaterial.Get()
+            : !Road.aircraft_allowed && Road.ground_vehicle_allowed ? GroundVehicleRouteMaterial.Get() : SharedRouteMaterial.Get();
+        Mesh->SetMaterial(0, Road.enabled ? PermissionMaterial : RoadClosedMaterial.Get());
         RoadMeshes.Add(Road.id.value(), Mesh);
 
         auto* Barrier = CreateMeshComponent(TEXT("ClosureBarrier"), Road.id.value(), CubeMesh);
@@ -276,6 +299,18 @@ void ARampLabWorldActor::BuildTopology(const airside::SimulationSnapshot& Snapsh
         Barrier->SetMaterial(0, RoadClosedMaterial);
         Barrier->SetHiddenInGame(Road.enabled);
         ClosureBarriers.Add(Road.id.value(), Barrier);
+    }
+
+    if (bShowRoutes) for (const auto& Node : Snapshot.road_nodes) {
+        auto* Marker = CreateMeshComponent(TEXT("RouteNode"), Node.id.value(), CylinderMesh);
+        Marker->SetWorldLocation(ToWorld(Node.position_m, 42.0f));
+        Marker->SetWorldScale3D(FVector(0.22f, 0.22f, 0.08f));
+        Marker->SetMaterial(0, AircraftRouteMaterial);
+        RouteNodeMeshes.Add(Node.id.value(), Marker);
+        auto* Label = CreateLabel(TEXT("RouteNodeLabel"), Node.id.value());
+        Label->SetText(FText::FromString(UTF8_TO_TCHAR(Node.name.c_str())));
+        Label->SetWorldLocation(ToWorld(Node.position_m, 220.0f));
+        RouteNodeLabels.Add(Node.id.value(), Label);
     }
 
     for (const auto& Gate : Snapshot.gates) {
@@ -295,15 +330,39 @@ void ARampLabWorldActor::BuildTopology(const airside::SimulationSnapshot& Snapsh
     for (const auto& Aircraft : Snapshot.aircraft) {
         if (AircraftActors.Contains(Aircraft.id.value())) continue;
         auto* Actor = CreateMirrorActor(TEXT("Aircraft"), Aircraft.id.value(), CylinderMesh);
-        Actor->SetActorScale3D(FVector(1.9f, 1.9f, 13.0f));
+        Actor->SetActorScale3D(FVector(3.2f, 3.2f, 34.0f));
         Actor->SetActorRotation(FRotator(90.0f, 0.0f, 0.0f));
         Actor->GetStaticMeshComponent()->SetMaterial(0, AircraftMaterial);
         AircraftActors.Add(Aircraft.id.value(), Actor);
 
         auto* Wings = CreateMirrorActor(TEXT("AircraftWings"), Aircraft.id.value(), CubeMesh);
-        Wings->SetActorScale3D(FVector(7.0f, 12.0f, 0.35f));
+        Wings->SetActorScale3D(FVector(6.2f, 35.0f, 0.22f));
         Wings->GetStaticMeshComponent()->SetMaterial(0, AircraftMaterial);
         AircraftWingActors.Add(Aircraft.id.value(), Wings);
+
+        TArray<TObjectPtr<AStaticMeshActor>> Details;
+        auto AddAircraftPart = [this, &Details, &Aircraft](const FString& Part, UStaticMesh* Mesh, FVector Scale) {
+            auto* DetailPart = CreateMirrorActor(Part, Aircraft.id.value(), Mesh);
+            DetailPart->SetActorScale3D(Scale);
+            DetailPart->GetStaticMeshComponent()->SetMaterial(0, AircraftMaterial);
+            Details.Add(DetailPart);
+            return DetailPart;
+        };
+        AddAircraftPart(TEXT("AircraftTailplane"), CubeMesh, FVector(4.5f, 11.5f, 0.18f));
+        AddAircraftPart(TEXT("AircraftFin"), ConeMesh, FVector(1.5f, 0.38f, 2.2f));
+        AddAircraftPart(TEXT("AircraftEngineL"), CylinderMesh, FVector(0.72f, 0.72f, 4.5f));
+        AddAircraftPart(TEXT("AircraftEngineR"), CylinderMesh, FVector(0.72f, 0.72f, 4.5f));
+        AddAircraftPart(TEXT("AircraftNose"), ConeMesh, FVector(1.15f, 1.15f, 3.8f));
+        AddAircraftPart(TEXT("AircraftTailCone"), ConeMesh, FVector(1.05f, 1.05f, 2.4f));
+        for (int32 Gear = 0; Gear < 3; ++Gear) {
+            auto* Wheel = AddAircraftPart(TEXT("AircraftLandingWheel"), CylinderMesh, FVector(0.44f, 0.44f, 0.30f));
+            Wheel->GetStaticMeshComponent()->SetMaterial(0, AircraftGearMaterial);
+        }
+        for (int32 Strut = 0; Strut < 3; ++Strut) {
+            auto* GearStrut = AddAircraftPart(TEXT("AircraftLandingStrut"), CubeMesh, FVector(0.14f, 0.14f, Strut == 2 ? 3.0f : 3.4f));
+            GearStrut->GetStaticMeshComponent()->SetMaterial(0, AircraftGearMaterial);
+        }
+        AircraftDetailActors.Add(Aircraft.id.value(), MoveTemp(Details));
 
         auto* Label = CreateLabel(TEXT("AircraftLabel"), Aircraft.id.value());
         Label->SetText(FText::FromString(UTF8_TO_TCHAR(Aircraft.flight_number.c_str())));
@@ -314,15 +373,33 @@ void ARampLabWorldActor::BuildTopology(const airside::SimulationSnapshot& Snapsh
         if (VehicleActors.Contains(Vehicle.id.value())) continue;
         auto* Actor = CreateMirrorActor(TEXT("Vehicle"), Vehicle.id.value(), CubeMesh);
         const bool bFuel = Vehicle.type == airside::ServiceType::Fueling;
-        Actor->SetActorScale3D(bFuel ? FVector(6.5f, 3.4f, 1.7f) : FVector(4.0f, 3.0f, 1.4f));
+        Actor->SetActorScale3D(bFuel ? FVector(9.0f, 3.1f, 1.0f) : FVector(3.5f, 2.0f, 1.2f));
         Actor->GetStaticMeshComponent()->SetMaterial(0, bFuel ? FuelMaterial : BaggageMaterial);
         VehicleActors.Add(Vehicle.id.value(), Actor);
 
         auto* Detail = CreateMirrorActor(TEXT("VehicleDetail"), Vehicle.id.value(), bFuel ? CylinderMesh : CubeMesh);
-        Detail->SetActorScale3D(bFuel ? FVector(2.0f, 2.0f, 4.5f) : FVector(5.0f, 2.4f, 0.9f));
+        Detail->SetActorScale3D(bFuel ? FVector(1.45f, 1.45f, 5.2f) : FVector(3.2f, 2.0f, 1.2f));
         if (bFuel) Detail->SetActorRotation(FRotator(90.0f, 0.0f, 0.0f));
         Detail->GetStaticMeshComponent()->SetMaterial(0, bFuel ? AircraftMaterial : BaggageMaterial);
         VehicleDetailActors.Add(Vehicle.id.value(), Detail);
+
+        TArray<TObjectPtr<AStaticMeshActor>> Accessories;
+        auto AddVehiclePart = [this, &Accessories, &Vehicle](const FString& Part, UStaticMesh* Mesh, FVector Scale, const FLinearColor& Color) {
+            auto* Accessory = CreateMirrorActor(Part, Vehicle.id.value(), Mesh);
+            Accessory->SetActorScale3D(Scale);
+            Accessory->GetStaticMeshComponent()->SetMaterial(0, CreateMaterial(Color));
+            Accessories.Add(Accessory);
+            return Accessory;
+        };
+        AddVehiclePart(TEXT("VehicleCab"), CubeMesh, FVector(2.4f, 2.2f, 1.8f), FLinearColor(0.72f, 0.75f, 0.72f));
+        AddVehiclePart(TEXT("VehicleGlass"), CubeMesh, FVector(1.35f, 2.05f, 0.72f), FLinearColor(0.11f, 0.24f, 0.28f));
+        for (int32 Wheel = 0; Wheel < 4; ++Wheel)
+            AddVehiclePart(TEXT("VehicleWheel"), CylinderMesh, FVector(0.42f, 0.42f, 0.34f), FLinearColor(0.018f, 0.020f, 0.022f));
+        if (!bFuel) {
+            AddVehiclePart(TEXT("BaggageCartWheelL"), CylinderMesh, FVector(0.38f, 0.38f, 0.30f), FLinearColor(0.018f, 0.020f, 0.022f));
+            AddVehiclePart(TEXT("BaggageCartWheelR"), CylinderMesh, FVector(0.38f, 0.38f, 0.30f), FLinearColor(0.018f, 0.020f, 0.022f));
+        }
+        VehicleAccessoryActors.Add(Vehicle.id.value(), MoveTemp(Accessories));
 
         auto* Label = CreateLabel(TEXT("VehicleLabel"), Vehicle.id.value());
         VehicleLabels.Add(Vehicle.id.value(), Label);
@@ -339,6 +416,8 @@ void ARampLabWorldActor::ClearTopology()
     // switch never collides with objects that are pending destruction.
     ++TopologyGeneration;
     for (auto& Pair : RoadMeshes) if (Pair.Value) Pair.Value->DestroyComponent();
+    for (auto& Pair : RouteNodeMeshes) if (Pair.Value) Pair.Value->DestroyComponent();
+    for (auto& Pair : RouteNodeLabels) if (Pair.Value) Pair.Value->DestroyComponent();
     for (auto& Pair : ClosureBarriers) if (Pair.Value) Pair.Value->DestroyComponent();
     for (auto& Pair : GateLabels) if (Pair.Value) Pair.Value->DestroyComponent();
     for (auto& Pair : AircraftLabels) if (Pair.Value) Pair.Value->DestroyComponent();
@@ -346,11 +425,15 @@ void ARampLabWorldActor::ClearTopology()
     for (auto& Pair : GateActors) if (Pair.Value) Pair.Value->Destroy();
     for (auto& Pair : AircraftActors) if (Pair.Value) Pair.Value->Destroy();
     for (auto& Pair : AircraftWingActors) if (Pair.Value) Pair.Value->Destroy();
+    for (auto& Pair : AircraftDetailActors) for (auto& Part : Pair.Value) if (Part) Part->Destroy();
     for (auto& Pair : VehicleActors) if (Pair.Value) Pair.Value->Destroy();
     for (auto& Pair : VehicleDetailActors) if (Pair.Value) Pair.Value->Destroy();
+    for (auto& Pair : VehicleAccessoryActors) for (auto& Part : Pair.Value) if (Part) Part->Destroy();
     for (auto& Pair : FleetVehicleLabels) if (Pair.Value) Pair.Value->DestroyComponent();
     for (auto& Pair : FleetVehicleActors) if (Pair.Value) Pair.Value->Destroy();
     RoadMeshes.Empty();
+    RouteNodeMeshes.Empty();
+    RouteNodeLabels.Empty();
     ClosureBarriers.Empty();
     GateLabels.Empty();
     AircraftLabels.Empty();
@@ -358,8 +441,10 @@ void ARampLabWorldActor::ClearTopology()
     GateActors.Empty();
     AircraftActors.Empty();
     AircraftWingActors.Empty();
+    AircraftDetailActors.Empty();
     VehicleActors.Empty();
     VehicleDetailActors.Empty();
+    VehicleAccessoryActors.Empty();
     FleetVehicleLabels.Empty(); FleetVehicleActors.Empty();
     if (AutonomyVehicleActor) AutonomyVehicleActor->Destroy();
     if (GnssMarkerActor) GnssMarkerActor->Destroy();
@@ -487,9 +572,11 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
     for (const auto& Road : Snapshot.roads) {
         if (UStaticMeshComponent* Mesh = RoadMeshes.FindRef(Road.id.value()).Get()) {
             const auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>();
-            Mesh->SetMaterial(0, !Road.enabled
-                ? RoadClosedMaterial
-                : (Subsystem != nullptr && Subsystem->IsRoadOnSelectedRoute(Road.id.value()) ? ActiveRouteMaterial : RoadOpenMaterial));
+            UMaterialInstanceDynamic* PermissionMaterial = Road.crosses_runway ? RunwayCrossingRouteMaterial.Get()
+                : Road.aircraft_allowed && !Road.ground_vehicle_allowed ? AircraftRouteMaterial.Get()
+                : !Road.aircraft_allowed && Road.ground_vehicle_allowed ? GroundVehicleRouteMaterial.Get() : SharedRouteMaterial.Get();
+            Mesh->SetMaterial(0, !Road.enabled ? RoadClosedMaterial.Get()
+                : (Subsystem != nullptr && Subsystem->IsRoadOnSelectedRoute(Road.id.value()) ? ActiveRouteMaterial.Get() : PermissionMaterial));
         }
         if (UStaticMeshComponent* Barrier = ClosureBarriers.FindRef(Road.id.value()).Get()) {
             Barrier->SetHiddenInGame(Road.enabled);
@@ -518,6 +605,8 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
         const bool bVisible = Aircraft.state != airside::AircraftState::Scheduled && Aircraft.state != airside::AircraftState::Departed;
         Actor->SetActorHiddenInGame(!bVisible);
         Wings->SetActorHiddenInGame(!bVisible);
+        TArray<AStaticMeshActor*>& Details = AircraftDetailActors.FindOrAdd(Aircraft.id.value());
+        for (auto& DetailPart : Details) if (DetailPart) DetailPart->SetActorHiddenInGame(!bVisible);
         Label->SetVisibility(bVisible);
         if (!bVisible) continue;
 
@@ -525,19 +614,50 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
         if (Gate == Snapshot.gates.end()) continue;
         const airside::Vec2 StandPosition = Aircraft.surface_position_m.value_or(
             airside::Vec2{Gate->position_m.x_m - 14.0, Gate->position_m.y_m});
-        const FVector Position = ToWorld(StandPosition, 260.0f);
+        const FVector TargetPosition = ToWorld(StandPosition, 430.0f);
+        const airside::Vec2 HeadingPoint{
+            StandPosition.x_m + std::cos(Aircraft.surface_heading_rad),
+            StandPosition.y_m + std::sin(Aircraft.surface_heading_rad)};
+        const FVector WorldForward = ToWorld(HeadingPoint) - ToWorld(StandPosition);
+        const float WorldYaw = FMath::RadiansToDegrees(FMath::Atan2(WorldForward.Y, WorldForward.X));
+        const FRotator PlanRotation(0.0f, WorldYaw, 0.0f);
+        const FRotator FuselageTarget(90.0f, WorldYaw, 0.0f);
+        const FVector Position = (Aircraft.surface_state == "Taxiing" || Aircraft.surface_state == "TaxiingToGate")
+            ? FMath::VInterpTo(Actor->GetActorLocation(), TargetPosition, DeltaSeconds, 4.0f) : TargetPosition;
+        const FRotator FuselageRotation = FMath::RInterpTo(Actor->GetActorRotation(), FuselageTarget, DeltaSeconds, 4.0f);
         Actor->SetActorLocation(Position);
-        Wings->SetActorLocation(Position - FVector(0.0f, 0.0f, 130.0f));
-        const float SurfaceYaw = static_cast<float>(FMath::RadiansToDegrees(Aircraft.surface_heading_rad));
-        const FRotator StandRotation(90.0f, -Placement.SimulationHeadingDegrees + SurfaceYaw, 0.0f);
-        Actor->SetActorRotation(StandRotation);
-        Wings->SetActorRotation(FRotator(0.0f, -Placement.SimulationHeadingDegrees, 0.0f));
-        Label->SetWorldLocation(Position + FVector(0.0f, 0.0f, 320.0f));
+        Wings->SetActorLocation(Position - FVector(0.0f, 0.0f, 105.0f));
+        Actor->SetActorRotation(FuselageRotation);
+        Wings->SetActorRotation(FMath::RInterpTo(Wings->GetActorRotation(), PlanRotation, DeltaSeconds, 4.0f));
+        auto SetAircraftPart = [&Details, &Position, DeltaSeconds](int32 Index, FVector Offset, FRotator Rotation) {
+            if (Details.IsValidIndex(Index) && Details[Index]) {
+                Details[Index]->SetActorLocation(Position + Offset);
+                Details[Index]->SetActorRotation(FMath::RInterpTo(Details[Index]->GetActorRotation(), Rotation, DeltaSeconds, 4.0f));
+            }
+        };
+        const FVector TailOffset = PlanRotation.RotateVector(FVector(-1350.0f, 0.0f, 20.0f));
+        SetAircraftPart(0, TailOffset + FVector(0.0f, 0.0f, -30.0f), PlanRotation);
+        SetAircraftPart(1, TailOffset + FVector(0.0f, 0.0f, 180.0f), PlanRotation);
+        const FRotator EngineRotation(90.0f, WorldYaw, 0.0f);
+        SetAircraftPart(2, PlanRotation.RotateVector(FVector(170.0f, -570.0f, -65.0f)), EngineRotation);
+        SetAircraftPart(3, PlanRotation.RotateVector(FVector(170.0f, 570.0f, -65.0f)), EngineRotation);
+        SetAircraftPart(4, PlanRotation.RotateVector(FVector(1580.0f, 0.0f, 0.0f)), EngineRotation);
+        SetAircraftPart(5, PlanRotation.RotateVector(FVector(-1580.0f, 0.0f, 0.0f)), FRotator(90.0f, WorldYaw + 180.0f, 0.0f));
+        const FVector MainGearLeft(-180.0f, -300.0f, -408.0f);
+        const FVector MainGearRight(-180.0f, 300.0f, -408.0f);
+        const FVector NoseGear(980.0f, 0.0f, -408.0f);
+        SetAircraftPart(6, PlanRotation.RotateVector(MainGearLeft), FRotator(0.0f, WorldYaw, 90.0f));
+        SetAircraftPart(7, PlanRotation.RotateVector(MainGearRight), FRotator(0.0f, WorldYaw, 90.0f));
+        SetAircraftPart(8, PlanRotation.RotateVector(NoseGear), FRotator(0.0f, WorldYaw, 90.0f));
+        SetAircraftPart(9, PlanRotation.RotateVector(FVector(MainGearLeft.X, MainGearLeft.Y, -238.0f)), PlanRotation);
+        SetAircraftPart(10, PlanRotation.RotateVector(FVector(MainGearRight.X, MainGearRight.Y, -238.0f)), PlanRotation);
+        SetAircraftPart(11, PlanRotation.RotateVector(FVector(NoseGear.X, NoseGear.Y, -265.0f)), PlanRotation);
+        Label->SetWorldLocation(Position + FVector(0.0f, 0.0f, 1350.0f));
         const FString SurfaceState = Aircraft.surface_state.empty() ? AircraftStateText(Aircraft.state)
             : UTF8_TO_TCHAR(Aircraft.surface_state.c_str());
         Label->SetText(FText::FromString(FString::Printf(TEXT("%s  /  %s"),
             UTF8_TO_TCHAR(Aircraft.flight_number.c_str()), *SurfaceState)));
-        if (Aircraft.surface_route.size() > 1) {
+        if (Aircraft.surface_route.size() > 1 && FParse::Param(FCommandLine::Get(), TEXT("RampLabShowRoutes"))) {
             const FColor RouteColor = Aircraft.surface_state == "WaitingForTraffic" ? FColor::Yellow : FColor::Cyan;
             for (std::size_t RouteIndex = 1; RouteIndex < Aircraft.surface_route.size(); ++RouteIndex) {
                 const auto FromNode = std::ranges::find(Snapshot.road_nodes, Aircraft.surface_route[RouteIndex - 1], &airside::RoadNodeSnapshot::id);
@@ -551,6 +671,7 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
             : (Aircraft.state == airside::AircraftState::WaitingForServices ? AircraftWaitingMaterial : AircraftMaterial);
         Actor->GetStaticMeshComponent()->SetMaterial(0, StateMaterial);
         Wings->GetStaticMeshComponent()->SetMaterial(0, StateMaterial);
+        for (auto& DetailPart : Details) if (DetailPart) DetailPart->GetStaticMeshComponent()->SetMaterial(0, StateMaterial);
     }
 
     const auto* GameInstance = GetGameInstance();
@@ -567,8 +688,6 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
         TOptional<float> TargetYaw;
         if (Vehicle.observed_position_m) {
             PositionMeters = *Vehicle.observed_position_m;
-            if (Vehicle.observed_heading_rad)
-                TargetYaw = FMath::RadiansToDegrees(static_cast<float>(*Vehicle.observed_heading_rad));
             bFound = true;
         } else if (Vehicle.journey) {
             if (const auto Sample = airside::visualization::sample_journey(*Vehicle.journey, Snapshot.road_nodes, PlaybackTime)) {
@@ -588,22 +707,78 @@ void ARampLabWorldActor::Reconcile(const airside::SimulationSnapshot& Snapshot, 
         }
         if (!bFound) continue;
 
-        const FVector Position = ToWorld(PositionMeters, 100.0f);
-        Actor->SetActorLocation(Position);
-        Detail->SetActorLocation(Position + FVector(0.0f, 0.0f, Vehicle.type == airside::ServiceType::Fueling ? 90.0f : -25.0f));
-        if (TargetYaw) {
-            const FRotator Smooth = FMath::RInterpTo(Actor->GetActorRotation(), FRotator(0.0f, *TargetYaw, 0.0f), DeltaSeconds, 5.0f);
-            Actor->SetActorRotation(Smooth);
-            Detail->SetActorRotation(Vehicle.type == airside::ServiceType::Fueling
-                ? FRotator(90.0f, Smooth.Yaw, 0.0f) : Smooth);
+        bool bPresentationServicePosition = false;
+        TOptional<airside::Vec2> ServiceFacingTarget;
+        if (Vehicle.state == airside::VehicleState::Servicing && Vehicle.assigned_aircraft) {
+            const auto Aircraft = std::ranges::find(Snapshot.aircraft, *Vehicle.assigned_aircraft, &airside::AircraftSnapshot::id);
+            if (Aircraft != Snapshot.aircraft.end()) {
+                const auto Gate = std::ranges::find(Snapshot.gates, Aircraft->assigned_gate, &airside::GateSnapshot::id);
+                const airside::Vec2 Center = Aircraft->surface_position_m.value_or(
+                    Gate == Snapshot.gates.end() ? airside::Vec2{} : Gate->position_m);
+                const double Heading = Aircraft->surface_heading_rad;
+                const double ForwardX = std::cos(Heading), ForwardY = std::sin(Heading);
+                const double SideX = -ForwardY, SideY = ForwardX;
+                const double Along = Vehicle.type == airside::ServiceType::Fueling ? 1.0 : -8.0;
+                const double Across = Vehicle.type == airside::ServiceType::Fueling ? 9.0 : -7.0;
+                PositionMeters = {Center.x_m + ForwardX * Along + SideX * Across,
+                    Center.y_m + ForwardY * Along + SideY * Across};
+                ServiceFacingTarget = Center;
+                bPresentationServicePosition = true;
+            }
         }
-        Label->SetWorldLocation(Position + FVector(0.0f, 0.0f, 240.0f));
+
+        const double Heading = Vehicle.observed_heading_rad.value_or(0.0);
+        if (bPresentationServicePosition && ServiceFacingTarget) {
+            TargetYaw = FMath::RadiansToDegrees(FMath::Atan2(
+                ToWorld(ServiceFacingTarget.GetValue()).Y - ToWorld(PositionMeters).Y,
+                ToWorld(ServiceFacingTarget.GetValue()).X - ToWorld(PositionMeters).X));
+        }
+        const FVector VehicleForward = ToWorld({PositionMeters.x_m + std::cos(Heading), PositionMeters.y_m + std::sin(Heading)})
+            - ToWorld(PositionMeters);
+        if (!bPresentationServicePosition && (!Vehicle.journey || Vehicle.observed_heading_rad))
+            TargetYaw = FMath::RadiansToDegrees(FMath::Atan2(VehicleForward.Y, VehicleForward.X));
+
+        const FVector Position = ToWorld(PositionMeters, 85.0f);
+        const FVector RenderPosition = Actor->GetActorLocation().IsNearlyZero()
+            ? Position : FMath::VInterpTo(Actor->GetActorLocation(), Position, DeltaSeconds, 5.0f);
+        Actor->SetActorLocation(RenderPosition);
+        FRotator Smooth = Actor->GetActorRotation();
+        if (TargetYaw) {
+            Smooth = FMath::RInterpTo(Smooth, FRotator(0.0f, *TargetYaw, 0.0f), DeltaSeconds, 5.0f);
+            Actor->SetActorRotation(Smooth);
+        }
+        const bool bFuelVehicle = Vehicle.type == airside::ServiceType::Fueling;
+        const FVector RearOrTank = bFuelVehicle ? RenderPosition + FVector(0.0f, 0.0f, 135.0f)
+            : RenderPosition + Smooth.RotateVector(FVector(-360.0f, 0.0f, 10.0f));
+        Detail->SetActorLocation(RearOrTank);
+        Detail->SetActorRotation(bFuelVehicle ? FRotator(90.0f, Smooth.Yaw, 0.0f) : Smooth);
+        TArray<AStaticMeshActor*>& Accessories = VehicleAccessoryActors.FindOrAdd(Vehicle.id.value());
+        const FVector Cab = RenderPosition + Smooth.RotateVector(FVector(90.0f, 0.0f, 105.0f));
+        const FVector Glass = RenderPosition + Smooth.RotateVector(FVector(165.0f, 0.0f, 130.0f));
+        if (Accessories.IsValidIndex(0) && Accessories[0]) { Accessories[0]->SetActorLocation(Cab); Accessories[0]->SetActorRotation(Smooth); }
+        if (Accessories.IsValidIndex(1) && Accessories[1]) { Accessories[1]->SetActorLocation(Glass); Accessories[1]->SetActorRotation(Smooth); }
+        for (int32 Wheel = 0; Wheel < 4; ++Wheel) {
+            if (!Accessories.IsValidIndex(Wheel + 2) || !Accessories[Wheel + 2]) continue;
+            const float Longitudinal = Wheel < 2 ? 215.0f : -205.0f;
+            const float Lateral = (Wheel % 2 == 0 ? -1.0f : 1.0f) * 120.0f;
+            Accessories[Wheel + 2]->SetActorLocation(RenderPosition + Smooth.RotateVector(FVector(Longitudinal, Lateral, -64.0f)));
+            Accessories[Wheel + 2]->SetActorRotation(FRotator(90.0f, Smooth.Yaw, 0.0f));
+        }
+        if (!bFuelVehicle) for (int32 Wheel = 0; Wheel < 2; ++Wheel) {
+            const int32 Index = Wheel + 6;
+            if (!Accessories.IsValidIndex(Index) || !Accessories[Index]) continue;
+            const float Side = Wheel == 0 ? -85.0f : 85.0f;
+            Accessories[Index]->SetActorLocation(RenderPosition + Smooth.RotateVector(FVector(-490.0f, Side, -60.0f)));
+            Accessories[Index]->SetActorRotation(FRotator(90.0f, Smooth.Yaw, 0.0f));
+        }
+        Label->SetWorldLocation(RenderPosition + FVector(0.0f, 0.0f, 240.0f));
         Label->SetText(FText::FromString(FString::Printf(
             TEXT("%s - %s"), UTF8_TO_TCHAR(Vehicle.name.c_str()),
             Vehicle.fleet_status.empty() ? *VehicleStateText(Vehicle.state) : UTF8_TO_TCHAR(Vehicle.fleet_status.c_str()))));
     }
 
     const FVector CameraLocation = CameraComponent->GetComponentLocation();
+    for (const auto& Pair : RouteNodeLabels) if (Pair.Value) Pair.Value->SetWorldRotation((CameraLocation - Pair.Value->GetComponentLocation()).Rotation());
     for (const auto& Pair : GateLabels) if (Pair.Value) Pair.Value->SetWorldRotation((CameraLocation - Pair.Value->GetComponentLocation()).Rotation());
     for (const auto& Pair : AircraftLabels) if (Pair.Value) Pair.Value->SetWorldRotation((CameraLocation - Pair.Value->GetComponentLocation()).Rotation());
     for (const auto& Pair : VehicleLabels) if (Pair.Value) Pair.Value->SetWorldRotation((CameraLocation - Pair.Value->GetComponentLocation()).Rotation());
@@ -623,7 +798,7 @@ UStaticMeshComponent* ARampLabWorldActor::CreateMeshComponent(const FString& Pre
 AStaticMeshActor* ARampLabWorldActor::CreateMirrorActor(const FString& Prefix, uint32 Id, UStaticMesh* Mesh)
 {
     FActorSpawnParameters Parameters;
-    Parameters.Name = *FString::Printf(TEXT("%s_%u_G%u"), *Prefix, Id, TopologyGeneration);
+    Parameters.Name = *FString::Printf(TEXT("%s_%u_G%u_A%u"), *Prefix, Id, TopologyGeneration, ++MirrorActorSerial);
     auto* Actor = GetWorld()->SpawnActor<AStaticMeshActor>(FVector::ZeroVector, FRotator::ZeroRotator, Parameters);
     Actor->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
     Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
@@ -711,6 +886,9 @@ void ARampLabWorldActor::MaybeCapture()
 
 FVector ARampLabWorldActor::ToWorld(airside::Vec2 Meters, float HeightCm) const
 {
+    const auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>();
+    if (IsDemoAirport(Subsystem))
+        return FVector(Meters.x_m * 100.0, -Meters.y_m * 100.0, HeightCm);
     return Placement.ToUnreal(Meters, HeightCm);
 }
 
@@ -722,16 +900,23 @@ void ARampLabWorldActor::UpdateCamera(float DeltaSeconds)
     if (Subsystem != nullptr && (AppliedCameraPreset == TEXT("Follow Aircraft") || AppliedCameraPreset == TEXT("Follow Vehicle"))) {
         const auto* Snapshot = Subsystem->GetSnapshot();
         if (Snapshot != nullptr && AppliedCameraPreset == TEXT("Follow Aircraft")) {
-            const auto Aircraft = std::ranges::find_if(Snapshot->aircraft, [](const auto& Item) {
-                return Item.state != airside::AircraftState::Scheduled && Item.state != airside::AircraftState::Departed;
-            });
+            auto Aircraft = std::ranges::find(Snapshot->aircraft, Subsystem->GetSelectedEntityId(),
+                [](const auto& Item) { return Item.id.value(); });
+            if (Aircraft == Snapshot->aircraft.end() || Aircraft->state == airside::AircraftState::Scheduled
+                || Aircraft->state == airside::AircraftState::Departed)
+                Aircraft = std::ranges::find_if(Snapshot->aircraft, [](const auto& Item) {
+                    return Item.state != airside::AircraftState::Scheduled && Item.state != airside::AircraftState::Departed;
+                });
             if (Aircraft != Snapshot->aircraft.end()) {
                 const auto Gate = std::ranges::find(Snapshot->gates, Aircraft->assigned_gate, &airside::GateSnapshot::id);
                 const auto Position = Aircraft->surface_position_m.value_or(Gate == Snapshot->gates.end() ? airside::Vec2{} : Gate->position_m);
                 CameraFocus = FMath::VInterpTo(CameraFocus, ToWorld(Position, 180.0f), DeltaSeconds, 3.0f);
             }
         } else if (Snapshot != nullptr && AppliedCameraPreset == TEXT("Follow Vehicle")) {
-            const auto Vehicle = std::ranges::find_if(Snapshot->vehicles, [](const auto& Item) { return Item.observed_position_m.has_value(); });
+            auto Vehicle = std::ranges::find(Snapshot->vehicles, Subsystem->GetSelectedEntityId(),
+                [](const auto& Item) { return Item.id.value(); });
+            if (Vehicle == Snapshot->vehicles.end() || !Vehicle->observed_position_m)
+                Vehicle = std::ranges::find_if(Snapshot->vehicles, [](const auto& Item) { return Item.observed_position_m.has_value(); });
             if (Vehicle != Snapshot->vehicles.end())
                 CameraFocus = FMath::VInterpTo(CameraFocus, ToWorld(*Vehicle->observed_position_m, 160.0f), DeltaSeconds, 3.0f);
         }
@@ -747,7 +932,7 @@ void ARampLabWorldActor::UpdateCamera(float DeltaSeconds)
         if (Controller->IsInputKeyDown(EKeys::A)) CameraFocus -= Right * Move;
         if (Controller->IsInputKeyDown(EKeys::Q)) CameraYaw -= 35.0f * DeltaSeconds;
         if (Controller->IsInputKeyDown(EKeys::E)) CameraYaw += 35.0f * DeltaSeconds;
-        CameraDistance = FMath::Clamp(CameraDistance - Controller->GetInputAnalogKeyState(EKeys::MouseWheelAxis) * 5000.0f, 12000.0f, 140000.0f);
+        CameraDistance = FMath::Clamp(CameraDistance - Controller->GetInputAnalogKeyState(EKeys::MouseWheelAxis) * 5000.0f, 12000.0f, 260000.0f);
     }
     const FRotator Rotation(CameraPitch, CameraYaw, 0.0f);
     CameraComponent->SetWorldRotation(Rotation);
@@ -757,7 +942,23 @@ void ARampLabWorldActor::UpdateCamera(float DeltaSeconds)
 void ARampLabWorldActor::ApplyCameraPreset(const FString& Preset)
 {
     AppliedCameraPreset = Preset;
-    if (Preset == TEXT("Overview") || Preset == TEXT("KAUO Overview") || Preset == TEXT("KAUOOverview")) {
+    const auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>();
+    const bool bDemoAirport = IsDemoAirport(Subsystem);
+    if (bDemoAirport && (Preset == TEXT("Airport Overview") || Preset == TEXT("Overview") || Preset == TEXT("KAUO Overview"))) {
+        CameraFocus = ToWorld({0.0, 150.0}, 0.0f); CameraDistance = 184000.0f; CameraYaw = -36.0f; CameraPitch = -66.0f;
+    } else if (bDemoAirport && Preset == TEXT("Apron")) {
+        CameraFocus = ToWorld({0.0, 380.0}, 0.0f); CameraDistance = 100000.0f; CameraYaw = -27.0f; CameraPitch = -57.0f;
+    } else if (bDemoAirport && (Preset == TEXT("Ramp") || Preset == TEXT("Ramp Level"))) {
+        CameraFocus = ToWorld({300.0, 270.0}, 350.0f); CameraDistance = 35000.0f; CameraYaw = -22.0f; CameraPitch = -53.0f;
+    } else if (bDemoAirport && Preset == TEXT("Runway")) {
+        CameraFocus = ToWorld({0.0, 15.0}, 0.0f); CameraDistance = 154000.0f; CameraYaw = -90.0f; CameraPitch = -76.0f;
+    } else if (bDemoAirport && Preset == TEXT("Gate A2")) {
+        CameraFocus = ToWorld({-200.0, 270.0}, 0.0f); CameraDistance = 26000.0f; CameraYaw = -30.0f; CameraPitch = -42.0f;
+    } else if (bDemoAirport && Preset == TEXT("Follow Aircraft")) {
+        CameraFocus = ToWorld({200.0, 270.0}, 430.0f); CameraDistance = 20000.0f; CameraYaw = -35.0f; CameraPitch = -48.0f;
+    } else if (bDemoAirport && Preset == TEXT("Follow Vehicle")) {
+        CameraFocus = ToWorld({0.0, 430.0}, 160.0f); CameraDistance = 24000.0f; CameraYaw = -35.0f; CameraPitch = -48.0f;
+    } else if (Preset == TEXT("Overview") || Preset == TEXT("KAUO Overview") || Preset == TEXT("KAUOOverview")) {
         CameraFocus = ToWorld({0.0, 10.0}); CameraDistance = 220000.0f; CameraYaw = -42.0f; CameraPitch = -68.0f;
     } else if (Preset == TEXT("Runway") || Preset == TEXT("KAUORunways")) {
         CameraFocus = ToWorld({0.0, 0.0}); CameraDistance = 105000.0f; CameraYaw = 0.0f; CameraPitch = -88.0f;
