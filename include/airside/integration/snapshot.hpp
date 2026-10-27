@@ -3,6 +3,7 @@
 #include "airside/agents/aircraft.hpp"
 #include "airside/agents/service_vehicle.hpp"
 #include "airside/world/airport_graph.hpp"
+#include "airside/world/airport_design.hpp"
 
 #include <cstdint>
 #include <optional>
@@ -16,7 +17,7 @@ struct SnapshotVersion {
     constexpr auto operator<=>(const SnapshotVersion&) const = default;
 };
 
-inline constexpr SnapshotVersion kSnapshotSchemaVersion{1};
+inline constexpr SnapshotVersion kSnapshotSchemaVersion{2};
 
 struct ServiceTaskSnapshot {
     TaskId id;
@@ -170,6 +171,13 @@ struct RoadEdgeSnapshot {
     double distance_m{0.0};
     SimTime traversal_time{};
     bool enabled{true};
+    std::vector<Point2d> centerline;
+    std::string surface_type{"unclassified"};
+    double width_m{0.0};
+    double minimum_clearance_m{0.0};
+    bool aircraft_allowed{true};
+    bool ground_vehicle_allowed{true};
+    bool crosses_runway{false};
     auto operator<=>(const RoadEdgeSnapshot&) const = default;
 };
 
@@ -182,6 +190,7 @@ struct SimulationSnapshot {
     std::vector<RoadNodeSnapshot> road_nodes;
     std::vector<RoadEdgeSnapshot> roads;
     std::vector<TurnaroundSnapshot> turnarounds;
+    std::optional<AirportDesign> airport_design;
     std::optional<AircraftId> runway_owner;
     std::vector<AircraftId> runway_queue;
     auto operator<=>(const SimulationSnapshot&) const = default;

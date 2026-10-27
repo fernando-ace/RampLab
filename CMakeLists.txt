@@ -145,6 +145,7 @@ if(BUILD_TESTING)
         tests/operations/resource_pool_test.cpp
         tests/operations/simulation_test.cpp
         tests/operations/turnaround_test.cpp
+        tests/operations/demo_airport_test.cpp
         tests/operations/surface_traffic_test.cpp
         tests/metrics/metrics_test.cpp
         tests/experiment/definition_test.cpp
@@ -159,7 +160,7 @@ if(BUILD_TESTING)
     target_include_directories(airside_tests PRIVATE tests)
     target_compile_definitions(airside_tests PRIVATE AIRSIDE_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     target_link_libraries(airside_tests PRIVATE
-        airside::sim airside::scenario airside::autonomy airside::autonomy_experiment airside::autonomy_scenario airside::experiment airside::experiment_yaml GTest::gtest_main)
+        airside::sim airside::scenario airside::autonomy airside::autonomy_experiment airside::autonomy_scenario airside::experiment airside::experiment_yaml yaml-cpp::yaml-cpp GTest::gtest_main)
     airside_enable_warnings(airside_tests)
     include(GoogleTest)
     gtest_discover_tests(airside_tests)

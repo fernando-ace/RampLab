@@ -1,0 +1,1575 @@
+name: ramplab_demo_airport
+default_seed: 50
+airport:
+  design:
+    airport_name: RampLab Demo Airport
+    fictional: true
+    coordinate_frame:
+      units: meters
+      origin_node: origin
+      x_axis: east
+      y_axis: north
+      z_axis: up
+    unreal_centimeters_per_meter: 100
+    runways:
+    - id: RWY09_27
+      designation: 09/27
+      threshold_09:
+        x_m: -700
+        y_m: 0
+      threshold_27:
+        x_m: 700
+        y_m: 0
+      length_m: 1400
+      width_m: 30
+      surface_type: asphalt
+      departure_hold_node: hold_09
+      arrival_exits:
+      - id: ECHO
+        node: exit_-250
+        connector_edge: exit_connector_-250
+      - id: FOXTROT
+        node: exit_250
+        connector_edge: exit_connector_250
+    hold_points:
+    - id: HOLD_09
+      node: hold_09
+      protected_clearance_m: 15
+    stands:
+    - id: A1
+      gate: A1
+      node: gate_a1
+      footprint:
+      - x_m: -426.0
+        y_m: 247.5
+      - x_m: -374.0
+        y_m: 247.5
+      - x_m: -374.0
+        y_m: 292.5
+      - x_m: -426.0
+        y_m: 292.5
+      length_m: 52
+      width_m: 45
+      maximum_wingspan_m: 36
+      wingtip_clearance_m: 8
+      pushback_direction: north
+      tug_required: false
+      aircraft_access_edge: taxi_stand_a1
+      service_access_edge: service_spur_a1_out
+    - id: A2
+      gate: A2
+      node: gate_a2
+      footprint:
+      - x_m: -226.0
+        y_m: 247.5
+      - x_m: -174.0
+        y_m: 247.5
+      - x_m: -174.0
+        y_m: 292.5
+      - x_m: -226.0
+        y_m: 292.5
+      length_m: 52
+      width_m: 45
+      maximum_wingspan_m: 36
+      wingtip_clearance_m: 8
+      pushback_direction: north
+      tug_required: false
+      aircraft_access_edge: taxi_stand_a2
+      service_access_edge: service_spur_a2_out
+    - id: A3
+      gate: A3
+      node: gate_a3
+      footprint:
+      - x_m: -26.0
+        y_m: 247.5
+      - x_m: 26.0
+        y_m: 247.5
+      - x_m: 26.0
+        y_m: 292.5
+      - x_m: -26.0
+        y_m: 292.5
+      length_m: 52
+      width_m: 45
+      maximum_wingspan_m: 36
+      wingtip_clearance_m: 8
+      pushback_direction: north
+      tug_required: false
+      aircraft_access_edge: taxi_stand_a3
+      service_access_edge: service_spur_a3_out
+    - id: A4
+      gate: A4
+      node: gate_a4
+      footprint:
+      - x_m: 174.0
+        y_m: 247.5
+      - x_m: 226.0
+        y_m: 247.5
+      - x_m: 226.0
+        y_m: 292.5
+      - x_m: 174.0
+        y_m: 292.5
+      length_m: 52
+      width_m: 45
+      maximum_wingspan_m: 36
+      wingtip_clearance_m: 8
+      pushback_direction: north
+      tug_required: false
+      aircraft_access_edge: taxi_stand_a4
+      service_access_edge: service_spur_a4_out
+    - id: A5
+      gate: A5
+      node: gate_a5
+      footprint:
+      - x_m: 374.0
+        y_m: 247.5
+      - x_m: 426.0
+        y_m: 247.5
+      - x_m: 426.0
+        y_m: 292.5
+      - x_m: 374.0
+        y_m: 292.5
+      length_m: 52
+      width_m: 45
+      maximum_wingspan_m: 36
+      wingtip_clearance_m: 8
+      pushback_direction: north
+      tug_required: false
+      aircraft_access_edge: taxi_stand_a5
+      service_access_edge: service_spur_a5_out
+    support_areas:
+    - id: GSE_DEPOT
+      kind: gse_depot
+      node: depot
+      footprint:
+      - x_m: -645.0
+        y_m: 400.0
+      - x_m: -555.0
+        y_m: 400.0
+      - x_m: -555.0
+        y_m: 460.0
+      - x_m: -645.0
+        y_m: 460.0
+    - id: FUEL_STAGING
+      kind: fuel_staging
+      node: road_600
+      footprint:
+      - x_m: 560.0
+        y_m: 405.0
+      - x_m: 640.0
+        y_m: 405.0
+      - x_m: 640.0
+        y_m: 455.0
+      - x_m: 560.0
+        y_m: 455.0
+    - id: MAINTENANCE
+      kind: maintenance_overflow
+      node: maintenance
+      footprint:
+      - x_m: 550.0
+        y_m: 485.0
+      - x_m: 650.0
+        y_m: 485.0
+      - x_m: 650.0
+        y_m: 555.0
+      - x_m: 550.0
+        y_m: 555.0
+    - id: TERMINAL
+      kind: terminal_apron
+      node: terminal
+      footprint:
+      - x_m: -120.0
+        y_m: 455.0
+      - x_m: 120.0
+        y_m: 455.0
+      - x_m: 120.0
+        y_m: 545.0
+      - x_m: -120.0
+        y_m: 545.0
+    regions:
+    - id: RUNWAY_PAVEMENT
+      kind: runway
+      surface_type: asphalt
+      elevation_m: 0
+      footprint:
+      - x_m: -700.0
+        y_m: -15.0
+      - x_m: 700.0
+        y_m: -15.0
+      - x_m: 700.0
+        y_m: 15.0
+      - x_m: -700.0
+        y_m: 15.0
+    - id: TAXIWAY_A
+      kind: taxiway
+      surface_type: asphalt
+      elevation_m: 0
+      footprint:
+      - x_m: -600.0
+        y_m: 91.0
+      - x_m: 600.0
+        y_m: 91.0
+      - x_m: 600.0
+        y_m: 109.0
+      - x_m: -600.0
+        y_m: 109.0
+    - id: APRON
+      kind: apron
+      surface_type: concrete
+      elevation_m: 0
+      footprint:
+      - x_m: -500
+        y_m: 180
+      - x_m: 500
+        y_m: 180
+      - x_m: 500
+        y_m: 320
+      - x_m: -500
+        y_m: 320
+    - id: SERVICE_ROAD
+      kind: service_road
+      surface_type: paved
+      elevation_m: 0
+      footprint:
+      - x_m: -600.0
+        y_m: 426.5
+      - x_m: 600.0
+        y_m: 426.5
+      - x_m: 600.0
+        y_m: 433.5
+      - x_m: -600.0
+        y_m: 433.5
+  nodes:
+  - id: origin
+    name: Local coordinate origin
+    x_m: 0
+    y_m: 0
+  - id: taxi_-600
+    name: Taxiway A -600 m
+    x_m: -600
+    y_m: 100
+  - id: hold_09
+    name: Runway 09 departure hold
+    x_m: -500
+    y_m: 100
+  - id: taxi_-400
+    name: Taxiway A -400 m
+    x_m: -400
+    y_m: 100
+  - id: taxi_-250
+    name: Taxiway A -250 m
+    x_m: -250
+    y_m: 100
+  - id: taxi_-200
+    name: Taxiway A -200 m
+    x_m: -200
+    y_m: 100
+  - id: taxi_0
+    name: Taxiway A +0 m
+    x_m: 0
+    y_m: 100
+  - id: taxi_200
+    name: Taxiway A +200 m
+    x_m: 200
+    y_m: 100
+  - id: taxi_250
+    name: Taxiway A +250 m
+    x_m: 250
+    y_m: 100
+  - id: taxi_400
+    name: Taxiway A +400 m
+    x_m: 400
+    y_m: 100
+  - id: taxi_500
+    name: Taxiway A +500 m
+    x_m: 500
+    y_m: 100
+  - id: taxi_600
+    name: Taxiway A +600 m
+    x_m: 600
+    y_m: 100
+  - id: exit_-250
+    name: Runway arrival exit -250
+    x_m: -250
+    y_m: 0
+  - id: exit_250
+    name: Runway arrival exit +250
+    x_m: 250
+    y_m: 0
+  - id: gate_a1
+    name: Stand A1 center
+    x_m: -400
+    y_m: 270
+  - id: service_a1
+    name: Stand A1 service spur
+    x_m: -400
+    y_m: 350
+  - id: gate_a2
+    name: Stand A2 center
+    x_m: -200
+    y_m: 270
+  - id: service_a2
+    name: Stand A2 service spur
+    x_m: -200
+    y_m: 350
+  - id: gate_a3
+    name: Stand A3 center
+    x_m: 0
+    y_m: 270
+  - id: service_a3
+    name: Stand A3 service spur
+    x_m: 0
+    y_m: 350
+  - id: gate_a4
+    name: Stand A4 center
+    x_m: 200
+    y_m: 270
+  - id: service_a4
+    name: Stand A4 service spur
+    x_m: 200
+    y_m: 350
+  - id: gate_a5
+    name: Stand A5 center
+    x_m: 400
+    y_m: 270
+  - id: service_a5
+    name: Stand A5 service spur
+    x_m: 400
+    y_m: 350
+  - id: depot
+    name: GSE depot
+    x_m: -600
+    y_m: 430
+  - id: road_-400
+    name: GSE road -400 m
+    x_m: -400
+    y_m: 430
+  - id: road_-200
+    name: GSE road -200 m
+    x_m: -200
+    y_m: 430
+  - id: road_0
+    name: GSE road +0 m
+    x_m: 0
+    y_m: 430
+  - id: road_200
+    name: GSE road +200 m
+    x_m: 200
+    y_m: 430
+  - id: road_400
+    name: GSE road +400 m
+    x_m: 400
+    y_m: 430
+  - id: road_600
+    name: GSE road +600 m
+    x_m: 600
+    y_m: 430
+  - id: maintenance
+    name: Maintenance and overflow
+    x_m: 600
+    y_m: 520
+  - id: terminal
+    name: Terminal apron reference
+    x_m: 0
+    y_m: 500
+  - id: fuel_depot
+    name: Fuel vehicle staging bay
+    x_m: -650
+    y_m: 390
+  - id: baggage_depot
+    name: Baggage vehicle staging bay
+    x_m: -650
+    y_m: 470
+  edges:
+  - id: taxi_a_0
+    from: taxi_-600
+    to: hold_09
+    distance_m: 100.0
+    traversal_time_seconds: 25
+    surface_centerline:
+    - x_m: -600
+      y_m: 100
+    - x_m: -500
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_1
+    from: hold_09
+    to: taxi_-400
+    distance_m: 100.0
+    traversal_time_seconds: 25
+    surface_centerline:
+    - x_m: -500
+      y_m: 100
+    - x_m: -400
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_2
+    from: taxi_-400
+    to: taxi_-250
+    distance_m: 150.0
+    traversal_time_seconds: 38
+    surface_centerline:
+    - x_m: -400
+      y_m: 100
+    - x_m: -250
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_3
+    from: taxi_-250
+    to: taxi_-200
+    distance_m: 50.0
+    traversal_time_seconds: 13
+    surface_centerline:
+    - x_m: -250
+      y_m: 100
+    - x_m: -200
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_4
+    from: taxi_-200
+    to: taxi_0
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: -200
+      y_m: 100
+    - x_m: 0
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_5
+    from: taxi_0
+    to: taxi_200
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: 0
+      y_m: 100
+    - x_m: 200
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_6
+    from: taxi_200
+    to: taxi_250
+    distance_m: 50.0
+    traversal_time_seconds: 13
+    surface_centerline:
+    - x_m: 200
+      y_m: 100
+    - x_m: 250
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_7
+    from: taxi_250
+    to: taxi_400
+    distance_m: 150.0
+    traversal_time_seconds: 38
+    surface_centerline:
+    - x_m: 250
+      y_m: 100
+    - x_m: 400
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_8
+    from: taxi_400
+    to: taxi_500
+    distance_m: 100.0
+    traversal_time_seconds: 25
+    surface_centerline:
+    - x_m: 400
+      y_m: 100
+    - x_m: 500
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_a_9
+    from: taxi_500
+    to: taxi_600
+    distance_m: 100.0
+    traversal_time_seconds: 25
+    surface_centerline:
+    - x_m: 500
+      y_m: 100
+    - x_m: 600
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_stand_a1
+    from: taxi_-400
+    to: gate_a1
+    distance_m: 170.0
+    traversal_time_seconds: 43
+    surface_centerline:
+    - x_m: -400
+      y_m: 100
+    - x_m: -400
+      y_m: 270
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_stand_a2
+    from: taxi_-200
+    to: gate_a2
+    distance_m: 170.0
+    traversal_time_seconds: 43
+    surface_centerline:
+    - x_m: -200
+      y_m: 100
+    - x_m: -200
+      y_m: 270
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_stand_a3
+    from: taxi_0
+    to: gate_a3
+    distance_m: 170.0
+    traversal_time_seconds: 43
+    surface_centerline:
+    - x_m: 0
+      y_m: 100
+    - x_m: 0
+      y_m: 270
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_stand_a4
+    from: taxi_200
+    to: gate_a4
+    distance_m: 170.0
+    traversal_time_seconds: 43
+    surface_centerline:
+    - x_m: 200
+      y_m: 100
+    - x_m: 200
+      y_m: 270
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: taxi_stand_a5
+    from: taxi_400
+    to: gate_a5
+    distance_m: 170.0
+    traversal_time_seconds: 43
+    surface_centerline:
+    - x_m: 400
+      y_m: 100
+    - x_m: 400
+      y_m: 270
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: taxiway_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: exit_connector_-250
+    from: exit_-250
+    to: taxi_-250
+    distance_m: 100.0
+    traversal_time_seconds: 25
+    surface_centerline:
+    - x_m: -250
+      y_m: 0
+    - x_m: -250
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: runway_exit_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: exit_connector_250
+    from: exit_250
+    to: taxi_250
+    distance_m: 100.0
+    traversal_time_seconds: 25
+    surface_centerline:
+    - x_m: 250
+      y_m: 0
+    - x_m: 250
+      y_m: 100
+    aircraft_allowed: true
+    ground_vehicle_allowed: false
+    surface_route_crosses_runway: false
+    surface_type: runway_exit_asphalt
+    width_m: 18
+    minimum_clearance_m: 15
+    one_way: false
+  - id: gse_road_-600_-400_out
+    from: depot
+    to: road_-400
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: -600
+      y_m: 430
+    - x_m: -400
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_-600_-400_back
+    from: road_-400
+    to: depot
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: -400
+      y_m: 430
+    - x_m: -600
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_-400_-200_out
+    from: road_-400
+    to: road_-200
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: -400
+      y_m: 430
+    - x_m: -200
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_-400_-200_back
+    from: road_-200
+    to: road_-400
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: -200
+      y_m: 430
+    - x_m: -400
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_-200_0_out
+    from: road_-200
+    to: road_0
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: -200
+      y_m: 430
+    - x_m: 0
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_-200_0_back
+    from: road_0
+    to: road_-200
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: 0
+      y_m: 430
+    - x_m: -200
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_0_200_out
+    from: road_0
+    to: road_200
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: 0
+      y_m: 430
+    - x_m: 200
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_0_200_back
+    from: road_200
+    to: road_0
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: 200
+      y_m: 430
+    - x_m: 0
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_200_400_out
+    from: road_200
+    to: road_400
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: 200
+      y_m: 430
+    - x_m: 400
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_200_400_back
+    from: road_400
+    to: road_200
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: 400
+      y_m: 430
+    - x_m: 200
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_400_600_out
+    from: road_400
+    to: road_600
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: 400
+      y_m: 430
+    - x_m: 600
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: gse_road_400_600_back
+    from: road_600
+    to: road_400
+    distance_m: 200.0
+    traversal_time_seconds: 50
+    surface_centerline:
+    - x_m: 600
+      y_m: 430
+    - x_m: 400
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a1_out
+    from: gate_a1
+    to: service_a1
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: -400
+      y_m: 270
+    - x_m: -400
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a1_back
+    from: service_a1
+    to: gate_a1
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: -400
+      y_m: 350
+    - x_m: -400
+      y_m: 270
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a1_out
+    from: service_a1
+    to: road_-400
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: -400
+      y_m: 350
+    - x_m: -400
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a1_back
+    from: road_-400
+    to: service_a1
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: -400
+      y_m: 430
+    - x_m: -400
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a2_out
+    from: gate_a2
+    to: service_a2
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: -200
+      y_m: 270
+    - x_m: -200
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a2_back
+    from: service_a2
+    to: gate_a2
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: -200
+      y_m: 350
+    - x_m: -200
+      y_m: 270
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a2_out
+    from: service_a2
+    to: road_-200
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: -200
+      y_m: 350
+    - x_m: -200
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a2_back
+    from: road_-200
+    to: service_a2
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: -200
+      y_m: 430
+    - x_m: -200
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a3_out
+    from: gate_a3
+    to: service_a3
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 0
+      y_m: 270
+    - x_m: 0
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a3_back
+    from: service_a3
+    to: gate_a3
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 0
+      y_m: 350
+    - x_m: 0
+      y_m: 270
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a3_out
+    from: service_a3
+    to: road_0
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 0
+      y_m: 350
+    - x_m: 0
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a3_back
+    from: road_0
+    to: service_a3
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 0
+      y_m: 430
+    - x_m: 0
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a4_out
+    from: gate_a4
+    to: service_a4
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 200
+      y_m: 270
+    - x_m: 200
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a4_back
+    from: service_a4
+    to: gate_a4
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 200
+      y_m: 350
+    - x_m: 200
+      y_m: 270
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a4_out
+    from: service_a4
+    to: road_200
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 200
+      y_m: 350
+    - x_m: 200
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a4_back
+    from: road_200
+    to: service_a4
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 200
+      y_m: 430
+    - x_m: 200
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a5_out
+    from: gate_a5
+    to: service_a5
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 400
+      y_m: 270
+    - x_m: 400
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_spur_a5_back
+    from: service_a5
+    to: gate_a5
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 400
+      y_m: 350
+    - x_m: 400
+      y_m: 270
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: apron_service_spur
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a5_out
+    from: service_a5
+    to: road_400
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 400
+      y_m: 350
+    - x_m: 400
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: service_road_link_a5_back
+    from: road_400
+    to: service_a5
+    distance_m: 80.0
+    traversal_time_seconds: 20
+    surface_centerline:
+    - x_m: 400
+      y_m: 430
+    - x_m: 400
+      y_m: 350
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: maintenance_link_out
+    from: road_600
+    to: maintenance
+    distance_m: 90.0
+    traversal_time_seconds: 23
+    surface_centerline:
+    - x_m: 600
+      y_m: 430
+    - x_m: 600
+      y_m: 520
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: maintenance_link_back
+    from: maintenance
+    to: road_600
+    distance_m: 90.0
+    traversal_time_seconds: 23
+    surface_centerline:
+    - x_m: 600
+      y_m: 520
+    - x_m: 600
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: terminal_service_link_out
+    from: road_0
+    to: terminal
+    distance_m: 70.0
+    traversal_time_seconds: 18
+    surface_centerline:
+    - x_m: 0
+      y_m: 430
+    - x_m: 0
+      y_m: 500
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: terminal_service_link_back
+    from: terminal
+    to: road_0
+    distance_m: 70.0
+    traversal_time_seconds: 18
+    surface_centerline:
+    - x_m: 0
+      y_m: 500
+    - x_m: 0
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: fuel_depot_link_out
+    from: depot
+    to: fuel_depot
+    distance_m: 64.031
+    traversal_time_seconds: 17
+    surface_centerline:
+    - x_m: -600
+      y_m: 430
+    - x_m: -650
+      y_m: 390
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: fuel_depot_link_back
+    from: fuel_depot
+    to: depot
+    distance_m: 64.031
+    traversal_time_seconds: 17
+    surface_centerline:
+    - x_m: -650
+      y_m: 390
+    - x_m: -600
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: baggage_depot_link_out
+    from: depot
+    to: baggage_depot
+    distance_m: 64.031
+    traversal_time_seconds: 17
+    surface_centerline:
+    - x_m: -600
+      y_m: 430
+    - x_m: -650
+      y_m: 470
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+  - id: baggage_depot_link_back
+    from: baggage_depot
+    to: depot
+    distance_m: 64.031
+    traversal_time_seconds: 17
+    surface_centerline:
+    - x_m: -650
+      y_m: 470
+    - x_m: -600
+      y_m: 430
+    aircraft_allowed: false
+    ground_vehicle_allowed: true
+    surface_route_crosses_runway: false
+    surface_type: service_road_paved
+    width_m: 7
+    minimum_clearance_m: 4
+    one_way: true
+gates:
+- id: A1
+  node: gate_a1
+- id: A2
+  node: gate_a2
+- id: A3
+  node: gate_a3
+- id: A4
+  node: gate_a4
+- id: A5
+  node: gate_a5
+fleet:
+  vehicles:
+  - id: fuel_1
+    name: FuelTruck-1
+    type: fueling
+    depot_node: fuel_depot
+    speed_mps: 10.0
+  - id: baggage_1
+    name: BaggageCart-1
+    type: baggage
+    depot_node: baggage_depot
+    speed_mps: 8.0
+aircraft:
+- id: AX101
+  turnaround_id: TO-AX101
+  gate: A1
+  scheduled_arrival_seconds: 0
+  scheduled_departure_seconds: 400
+  target_off_block_seconds: 300
+  service_tasks:
+  - id: deboard
+    type: deboarding
+    duration_seconds: 20
+  - id: fuel
+    type: fueling
+    duration_seconds: 30
+  - id: baggage_unload
+    type: baggage
+    duration_seconds: 20
+    prerequisites:
+    - deboard
+    - fuel
+  - id: clean
+    type: cabin_cleaning
+    duration_seconds: 15
+    prerequisites:
+    - deboard
+  - id: baggage_load
+    type: baggage_load
+    duration_seconds: 20
+    prerequisites:
+    - baggage_unload
+    - clean
+  - id: pushback
+    type: pushback_preparation
+    duration_seconds: 120
+    prerequisites:
+    - fuel
+    - baggage_load
+- id: AR401
+  operation_type: arrival_turnaround
+  gate: A4
+  arrival_exit: exit_-250
+  scheduled_arrival_seconds: 400
+  scheduled_departure_seconds: 1600
+  turnaround_id: TO-AR401
+  target_off_block_seconds: 1300
+  service_tasks:
+  - id: deboard
+    type: deboarding
+    duration_seconds: 20
+  - id: fuel
+    type: fueling
+    duration_seconds: 30
+  - id: baggage_unload
+    type: baggage
+    duration_seconds: 20
+    prerequisites:
+    - deboard
+    - fuel
+  - id: clean
+    type: cabin_cleaning
+    duration_seconds: 15
+    prerequisites:
+    - deboard
+  - id: baggage_load
+    type: baggage_load
+    duration_seconds: 20
+    prerequisites:
+    - baggage_unload
+    - clean
+  - id: pushback
+    type: pushback_preparation
+    duration_seconds: 120
+    prerequisites:
+    - fuel
+    - baggage_load
+- id: AR502
+  operation_type: arrival_turnaround
+  gate: A5
+  arrival_exit: exit_250
+  scheduled_arrival_seconds: 500
+  scheduled_departure_seconds: 1800
+  turnaround_id: TO-AR502
+  target_off_block_seconds: 1500
+  service_tasks:
+  - id: deboard
+    type: deboarding
+    duration_seconds: 20
+  - id: fuel
+    type: fueling
+    duration_seconds: 30
+  - id: baggage_unload
+    type: baggage
+    duration_seconds: 20
+    prerequisites:
+    - deboard
+    - fuel
+  - id: clean
+    type: cabin_cleaning
+    duration_seconds: 15
+    prerequisites:
+    - deboard
+  - id: baggage_load
+    type: baggage_load
+    duration_seconds: 20
+    prerequisites:
+    - baggage_unload
+    - clean
+  - id: pushback
+    type: pushback_preparation
+    duration_seconds: 120
+    prerequisites:
+    - fuel
+    - baggage_load
+- id: DEMO202
+  turnaround_id: DEMO-TO-202
+  gate: A2
+  scheduled_arrival_seconds: 5000
+  scheduled_departure_seconds: 6500
+  target_off_block_seconds: 6200
+  service_tasks:
+  - id: deboard
+    type: deboarding
+    duration_seconds: 20
+  - id: fuel
+    type: fueling
+    duration_seconds: 30
+  - id: baggage_unload
+    type: baggage
+    duration_seconds: 20
+    prerequisites:
+    - deboard
+    - fuel
+  - id: clean
+    type: cabin_cleaning
+    duration_seconds: 15
+    prerequisites:
+    - deboard
+  - id: baggage_load
+    type: baggage_load
+    duration_seconds: 20
+    prerequisites:
+    - baggage_unload
+    - clean
+  - id: pushback
+    type: pushback_preparation
+    duration_seconds: 120
+    prerequisites:
+    - fuel
+    - baggage_load
+- id: DEMO303
+  turnaround_id: DEMO-TO-303
+  gate: A3
+  scheduled_arrival_seconds: 5500
+  scheduled_departure_seconds: 7000
+  target_off_block_seconds: 6700
+  service_tasks:
+  - id: deboard
+    type: deboarding
+    duration_seconds: 20
+  - id: fuel
+    type: fueling
+    duration_seconds: 30
+  - id: baggage_unload
+    type: baggage
+    duration_seconds: 20
+    prerequisites:
+    - deboard
+    - fuel
+  - id: clean
+    type: cabin_cleaning
+    duration_seconds: 15
+    prerequisites:
+    - deboard
+  - id: baggage_load
+    type: baggage_load
+    duration_seconds: 20
+    prerequisites:
+    - baggage_unload
+    - clean
+  - id: pushback
+    type: pushback_preparation
+    duration_seconds: 120
+    prerequisites:
+    - fuel
+    - baggage_load
+surface_operations:
+  departure_handoff: hold_09
+  runway_node: hold_09
+  arrival_exit: exit_-250
+  pushback_seconds: 30
+  runway_occupancy_seconds: 170
+  arrival_rollout_seconds: 270
+  aircraft_speed_mps: 4.0
+  return_service_vehicles_to_depot_after_task: true
+service_durations_seconds:
+  fueling: 30
+  baggage: 20
+  deboarding: 20
+  cabin_cleaning: 15
+  baggage_load: 20
+  pushback_preparation: 10

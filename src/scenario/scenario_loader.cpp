@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cmath>
 #include <format>
 #include <string>
 #include <unordered_map>
@@ -21,6 +22,7 @@ struct EdgeDocument {
     std::string id; std::string from; std::string to; double distance;
     std::int64_t traversal_seconds; bool enabled; bool one_way;
     std::vector<Point2d> centerline; bool aircraft_allowed{true}; bool ground_vehicle_allowed{true}; bool crosses_runway{false};
+    std::string surface_type{"unclassified"}; double width_m{0.0}; double minimum_clearance_m{0.0};
 };
 struct GateDocument { std::string id; std::string name; std::string node; bool enabled; };
 struct VehicleDocument {
@@ -52,6 +54,30 @@ struct ScenarioDocument {
     std::vector<Disruption> disruptions;
     struct VehicleOutage { std::int64_t time; std::string vehicle; };
     std::vector<VehicleOutage> vehicle_outages;
+    struct DesignRunwayExit { std::string id; std::string node; std::string connector_edge; };
+    struct DesignRunway {
+        std::string id; std::string designation; Point2d threshold_09; Point2d threshold_27;
+        double length_m; double width_m; std::string surface_type; std::string departure_hold_node;
+        std::vector<DesignRunwayExit> arrival_exits;
+    };
+    struct DesignHoldPoint { std::string id; std::string node; double protected_clearance_m; };
+    struct DesignStand {
+        std::string id; std::string gate; std::string node; std::vector<Point2d> footprint;
+        double length_m; double width_m; double maximum_wingspan_m; double wingtip_clearance_m;
+        std::string pushback_direction; bool tug_required; std::string aircraft_access_edge; std::string service_access_edge;
+    };
+    struct DesignArea { std::string id; std::string kind; std::string node; std::vector<Point2d> footprint; };
+    struct DesignRegion {
+        std::string id; std::string kind; std::string surface_type; double elevation_m;
+        std::vector<Point2d> footprint;
+    };
+    struct AirportDesign {
+        std::string name; bool fictional; std::string units; std::string x_axis; std::string y_axis; std::string z_axis;
+        std::string origin_node; double unreal_centimeters_per_meter;
+        std::vector<DesignRunway> runways; std::vector<DesignHoldPoint> hold_points;
+        std::vector<DesignStand> stands; std::vector<DesignArea> support_areas; std::vector<DesignRegion> regions;
+    };
+    std::optional<AirportDesign> airport_design;
     struct SurfaceOperations { std::string departure_handoff; std::string runway_node; std::string arrival_exit; std::int64_t pushback_seconds{30}; std::int64_t runway_seconds{60}; std::int64_t arrival_rollout_seconds{90}; double speed_mps{5.0}; double queue_spacing_m{30.0}; bool return_vehicles_after_task{false}; std::string aircraft_routing_policy{"SCRIPTED"}; };
     std::optional<SurfaceOperations> surface_operations;
 };
@@ -76,10 +102,65 @@ bool optional_bool(const YAML::Node& parent, const char* key, bool fallback, std
     return scalar<bool>(parent, key, context);
 }
 
+Point2d parse_point(const YAML::Node& point, std::string_view context) {
+    return {scalar<double>(point, "x_m", context), scalar<double>(point, "y_m", context)};
+}
+
+std::vector<Point2d> parse_footprint(const YAML::Node& points, std::string_view context) {
+    if (!points.IsSequence() || points.size() < 3)
+        throw ScenarioLoadError(std::format("{} must contain at least three points", context));
+    std::vector<Point2d> result;
+    result.reserve(points.size());
+    for (const auto& point : points) result.push_back(parse_point(point, context));
+    return result;
+}
+
 void require_sequence(const YAML::Node& node, std::string_view context) {
     if (!node.IsSequence() || node.size() == 0) {
         throw ScenarioLoadError(std::format("{} must be a non-empty sequence", context));
     }
+}
+
+double point_distance(Point2d a, Point2d b) {
+    return std::hypot(a.x_m - b.x_m, a.y_m - b.y_m);
+}
+
+double distance_to_segment(Point2d point, Point2d start, Point2d end) {
+    const double dx = end.x_m - start.x_m;
+    const double dy = end.y_m - start.y_m;
+    const double squared_length = dx * dx + dy * dy;
+    if (squared_length <= 0.0) return point_distance(point, start);
+    const double fraction = std::clamp(((point.x_m - start.x_m) * dx + (point.y_m - start.y_m) * dy) /
+        squared_length, 0.0, 1.0);
+    return point_distance(point, {start.x_m + fraction * dx, start.y_m + fraction * dy});
+}
+
+double polygon_area(const std::vector<Point2d>& footprint) {
+    double twice_area = 0.0;
+    for (std::size_t index = 0; index < footprint.size(); ++index) {
+        const auto& current = footprint[index];
+        const auto& next = footprint[(index + 1) % footprint.size()];
+        twice_area += current.x_m * next.y_m - next.x_m * current.y_m;
+    }
+    return std::abs(twice_area) * 0.5;
+}
+
+bool contains_point(const std::vector<Point2d>& footprint, Point2d point) {
+    bool inside = false;
+    for (std::size_t i = 0, j = footprint.size() - 1; i < footprint.size(); j = i++) {
+        const auto& a = footprint[i];
+        const auto& b = footprint[j];
+        const bool crosses = ((a.y_m > point.y_m) != (b.y_m > point.y_m)) &&
+            (point.x_m < (b.x_m - a.x_m) * (point.y_m - a.y_m) / (b.y_m - a.y_m) + a.x_m);
+        if (crosses) inside = !inside;
+    }
+    return inside;
+}
+
+void validate_footprint(const std::vector<Point2d>& footprint, std::string_view context) {
+    if (footprint.size() < 3 || polygon_area(footprint) <= 1e-6 ||
+        std::ranges::any_of(footprint, [](Point2d p) { return !std::isfinite(p.x_m) || !std::isfinite(p.y_m); }))
+        throw ScenarioLoadError(std::format("{} must be a finite, non-degenerate polygon", context));
 }
 
 ScenarioDocument parse_document(const YAML::Node& root) {
@@ -90,6 +171,86 @@ ScenarioDocument parse_document(const YAML::Node& root) {
         scalar<std::uint64_t>(root, "default_seed", "scenario") : 42U;
 
     const auto airport = required(root, "airport", "scenario");
+    if (const auto design = airport["design"]) {
+        ScenarioDocument::AirportDesign value;
+        value.name = scalar<std::string>(design, "airport_name", "airport.design");
+        value.fictional = scalar<bool>(design, "fictional", "airport.design");
+        const auto frame = required(design, "coordinate_frame", "airport.design");
+        value.units = scalar<std::string>(frame, "units", "airport.design.coordinate_frame");
+        value.x_axis = scalar<std::string>(frame, "x_axis", "airport.design.coordinate_frame");
+        value.y_axis = scalar<std::string>(frame, "y_axis", "airport.design.coordinate_frame");
+        value.z_axis = scalar<std::string>(frame, "z_axis", "airport.design.coordinate_frame");
+        value.origin_node = scalar<std::string>(frame, "origin_node", "airport.design.coordinate_frame");
+        value.unreal_centimeters_per_meter = scalar<double>(design, "unreal_centimeters_per_meter", "airport.design");
+
+        const auto runways = required(design, "runways", "airport.design");
+        require_sequence(runways, "airport.design.runways");
+        for (std::size_t index = 0; index < runways.size(); ++index) {
+            const auto runway = runways[index];
+            const auto context = std::format("airport.design.runways[{}]", index);
+            ScenarioDocument::DesignRunway parsed{
+                scalar<std::string>(runway, "id", context),
+                scalar<std::string>(runway, "designation", context),
+                parse_point(required(runway, "threshold_09", context), context),
+                parse_point(required(runway, "threshold_27", context), context),
+                scalar<double>(runway, "length_m", context),
+                scalar<double>(runway, "width_m", context),
+                scalar<std::string>(runway, "surface_type", context),
+                scalar<std::string>(runway, "departure_hold_node", context), {}};
+            const auto exits = required(runway, "arrival_exits", context);
+            require_sequence(exits, std::format("{}.arrival_exits", context));
+            for (const auto& exit : exits) parsed.arrival_exits.push_back({
+                scalar<std::string>(exit, "id", context),
+                scalar<std::string>(exit, "node", context),
+                scalar<std::string>(exit, "connector_edge", context)});
+            value.runways.push_back(std::move(parsed));
+        }
+
+        if (const auto holds = design["hold_points"]) {
+            require_sequence(holds, "airport.design.hold_points");
+            for (const auto& hold : holds) value.hold_points.push_back({
+                scalar<std::string>(hold, "id", "airport.design.hold_points"),
+                scalar<std::string>(hold, "node", "airport.design.hold_points"),
+                scalar<double>(hold, "protected_clearance_m", "airport.design.hold_points")});
+        }
+        if (const auto stands = design["stands"]) {
+            require_sequence(stands, "airport.design.stands");
+            for (const auto& stand : stands) {
+                const auto context = "airport.design.stands";
+                value.stands.push_back({
+                    scalar<std::string>(stand, "id", context),
+                    scalar<std::string>(stand, "gate", context),
+                    scalar<std::string>(stand, "node", context),
+                    parse_footprint(required(stand, "footprint", context), context),
+                    scalar<double>(stand, "length_m", context),
+                    scalar<double>(stand, "width_m", context),
+                    scalar<double>(stand, "maximum_wingspan_m", context),
+                    scalar<double>(stand, "wingtip_clearance_m", context),
+                    scalar<std::string>(stand, "pushback_direction", context),
+                    scalar<bool>(stand, "tug_required", context),
+                    scalar<std::string>(stand, "aircraft_access_edge", context),
+                    scalar<std::string>(stand, "service_access_edge", context)});
+            }
+        }
+        if (const auto areas = design["support_areas"]) {
+            require_sequence(areas, "airport.design.support_areas");
+            for (const auto& area : areas) value.support_areas.push_back({
+                scalar<std::string>(area, "id", "airport.design.support_areas"),
+                scalar<std::string>(area, "kind", "airport.design.support_areas"),
+                scalar<std::string>(area, "node", "airport.design.support_areas"),
+                parse_footprint(required(area, "footprint", "airport.design.support_areas"), "airport.design.support_areas")});
+        }
+        if (const auto regions = design["regions"]) {
+            require_sequence(regions, "airport.design.regions");
+            for (const auto& region : regions) value.regions.push_back({
+                scalar<std::string>(region, "id", "airport.design.regions"),
+                scalar<std::string>(region, "kind", "airport.design.regions"),
+                scalar<std::string>(region, "surface_type", "airport.design.regions"),
+                scalar<double>(region, "elevation_m", "airport.design.regions"),
+                parse_footprint(required(region, "footprint", "airport.design.regions"), "airport.design.regions")});
+        }
+        document.airport_design = std::move(value);
+    }
     const auto nodes = required(airport, "nodes", "airport");
     const auto edges = required(airport, "edges", "airport");
     require_sequence(nodes, "airport.nodes");
@@ -112,6 +273,10 @@ ScenarioDocument parse_document(const YAML::Node& root) {
         edge.aircraft_allowed = optional_bool(item, "aircraft_allowed", true, context);
         edge.ground_vehicle_allowed = optional_bool(item, "ground_vehicle_allowed", true, context);
         edge.crosses_runway = optional_bool(item, "surface_route_crosses_runway", false, context);
+        if (item["surface_type"]) edge.surface_type = scalar<std::string>(item, "surface_type", context);
+        if (item["width_m"]) edge.width_m = scalar<double>(item, "width_m", context);
+        if (item["minimum_clearance_m"])
+            edge.minimum_clearance_m = scalar<double>(item, "minimum_clearance_m", context);
         if (item["surface_centerline"]) {
             if (!item["surface_centerline"].IsSequence() || item["surface_centerline"].size() < 2)
                 throw ScenarioLoadError(context + ".surface_centerline must contain at least two points");
@@ -373,6 +538,13 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         edge.aircraft_allowed = value.aircraft_allowed;
         edge.ground_vehicle_allowed = value.ground_vehicle_allowed;
         edge.crosses_runway = value.crosses_runway;
+        edge.surface_type = value.surface_type;
+        edge.width_m = value.width_m;
+        edge.minimum_clearance_m = value.minimum_clearance_m;
+        if (!std::isfinite(edge.width_m) || !std::isfinite(edge.minimum_clearance_m) ||
+            edge.width_m < 0.0 || edge.minimum_clearance_m < 0.0 ||
+            (edge.surface_type != "unclassified" && edge.width_m <= 0.0))
+            throw ScenarioLoadError(std::format("edge '{}' has invalid surface dimensions", value.id));
         scenario.graph.add_edge(std::move(edge));
     }
     for (std::size_t index = 0; index < document.gates.size(); ++index) {
@@ -381,6 +553,160 @@ Scenario validate_and_build(const ScenarioDocument& document) {
         gates.emplace(value.id, id);
         scenario.gates.emplace_back(id, value.name,
             lookup(nodes, value.node, std::format("gate '{}'.node", value.id)), value.enabled);
+    }
+
+    if (document.airport_design) {
+        const auto& source = *document.airport_design;
+        if (source.name.empty() || !source.fictional || source.units != "meters" ||
+            source.x_axis != "east" || source.y_axis != "north" || source.z_axis != "up" ||
+            !std::isfinite(source.unreal_centimeters_per_meter) || source.unreal_centimeters_per_meter <= 0.0)
+            throw ScenarioLoadError("airport.design must be fictional, metric, right-handed east/north/up, and have a positive Unreal scale");
+        const auto origin = lookup(nodes, source.origin_node, "airport.design.coordinate_frame.origin_node");
+        if (point_distance(scenario.graph.node(origin).position, {}) > 1e-6)
+            throw ScenarioLoadError("airport.design origin node must be at local (0, 0)");
+
+        AirportDesign design;
+        design.name = source.name;
+        design.fictional = source.fictional;
+        design.coordinate_units = source.units;
+        design.x_axis = source.x_axis;
+        design.y_axis = source.y_axis;
+        design.z_axis = source.z_axis;
+        design.origin_node = origin;
+        design.unreal_centimeters_per_meter = source.unreal_centimeters_per_meter;
+        std::unordered_set<std::string> runway_ids;
+        for (const auto& value : source.runways) {
+            if (value.id.empty() || !runway_ids.insert(value.id).second || value.designation.empty() ||
+                value.surface_type.empty() || !std::isfinite(value.length_m) || !std::isfinite(value.width_m) ||
+                !std::isfinite(value.threshold_09.x_m) || !std::isfinite(value.threshold_09.y_m) ||
+                !std::isfinite(value.threshold_27.x_m) || !std::isfinite(value.threshold_27.y_m) ||
+                value.length_m <= 0.0 || value.width_m <= 0.0)
+                throw ScenarioLoadError("airport.design contains an invalid or duplicate runway definition");
+            const double measured_length = point_distance(value.threshold_09, value.threshold_27);
+            if (std::abs(measured_length - value.length_m) > 0.05)
+                throw ScenarioLoadError(std::format("runway '{}' threshold distance does not match length_m", value.id));
+            const auto hold_node = lookup(nodes, value.departure_hold_node,
+                std::format("runway '{}'.departure_hold_node", value.id));
+            const auto hold_position = scenario.graph.node(hold_node).position;
+            if (distance_to_segment(hold_position, value.threshold_09, value.threshold_27) <= value.width_m * 0.5)
+                throw ScenarioLoadError(std::format("runway '{}' departure hold node must be outside runway pavement", value.id));
+            AirportRunway runway{value.id, value.designation, value.threshold_09, value.threshold_27,
+                value.length_m, value.width_m, value.surface_type, hold_node, {}};
+            std::unordered_set<std::string> exit_ids;
+            for (const auto& exit : value.arrival_exits) {
+                const auto node = lookup(nodes, exit.node, std::format("runway '{}'.arrival_exit", value.id));
+                const auto edge_id = lookup(edges, exit.connector_edge,
+                    std::format("runway '{}'.arrival_exit.connector_edge", value.id));
+                const auto& connector = scenario.graph.edge(edge_id);
+                const auto position = scenario.graph.node(node).position;
+                if (exit.id.empty() || !exit_ids.insert(exit.id).second ||
+                    distance_to_segment(position, value.threshold_09, value.threshold_27) > value.width_m * 0.5 ||
+                    (connector.from != node && connector.to != node) || !connector.aircraft_allowed ||
+                    connector.ground_vehicle_allowed || connector.crosses_runway)
+                    throw ScenarioLoadError(std::format("runway '{}' has an invalid aircraft-only arrival exit", value.id));
+                runway.arrival_exits.push_back({exit.id, node, edge_id});
+            }
+            if (runway.arrival_exits.size() < 2)
+                throw ScenarioLoadError(std::format("runway '{}' requires at least two arrival exits", value.id));
+            design.runways.push_back(std::move(runway));
+        }
+        if (design.runways.empty()) throw ScenarioLoadError("airport.design requires at least one runway");
+
+        std::unordered_set<std::string> hold_ids;
+        for (const auto& value : source.hold_points) {
+            const auto node = lookup(nodes, value.node, "airport.design.hold_points.node");
+            if (value.id.empty() || !hold_ids.insert(value.id).second ||
+                !std::isfinite(value.protected_clearance_m) || value.protected_clearance_m <= 0.0)
+                throw ScenarioLoadError("airport.design contains an invalid or duplicate hold point");
+            design.hold_points.push_back({value.id, node, value.protected_clearance_m});
+        }
+
+        std::unordered_set<std::string> stand_ids;
+        std::unordered_set<GateId> described_gates;
+        for (const auto& value : source.stands) {
+            const auto gate_id = lookup(gates, value.gate, std::format("stand '{}'.gate", value.id));
+            const auto node = lookup(nodes, value.node, std::format("stand '{}'.node", value.id));
+            const auto aircraft_edge_id = lookup(edges, value.aircraft_access_edge,
+                std::format("stand '{}'.aircraft_access_edge", value.id));
+            const auto service_edge_id = lookup(edges, value.service_access_edge,
+                std::format("stand '{}'.service_access_edge", value.id));
+            const auto& aircraft_edge = scenario.graph.edge(aircraft_edge_id);
+            const auto& service_edge = scenario.graph.edge(service_edge_id);
+            const auto gate = std::ranges::find(scenario.gates, gate_id, &Gate::id);
+            validate_footprint(value.footprint, std::format("stand '{}' footprint", value.id));
+            if (value.id.empty() || !stand_ids.insert(value.id).second || !described_gates.insert(gate_id).second ||
+                gate == scenario.gates.end() || gate->node != node || !contains_point(value.footprint, scenario.graph.node(node).position) ||
+                !std::isfinite(value.length_m) || !std::isfinite(value.width_m) ||
+                !std::isfinite(value.maximum_wingspan_m) || !std::isfinite(value.wingtip_clearance_m) ||
+                value.length_m <= 0.0 || value.width_m <= 0.0 || value.maximum_wingspan_m <= 0.0 ||
+                value.wingtip_clearance_m < 0.0 || value.pushback_direction.empty() ||
+                (aircraft_edge.from != node && aircraft_edge.to != node) || !aircraft_edge.aircraft_allowed ||
+                (service_edge.from != node && service_edge.to != node) || !service_edge.ground_vehicle_allowed ||
+                service_edge.aircraft_allowed)
+                throw ScenarioLoadError(std::format("stand '{}' has invalid geometry, compatibility, or access edges", value.id));
+            design.stands.push_back({value.id, gate_id, node, value.footprint, value.length_m, value.width_m,
+                value.maximum_wingspan_m, value.wingtip_clearance_m, value.pushback_direction, value.tug_required,
+                aircraft_edge_id, service_edge_id});
+        }
+        if (design.stands.size() != scenario.gates.size())
+            throw ScenarioLoadError("airport.design must define exactly one stand for every gate");
+
+        std::unordered_set<std::string> support_ids;
+        for (const auto& value : source.support_areas) {
+            const auto node = lookup(nodes, value.node, std::format("support area '{}'.node", value.id));
+            validate_footprint(value.footprint, std::format("support area '{}' footprint", value.id));
+            if (value.id.empty() || !support_ids.insert(value.id).second || value.kind.empty() ||
+                !contains_point(value.footprint, scenario.graph.node(node).position))
+                throw ScenarioLoadError("airport.design contains an invalid support area");
+            design.support_areas.push_back({value.id, value.kind, node, value.footprint});
+        }
+        std::unordered_set<std::string> region_ids;
+        for (const auto& value : source.regions) {
+            validate_footprint(value.footprint, std::format("surface region '{}' footprint", value.id));
+            if (value.id.empty() || !region_ids.insert(value.id).second || value.kind.empty() ||
+                value.surface_type.empty() || !std::isfinite(value.elevation_m))
+                throw ScenarioLoadError("airport.design contains an invalid surface region");
+            design.regions.push_back({value.id, value.kind, value.surface_type, value.elevation_m, value.footprint});
+        }
+        for (const auto& edge : scenario.graph.edges()) {
+            if (edge.surface_type != "unclassified" && edge.width_m <= 0.0)
+                throw ScenarioLoadError("airport design route edges require positive surface widths");
+            if (edge.centerline.size() >= 2) {
+                const auto& from = scenario.graph.node(edge.from).position;
+                const auto& to = scenario.graph.node(edge.to).position;
+                if (point_distance(edge.centerline.front(), from) > 0.05 ||
+                    point_distance(edge.centerline.back(), to) > 0.05 ||
+                    std::abs(edge.centerline_length_m - edge.distance_m) > 0.05)
+                    throw ScenarioLoadError(std::format("edge {} centerline does not match graph endpoints/distance", edge.id.value()));
+            }
+        }
+        if (!scenario.surface_operations) throw ScenarioLoadError("airport.design requires surface_operations");
+        for (const auto& runway : design.runways) {
+            const auto hold = std::ranges::find(design.hold_points, runway.departure_hold_node, &AirportHoldPoint::node);
+            if (hold == design.hold_points.end() || scenario.surface_operations->runway_node != runway.departure_hold_node)
+                throw ScenarioLoadError(std::format("runway '{}' departure hold metadata disagrees with surface_operations", runway.id));
+            for (const auto& gate : scenario.gates) {
+                if (!find_route(scenario.graph, gate.node, runway.departure_hold_node, MovementClass::Aircraft) ||
+                    !find_route(scenario.graph, runway.departure_hold_node, gate.node, MovementClass::Aircraft))
+                    throw ScenarioLoadError(std::format("runway '{}' and gate '{}' are not connected for aircraft", runway.id, gate.name));
+            }
+            for (const auto& exit : runway.arrival_exits) {
+                for (const auto& gate : scenario.gates)
+                    if (!find_route(scenario.graph, exit.runway_node, gate.node, MovementClass::Aircraft))
+                        throw ScenarioLoadError(std::format("runway exit '{}' cannot reach gate '{}'", exit.id, gate.name));
+            }
+            for (const auto& vehicle : document.vehicles) {
+                const auto depot = lookup(nodes, vehicle.depot, std::format("vehicle '{}'.depot_node", vehicle.id));
+                for (const auto& gate : scenario.gates) {
+                    if (!find_route(scenario.graph, depot, gate.node, MovementClass::GroundVehicle) ||
+                        !find_route(scenario.graph, gate.node, depot, MovementClass::GroundVehicle))
+                        throw ScenarioLoadError(std::format("GSE vehicle '{}' cannot travel both ways between depot and gate '{}'", vehicle.id, gate.name));
+                }
+                if (find_route(scenario.graph, depot, runway.departure_hold_node, MovementClass::GroundVehicle))
+                    throw ScenarioLoadError(std::format("GSE vehicle '{}' has a route to runway hold point", vehicle.id));
+            }
+        }
+        scenario.airport_design = std::move(design);
     }
 
     for (std::size_t index = 0; index < document.vehicles.size(); ++index) {
@@ -459,6 +785,13 @@ Scenario validate_and_build(const ScenarioDocument& document) {
                 value.arrival_turnaround ? AircraftOperationType::ArrivalTurnaround : AircraftOperationType::Turnaround,
             (value.arrival_only || value.arrival_turnaround)
                 ? lookup(nodes, value.arrival_exit, std::format("aircraft '{}'.arrival_exit", value.id)) : NodeId{});
+    }
+    if (scenario.airport_design) {
+        for (const auto& runway : scenario.airport_design->runways)
+            for (const auto& flight : scenario.aircraft)
+                if (flight.operation_type() != AircraftOperationType::Turnaround &&
+                    std::ranges::none_of(runway.arrival_exits, [&](const auto& exit) { return exit.runway_node == flight.arrival_exit_node(); }))
+                    throw ScenarioLoadError(std::format("aircraft '{}' uses an arrival exit absent from runway design", flight.flight_number()));
     }
     for (const auto& [name, seconds] : document.service_durations) {
         const auto type = parse_service(name, "service_durations_seconds");

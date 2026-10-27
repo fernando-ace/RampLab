@@ -9,6 +9,7 @@ RampLab is a portable C++23 discrete-event simulation engine for airport ramp op
 - Airport graph, deterministic A* routing, closures, and rerouting.
 - Concurrent service workflows with FIFO resource contention.
 - Integrated multi-aircraft turnaround lifecycles with task dependencies, shared service fleets, gate occupancy, arrivals, and departures.
+- A fictional RampLab Demo Airport scenario for repeatable, headless arrival-to-departure operations, separate from the evidence-constrained KAUO environment.
 - Shared taxiway reservations and coordinated arrival/departure runway queues, with deterministic rerouting and disruption handling.
 - Versioned, retained-by-value simulation snapshots.
 - Structured event records delivered to zero or more read-only sinks.
@@ -99,7 +100,10 @@ The CMake build, CLI, and tests remain independent of Unreal Engine. This is the
 .\build\Release\airside_cli.exe --scenario scenarios\high_capacity.yaml --seed 42
 .\build\Release\airside_cli.exe --scenario scenarios\turnaround_lifecycle.yaml --seed 42
 .\build\Release\airside_cli.exe --scenario scenarios\turnaround_lifecycle_disrupted.yaml --seed 42
+.\build\Release\airside_cli.exe --scenario scenarios\ramplab_demo_airport.yaml --seed 50
 ```
+
+The synthetic Demo Airport is the canonical operational demo environment; its authored assumptions and validation evidence are documented in [Goal 50](docs/goal50-synthetic-demo-airport.md). It is fictional and does not change KAUO's evidence/readiness status.
 
 If `--seed` is omitted, the file's `default_seed` is used. A CLI seed always takes precedence. The default scenario path is `scenarios/baseline.yaml` relative to the current directory.
 
