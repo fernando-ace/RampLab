@@ -10,6 +10,7 @@
 #include "CesiumIonServer.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
@@ -29,6 +30,8 @@
 #include "Materials/Material.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
+
+#include <algorithm>
 
 namespace {
 
@@ -121,7 +124,16 @@ ARampLabAirportEnvironment::ARampLabAirportEnvironment()
 void ARampLabAirportEnvironment::BeginPlay()
 {
     Super::BeginPlay();
-    BuildGeographicContext();
+    auto* Subsystem = GetGameInstance()->GetSubsystem<URampLabSimulationSubsystem>();
+    const auto* Snapshot = Subsystem == nullptr ? nullptr : Subsystem->GetSnapshot();
+    const bool bSyntheticDesign = Snapshot != nullptr && Snapshot->airport_design.has_value()
+        && Snapshot->airport_design->name == "RampLab Demo Airport";
+    if (bSyntheticDesign) {
+        CesiumStatus = TEXT("Synthetic Demo Airport · local-meter coordinate frame · no geographic provider");
+        if (Subsystem != nullptr) Subsystem->SetGeospatialStatus(CesiumStatus);
+    } else {
+        BuildGeographicContext();
+    }
     BuildOperationalContext();
 
     FString ScreenshotPath;
@@ -140,8 +152,20 @@ void ARampLabAirportEnvironment::BeginPlay()
         GetWorld()->GetTimerManager().SetTimer(ScreenshotTimer, FTimerDelegate::CreateLambda([ScreenshotPath, ScreenshotCameraPreset]() {
             if (auto* World = GEngine == nullptr ? nullptr : GEngine->GetCurrentPlayWorld()) {
                 if (auto* GameInstance = World->GetGameInstance()) {
-                    if (auto* Subsystem = GameInstance->GetSubsystem<URampLabSimulationSubsystem>())
+                    if (auto* Subsystem = GameInstance->GetSubsystem<URampLabSimulationSubsystem>()) {
                         Subsystem->SetCameraPreset(ScreenshotCameraPreset);
+                        if (const auto* Snapshot = Subsystem->GetSnapshot()) {
+                            FString AircraftStates;
+                            for (const auto& Aircraft : Snapshot->aircraft) {
+                                if (!AircraftStates.IsEmpty()) AircraftStates += TEXT(",");
+                                AircraftStates += FString::Printf(TEXT("%s:%d@G%u"),
+                                    UTF8_TO_TCHAR(Aircraft.flight_number.c_str()), static_cast<int32>(Aircraft.state),
+                                    Aircraft.assigned_gate.value());
+                            }
+                            UE_LOG(LogRampLab, Display, TEXT("Goal 51 screenshot state: simulation_seconds=%lld aircraft=[%s]"),
+                                Subsystem->GetPlaybackTime().count(), *AircraftStates);
+                        }
+                    }
                 }
                 FTimerHandle CaptureTimer;
                 World->GetTimerManager().SetTimer(CaptureTimer, FTimerDelegate::CreateLambda([ScreenshotPath]() {
@@ -241,6 +265,271 @@ void ARampLabAirportEnvironment::BuildOperationalContext()
     auto* TaxiMarking = CreateMaterial(FLinearColor(0.92f, 0.62f, 0.08f));
     auto* Building = CreateMaterial(FLinearColor(0.32f, 0.35f, 0.36f));
     auto* BuildingRoof = CreateMaterial(FLinearColor(0.19f, 0.22f, 0.23f));
+
+    if (const auto* GameInstance = GetWorld()->GetGameInstance()) {
+        if (const auto* Subsystem = GameInstance->GetSubsystem<URampLabSimulationSubsystem>()) {
+            if (const auto* Snapshot = Subsystem->GetSnapshot(); Snapshot != nullptr
+                && Snapshot->airport_design.has_value() && Snapshot->airport_design->name == "RampLab Demo Airport") {
+                const auto& Design = *Snapshot->airport_design;
+                const auto ToLocal = [](airside::Point2d Point, double Z = 0.0) {
+                    return FVector(Point.x_m * 100.0, -Point.y_m * 100.0, Z);
+                };
+                auto AddLocalSegment = [this, &ToLocal](const FString& Name, airside::Point2d A, airside::Point2d B,
+                    double WidthMeters, UMaterialInstanceDynamic* Material, double HeightCm = 24.0) {
+                    const FVector Start = ToLocal(A, HeightCm), End = ToLocal(B, HeightCm);
+                    const FVector Delta = End - Start;
+                    AddBox(Name, (Start + End) * 0.5f, FVector(Delta.Size2D() / 100.0, WidthMeters, 0.12),
+                        FMath::RadiansToDegrees(FMath::Atan2(Delta.Y, Delta.X)), Material);
+                };
+                auto AddFootprint = [this](const FString& Name, const std::vector<airside::Point2d>& Points,
+                    UMaterialInstanceDynamic* Material, double ZCm = 12.0) -> FVector2D {
+                    if (Points.empty()) return FVector2D::ZeroVector;
+                    double MinX = Points.front().x_m, MaxX = MinX, MinY = Points.front().y_m, MaxY = MinY;
+                    for (const auto& Point : Points) {
+                        MinX = FMath::Min(MinX, Point.x_m); MaxX = FMath::Max(MaxX, Point.x_m);
+                        MinY = FMath::Min(MinY, Point.y_m); MaxY = FMath::Max(MaxY, Point.y_m);
+                    }
+                    const FVector Center((MinX + MaxX) * 50.0, -(MinY + MaxY) * 50.0, ZCm);
+                    AddBox(Name, Center, FVector(MaxX - MinX, MaxY - MinY, 0.24), 0.0f, Material);
+                    return FVector2D((MinX + MaxX) * 0.5, (MinY + MaxY) * 0.5);
+                };
+
+                AddBox(TEXT("DemoAirport_Turf"), FVector(0, 0, -115), FVector(2800, 1900, 2), 0,
+                    CreateMaterial(FLinearColor(0.105f, 0.19f, 0.095f)));
+                AddBox(TEXT("DemoAirport_SouthApronVerge"), FVector(0, 37000, -2), FVector(1200, 70, 0.5), 0,
+                    CreateMaterial(FLinearColor(0.20f, 0.28f, 0.14f)));
+                auto* ShoulderMaterial = CreateMaterial(FLinearColor(0.105f, 0.112f, 0.116f));
+                for (const auto& Runway : Design.runways) {
+                    const FVector A = ToLocal(Runway.threshold_09), B = ToLocal(Runway.threshold_27);
+                    const FVector Delta = B - A;
+                    AddBox(FString(TEXT("DemoRunwayShoulders_")) + UTF8_TO_TCHAR(Runway.id.c_str()), (A + B) * 0.5f,
+                        FVector(Delta.Size2D() / 100.0, Runway.width_m + 12.0, 0.36),
+                        FMath::RadiansToDegrees(FMath::Atan2(Delta.Y, Delta.X)), ShoulderMaterial);
+                }
+                for (const auto& Region : Design.regions) {
+                    UMaterialInstanceDynamic* Surface = Region.kind == "runway" ? RunwayMaterial
+                        : Region.kind == "apron" ? Apron
+                        : Region.kind == "service_road" ? CreateMaterial(FLinearColor(0.085f, 0.095f, 0.095f)) : Taxiway;
+                    AddFootprint(FString(TEXT("DemoSurface_")) + UTF8_TO_TCHAR(Region.id.c_str()), Region.footprint, Surface, 8.0);
+                }
+
+                auto IsOnDesignSurface = [&Design](airside::Point2d Point) {
+                    for (const auto& Region : Design.regions) {
+                        if (Region.footprint.size() < 3) continue;
+                        bool bInside = false;
+                        for (std::size_t Current = 0, Previous = Region.footprint.size() - 1;
+                            Current < Region.footprint.size(); Previous = Current++) {
+                            const auto& A = Region.footprint[Previous];
+                            const auto& B = Region.footprint[Current];
+                            const bool bCrosses = ((A.y_m > Point.y_m) != (B.y_m > Point.y_m))
+                                && (Point.x_m < (B.x_m - A.x_m) * (Point.y_m - A.y_m)
+                                    / (B.y_m - A.y_m) + A.x_m);
+                            if (bCrosses) bInside = !bInside;
+                        }
+                        if (bInside) return true;
+                    }
+                    return false;
+                };
+
+                TSet<FString> MarkedConnections;
+                for (const auto& Road : Snapshot->roads) {
+                    const uint32 Low = FMath::Min(Road.source.value(), Road.destination.value());
+                    const uint32 High = FMath::Max(Road.source.value(), Road.destination.value());
+                    const FString Key = FString::Printf(TEXT("%u-%u"), Low, High);
+                    if (MarkedConnections.Contains(Key)) continue;
+                    MarkedConnections.Add(Key);
+                    std::vector<airside::Point2d> Points = Road.centerline;
+                    if (Points.size() < 2) {
+                        const auto From = std::ranges::find(Snapshot->road_nodes, Road.source, &airside::RoadNodeSnapshot::id);
+                        const auto To = std::ranges::find(Snapshot->road_nodes, Road.destination, &airside::RoadNodeSnapshot::id);
+                        if (From == Snapshot->road_nodes.end() || To == Snapshot->road_nodes.end()) continue;
+                        Points = {From->position_m, To->position_m};
+                    }
+                    UMaterialInstanceDynamic* RoadSurface = Road.surface_type.find("taxiway") != std::string::npos
+                        || Road.surface_type.find("asphalt") != std::string::npos ? Taxiway
+                        : CreateMaterial(FLinearColor(0.095f, 0.104f, 0.101f));
+                    for (std::size_t Index = 1; Index < Points.size(); ++Index) {
+                        const auto Start = Points[Index - 1], End = Points[Index];
+                        const double DX = End.x_m - Start.x_m, DY = End.y_m - Start.y_m;
+                        const double Length = FMath::Sqrt(DX * DX + DY * DY);
+                        if (Length < 0.1 || Road.width_m <= 0.0) continue;
+                        const int32 Pieces = FMath::Max(1, FMath::CeilToInt(Length / 12.0));
+                        for (int32 Piece = 0; Piece < Pieces; ++Piece) {
+                            const double From = static_cast<double>(Piece) / Pieces;
+                            const double To = static_cast<double>(Piece + 1) / Pieces;
+                            const airside::Point2d A{Start.x_m + DX * From, Start.y_m + DY * From};
+                            const airside::Point2d B{Start.x_m + DX * To, Start.y_m + DY * To};
+                            const airside::Point2d Mid{(A.x_m + B.x_m) * 0.5, (A.y_m + B.y_m) * 0.5};
+                            if (!IsOnDesignSurface(Mid))
+                                AddLocalSegment(TEXT("DemoGraphDerivedPavement"), A, B, Road.width_m, RoadSurface, 12.0);
+                        }
+                    }
+                    UMaterialInstanceDynamic* Centerline = Road.aircraft_allowed ? TaxiMarking : Marking;
+                    for (std::size_t Index = 1; Index < Points.size(); ++Index) {
+                        const auto Start = Points[Index - 1], End = Points[Index];
+                        const double Length = FMath::Sqrt(FMath::Square(End.x_m - Start.x_m) + FMath::Square(End.y_m - Start.y_m));
+                        if (Length < 0.1) continue;
+                        if (Road.aircraft_allowed || Road.crosses_runway) {
+                            AddLocalSegment(TEXT("DemoTaxiCenterline"), Start, End, 0.28, Centerline, 27.0);
+                        } else {
+                            const double DX = (End.x_m - Start.x_m) / Length, DY = (End.y_m - Start.y_m) / Length;
+                            for (double Along = 0.0; Along < Length; Along += 24.0) {
+                                const double DashEnd = FMath::Min(Along + 11.0, Length);
+                                AddLocalSegment(TEXT("DemoServiceRoadDash"), {Start.x_m + DX * Along, Start.y_m + DY * Along},
+                                    {Start.x_m + DX * DashEnd, Start.y_m + DY * DashEnd}, 0.20, Centerline, 26.0);
+                            }
+                        }
+                    }
+                }
+
+                for (const auto& Runway : Design.runways) {
+                    const double HalfLength = Runway.length_m * 0.5;
+                    const double HalfWidth = Runway.width_m * 0.5;
+                    const double CenterX = (Runway.threshold_09.x_m + Runway.threshold_27.x_m) * 0.5;
+                    const double CenterY = (Runway.threshold_09.y_m + Runway.threshold_27.y_m) * 0.5;
+                    AddLocalSegment(TEXT("DemoRunwayEdgeNorth"), {CenterX - HalfLength, CenterY + HalfWidth - 1.0},
+                        {CenterX + HalfLength, CenterY + HalfWidth - 1.0}, 0.8, Marking, 34.0);
+                    AddLocalSegment(TEXT("DemoRunwayEdgeSouth"), {CenterX - HalfLength, CenterY - HalfWidth + 1.0},
+                        {CenterX + HalfLength, CenterY - HalfWidth + 1.0}, 0.8, Marking, 34.0);
+                    for (double X = -HalfLength + 40.0; X < HalfLength - 24.0; X += 60.0)
+                        AddLocalSegment(TEXT("DemoRunwayCenterline"), {CenterX + X, CenterY},
+                            {CenterX + FMath::Min(X + 30.0, HalfLength - 20.0), CenterY}, 0.45, Marking, 35.0);
+                    for (const double End : {-1.0, 1.0}) {
+                        const double ThresholdX = CenterX + End * (HalfLength - 9.0);
+                        for (int32 Stripe = 0; Stripe < 8; ++Stripe) {
+                            const double Y = CenterY + (Stripe - 3.5) * (Runway.width_m - 6.0) / 8.0;
+                            AddLocalSegment(TEXT("DemoRunwayThreshold"), {ThresholdX, Y}, {ThresholdX + End * 1.5, Y},
+                                1.0, Marking, 35.0);
+                        }
+                    }
+                    FString FirstDesignation, SecondDesignation;
+                    if (Runway.designation.find('/') != std::string::npos) {
+                        const auto Split = Runway.designation.find('/');
+                        FirstDesignation = UTF8_TO_TCHAR(Runway.designation.substr(0, Split).c_str());
+                        SecondDesignation = UTF8_TO_TCHAR(Runway.designation.substr(Split + 1).c_str());
+                    }
+                    const TPair<FString, double> Designations[] = {{FirstDesignation, -1.0}, {SecondDesignation, 1.0}};
+                    for (int32 EndIndex = 0; EndIndex < 2; ++EndIndex) {
+                        const auto& Designation = Designations[EndIndex];
+                        if (Designation.Key.IsEmpty()) continue;
+                        const FVector DesignationLocation = ToLocal({CenterX + Designation.Value * (HalfLength - 56.0), CenterY}, 39.0);
+                        auto* Number = NewObject<UTextRenderComponent>(this, *FString::Printf(TEXT("DemoRunwayDesignation_%d"), EndIndex));
+                        Number->SetupAttachment(SceneRoot);
+                        Number->SetText(FText::FromString(Designation.Key));
+                        Number->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+                        Number->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
+                        Number->SetWorldSize(1350.0f);
+                        Number->SetTextRenderColor(FColor(238, 237, 222));
+                        Number->SetWorldLocation(DesignationLocation);
+                        Number->SetWorldRotation(FRotator::ZeroRotator);
+                        Number->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+                        Number->RegisterComponent();
+                        AirportMarkings.Add(Number);
+                    }
+                }
+
+                for (const auto& Hold : Design.hold_points) {
+                    const auto Node = std::ranges::find(Snapshot->road_nodes, Hold.node, &airside::RoadNodeSnapshot::id);
+                    if (Node == Snapshot->road_nodes.end()) continue;
+                    for (const auto& Road : Snapshot->roads) {
+                        if (Road.source != Hold.node && Road.destination != Hold.node) continue;
+                        const auto OtherId = Road.source == Hold.node ? Road.destination : Road.source;
+                        const auto Other = std::ranges::find(Snapshot->road_nodes, OtherId, &airside::RoadNodeSnapshot::id);
+                        if (Other == Snapshot->road_nodes.end()) continue;
+                        double DX = Other->position_m.x_m - Node->position_m.x_m;
+                        double DY = Other->position_m.y_m - Node->position_m.y_m;
+                        const double Length = FMath::Sqrt(DX * DX + DY * DY);
+                        if (Length < 0.1) continue;
+                        DX /= Length; DY /= Length;
+                        const double HalfClearance = Hold.protected_clearance_m * 0.5;
+                        const double AcrossX = -DY * HalfClearance, AcrossY = DX * HalfClearance;
+                        for (int32 Bar = 0; Bar < 4; ++Bar) {
+                            const double Along = Bar * 0.65;
+                            AddLocalSegment(TEXT("DemoHoldShort"),
+                                {Node->position_m.x_m + DX * Along - AcrossX, Node->position_m.y_m + DY * Along - AcrossY},
+                                {Node->position_m.x_m + DX * Along + AcrossX, Node->position_m.y_m + DY * Along + AcrossY},
+                                0.45, TaxiMarking, 30.0);
+                        }
+                        break;
+                    }
+                }
+                for (const auto& Stand : Design.stands) {
+                    for (std::size_t Index = 0; Index < Stand.footprint.size(); ++Index)
+                        AddLocalSegment(FString(TEXT("DemoStandOutline_")) + UTF8_TO_TCHAR(Stand.id.c_str()), Stand.footprint[Index],
+                            Stand.footprint[(Index + 1) % Stand.footprint.size()], 0.45, Marking, 28.0);
+                    if (Stand.footprint.empty()) continue;
+                    airside::Point2d Center{};
+                    for (const auto& Point : Stand.footprint) { Center.x_m += Point.x_m; Center.y_m += Point.y_m; }
+                    Center.x_m /= static_cast<double>(Stand.footprint.size());
+                    Center.y_m /= static_cast<double>(Stand.footprint.size());
+                    const FVector LabelPosition = ToLocal({Center.x_m, 305.0}, 45.0);
+                    auto* Label = NewObject<UTextRenderComponent>(this, *FString::Printf(TEXT("DemoStand_%s"), UTF8_TO_TCHAR(Stand.id.c_str())));
+                    Label->SetupAttachment(SceneRoot);
+                    Label->SetText(FText::FromString(UTF8_TO_TCHAR(Stand.id.c_str())));
+                    Label->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+                    Label->SetWorldSize(600.0f);
+                    Label->SetTextRenderColor(FColor(240, 239, 222));
+                    Label->SetWorldLocation(LabelPosition);
+                    Label->SetWorldRotation(FRotator(0.0f, 180.0f, 0.0f));
+                    Label->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+                    Label->RegisterComponent();
+                    AirportMarkings.Add(Label);
+                    AddLocalSegment(FString(TEXT("DemoStandLeadIn_")) + UTF8_TO_TCHAR(Stand.id.c_str()),
+                        {Center.x_m, 180.0}, {Center.x_m, 245.0}, 0.35, Marking, 30.0);
+                }
+                for (const auto& Area : Design.support_areas) {
+                    if (Area.footprint.empty()) continue;
+                    const FString Id = UTF8_TO_TCHAR(Area.id.c_str());
+                    const FVector2D Center = AddFootprint(TEXT("DemoSupportPad_") + Id, Area.footprint, Apron, 16.0);
+                    const auto Bounds = [&Area]() {
+                        double MinX = Area.footprint.front().x_m, MaxX = MinX, MinY = Area.footprint.front().y_m, MaxY = MinY;
+                        for (const auto& Point : Area.footprint) { MinX = FMath::Min(MinX, Point.x_m); MaxX = FMath::Max(MaxX, Point.x_m); MinY = FMath::Min(MinY, Point.y_m); MaxY = FMath::Max(MaxY, Point.y_m); }
+                        return FVector2D(MaxX - MinX, MaxY - MinY);
+                    }();
+                    const FVector Location(Center.X * 100.0, -Center.Y * 100.0, 500.0);
+                    if (Area.kind == "fuel_staging") {
+                        for (int32 Bay = 0; Bay < 4; ++Bay) {
+                            const FVector BayLocation(Center.X * 100.0 + (Bay - 1.5) * 1250.0, -Center.Y * 100.0, 48.0);
+                            AddBox(TEXT("DemoFuelStagingBay"), BayLocation, FVector(9.0, 0.25, 0.12), 0.0f, Marking);
+                        }
+                        continue;
+                    }
+                    const FVector Size(Bounds.X * (Area.kind == "terminal_apron" ? 0.72 : 0.64),
+                        Bounds.Y * 0.30, Area.kind == "terminal_apron" ? 10.0 : 8.0);
+                    AddBox(FString(TEXT("DemoBuilding_")) + Id, Location, Size, 0.0f, Building);
+                    AddBox(FString(TEXT("DemoBuildingRoof_")) + Id, Location + FVector(0, 0, Size.Z * 55.0),
+                        FVector(Size.X + 5.0, Size.Y + 5.0, 1.2), 0.0f, BuildingRoof);
+                    if (Area.kind == "terminal_apron") {
+                        AddBox(TEXT("DemoTerminalGlazing"), Location + FVector(0, -Size.Y * 0.42, 40.0),
+                            FVector(Size.X * 0.82, 0.6, Size.Z * 0.30), 0.0f,
+                            CreateMaterial(FLinearColor(0.18f, 0.34f, 0.39f)));
+                    }
+                }
+                const auto PoleMaterial = CreateMaterial(FLinearColor(0.19f, 0.21f, 0.20f));
+                const auto LampMaterial = CreateMaterial(FLinearColor(0.72f, 0.62f, 0.40f));
+                for (const double X : {-520.0, 520.0}) for (const double Y : {338.0, 450.0}) {
+                    const FString PoleName = FString::Printf(TEXT("DemoRampLight_%d_%d"), static_cast<int32>(X), static_cast<int32>(Y));
+                    const FVector PoleBase = ToLocal({X, Y});
+                    AddBox(PoleName + TEXT("_Mast"), PoleBase + FVector(0, 0, 900), FVector(0.34, 0.34, 18.0), 0.0f, PoleMaterial);
+                    AddBox(PoleName + TEXT("_Arm"), PoleBase + FVector(0, -220, 1730), FVector(0.34, 4.4, 0.26), 0.0f, PoleMaterial);
+                    AddBox(PoleName + TEXT("_Fixture"), PoleBase + FVector(0, -420, 1670), FVector(0.95, 0.62, 0.35), 0.0f, LampMaterial);
+                    auto* Light = NewObject<UPointLightComponent>(this, *PoleName);
+                    Light->SetupAttachment(SceneRoot);
+                    Light->SetMobility(EComponentMobility::Movable);
+                    Light->SetIntensity(18000.0f);
+                    Light->SetAttenuationRadius(4200.0f);
+                    Light->SetLightColor(FColor(255, 224, 184));
+                    Light->SetCastShadows(false);
+                    Light->SetWorldLocation(PoleBase + FVector(0, -420, 1640));
+                    Light->RegisterComponent();
+                }
+                UE_LOG(LogRampLab, Display, TEXT("Demo Airport environment built from simulator design: regions=%d stands=%d support=%d runway=%d; local meters at 100 cm/m"),
+                    static_cast<int32>(Design.regions.size()), static_cast<int32>(Design.stands.size()),
+                    static_cast<int32>(Design.support_areas.size()), static_cast<int32>(Design.runways.size()));
+                return;
+            }
+        }
+    }
 
     FString ScenarioPath;
     FParse::Value(FCommandLine::Get(), TEXT("RampLabScenarioFile="), ScenarioPath);

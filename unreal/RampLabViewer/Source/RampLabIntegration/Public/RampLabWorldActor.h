@@ -52,13 +52,19 @@ private:
     UPROPERTY() TObjectPtr<UCameraComponent> CameraComponent;
     UPROPERTY() TObjectPtr<UStaticMesh> CubeMesh;
     UPROPERTY() TObjectPtr<UStaticMesh> CylinderMesh;
+    UPROPERTY() TObjectPtr<UStaticMesh> ConeMesh;
     UPROPERTY() TObjectPtr<UMaterialInterface> BaseMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> RoadOpenMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> RoadClosedMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> ActiveRouteMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> AircraftRouteMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> GroundVehicleRouteMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> SharedRouteMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> RunwayCrossingRouteMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> GateOpenMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> GateOccupiedMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> AircraftMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> AircraftGearMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> AircraftWaitingMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> AircraftReadyMaterial;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> FuelMaterial;
@@ -73,12 +79,16 @@ private:
     UPROPERTY() TArray<TObjectPtr<AStaticMeshActor>> AutonomyObstacleActors;
 
     UPROPERTY() TMap<uint32, TObjectPtr<UStaticMeshComponent>> RoadMeshes;
+    UPROPERTY() TMap<uint32, TObjectPtr<UStaticMeshComponent>> RouteNodeMeshes;
+    UPROPERTY() TMap<uint32, TObjectPtr<UTextRenderComponent>> RouteNodeLabels;
     UPROPERTY() TMap<uint32, TObjectPtr<UStaticMeshComponent>> ClosureBarriers;
     UPROPERTY() TMap<uint32, TObjectPtr<AStaticMeshActor>> GateActors;
     UPROPERTY() TMap<uint32, TObjectPtr<AStaticMeshActor>> AircraftActors;
     UPROPERTY() TMap<uint32, TObjectPtr<AStaticMeshActor>> AircraftWingActors;
+    TMap<uint32, TArray<AStaticMeshActor*>> AircraftDetailActors;
     UPROPERTY() TMap<uint32, TObjectPtr<AStaticMeshActor>> VehicleActors;
     UPROPERTY() TMap<uint32, TObjectPtr<AStaticMeshActor>> VehicleDetailActors;
+    TMap<uint32, TArray<AStaticMeshActor*>> VehicleAccessoryActors;
     UPROPERTY() TMap<uint32, TObjectPtr<UTextRenderComponent>> GateLabels;
     UPROPERTY() TMap<uint32, TObjectPtr<UTextRenderComponent>> AircraftLabels;
     UPROPERTY() TMap<uint32, TObjectPtr<UTextRenderComponent>> VehicleLabels;
@@ -86,6 +96,7 @@ private:
     UPROPERTY() TMap<FString, TObjectPtr<UTextRenderComponent>> FleetVehicleLabels;
     bool bTopologyBuilt{false};
     uint32 TopologyGeneration{0};
+    uint32 MirrorActorSerial{0};
     bool bCaptureRun{false};
     int32 CaptureStage{0};
     float CaptureExitCountdown{-1.0f};

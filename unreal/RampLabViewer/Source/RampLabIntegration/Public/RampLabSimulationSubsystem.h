@@ -36,6 +36,7 @@ public:
     void SetGeospatialStatus(const FString& Status) { GeospatialStatus = Status; }
     void SetPlaybackSpeed(double NewSpeed);
     void AttachControlPanel();
+    void InitializeViewer();
 
     [[nodiscard]] bool IsReady() const noexcept { return Simulation != nullptr || AutonomySimulation != nullptr || FleetSimulation != nullptr; }
     [[nodiscard]] bool IsPlaying() const noexcept { return bPlaying; }
@@ -60,6 +61,8 @@ public:
     [[nodiscard]] bool IsRoadOnSelectedRoute(uint32 RoadId) const;
     [[nodiscard]] bool IsDemoMode() const noexcept { return bDemoMode; }
     [[nodiscard]] FString GetCameraPreset() const { return CameraPreset; }
+    [[nodiscard]] uint32 GetSelectedEntityId() const noexcept { return SelectedEntityId; }
+    [[nodiscard]] FString GetSelectedEntityKind() const { return SelectedEntityKind; }
     [[nodiscard]] FString GetGeospatialStatus() const { return GeospatialStatus; }
 
 private:

@@ -39,7 +39,12 @@ void SRampLabControlPanel::Construct(const FArguments& Arguments)
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 2, 0, 12)
                 [
                     SNew(STextBlock)
-                    .Text(FText::FromString(TEXT("AUBURN UNIVERSITY REGIONAL AIRPORT  /  KAUO")))
+                    .Text_Lambda([this]() {
+                        const auto* Subsystem = SimulationSubsystem.Get();
+                        return FText::FromString(Subsystem != nullptr && Subsystem->GetScenarioName().Equals(TEXT("ramplab_demo_airport"), ESearchCase::IgnoreCase)
+                            ? TEXT("RAMPLAB DEMO AIRPORT  /  SYNTHETIC OPERATIONS")
+                            : TEXT("AUBURN UNIVERSITY REGIONAL AIRPORT  /  KAUO"));
+                    })
                     .ColorAndOpacity(FLinearColor(0.45f, 0.72f, 0.88f))
                 ]
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)

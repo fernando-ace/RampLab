@@ -1,0 +1,41 @@
+{
+  "goal": "51",
+  "branch": "goal51-high-fidelity-demo-airport",
+  "base_commit": "51071fccce4dd4a77d5ab61265f6da0158228b73",
+  "source_commit": "f007890",
+  "scenario": {
+    "path": "scenarios/ramplab_demo_airport.yaml",
+    "sha256": "DD7B945686295F32E963E1E33D3DBAC2F22B26E3E0636CB30BC6F48E0163F31C"
+  },
+  "unreal_capture": {
+    "path": "evidence/goal51/hero-turnaround.png",
+    "sha256": "31675CD35D980BB55684244FEA913B4E0B1E9AB8B66345BEBC3D5841E0BB96A9",
+    "resolution": "1536x864",
+    "camera": "Follow Aircraft",
+    "control_panel": "hidden",
+    "playback_speed": 60,
+    "simulation_seconds": 7199,
+    "visible_aircraft": [
+      "DEMO202 parked at G2"
+    ],
+    "stand_label": "A2"
+  },
+  "runtime_log": {
+    "path": "evidence/goal51/unreal-runtime.log",
+    "sha256": "8F44D3A5A49FF886ED331DC5118E414BEEB88990AD64D52A8D2BCE0630B1A660",
+    "fps_samples": "47.8-51.2",
+    "synchronized_entities": 7,
+    "frames_over_500ms": 0,
+    "maximum_frame_delta_seconds": 0.4
+  },
+  "validation": {
+    "release_ctest": "179/179 passed at base commit 51071fcc",
+    "unreal_targets": [
+      "RampLabViewer Win64 Development",
+      "RampLabViewerEditor Win64 Development"
+    ],
+    "fresh_full_seed50_cli_replay": "not completed; attempt was stopped after prolonged runtime",
+    "goal50_canonical_replay": "see evidence/goal50/manifest.json; immutable prior evidence at matching scenario hash"
+  },
+  "scope": "Unreal presentation only; C++ simulation core and scenario YAML unchanged"
+}

@@ -70,6 +70,10 @@ void URampLabSimulationSubsystem::Initialize(FSubsystemCollectionBase& Collectio
     double RequestedCaptureMultiplier = CaptureMultiplier;
     FParse::Value(FCommandLine::Get(), TEXT("RampLabScenarioFile="), ScenarioFileOverride);
     FParse::Value(FCommandLine::Get(), TEXT("RampLabLiveStateFile="), LiveStateFileOverride);
+    if (FParse::Param(FCommandLine::Get(), TEXT("RampLabDemoAirport"))) {
+        SelectedScenarioKey = TEXT("ramplab_demo_airport");
+        PlaybackSpeed = 10.0;
+    }
     if (!ScenarioFileOverride.IsEmpty()) PlaybackSpeed = 60.0;
     bCaptureQA = FParse::Param(FCommandLine::Get(), TEXT("RampLabCapture"));
     bFleetValidation=FParse::Param(FCommandLine::Get(),TEXT("RampLabFleetValidation"));
@@ -575,6 +579,7 @@ void URampLabSimulationSubsystem::ResetSimulation()
 void URampLabSimulationSubsystem::SelectScenario(const FString& ScenarioKey)
 {
     if (ScenarioKey != TEXT("baseline") && ScenarioKey != TEXT("high_capacity") &&
+        ScenarioKey != TEXT("ramplab_demo_airport") &&
         ScenarioKey != TEXT("autonomy_tug") && ScenarioKey != TEXT("autonomy_sensor_validation") &&
         ScenarioKey != TEXT("turnaround_normal") && ScenarioKey != TEXT("turnaround_contention") &&
         ScenarioKey != TEXT("turnaround_disrupted") && ScenarioKey != TEXT("turnaround_flight_bank") &&
@@ -614,22 +619,29 @@ void URampLabSimulationSubsystem::SetPlaybackSpeed(double NewSpeed)
 
 void URampLabSimulationSubsystem::AttachControlPanel()
 {
-    if (ControlPanel.IsValid() || GEngine == nullptr || GEngine->GameViewport == nullptr) return;
-    ControlPanel =
-        SNew(SOverlay)
-        + SOverlay::Slot()
-        .HAlign(HAlign_Left)
-        .VAlign(VAlign_Top)
-        .Padding(12.0f)
-        [
-            SNew(SBox)
-            .WidthOverride(455.0f)
-            .HeightOverride(850.0f)
+    if (!ControlPanel.IsValid() && GEngine != nullptr && GEngine->GameViewport != nullptr) {
+        ControlPanel =
+            SNew(SOverlay)
+            + SOverlay::Slot()
+            .HAlign(HAlign_Left)
+            .VAlign(VAlign_Top)
+            .Padding(12.0f)
             [
-                SNew(SRampLabControlPanel).Subsystem(this)
-            ]
-        ];
-    GEngine->GameViewport->AddViewportWidgetContent(ControlPanel.ToSharedRef(), 100);
+                SNew(SBox)
+                .WidthOverride(455.0f)
+                .HeightOverride(850.0f)
+                [
+                    SNew(SRampLabControlPanel).Subsystem(this)
+                ]
+            ];
+        GEngine->GameViewport->AddViewportWidgetContent(ControlPanel.ToSharedRef(), 100);
+    }
+    InitializeViewer();
+}
+
+void URampLabSimulationSubsystem::InitializeViewer()
+{
+    if (bViewerReady) return;
     ResetSimulation();
     bViewerReady = true;
 }
